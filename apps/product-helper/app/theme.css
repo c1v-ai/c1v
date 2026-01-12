@@ -1,0 +1,114 @@
+/* =========================================================
+   c1v Theme + Typography
+   Header font = Consolas
+   Body font   = Verdana
+   ========================================================= */
+
+/* Base typography */
+:root {
+  --font-heading: Consolas, "Courier New", monospace;
+  --font-body: Verdana, Geneva, Tahoma, sans-serif;
+
+  /* sensible defaults */
+  --radius: 10px;
+  --border: rgba(255, 255, 255, 0.10);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F7F9FC;
+  --text-primary: #1F2937;
+  --accent: #0A5C4E;
+
+  --text-muted: rgba(31, 41, 55, 0.70);
+  --border: rgba(31, 41, 55, 0.12);
+  --shadow: 0 10px 30px rgba(17, 24, 39, 0.10);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-primary: #0A2F35;
+  --bg-secondary: #0D3D47;
+  --text-primary: #FFFFFF;
+  --accent: #0ea5e9;
+
+  --text-muted: rgba(255, 255, 255, 0.72);
+  --border: rgba(255, 255, 255, 0.12);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Global defaults */
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6,
+.heading, .title {
+  font-family: var(--font-heading);
+  letter-spacing: 0.2px;
+  margin: 0 0 0.6rem 0;
+}
+
+/* Common UI surfaces */
+.card, .panel, .surface {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Links + accents */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.button, button, .btn {
+  font-family: var(--font-heading);
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.button.secondary, .btn.secondary {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+/* Forms */
+input, textarea, select {
+  font-family: var(--font-body);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 10px 12px;
+  outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Utility */
+.muted { color: var(--text-muted); }
+.border { border: 1px solid var(--border); }
