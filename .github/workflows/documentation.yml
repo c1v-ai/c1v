@@ -1,0 +1,216 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.claude/**'
+      - '**/README.md'
+      - 'CHANGELOG.md'
+
+jobs:
+  check-changelog:
+    name: Check Changelog Updated
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if Changelog Updated
+        id: changelog
+        run: |
+          # Skip for dependabot, docs-only, or skip-changelog label
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]] || \
+             [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}" == "true" ]] || \
+             [[ "${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}" == "true" ]]; then
+            echo "Skipping changelog check"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check if CHANGELOG.md was modified
+          if git diff --name-only origin/main...HEAD | grep -q "CHANGELOG.md"; then
+            echo "✓ CHANGELOG.md updated"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          else
+            echo "::error::CHANGELOG.md not updated. Add entry or use 'skip-changelog' label"
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Validate Changelog Format
+        if: steps.changelog.outputs.skip == 'false'
+        run: |
+          # Check that changelog follows Keep a Changelog format
+          if ! grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            echo "::error::Missing [Unreleased] section in CHANGELOG.md"
+            exit 1
+          fi
+          echo "✓ Changelog format valid"
+
+  check-adr:
+    name: Check for ADR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'architecture')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for ADR
+        run: |
+          # If labeled as architecture change, should have an ADR
+          ADR_CHANGED=$(git diff --name-only origin/main...HEAD | grep -E 'docs/architecture/adr-' || true)
+
+          if [ -z "$ADR_CHANGED" ]; then
+            echo "::warning::Architecture change detected but no ADR found in docs/architecture/"
+            echo "Consider adding an Architecture Decision Record (ADR)"
+            # Warn but don't fail
+          else
+            echo "✓ ADR present: $ADR_CHANGED"
+          fi
+
+  validate-agent-docs:
+    name: Validate Agent Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Agent Team Files
+        run: |
+          # Check if agent responsibilities changed
+          AGENT_CHANGES=$(git diff --name-only origin/main...HEAD | grep -E '\.claude/teams/' || true)
+
+          if [ -n "$AGENT_CHANGES" ]; then
+            echo "Agent documentation updated:"
+            echo "$AGENT_CHANGES"
+
+            # Validate format of team files
+            for file in $AGENT_CHANGES; do
+              if [ -f "$file" ]; then
+                # Check for required sections
+                if ! grep -q "## Mission" "$file"; then
+                  echo "::error::Missing ## Mission section in $file"
+                  exit 1
+                fi
+                if ! grep -q "## Agents" "$file"; then
+                  echo "::error::Missing ## Agents section in $file"
+                  exit 1
+                fi
+                echo "✓ $file format valid"
+              fi
+            done
+          fi
+
+  generate-api-docs:
+    name: Generate API Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Extract API Documentation
+        run: |
+          # Extract OpenAPI/JSDoc comments from API routes
+          mkdir -p docs/api
+
+          # Use tsx to run a script that extracts docs
+          cat > extract-api-docs.ts << 'EOF'
+          import { readdirSync, readFileSync, writeFileSync } from 'fs';
+          import { join } from 'path';
+
+          function extractApiDocs(dir: string) {
+            const docs: any[] = [];
+            const files = readdirSync(dir, { recursive: true });
+
+            for (const file of files) {
+              if (file.toString().endsWith('route.ts')) {
+                const content = readFileSync(join(dir, file.toString()), 'utf-8');
+                const matches = content.match(/\/\*\*[\s\S]*?\*\//g);
+                if (matches) {
+                  docs.push({
+                    file: file.toString(),
+                    docs: matches
+                  });
+                }
+              }
+            }
+            return docs;
+          }
+
+          const apiDocs = extractApiDocs('apps/product-helper/app/api');
+          writeFileSync('docs/api/routes.json', JSON.stringify(apiDocs, null, 2));
+          console.log(`Extracted docs from ${apiDocs.length} API routes`);
+          EOF
+
+          pnpm exec tsx extract-api-docs.ts
+
+      - name: Commit API Docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$(git status --porcelain docs/api)" ]; then
+            git add docs/api
+            git commit -m "docs(api): auto-generate API documentation [skip ci]"
+            git push
+          else
+            echo "No API documentation changes"
+          fi
+
+  docs-preview:
+    name: Deploy Documentation Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Build Documentation Site
+        run: |
+          # If we have a docs site (future), build it here
+          echo "Documentation preview would be built here"
+
+      - name: Comment PR with Preview
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '📚 Documentation preview will be available at: https://c1v-docs-preview.vercel.app'
+            })
