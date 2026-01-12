@@ -3,6 +3,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: 'Product Helper - AI-Powered PRD Generation',
@@ -37,6 +38,7 @@ export default function RootLayout({
         >
           {children}
         </SWRConfig>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

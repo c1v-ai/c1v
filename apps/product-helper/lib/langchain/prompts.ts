@@ -1,6 +1,28 @@
 import { PromptTemplate } from '@langchain/core/prompts';
 
 /**
+ * System Prompt
+ * Base instructions for the AI assistant across all interactions
+ */
+export const systemPrompt = `You are an expert Product Requirements Document (PRD) assistant specializing in creating comprehensive, SR-CORNELL-compliant PRDs.
+
+Your expertise includes:
+- Requirements elicitation through conversational inquiry
+- Structured data extraction from unstructured conversations
+- Generation of UML/SysML diagrams (context, use case, activity)
+- SR-CORNELL validation and compliance checking
+- Technical writing for requirements and specifications
+
+Always:
+- Ask clarifying questions when information is ambiguous
+- Use precise, unambiguous language in requirements
+- Follow SR-CORNELL standards for artifact generation
+- Maintain traceability between use cases and requirements
+- Generate testable, singular requirements
+
+Your tone should be professional, clear, and helpful.`;
+
+/**
  * Conversational Intake Prompt
  * Guides PM through requirements gathering with adaptive questions
  */
@@ -128,4 +150,191 @@ Return ONLY the Mermaid syntax, no explanations or markdown code fences.
 Start with the diagram type declaration (e.g., "graph TD").
 Use clear, descriptive labels.
 Apply appropriate styling with classDef.
+`);
+
+/**
+ * Requirements Table Generation Prompt
+ * Generates structured requirements from use cases and UCBD
+ * SR-CORNELL compliant: singular, testable, unambiguous requirements
+ */
+export const requirementsTablePrompt = PromptTemplate.fromTemplate(`
+Generate a comprehensive requirements table from the following PRD data.
+
+## Project Context
+Project: {projectName}
+Vision: {projectVision}
+
+## Use Cases
+{useCases}
+
+## UCBD Steps (if available)
+{ucbdSteps}
+
+## Instructions
+Generate requirements following these rules:
+1. **Derivation**: Each requirement must trace to a UCBD step or use case
+2. **Language**: Use "The system SHALL..." format (mandatory "shall" language)
+3. **Singularity**: Each requirement must specify ONE capability only
+4. **Testability**: Each requirement must be verifiable through testing
+5. **Unambiguous**: Use precise, clear language with no room for interpretation
+6. **Completeness**: Cover all functional and non-functional aspects
+
+## Requirement Categories
+- **Functional**: What the system does (user actions, workflows)
+- **Performance**: Speed, throughput, response times
+- **Security**: Authentication, authorization, data protection
+- **Usability**: User experience, accessibility
+- **Reliability**: Uptime, error handling, recovery
+
+## Output Format
+Generate requirements as a structured list with:
+- ID (REQ-001, REQ-002, etc.)
+- Name (short abstract name)
+- Description (full "shall" statement)
+- Source (trace to UC ID or UCBD step)
+- Priority (Critical/High/Medium/Low)
+- Testability (how to verify)
+- Category (Functional/Performance/Security/Usability/Reliability)
+
+Example:
+ID: REQ-001
+Name: User Login Authentication
+Description: The system SHALL authenticate users via email and password before granting access to protected resources.
+Source: UC1 - User Login
+Priority: Critical
+Testability: Test with valid/invalid credentials, verify access control
+Category: Security
+
+Generate the complete requirements table now.
+`);
+
+/**
+ * Constants Table Generation Prompt
+ * Generates system constants and configuration values
+ * SR-CORNELL compliant: name, value, units present
+ */
+export const constantsTablePrompt = PromptTemplate.fromTemplate(`
+Generate a constants table for this product based on the PRD data and requirements.
+
+## Project Context
+Project: {projectName}
+Vision: {projectVision}
+
+## Requirements
+{requirements}
+
+## Use Cases
+{useCases}
+
+## Instructions
+Identify and define system constants including:
+1. **Performance Limits**: Timeouts, max concurrent users, rate limits
+2. **Security Parameters**: Session duration, max login attempts, token expiry
+3. **Business Logic**: Minimum/maximum values for business rules
+4. **UI/UX**: Page sizes, default values, display limits
+5. **Integration**: API rate limits, retry counts, timeouts
+
+## Output Format
+For each constant, provide:
+- Name (UPPER_SNAKE_CASE)
+- Value (actual value or reasonable default)
+- Units (if applicable: seconds, MB, requests/min, etc.)
+- Description (purpose and usage)
+- Category (Performance/Security/Business Logic/UI-UX/Integration)
+
+Example:
+Name: MAX_LOGIN_ATTEMPTS
+Value: 5
+Units: attempts
+Description: Maximum number of failed login attempts before account lockout
+Category: Security
+
+Name: SESSION_TIMEOUT
+Value: 3600
+Units: seconds
+Description: User session expires after this duration of inactivity
+Category: Security
+
+Name: API_RATE_LIMIT
+Value: 100
+Units: requests/minute
+Description: Maximum API requests allowed per user per minute
+Category: Performance
+
+Only include constants that are actually relevant to the requirements. Do not invent unnecessary constants.
+Generate the constants table now.
+`);
+
+/**
+ * Activity Diagram Spec Generation Prompt
+ * Generates structured SysML Activity Diagram specification
+ * SR-CORNELL compliant: workflow steps + decision points
+ */
+export const activityDiagramPrompt = PromptTemplate.fromTemplate(`
+Generate a SysML Activity Diagram specification for the following use case.
+
+## Use Case
+ID: {useCaseId}
+Name: {useCaseName}
+Description: {useCaseDescription}
+Actor: {actor}
+
+## UCBD Steps (if available)
+{ucbdSteps}
+
+## Instructions
+Create a structured activity diagram that shows:
+1. **Workflow Steps**: All actions from start to end
+2. **Decision Points**: Conditional branches and choices
+3. **Actors**: Who performs each step (use swimlanes if multiple actors)
+4. **Flow**: Sequential, parallel, and conditional transitions
+
+## Step Types
+- **start**: Single starting point
+- **end**: Termination point(s)
+- **action**: Regular activity step
+- **decision**: Conditional branch (diamond shape)
+- **merge**: Converging branches
+- **fork**: Parallel split
+- **join**: Parallel merge
+
+## Output Format
+Generate a structured specification with:
+- Steps (id, type, label, actor, transitions)
+- Decision conditions for each branch
+- Swimlanes (if multiple actors involved)
+- Preconditions and postconditions for key steps
+
+Example:
+Step 1:
+  ID: STEP-1
+  Type: start
+  Label: User initiates login
+  Actor: User
+  Transitions: [STEP-2]
+
+Step 2:
+  ID: STEP-2
+  Type: action
+  Label: Enter credentials
+  Actor: User
+  Transitions: [STEP-3]
+
+Step 3:
+  ID: STEP-3
+  Type: action
+  Label: Validate credentials
+  Actor: System
+  Transitions: [STEP-4]
+
+Step 4:
+  ID: STEP-4
+  Type: decision
+  Label: Credentials valid?
+  Actor: System
+  Transitions:
+    - Target: STEP-5, Condition: "Valid", Label: "Yes"
+    - Target: STEP-6, Condition: "Invalid", Label: "No"
+
+Generate the complete activity diagram specification now.
 `);
