@@ -7,6 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProjectById } from '@/app/actions/projects';
 import { ArrowLeft, MessageSquare, Trash2, Edit, TrendingUp, Calendar, User } from 'lucide-react';
 import { DeleteProjectButton } from './delete-button';
+import { ValidationReport } from '@/components/validation/validation-report';
+import { ExtractedDataDisplay } from '@/components/extracted-data/data-display';
+import { DiagramGrid } from '@/components/diagrams/diagram-viewer';
+import { generateDiagram } from '@/lib/diagrams/generators';
 
 const statusColors = {
   intake: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
@@ -200,6 +204,57 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Extracted PRD Data */}
+      <ExtractedDataDisplay
+        actors={project.projectData?.actors as any}
+        useCases={project.projectData?.useCases as any}
+        systemBoundaries={project.projectData?.systemBoundaries as any}
+        dataEntities={project.projectData?.dataEntities as any}
+        completeness={project.projectData?.completeness ?? undefined}
+        lastExtractedAt={project.projectData?.lastExtractedAt ?? undefined}
+      />
+
+      {/* PRD Diagrams (Phase 11) */}
+      {project.projectData && (
+        <DiagramGrid
+          diagrams={[
+            {
+              type: 'context' as const,
+              syntax: generateDiagram('context', {
+                projectName: project.name,
+                systemBoundaries: project.projectData.systemBoundaries as any,
+              }),
+              title: 'Context Diagram',
+              description: 'System boundaries showing internal components and external dependencies',
+            },
+            {
+              type: 'useCase' as const,
+              syntax: generateDiagram('useCase', {
+                actors: project.projectData.actors as any,
+                useCases: project.projectData.useCases as any,
+              }),
+              title: 'Use Case Diagram',
+              description: 'Actors and their associated use cases',
+            },
+            {
+              type: 'class' as const,
+              syntax: generateDiagram('class', {
+                dataEntities: project.projectData.dataEntities as any,
+              }),
+              title: 'Class Diagram',
+              description: 'Data model showing entities, attributes, and relationships',
+            },
+          ]}
+        />
+      )}
+
+      {/* Validation Report */}
+      <ValidationReport
+        projectId={project.id}
+        projectName={project.name}
+        initialValidationScore={project.validationScore || 0}
+      />
     </div>
   );
 }
