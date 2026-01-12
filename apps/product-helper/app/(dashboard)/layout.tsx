@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { use, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut, MessageSquare, Settings } from 'lucide-react';
+import { CircleIcon, Home, LogOut, MessageSquare, Settings, FolderOpen } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +66,12 @@ function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">
+          <Link href="/projects" className="flex w-full items-center">
+            <FolderOpen className="mr-2 h-4 w-4" />
+            <span>Projects</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
           <Link href="/chat" className="flex w-full items-center">
             <MessageSquare className="mr-2 h-4 w-4" />
             <span>Chat</span>
@@ -104,6 +110,13 @@ function Header() {
             >
               <Home className="h-4 w-4" />
               Dashboard
+            </Link>
+            <Link
+              href="/projects"
+              className="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2"
+            >
+              <FolderOpen className="h-4 w-4" />
+              Projects
             </Link>
             <Link
               href="/chat"
