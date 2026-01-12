@@ -14,15 +14,15 @@ import { cn } from '@/lib/utils';
  * Chat Messages Container
  * Displays all messages in the conversation
  */
-interface ChatMessagesProps {
+export interface ChatMessagesProps {
   messages: Message[];
-  emptyStateComponent: ReactNode;
+  emptyStateComponent?: ReactNode;
   aiEmoji?: string;
   isLoading?: boolean;
   className?: string;
 }
 
-function ChatMessages({
+export function ChatMessages({
   messages,
   emptyStateComponent,
   aiEmoji,
@@ -110,12 +110,12 @@ function StickyToBottomContent({
  * Chat Layout
  * Provides the overall structure for the chat interface
  */
-interface ChatLayoutProps {
+export interface ChatLayoutProps {
   content: ReactNode;
   footer: ReactNode;
 }
 
-function ChatLayout({ content, footer }: ChatLayoutProps) {
+export function ChatLayout({ content, footer }: ChatLayoutProps) {
   return (
     <StickToBottom>
       <StickyToBottomContent
