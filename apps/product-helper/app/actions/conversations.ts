@@ -1,9 +1,10 @@
 'use server';
 
 import { db } from '@/lib/db/drizzle';
-import { conversations, projects, type NewConversation } from '@/lib/db/schema';
+import { conversations, projects, projectData, type NewConversation } from '@/lib/db/schema';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
-import { eq, and, asc } from 'drizzle-orm';
+import { eq, and, asc, sql } from 'drizzle-orm';
+import { extractProjectData, calculateCompleteness, mergeExtractionData } from '@/lib/langchain/agents/extraction-agent';
 
 /**
  * Save AI assistant message to conversations table
@@ -44,6 +45,92 @@ export async function saveAssistantMessage(
     };
 
     await db.insert(conversations).values(newMessage);
+
+    // Check if we should trigger extraction (every 5 messages)
+    const messageCountResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(conversations)
+      .where(eq(conversations.projectId, projectId));
+
+    const messageCount = Number(messageCountResult[0]?.count || 0);
+    const EXTRACTION_INTERVAL = 5;
+    const shouldExtract = messageCount % EXTRACTION_INTERVAL === 0;
+
+    if (shouldExtract) {
+      try {
+        // Load conversation history for extraction
+        const history = await db.query.conversations.findMany({
+          where: eq(conversations.projectId, projectId),
+          orderBy: [asc(conversations.createdAt)],
+        });
+
+        // Format conversation history
+        const conversationText = history
+          .map((msg) => `${msg.role}: ${msg.content}`)
+          .join('\n');
+
+        // Run extraction agent
+        console.log(`[Extraction] Triggering for project ${projectId} (${messageCount} messages)`);
+
+        const extraction = await extractProjectData(
+          conversationText,
+          project.name,
+          project.vision
+        );
+
+        // Load existing data for merging
+        const existingData = await db.query.projectData.findFirst({
+          where: eq(projectData.projectId, projectId),
+        });
+
+        // Merge with existing data
+        const mergedData = existingData
+          ? mergeExtractionData(
+              {
+                actors: (existingData.actors as any) || [],
+                useCases: (existingData.useCases as any) || [],
+                systemBoundaries: (existingData.systemBoundaries as any) || { internal: [], external: [] },
+                dataEntities: (existingData.dataEntities as any) || [],
+              },
+              extraction
+            )
+          : extraction;
+
+        // Calculate completeness
+        const newCompleteness = calculateCompleteness(mergedData);
+
+        // Upsert projectData
+        if (existingData) {
+          await db
+            .update(projectData)
+            .set({
+              actors: mergedData.actors as any,
+              useCases: mergedData.useCases as any,
+              systemBoundaries: mergedData.systemBoundaries as any,
+              dataEntities: mergedData.dataEntities as any,
+              completeness: newCompleteness,
+              lastExtractedAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(projectData.projectId, projectId));
+        } else {
+          await db.insert(projectData).values({
+            projectId,
+            actors: mergedData.actors as any,
+            useCases: mergedData.useCases as any,
+            systemBoundaries: mergedData.systemBoundaries as any,
+            dataEntities: mergedData.dataEntities as any,
+            completeness: newCompleteness,
+            lastExtractedAt: new Date(),
+          });
+        }
+
+        console.log(`[Extraction] Complete for project ${projectId}: ${newCompleteness}% completeness`);
+      } catch (extractionError) {
+        console.error('[Extraction] Error:', extractionError);
+        // Don't fail the entire request if extraction fails
+      }
+    }
 
     return { success: true };
   } catch (error) {

@@ -79,6 +79,10 @@ Ask a single, focused question to move the conversation forward. Be specific and
 export const extractionPrompt = PromptTemplate.fromTemplate(`
 Analyze this conversation between a user and AI about a product, and extract structured PRD data.
 
+## Project Context
+Project Name: {projectName}
+Vision Statement: {projectVision}
+
 ## Conversation
 {conversationHistory}
 
@@ -86,24 +90,27 @@ Analyze this conversation between a user and AI about a product, and extract str
 Extract ALL mentioned information about:
 1. **Actors**: Identify all users, systems, and external entities mentioned
    - Include name, role, and description for each
-   - Infer roles if not explicitly stated
+   - Infer roles if not explicitly stated (e.g., if vision mentions "students", add Student as an actor)
 2. **Use Cases**: Identify all actions and workflows mentioned
-   - Name each use case clearly
+   - Name each use case clearly as verb phrases (e.g., "Login to System", "Create Report")
    - Link to the primary actor
-   - Include description
+   - Include description, trigger, and outcome if mentioned
 3. **System Boundaries**: Determine what's inside vs outside the system
-   - Internal: Components within the system
-   - External: External services, APIs, systems
+   - Internal: Components/features within the system boundary
+   - External: External services, APIs, third-party systems
+   - Use the vision statement to infer scope
 4. **Data Entities**: Identify all data objects mentioned
    - Include attributes for each entity
-   - Note relationships between entities
+   - Note relationships between entities (e.g., "User has many Orders")
 
 ## Requirements
 - Be thorough - extract ALL information, don't miss anything
 - Use exact terminology from the conversation
-- If information is implied but not explicit, infer intelligently
+- If information is implied but not explicit, infer intelligently from the vision and context
 - Ensure all use cases are linked to actors
-- Generate unique IDs for use cases (UC1, UC2, etc.)
+- Generate unique IDs for use cases (UC1, UC2, UC3, etc.)
+- For actors, distinguish between Primary Users, Secondary Users, and External Systems
+- For system boundaries, consider the vision statement to determine scope
 
 Extract the data now.
 `);

@@ -147,6 +147,8 @@ export interface ChatWindowProps {
   placeholder?: string;
   /** Emoji to display for AI messages */
   emoji?: string;
+  /** Project ID for saving messages and triggering extraction */
+  projectId?: number;
   /** Additional chat configuration */
   chatOptions?: {
     /** Initial messages to display */
@@ -163,6 +165,7 @@ export function ChatWindow({
   emptyStateComponent,
   placeholder = "Ask me anything about your PRD...",
   emoji = "🤖",
+  projectId,
   chatOptions = {},
 }: ChatWindowProps) {
   // Initialize chat with Vercel AI SDK
@@ -178,8 +181,40 @@ export function ChatWindow({
         description: error.message,
       });
     },
-    onFinish: (message) => {
+    onFinish: async (message) => {
       console.log('Message finished:', message);
+
+      // Save assistant message and trigger extraction if projectId is provided
+      if (projectId && message.role === 'assistant') {
+        try {
+          const response = await fetch(`/api/chat/projects/${projectId}/save`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              content: message.content,
+              role: 'assistant',
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to save message');
+          }
+
+          const data = await response.json();
+
+          // Show notification if data was extracted
+          if (data.extracted) {
+            toast.success('Data Extracted!', {
+              description: `Project is now ${data.completeness}% complete`,
+            });
+          }
+        } catch (error) {
+          console.error('Error saving message:', error);
+          // Don't show error toast - saving is background operation
+        }
+      }
     },
   });
 
