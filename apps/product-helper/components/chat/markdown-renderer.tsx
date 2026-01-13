@@ -2,17 +2,7 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { DiagramViewer } from '@/components/diagrams/diagram-viewer';
-
-/**
- * Detect diagram type from mermaid syntax
- */
-function detectDiagramType(syntax: string): 'context' | 'useCase' | 'class' {
-  const firstLine = syntax.trim().split('\n')[0].toLowerCase();
-  if (firstLine.includes('classdiagram')) return 'class';
-  if (firstLine.includes('graph lr') || firstLine.includes('usecase')) return 'useCase';
-  return 'context'; // Default for graph TD, flowchart, etc.
-}
+import { InlineMermaid } from '@/components/chat/inline-mermaid';
 
 /**
  * Markdown Renderer Component
@@ -71,17 +61,9 @@ export function MarkdownRenderer({ content }: { content: string }) {
           const language = match ? match[1] : '';
           const codeContent = String(children).replace(/\n$/, '');
 
-          // Render mermaid diagrams with DiagramViewer
+          // Render mermaid diagrams inline
           if (!inline && language === 'mermaid') {
-            return (
-              <div className="my-4">
-                <DiagramViewer
-                  syntax={codeContent}
-                  type={detectDiagramType(codeContent)}
-                  title="Generated Diagram"
-                />
-              </div>
-            );
+            return <InlineMermaid syntax={codeContent} />;
           }
 
           if (inline) {
