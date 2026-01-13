@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+
+// Track initialization
+let isInitialized = false;
 
 interface InlineMermaidProps {
   syntax: string;
@@ -9,106 +12,90 @@ interface InlineMermaidProps {
 
 /**
  * Lightweight inline mermaid renderer for chat messages
- * Uses mermaid.run() API which is more reliable than mermaid.render()
  */
 export function InlineMermaid({ syntax }: InlineMermaidProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [svgContent, setSvgContent] = useState<string>('');
   const [retryCount, setRetryCount] = useState(0);
 
-  // Initialize mermaid on first use
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'default',
-      securityLevel: 'loose',
-      fontFamily: 'Inter, system-ui, sans-serif',
-    });
-  }, []);
-
-  const renderDiagram = useCallback(async () => {
-    if (!syntax || syntax.trim().length < 10) {
-      setStatus('error');
-      setErrorMessage('Invalid diagram syntax');
-      return;
+    // Initialize mermaid once
+    if (!isInitialized) {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        logLevel: 'error',
+      });
+      isInitialized = true;
     }
 
-    // Basic validation
-    const trimmed = syntax.trim().toLowerCase();
-    const validStarts = ['graph', 'flowchart', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'gantt', 'pie', 'journey'];
-    if (!validStarts.some(s => trimmed.startsWith(s))) {
-      setStatus('error');
-      setErrorMessage('Invalid mermaid diagram type');
-      return;
-    }
+    // Render the diagram
+    let cancelled = false;
 
-    setStatus('loading');
-
-    // Create a hidden element in the actual DOM for mermaid to render into
-    const hiddenContainer = document.createElement('div');
-    hiddenContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
-
-    const mermaidElement = document.createElement('pre');
-    mermaidElement.className = 'mermaid';
-    mermaidElement.textContent = syntax;
-
-    hiddenContainer.appendChild(mermaidElement);
-    document.body.appendChild(hiddenContainer);
-
-    let timeoutId: NodeJS.Timeout;
-    let completed = false;
-
-    try {
-      // Set up timeout
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          if (!completed) {
-            reject(new Error('Rendering timed out after 8 seconds'));
-          }
-        }, 8000);
-      });
-
-      // Use mermaid.run() which is more reliable than mermaid.render()
-      const renderPromise = mermaid.run({
-        nodes: [mermaidElement],
-        suppressErrors: false,
-      });
-
-      await Promise.race([renderPromise, timeoutPromise]);
-      completed = true;
-      clearTimeout(timeoutId!);
-
-      // Extract the rendered SVG
-      const svg = mermaidElement.querySelector('svg');
-      if (svg && containerRef.current) {
-        // Clone and insert the SVG
-        const clonedSvg = svg.cloneNode(true) as SVGElement;
-        clonedSvg.style.maxWidth = '100%';
-        clonedSvg.style.height = 'auto';
-        containerRef.current.innerHTML = '';
-        containerRef.current.appendChild(clonedSvg);
-        setStatus('success');
-      } else {
-        throw new Error('No SVG generated');
+    const render = async () => {
+      if (!syntax || syntax.trim().length < 10) {
+        setStatus('error');
+        setErrorMessage('No diagram syntax provided');
+        return;
       }
-    } catch (err) {
-      completed = true;
-      clearTimeout(timeoutId!);
-      console.error('Mermaid render error:', err);
-      setStatus('error');
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to render diagram');
-    } finally {
-      // Clean up hidden element
-      if (document.body.contains(hiddenContainer)) {
-        document.body.removeChild(hiddenContainer);
+
+      // Basic validation
+      const trimmed = syntax.trim().toLowerCase();
+      const validStarts = ['graph', 'flowchart', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'gantt', 'pie', 'journey', 'mindmap', 'timeline', 'sankey', 'xy'];
+      if (!validStarts.some(s => trimmed.startsWith(s))) {
+        setStatus('error');
+        setErrorMessage(`Invalid diagram type. Must start with: ${validStarts.slice(0, 5).join(', ')}...`);
+        return;
+      }
+
+      setStatus('loading');
+
+      // Generate unique ID
+      const id = `mermaid-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+      try {
+        // Use mermaid.render() which returns SVG string directly
+        const { svg } = await mermaid.render(id, syntax);
+
+        if (!cancelled) {
+          setSvgContent(svg);
+          setStatus('success');
+        }
+      } catch (err) {
+        console.error('Mermaid render error:', err);
+        if (!cancelled) {
+          setStatus('error');
+          setErrorMessage(err instanceof Error ? err.message : 'Failed to render diagram');
+        }
+      }
+    };
+
+    // Small delay to let React finish rendering
+    const timeoutId = setTimeout(render, 50);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [syntax, retryCount]);
+
+  // Update container when SVG changes
+  useEffect(() => {
+    if (svgContent && containerRef.current) {
+      containerRef.current.innerHTML = svgContent;
+      // Make SVG responsive
+      const svg = containerRef.current.querySelector('svg');
+      if (svg) {
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
+        svg.removeAttribute('height');
       }
     }
-  }, [syntax]);
-
-  useEffect(() => {
-    renderDiagram();
-  }, [renderDiagram, retryCount]);
+  }, [svgContent]);
 
   const handleRetry = () => {
     setRetryCount(c => c + 1);
@@ -117,7 +104,8 @@ export function InlineMermaid({ syntax }: InlineMermaidProps) {
   // Generate mermaid.live URL for external viewing
   const getMermaidLiveUrl = () => {
     try {
-      const encoded = btoa(encodeURIComponent(syntax));
+      // Use pako compression like mermaid.live does
+      const encoded = btoa(unescape(encodeURIComponent(syntax)));
       return `https://mermaid.live/edit#base64:${encoded}`;
     } catch {
       return 'https://mermaid.live';
@@ -142,19 +130,19 @@ export function InlineMermaid({ syntax }: InlineMermaidProps) {
     return (
       <div className="my-3 space-y-2">
         <div
-          className="p-3 rounded-lg border text-sm flex items-center justify-between"
+          className="p-3 rounded-lg border text-sm flex items-center justify-between gap-2"
           style={{
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             borderColor: 'rgba(239, 68, 68, 0.3)',
           }}
         >
-          <span style={{ color: 'rgb(239, 68, 68)' }}>
+          <span style={{ color: 'rgb(239, 68, 68)' }} className="flex-1">
             Diagram error: {errorMessage}
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={handleRetry}
-              className="px-2 py-1 text-xs rounded hover:bg-white/10"
+              className="px-2 py-1 text-xs rounded hover:bg-black/5"
               style={{ color: 'var(--accent)' }}
             >
               Retry
@@ -163,7 +151,7 @@ export function InlineMermaid({ syntax }: InlineMermaidProps) {
               href={getMermaidLiveUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-2 py-1 text-xs rounded hover:bg-white/10"
+              className="px-2 py-1 text-xs rounded hover:bg-black/5"
               style={{ color: 'var(--accent)' }}
             >
               Open in Mermaid Live
@@ -175,7 +163,7 @@ export function InlineMermaid({ syntax }: InlineMermaidProps) {
             Show syntax
           </summary>
           <pre
-            className="mt-1 p-2 rounded overflow-x-auto"
+            className="mt-1 p-2 rounded overflow-x-auto whitespace-pre-wrap"
             style={{
               fontFamily: 'var(--font-heading)',
               backgroundColor: 'var(--bg-secondary)',
