@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProjectById } from '@/app/actions/projects';
-import { MessageSquare, Edit, TrendingUp, Calendar, User, Database, GitBranch } from 'lucide-react';
+import { MessageSquare, Edit, TrendingUp, Calendar, User, Database, GitBranch, FileDown } from 'lucide-react';
 import { DeleteProjectButton } from './delete-button';
 import { ValidationReport } from '@/components/validation/validation-report';
+import { ExportButton } from '@/components/export/export-button';
 
 const statusColors = {
   intake: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
@@ -127,7 +128,7 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button
               asChild
               style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
@@ -181,6 +182,21 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
                 </div>
               </Link>
             </Button>
+
+            <div className="h-auto py-4 flex items-center justify-center">
+              <div className="flex flex-col items-center w-full">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileDown className="h-5 w-5" />
+                  <span className="font-semibold">Export PRD</span>
+                </div>
+                <ExportButton
+                  projectId={project.id}
+                  projectName={project.name}
+                  variant="outline"
+                  size="sm"
+                />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

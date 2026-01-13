@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { StreamingTextResponse } from 'ai';
-import { HttpResponseOutputParser } from 'langchain/output_parsers';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { getUser } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
@@ -79,7 +79,7 @@ Respond helpfully and conversationally.
     // Create chain: prompt -> LLM -> output parser
     const chain = prompt
       .pipe(streamingLLM)
-      .pipe(new HttpResponseOutputParser());
+      .pipe(new StringOutputParser());
 
     // Stream the response
     const stream = await chain.stream({

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { StreamingTextResponse } from 'ai';
 import { ChatOpenAI } from '@langchain/openai';
-import { HttpResponseOutputParser } from 'langchain/output_parsers';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
 
 /**
@@ -47,7 +47,7 @@ Respond helpfully and ask follow-up questions when appropriate.`
 
     const chain = prompt
       .pipe(llm)
-      .pipe(new HttpResponseOutputParser());
+      .pipe(new StringOutputParser());
 
     const stream = await chain.stream({
       input: lastMessage.content,
