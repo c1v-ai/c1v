@@ -61,7 +61,17 @@ export function DiagramViewer({
 
   // Render diagram when syntax changes
   useEffect(() => {
-    if (!syntax || !containerRef.current) return;
+    // Handle empty or invalid syntax
+    if (!syntax || syntax.trim().length < 10) {
+      setIsRendering(false);
+      setError('No diagram data available yet. Complete the chat to gather requirements.');
+      return;
+    }
+
+    // Wait for container ref
+    if (!containerRef.current) {
+      return;
+    }
 
     const renderDiagram = async () => {
       try {
@@ -69,10 +79,18 @@ export function DiagramViewer({
         setError(null);
 
         // Generate unique ID for this diagram
-        const id = `diagram-${type}-${Date.now()}`;
+        const id = `diagram-${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-        // Render Mermaid diagram
-        const { svg } = await mermaid.render(id, syntax);
+        // Add timeout to prevent infinite hanging
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Diagram rendering timed out')), 10000);
+        });
+
+        // Render Mermaid diagram with timeout
+        const { svg } = await Promise.race([
+          mermaid.render(id, syntax),
+          timeoutPromise
+        ]);
 
         setSvgContent(svg);
       } catch (err) {
