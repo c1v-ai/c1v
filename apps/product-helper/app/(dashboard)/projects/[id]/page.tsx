@@ -1,16 +1,13 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProjectById } from '@/app/actions/projects';
-import { ArrowLeft, MessageSquare, Trash2, Edit, TrendingUp, Calendar, User } from 'lucide-react';
+import { MessageSquare, Edit, TrendingUp, Calendar, User, Database, GitBranch } from 'lucide-react';
 import { DeleteProjectButton } from './delete-button';
 import { ValidationReport } from '@/components/validation/validation-report';
-import { ExtractedDataDisplay } from '@/components/extracted-data/data-display';
-import { DiagramGrid } from '@/components/diagrams/diagram-viewer';
-import { generateDiagram } from '@/lib/diagrams/generators';
 
 const statusColors = {
   intake: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
@@ -130,7 +127,7 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button
               asChild
               style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
@@ -143,26 +140,46 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
                     <span className="font-semibold">Start Chat</span>
                   </div>
                   <span className="text-xs opacity-90">
-                    Continue requirements gathering (Phase 8)
+                    Continue requirements gathering
                   </span>
                 </div>
               </Link>
             </Button>
 
             <Button
+              asChild
               variant="outline"
-              disabled
-              className="h-auto py-4 cursor-not-allowed opacity-50"
+              className="h-auto py-4"
             >
-              <div className="flex flex-col items-start w-full">
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="h-5 w-5" />
-                  <span className="font-semibold">View Data</span>
+              <Link href={`/projects/${project.id}/data`}>
+                <div className="flex flex-col items-start w-full">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Database className="h-5 w-5" />
+                    <span className="font-semibold">View Data</span>
+                  </div>
+                  <span className="text-xs">
+                    Extracted actors, use cases, entities
+                  </span>
                 </div>
-                <span className="text-xs">
-                  Extracted data and artifacts (Phase 10)
-                </span>
-              </div>
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4"
+            >
+              <Link href={`/projects/${project.id}/diagrams`}>
+                <div className="flex flex-col items-start w-full">
+                  <div className="flex items-center gap-2 mb-1">
+                    <GitBranch className="h-5 w-5" />
+                    <span className="font-semibold">View Diagrams</span>
+                  </div>
+                  <span className="text-xs">
+                    Context, use case, and class diagrams
+                  </span>
+                </div>
+              </Link>
             </Button>
           </div>
         </CardContent>
@@ -205,50 +222,6 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
         </CardContent>
       </Card>
 
-      {/* Extracted PRD Data */}
-      <ExtractedDataDisplay
-        actors={project.projectData?.actors as any}
-        useCases={project.projectData?.useCases as any}
-        systemBoundaries={project.projectData?.systemBoundaries as any}
-        dataEntities={project.projectData?.dataEntities as any}
-        completeness={project.projectData?.completeness ?? undefined}
-        lastExtractedAt={project.projectData?.lastExtractedAt ?? undefined}
-      />
-
-      {/* PRD Diagrams (Phase 11) */}
-      {project.projectData && (
-        <DiagramGrid
-          diagrams={[
-            {
-              type: 'context' as const,
-              syntax: generateDiagram('context', {
-                projectName: project.name,
-                systemBoundaries: project.projectData.systemBoundaries as any,
-              }),
-              title: 'Context Diagram',
-              description: 'System boundaries showing internal components and external dependencies',
-            },
-            {
-              type: 'useCase' as const,
-              syntax: generateDiagram('useCase', {
-                actors: project.projectData.actors as any,
-                useCases: project.projectData.useCases as any,
-              }),
-              title: 'Use Case Diagram',
-              description: 'Actors and their associated use cases',
-            },
-            {
-              type: 'class' as const,
-              syntax: generateDiagram('class', {
-                dataEntities: project.projectData.dataEntities as any,
-              }),
-              title: 'Class Diagram',
-              description: 'Data model showing entities, attributes, and relationships',
-            },
-          ]}
-        />
-      )}
-
       {/* Validation Report */}
       <ValidationReport
         projectId={project.id}
@@ -274,13 +247,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <section className="flex-1 p-4 lg:p-8">
       <div className="max-w-5xl mx-auto">
-        <Button variant="ghost" asChild className="mb-6">
-          <Link href="/projects">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Projects
-          </Link>
-        </Button>
-
         <Suspense fallback={<ProjectDetailSkeleton />}>
           <ProjectDetail projectId={projectId} />
         </Suspense>

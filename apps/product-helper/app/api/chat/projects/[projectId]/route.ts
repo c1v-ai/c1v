@@ -14,7 +14,8 @@ import { eq, and, asc } from 'drizzle-orm';
  * Uses intakePrompt for conversational requirements gathering
  */
 
-export const runtime = 'edge';
+// Using Node.js runtime because this route uses Drizzle ORM with database operations
+export const runtime = 'nodejs';
 
 /**
  * POST /api/chat/projects/[projectId]

@@ -24,7 +24,7 @@ import { extractionPrompt } from '../prompts';
  * - Max tokens: 3000 to handle large conversations
  */
 const extractionLLM = new ChatOpenAI({
-  modelName: 'gpt-4-turbo',
+  modelName: 'gpt-4o',
   temperature: 0,
   maxTokens: 3000,
 });

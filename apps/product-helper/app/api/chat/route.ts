@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { StreamingTextResponse } from 'ai';
 import { HttpResponseOutputParser } from 'langchain/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { getUser } from '@/lib/auth/session';
+import { getUser } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
 import { systemPrompt } from '@/lib/langchain/prompts';
 
@@ -12,7 +12,8 @@ import { systemPrompt } from '@/lib/langchain/prompts';
  * Uses LangChain + GPT-4 Turbo for PRD assistance
  */
 
-export const runtime = 'edge';
+// Using Node.js runtime because this route uses Drizzle ORM via getUser query
+export const runtime = 'nodejs';
 
 /**
  * POST /api/chat

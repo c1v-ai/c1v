@@ -5,7 +5,7 @@ import { ChatOpenAI } from '@langchain/openai';
  * Uses GPT-4 Turbo for high-quality responses
  */
 export const llm = new ChatOpenAI({
-  modelName: 'gpt-4-turbo',
+  modelName: 'gpt-4o',
   temperature: 0.7,
   maxTokens: 2000,
   openAIApiKey: process.env.OPENAI_API_KEY,
@@ -16,7 +16,7 @@ export const llm = new ChatOpenAI({
  * Same model but with streaming enabled
  */
 export const streamingLLM = new ChatOpenAI({
-  modelName: 'gpt-4-turbo',
+  modelName: 'gpt-4o',
   temperature: 0.7,
   maxTokens: 2000,
   streaming: true,
@@ -28,7 +28,7 @@ export const streamingLLM = new ChatOpenAI({
  * Temperature 0 for consistent, repeatable outputs
  */
 export const extractionLLM = new ChatOpenAI({
-  modelName: 'gpt-4-turbo',
+  modelName: 'gpt-4o',
   temperature: 0,
   maxTokens: 3000,
   openAIApiKey: process.env.OPENAI_API_KEY,

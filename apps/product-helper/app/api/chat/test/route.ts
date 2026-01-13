@@ -14,7 +14,7 @@ export const runtime = 'edge';
 
 // Simple test LLM configuration
 const llm = new ChatOpenAI({
-  modelName: 'gpt-4-turbo',
+  modelName: 'gpt-4o',
   temperature: 0.7,
   streaming: true,
   openAIApiKey: process.env.OPENAI_API_KEY,

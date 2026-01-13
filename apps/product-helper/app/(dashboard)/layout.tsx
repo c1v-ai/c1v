@@ -34,7 +34,8 @@ function UserMenu() {
       <>
         <Link
           href="/pricing"
-          className="text-sm font-medium text-gray-700 hover:text-gray-900"
+          className="text-sm font-medium"
+          style={{ color: 'var(--text-primary)' }}
         >
           Pricing
         </Link>
@@ -94,11 +95,11 @@ function Header() {
   const { data: user } = useSWR<User>('/api/user', fetcher);
 
   return (
-    <header className="border-b border-gray-200">
+    <header className="border-b" style={{ borderColor: 'var(--border)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center">
           <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold text-gray-900">Product Helper</span>
+          <span className="ml-2 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Product Helper</span>
         </Link>
 
         {/* Navigation - only show when user is logged in */}
@@ -106,21 +107,24 @@ function Header() {
           <nav className="hidden md:flex items-center space-x-6">
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2"
+              className="text-sm font-medium flex items-center gap-2"
+              style={{ color: 'var(--text-primary)' }}
             >
               <Home className="h-4 w-4" />
               Dashboard
             </Link>
             <Link
               href="/projects"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2"
+              className="text-sm font-medium flex items-center gap-2"
+              style={{ color: 'var(--text-primary)' }}
             >
               <FolderOpen className="h-4 w-4" />
               Projects
             </Link>
             <Link
               href="/chat"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2"
+              className="text-sm font-medium flex items-center gap-2"
+              style={{ color: 'var(--text-primary)' }}
             >
               <MessageSquare className="h-4 w-4" />
               Chat
