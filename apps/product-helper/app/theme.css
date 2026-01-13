@@ -11,11 +11,8 @@
 
   /* sensible defaults */
   --radius: 10px;
-  --border: rgba(255, 255, 255, 0.10);
-}
 
-/* Light theme */
-[data-theme="light"] {
+  /* Light theme (default) */
   --bg-primary: #FFFFFF;
   --bg-secondary: #F7F9FC;
   --text-primary: #1F2937;
@@ -26,8 +23,8 @@
   --shadow: 0 10px 30px rgba(17, 24, 39, 0.10);
 }
 
-/* Dark theme */
-[data-theme="dark"] {
+/* Dark theme - uses .dark class (Tailwind convention) */
+.dark {
   --bg-primary: #0A2F35;
   --bg-secondary: #0D3D47;
   --text-primary: #FFFFFF;
@@ -78,10 +75,11 @@ a:hover {
   text-decoration: underline;
 }
 
-.button, button, .btn {
+/* Primary buttons get white text */
+.button, .btn {
   font-family: var(--font-heading);
   background: var(--accent);
-  color: #fff !important;
+  color: #fff;
   border: 1px solid transparent;
   border-radius: calc(var(--radius) - 2px);
   padding: 10px 14px;
@@ -92,26 +90,6 @@ a:hover {
   background: transparent;
   border-color: var(--border);
   color: var(--text-primary);
-}
-
-/* Force shadcn button text to be visible */
-button[data-slot="button"] {
-  color: #fff !important;
-}
-
-button[data-slot="button"]:not([class*="variant"]) {
-  background: var(--accent) !important;
-}
-
-/* Outline and ghost variants need dark text */
-button[data-slot="button"][class*="outline"],
-button[data-slot="button"][class*="ghost"] {
-  color: var(--text-primary) !important;
-}
-
-button[data-slot="button"][class*="outline"]:hover,
-button[data-slot="button"][class*="ghost"]:hover {
-  color: #fff !important;
 }
 
 /* Fix dropdown menu text visibility */
