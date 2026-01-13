@@ -81,7 +81,7 @@ a:hover {
 .button, button, .btn {
   font-family: var(--font-heading);
   background: var(--accent);
-  color: #fff;
+  color: #fff !important;
   border: 1px solid transparent;
   border-radius: calc(var(--radius) - 2px);
   padding: 10px 14px;
@@ -92,6 +92,47 @@ a:hover {
   background: transparent;
   border-color: var(--border);
   color: var(--text-primary);
+}
+
+/* Force shadcn button text to be visible */
+button[data-slot="button"] {
+  color: #fff !important;
+}
+
+button[data-slot="button"]:not([class*="variant"]) {
+  background: var(--accent) !important;
+}
+
+/* Outline and ghost variants need dark text */
+button[data-slot="button"][class*="outline"],
+button[data-slot="button"][class*="ghost"] {
+  color: var(--text-primary) !important;
+}
+
+button[data-slot="button"][class*="outline"]:hover,
+button[data-slot="button"][class*="ghost"]:hover {
+  color: #fff !important;
+}
+
+/* Fix dropdown menu text visibility */
+[data-slot="dropdown-menu-content"] {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+}
+
+[data-slot="dropdown-menu-item"] {
+  color: var(--text-primary) !important;
+}
+
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="dropdown-menu-item"]:focus {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
+[data-slot="dropdown-menu-item"] svg {
+  color: currentColor !important;
 }
 
 /* Forms */

@@ -21,7 +21,8 @@ import { eq, and, asc, sql } from 'drizzle-orm';
 import { extractProjectData, calculateCompleteness, mergeExtractionData } from '@/lib/langchain/agents/extraction-agent';
 import { z } from 'zod';
 
-export const runtime = 'edge';
+// Using Node.js runtime because this route uses Drizzle ORM with database operations
+export const runtime = 'nodejs';
 
 /**
  * Request schema validation
