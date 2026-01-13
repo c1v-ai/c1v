@@ -18,6 +18,25 @@ function DiagramsSkeleton() {
   );
 }
 
+/**
+ * Map artifact type to display info
+ */
+function getArtifactDisplayInfo(type: string): { title: string; description: string; displayType: 'context' | 'useCase' | 'class' } {
+  switch (type) {
+    case 'use_case_diagram':
+      return { title: 'Use Case Diagram', description: 'Actors and their associated use cases', displayType: 'useCase' };
+    case 'class_diagram':
+      return { title: 'Class Diagram', description: 'Data model showing entities and relationships', displayType: 'class' };
+    case 'sequence_diagram':
+      return { title: 'Sequence Diagram', description: 'Interaction flow between components', displayType: 'useCase' };
+    case 'activity_diagram':
+      return { title: 'Activity Diagram', description: 'Workflow and activity flow', displayType: 'context' };
+    case 'context_diagram':
+    default:
+      return { title: 'Context Diagram', description: 'System boundary with actors and external entities', displayType: 'context' };
+  }
+}
+
 async function DiagramsContent({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
 
@@ -25,8 +44,25 @@ async function DiagramsContent({ projectId }: { projectId: number }) {
     notFound();
   }
 
-  // Generate diagrams from project data
-  const diagrams = project.projectData
+  // First, get diagrams from artifacts table (AI-generated)
+  const artifactDiagrams = (project.artifacts || []).map((artifact, index) => {
+    const content = artifact.content as { mermaid?: string } | null;
+    const displayInfo = getArtifactDisplayInfo(artifact.type);
+    return {
+      type: displayInfo.displayType,
+      syntax: content?.mermaid || '',
+      title: `${displayInfo.title} #${index + 1}`,
+      description: displayInfo.description,
+    };
+  }).filter(d => d.syntax); // Only include diagrams with actual syntax
+
+  // If we have AI-generated diagrams, show those
+  if (artifactDiagrams.length > 0) {
+    return <DiagramGrid diagrams={artifactDiagrams} />;
+  }
+
+  // Fallback: Generate diagrams from project data (if no AI diagrams yet)
+  const generatedDiagrams = project.projectData
     ? [
         {
           type: 'context' as const,
@@ -59,7 +95,7 @@ async function DiagramsContent({ projectId }: { projectId: number }) {
       ]
     : [];
 
-  return <DiagramGrid diagrams={diagrams} />;
+  return <DiagramGrid diagrams={generatedDiagrams} />;
 }
 
 interface DiagramsPageProps {

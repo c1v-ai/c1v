@@ -199,9 +199,19 @@ ${lastMessage.content}
 
 ## Your Response
 Either:
-A) Generate the artifact if you have enough data (preferred) - use Mermaid syntax
+A) Generate the artifact if you have enough data (preferred)
 B) Make an inference and ask user to confirm
 C) Ask ONE specific question (last resort)
+
+## DIAGRAM FORMAT (CRITICAL)
+When generating a diagram, you MUST wrap it in markdown code fences with the mermaid language identifier:
+
+\`\`\`mermaid
+graph TD;
+    ActorA -->|action| SystemB;
+\`\`\`
+
+NEVER output raw mermaid syntax without the code fences. The code fences are required for rendering.
 
 Keep response under 3 sentences unless generating a diagram.`;
 
