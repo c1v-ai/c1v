@@ -140,14 +140,55 @@ export function DiagramViewer({
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        // Get dimensions from SVG - handle missing width/height by using viewBox
+        let width = parseInt(svg.getAttribute('width') || '0', 10);
+        let height = parseInt(svg.getAttribute('height') || '0', 10);
+
+        // Fallback to viewBox dimensions if width/height not set
+        if (width === 0 || height === 0) {
+          const viewBox = svg.getAttribute('viewBox');
+          if (viewBox) {
+            const parts = viewBox.split(/[\s,]+/);
+            if (parts.length >= 4) {
+              width = parseInt(parts[2], 10) || 800;
+              height = parseInt(parts[3], 10) || 600;
+            }
+          }
+          // Last resort fallback
+          if (width === 0) width = 800;
+          if (height === 0) height = 600;
+
+          // Set dimensions on SVG for proper rendering
+          svg.setAttribute('width', String(width));
+          svg.setAttribute('height', String(height));
+        }
+
         const svgData = new XMLSerializer().serializeToString(svg);
         const img = new Image();
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(svgBlob);
 
+        // Set up timeout to handle stalled image loads
+        const timeout = setTimeout(() => {
+          URL.revokeObjectURL(url);
+          toast.error('PNG export timed out');
+        }, 10000);
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(url);
+          toast.error('Failed to convert diagram to PNG');
+        };
+
         img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
+          clearTimeout(timeout);
+
+          // Use our calculated dimensions if img dimensions are 0
+          const imgWidth = img.width > 0 ? img.width : width;
+          const imgHeight = img.height > 0 ? img.height : height;
+
+          canvas.width = imgWidth;
+          canvas.height = imgHeight;
           ctx.fillStyle = 'white';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0);
@@ -161,8 +202,10 @@ export function DiagramViewer({
               link.click();
               URL.revokeObjectURL(pngUrl);
               toast.success('Diagram exported as PNG');
+            } else {
+              toast.error('Failed to generate PNG blob');
             }
-          });
+          }, 'image/png', 1.0);
 
           URL.revokeObjectURL(url);
         };

@@ -57,6 +57,13 @@ export const createProject = validatedActionWithUser(
       return { error: 'Team not found' };
     }
 
+    // Check subscription status - allow active, trialing, or free tier (null/undefined means free)
+    const subscriptionStatus = (team as any).subscriptionStatus;
+    const allowedStatuses = ['active', 'trialing', null, undefined, ''];
+    if (subscriptionStatus && !allowedStatuses.includes(subscriptionStatus)) {
+      return { error: 'Active subscription required to create projects. Please upgrade your plan.' };
+    }
+
     try {
       const newProject: NewProject = {
         name: data.name,
