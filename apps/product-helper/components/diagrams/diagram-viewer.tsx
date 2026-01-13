@@ -68,10 +68,24 @@ export function DiagramViewer({
       return;
     }
 
+    // Basic validation - check for common mermaid diagram declarations
+    const trimmedSyntax = syntax.trim().toLowerCase();
+    const validStartPatterns = ['graph', 'flowchart', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'gantt', 'pie', 'journey'];
+    const hasValidStart = validStartPatterns.some(p => trimmedSyntax.startsWith(p));
+
+    if (!hasValidStart) {
+      setIsRendering(false);
+      setError('Invalid diagram syntax. Expected mermaid diagram declaration.');
+      return;
+    }
+
     // Wait for container ref
     if (!containerRef.current) {
       return;
     }
+
+    let isCancelled = false;
+    let timeoutId: NodeJS.Timeout;
 
     const renderDiagram = async () => {
       try {
@@ -81,27 +95,51 @@ export function DiagramViewer({
         // Generate unique ID for this diagram
         const id = `diagram-${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-        // Add timeout to prevent infinite hanging
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Diagram rendering timed out')), 10000);
-        });
+        // Set a hard timeout that will cancel and show error
+        timeoutId = setTimeout(() => {
+          if (!isCancelled) {
+            isCancelled = true;
+            setIsRendering(false);
+            setError('Diagram rendering timed out. The syntax may be invalid.');
+          }
+        }, 5000); // 5 second timeout
 
-        // Render Mermaid diagram with timeout
-        const { svg } = await Promise.race([
-          mermaid.render(id, syntax),
-          timeoutPromise
-        ]);
+        // First, try to parse/validate the syntax
+        try {
+          await mermaid.parse(syntax);
+        } catch (parseErr) {
+          clearTimeout(timeoutId);
+          if (!isCancelled) {
+            setIsRendering(false);
+            setError(`Invalid mermaid syntax: ${parseErr instanceof Error ? parseErr.message : 'Parse error'}`);
+          }
+          return;
+        }
 
-        setSvgContent(svg);
+        // If parse succeeded, render
+        const { svg } = await mermaid.render(id, syntax);
+
+        clearTimeout(timeoutId);
+        if (!isCancelled) {
+          setSvgContent(svg);
+          setIsRendering(false);
+        }
       } catch (err) {
-        console.error('Mermaid rendering error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to render diagram');
-      } finally {
-        setIsRendering(false);
+        clearTimeout(timeoutId);
+        if (!isCancelled) {
+          console.error('Mermaid rendering error:', err);
+          setError(err instanceof Error ? err.message : 'Failed to render diagram');
+          setIsRendering(false);
+        }
       }
     };
 
     renderDiagram();
+
+    return () => {
+      isCancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [syntax, type]);
 
   // Update container with SVG
@@ -244,12 +282,32 @@ export function DiagramViewer({
           {description && <CardDescription>{description}</CardDescription>}
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-3 p-6 border border-destructive/50 rounded-lg bg-destructive/10">
-            <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
-            <div>
-              <p className="font-semibold text-destructive">Failed to render diagram</p>
-              <p className="text-sm text-muted-foreground mt-1">{error}</p>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 border border-destructive/50 rounded-lg bg-destructive/10">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-destructive">Failed to render diagram</p>
+                <p className="text-sm text-muted-foreground mt-1">{error}</p>
+              </div>
             </div>
+            {/* Show raw syntax so user can at least see what was generated */}
+            {syntax && syntax.length > 10 && (
+              <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                  Show raw mermaid syntax
+                </summary>
+                <pre
+                  className="mt-2 p-3 rounded text-xs overflow-x-auto"
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  {syntax}
+                </pre>
+              </details>
+            )}
           </div>
         </CardContent>
       </Card>
