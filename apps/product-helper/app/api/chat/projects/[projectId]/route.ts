@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
 import { StreamingTextResponse } from 'ai';
-import { HttpResponseOutputParser } from 'langchain/output_parsers';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
-import { intakePrompt } from '@/lib/langchain/prompts';
+import { SR_CORNELL_PIPELINE } from '@/lib/langchain/prompts';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, type NewConversation } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
@@ -121,55 +121,92 @@ export async function POST(
       .map((conv) => `${conv.role === 'user' ? 'User' : 'Assistant'}: ${conv.content}`)
       .join('\n');
 
-    // Get completeness score
+    // Get completeness score and extracted data
     const completeness = project.projectData?.completeness || 0;
+    const projectData = project.projectData;
 
-    // Determine focus area based on completeness
-    let focusArea = 'Focus on DATA ENTITIES and relationships.';
-    if (completeness < 25) {
-      focusArea = 'Focus on identifying PRIMARY ACTORS and their roles.';
-    } else if (completeness < 50) {
-      focusArea = 'Focus on main USE CASES for each actor.';
-    } else if (completeness < 75) {
-      focusArea = 'Focus on SYSTEM BOUNDARIES and external integrations.';
-    }
+    // Parse extracted data from projectData
+    const extractedActors = formatExtractedList(projectData?.actors);
+    const extractedUseCases = formatExtractedList(projectData?.useCases);
+    const extractedExternalSystems = formatExtractedList(projectData?.systemBoundaries, 'external');
+    const extractedInScope = formatExtractedList(projectData?.systemBoundaries, 'internal');
+    const extractedOutOfScope = projectData?.systemBoundaries
+      ? (parseJsonField(projectData.systemBoundaries)?.outOfScope || []).join(', ') || 'None yet'
+      : 'None yet';
 
-    // Create simplified prompt without ICU MessageFormat syntax
-    const promptText = `You are a Product Requirements Document (PRD) assistant helping a product manager define their product.
+    // Determine current artifact based on completeness
+    let currentArtifact = 'context_diagram';
+    if (completeness >= 30) currentArtifact = 'use_case_diagram';
+    if (completeness >= 50) currentArtifact = 'scope_tree';
+    if (completeness >= 65) currentArtifact = 'ucbd';
+    if (completeness >= 80) currentArtifact = 'requirements_table';
+    if (completeness >= 90) currentArtifact = 'constants_table';
+    if (completeness >= 95) currentArtifact = 'sysml_activity_diagram';
 
-## Context
-Project Name: ${project.name}
-Vision Statement: ${project.vision}
-Current Completeness: ${completeness}%
+    // Build the SR-CORNELL aware prompt
+    const promptText = `You are a PRD assistant. Your job: collect MINIMUM data needed to generate artifacts, then GENERATE them.
 
-## Your Goal
-Extract the following information through conversational questions:
-1. **Actors**: Users, systems, external entities (need at least 2)
-2. **Use Cases**: What users can do (need at least 3)
-3. **System Boundaries**: What's in scope vs out of scope
-4. **Data Entities**: Objects and their relationships
+## Project Context
+Name: ${project.name}
+Vision: ${project.vision}
+Completeness: ${completeness}%
+Current Artifact: ${currentArtifact}
 
-## Conversation Guidelines
-- Ask ONE question at a time
-- Be conversational and friendly
-- Build on previous answers
-- Ask clarifying follow-ups
-- Don't ask about information already provided
+## CRITICAL RULES
 
-## Priority Based on Completeness
-${focusArea}
+### Rule 1: STOP TRIGGERS
+If user says ANY of: "nope", "no", "that's enough", "that's it", "done", "move on", "let's see"
+→ DO NOT ask another question
+→ Say "Got it, generating your ${currentArtifact.replace('_', ' ')}..." and produce the Mermaid diagram
+
+### Rule 2: GENERATE WHEN READY
+For Context Diagram, you need:
+- System name (have it: ${project.name})
+- At least 1 actor
+- At least 1 external system OR explicit "none"
+
+Once you have these → GENERATE THE DIAGRAM immediately. Don't keep asking.
+
+### Rule 3: ONE QUESTION MAX
+If you must ask, ask exactly ONE question. Never multiple.
+Better: make an assumption and ask "Does this look right?"
+
+### Rule 4: INFER > INTERROGATE
+From vision "${project.vision}", infer likely actors and systems.
+Show your inference: "Based on your vision, I'm assuming X and Y are your main users. Correct?"
+
+## Artifact Pipeline (SR-CORNELL sequence)
+1. Context Diagram ${currentArtifact === 'context_diagram' ? '← CURRENT' : completeness >= 30 ? '✓' : ''}
+2. Use Case Diagram ${currentArtifact === 'use_case_diagram' ? '← CURRENT' : completeness >= 50 ? '✓' : ''}
+3. Scope Tree ${currentArtifact === 'scope_tree' ? '← CURRENT' : completeness >= 65 ? '✓' : ''}
+4. UCBD ${currentArtifact === 'ucbd' ? '← CURRENT' : completeness >= 80 ? '✓' : ''}
+5. Requirements ${currentArtifact === 'requirements_table' ? '← CURRENT' : completeness >= 90 ? '✓' : ''}
+6. Constants ${currentArtifact === 'constants_table' ? '← CURRENT' : completeness >= 95 ? '✓' : ''}
+7. SysML Activity ${currentArtifact === 'sysml_activity_diagram' ? '← CURRENT' : ''}
+
+## Current Data Extracted
+Actors: ${extractedActors}
+Use Cases: ${extractedUseCases}
+External Systems: ${extractedExternalSystems}
+In Scope: ${extractedInScope}
+Out of Scope: ${extractedOutOfScope}
 
 ## Conversation History
 ${history || 'No previous conversation'}
 
-## User's Last Message
+## User's Message
 ${lastMessage.content}
 
 ## Your Response
-Ask a single, focused question to move the conversation forward. Be specific and reference the project context.`;
+Either:
+A) Generate the artifact if you have enough data (preferred) - use Mermaid syntax
+B) Make an inference and ask user to confirm
+C) Ask ONE specific question (last resort)
 
-    // Create chain: streamingLLM -> output parser
-    const chain = streamingLLM.pipe(new HttpResponseOutputParser());
+Keep response under 3 sentences unless generating a diagram.`;
+
+    // Create chain: streamingLLM -> string output parser
+    const chain = streamingLLM.pipe(new StringOutputParser());
 
     // Save user message to database (before streaming response)
     const newUserMessage: NewConversation = {
@@ -302,4 +339,40 @@ export async function GET(
  */
 function estimateTokenCount(text: string): number {
   return Math.ceil(text.length / 4);
+}
+
+/**
+ * Parse JSON field that might be string or already parsed
+ */
+function parseJsonField(field: any): any {
+  if (!field) return null;
+  if (typeof field === 'string') {
+    try {
+      return JSON.parse(field);
+    } catch {
+      return null;
+    }
+  }
+  return field;
+}
+
+/**
+ * Format extracted list for prompt display
+ */
+function formatExtractedList(field: any, subfield?: string): string {
+  const parsed = parseJsonField(field);
+  if (!parsed) return 'None yet';
+
+  if (subfield) {
+    const data = parsed[subfield];
+    if (!data || !Array.isArray(data) || data.length === 0) return 'None yet';
+    return data.map((item: any) => typeof item === 'string' ? item : item.name || JSON.stringify(item)).join(', ');
+  }
+
+  if (Array.isArray(parsed)) {
+    if (parsed.length === 0) return 'None yet';
+    return parsed.map((item: any) => typeof item === 'string' ? item : item.name || JSON.stringify(item)).join(', ');
+  }
+
+  return 'None yet';
 }
