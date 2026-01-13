@@ -1,6 +1,6 @@
 'use client';
 
-import { type FormEvent, type ReactNode } from 'react';
+import React, { type FormEvent, type ReactNode } from 'react';
 import { type Message, useChat } from 'ai/react';
 import { toast } from 'sonner';
 import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom';
@@ -94,11 +94,11 @@ function StickyToBottomContent({
 
   return (
     <div
-      ref={context.scrollRef}
+      ref={context.scrollRef as unknown as React.RefObject<HTMLDivElement>}
       style={{ width: '100%', height: '100%' }}
       className={cn('grid grid-rows-[1fr,auto]', className)}
     >
-      <div ref={context.contentRef} className={contentClassName}>
+      <div ref={context.contentRef as unknown as React.RefObject<HTMLDivElement>} className={contentClassName}>
         {content}
       </div>
       {footer}
