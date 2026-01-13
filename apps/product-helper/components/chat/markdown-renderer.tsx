@@ -2,10 +2,22 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { DiagramViewer } from '@/components/diagrams/diagram-viewer';
+
+/**
+ * Detect diagram type from mermaid syntax
+ */
+function detectDiagramType(syntax: string): 'context' | 'useCase' | 'class' {
+  const firstLine = syntax.trim().split('\n')[0].toLowerCase();
+  if (firstLine.includes('classdiagram')) return 'class';
+  if (firstLine.includes('graph lr') || firstLine.includes('usecase')) return 'useCase';
+  return 'context'; // Default for graph TD, flowchart, etc.
+}
 
 /**
  * Markdown Renderer Component
  * Renders markdown content with GitHub Flavored Markdown support
+ * Includes Mermaid diagram rendering
  * Styled to match the custom theme
  */
 export function MarkdownRenderer({ content }: { content: string }) {
@@ -52,8 +64,26 @@ export function MarkdownRenderer({ content }: { content: string }) {
           <li className="ml-4" {...props} />
         ),
 
-        // Code
-        code: ({ node, inline, ...props }: any) => {
+        // Code - with mermaid diagram support
+        code: ({ node, inline, className, children, ...props }: any) => {
+          // Check if this is a mermaid code block
+          const match = /language-(\w+)/.exec(className || '');
+          const language = match ? match[1] : '';
+          const codeContent = String(children).replace(/\n$/, '');
+
+          // Render mermaid diagrams with DiagramViewer
+          if (!inline && language === 'mermaid') {
+            return (
+              <div className="my-4">
+                <DiagramViewer
+                  syntax={codeContent}
+                  type={detectDiagramType(codeContent)}
+                  title="Generated Diagram"
+                />
+              </div>
+            );
+          }
+
           if (inline) {
             return (
               <code
@@ -64,7 +94,9 @@ export function MarkdownRenderer({ content }: { content: string }) {
                   border: '1px solid var(--border)',
                 }}
                 {...props}
-              />
+              >
+                {children}
+              </code>
             );
           }
           return (
@@ -76,12 +108,24 @@ export function MarkdownRenderer({ content }: { content: string }) {
                 border: '1px solid var(--border)',
               }}
               {...props}
-            />
+            >
+              {children}
+            </code>
           );
         },
-        pre: ({ node, ...props }) => (
-          <pre className="my-3" {...props} />
-        ),
+        pre: ({ node, children, ...props }: any) => {
+          // Check if the child is a mermaid code block - if so, don't wrap in pre
+          const childrenArray = Array.isArray(children) ? children : [children];
+          const hasOnlyMermaidChild = childrenArray.length === 1 &&
+            childrenArray[0]?.props?.className?.includes('language-mermaid');
+
+          if (hasOnlyMermaidChild) {
+            // Return just the children (DiagramViewer) without pre wrapper
+            return <>{children}</>;
+          }
+
+          return <pre className="my-3" {...props}>{children}</pre>;
+        },
 
         // Links
         a: ({ node, ...props }) => (

@@ -1,10 +1,35 @@
 'use server';
 
 import { db } from '@/lib/db/drizzle';
-import { conversations, projects, projectData, type NewConversation } from '@/lib/db/schema';
+import { conversations, projects, projectData, artifacts, type NewConversation, type NewArtifact } from '@/lib/db/schema';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { extractProjectData, calculateCompleteness, mergeExtractionData } from '@/lib/langchain/agents/extraction-agent';
+
+/**
+ * Extract mermaid code blocks from content
+ */
+function extractMermaidBlocks(content: string): string[] {
+  const mermaidRegex = /```mermaid\n([\s\S]*?)```/g;
+  const blocks: string[] = [];
+  let match;
+  while ((match = mermaidRegex.exec(content)) !== null) {
+    blocks.push(match[1].trim());
+  }
+  return blocks;
+}
+
+/**
+ * Detect diagram type from mermaid syntax
+ */
+function detectDiagramType(syntax: string): string {
+  const firstLine = syntax.trim().split('\n')[0].toLowerCase();
+  if (firstLine.includes('classdiagram')) return 'class_diagram';
+  if (firstLine.includes('sequencediagram')) return 'sequence_diagram';
+  if (firstLine.includes('graph lr') || firstLine.includes('usecase')) return 'use_case_diagram';
+  if (firstLine.includes('flowchart') || firstLine.includes('statediagram')) return 'activity_diagram';
+  return 'context_diagram'; // Default for graph TD, etc.
+}
 
 /**
  * Save AI assistant message to conversations table
@@ -45,6 +70,23 @@ export async function saveAssistantMessage(
     };
 
     await db.insert(conversations).values(newMessage);
+
+    // Extract and save any mermaid diagrams from the message
+    const mermaidBlocks = extractMermaidBlocks(content);
+    if (mermaidBlocks.length > 0) {
+      console.log(`[Diagrams] Found ${mermaidBlocks.length} mermaid diagram(s) in message`);
+      for (const mermaidSyntax of mermaidBlocks) {
+        const diagramType = detectDiagramType(mermaidSyntax);
+        const newArtifact: NewArtifact = {
+          projectId,
+          type: diagramType,
+          content: { mermaid: mermaidSyntax },
+          status: 'draft',
+        };
+        await db.insert(artifacts).values(newArtifact);
+        console.log(`[Diagrams] Saved ${diagramType} diagram to artifacts`);
+      }
+    }
 
     // Check if we should trigger extraction (every 5 messages)
     const messageCountResult = await db

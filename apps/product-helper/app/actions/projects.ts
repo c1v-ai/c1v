@@ -84,7 +84,8 @@ export const createProject = validatedActionWithUser(
         `Created project: ${data.name}`
       );
 
-      redirect(`/projects/${project.id}`);
+      // Return success with projectId - client will handle navigation
+      return { success: 'Project created successfully', projectId: project.id };
     } catch (error) {
       console.error('Error creating project:', error);
       return { error: 'Failed to create project. Please try again.' };

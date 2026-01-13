@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,14 +18,23 @@ interface ProjectFormProps {
 type ActionState = {
   error?: string;
   success?: string;
+  projectId?: number;
 };
 
 export function ProjectForm({ project, mode }: ProjectFormProps) {
+  const router = useRouter();
   const action = mode === 'create' ? createProject : updateProject;
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     action,
     {}
   );
+
+  // Handle navigation after successful project creation
+  useEffect(() => {
+    if (state?.success && state?.projectId) {
+      router.push(`/projects/${state.projectId}`);
+    }
+  }, [state, router]);
 
   return (
     <Card>
