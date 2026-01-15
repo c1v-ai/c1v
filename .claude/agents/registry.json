@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.1.0",
+  "lastUpdated": "2026-01-15",
+  "description": "C1V Agent Registry - 17 agents across 6 teams (updated with available marketplace plugins)",
+
+  "globalConfig": {
+    "mcps": ["filesystem", "github", "ralph-wiggum", "sequential-thinking"],
+    "plugins": ["git-commit-smart", "claude-reflect", "overnight-dev"],
+    "pluginMarketplace": {
+      "source": "jeremylongshore/claude-code-plugins",
+      "alias": "claude-code-plugins-plus",
+      "version": "latest"
+    },
+    "skillsDirectory": ".claude/skills"
+  },
+
+  "skills": [
+    {
+      "id": "react-best-practices",
+      "name": "React Best Practices",
+      "source": "vercel-labs/agent-skills",
+      "file": ".claude/skills/react-best-practices.md",
+      "teams": [2],
+      "description": "40+ React/Next.js performance rules from Vercel"
+    }
+  ],
+
+  "teams": [
+    {
+      "id": 1,
+      "name": "platform-engineering",
+      "displayName": "Platform Engineering",
+      "color": "#3B82F6",
+      "colorName": "blue",
+      "icon": "🏗️",
+      "agentCount": 3,
+      "lead": "backend-architect",
+      "mcps": ["postgres", "docker", "sentry"],
+      "plugins": ["devops-automation-pack"]
+    },
+    {
+      "id": 2,
+      "name": "frontend",
+      "displayName": "Frontend",
+      "color": "#8B5CF6",
+      "colorName": "purple",
+      "icon": "🎨",
+      "agentCount": 3,
+      "lead": "ui-ux-engineer",
+      "mcps": ["vercel", "puppeteer", "cursor-ide-browser", "front-end-plugin"],
+      "plugins": ["creator-studio-pack"],
+      "skills": ["react-best-practices"]
+    },
+    {
+      "id": 3,
+      "name": "ai-agents",
+      "displayName": "AI/Agent Engineering",
+      "color": "#10B981",
+      "colorName": "emerald",
+      "icon": "🧠",
+      "agentCount": 3,
+      "lead": "langchain-engineer",
+      "mcps": ["langsmith", "openai", "context7"],
+      "plugins": ["ai-ml-engineering-pack"]
+    },
+    {
+      "id": 4,
+      "name": "data-infrastructure",
+      "displayName": "Data & Infrastructure",
+      "color": "#F59E0B",
+      "colorName": "amber",
+      "icon": "💾",
+      "agentCount": 3,
+      "lead": "vector-store-engineer",
+      "mcps": ["redis", "upstash", "postgres", "prometheus"],
+      "plugins": ["data-visualization-creator"]
+    },
+    {
+      "id": 5,
+      "name": "product-planning",
+      "displayName": "Product & Planning",
+      "color": "#F43F5E",
+      "colorName": "rose",
+      "icon": "📋",
+      "agentCount": 3,
+      "lead": "product-strategy",
+      "mcps": ["linear", "notion", "posthog"],
+      "plugins": ["fullstack-starter-pack"]
+    },
+    {
+      "id": 6,
+      "name": "quality-docs",
+      "displayName": "Quality & Documentation",
+      "color": "#06B6D4",
+      "colorName": "cyan",
+      "icon": "🔍",
+      "agentCount": 2,
+      "lead": "qa-engineer",
+      "mcps": ["puppeteer", "playwright", "nextra"],
+      "plugins": ["project-health-auditor"]
+    }
+  ],
+
+  "agents": [
+    {
+      "id": "1.1",
+      "name": "backend-architect",
+      "role": "Backend Architect",
+      "teamId": 1,
+      "file": "1.1-backend-architect.md",
+      "mcps": ["openapi", "postman"],
+      "plugins": ["docker-compose-generator"]
+    },
+    {
+      "id": "1.2",
+      "name": "database-engineer",
+      "role": "Database Engineer",
+      "teamId": 1,
+      "file": "1.2-database-engineer.md",
+      "mcps": ["drizzle-studio", "pgadmin"],
+      "plugins": ["database-migration-manager"]
+    },
+    {
+      "id": "1.3",
+      "name": "devops-engineer",
+      "role": "Security & DevOps Engineer",
+      "teamId": 1,
+      "file": "1.3-devops-engineer.md",
+      "mcps": ["vault", "github-actions", "clerk"],
+      "plugins": ["ansible-playbook-creator", "security-pro-pack"]
+    },
+    {
+      "id": "2.1",
+      "name": "ui-ux-engineer",
+      "role": "UI/UX Engineer",
+      "teamId": 2,
+      "file": "2.1-ui-ux-engineer.md",
+      "mcps": ["figma", "lighthouse"],
+      "plugins": ["accessibility-test-scanner", "api-documentation-generator"]
+    },
+    {
+      "id": "2.2",
+      "name": "chat-engineer",
+      "role": "Chat Engineer",
+      "teamId": 2,
+      "file": "2.2-chat-engineer.md",
+      "mcps": ["websocket-tools", "vercel-ai-sdk"],
+      "plugins": ["api-documentation-generator"]
+    },
+    {
+      "id": "2.3",
+      "name": "data-viz-engineer",
+      "role": "Data Visualization Engineer",
+      "teamId": 2,
+      "file": "2.3-data-viz-engineer.md",
+      "mcps": ["mermaid", "d3-tools"],
+      "plugins": ["data-visualization-creator"]
+    },
+    {
+      "id": "3.1",
+      "name": "langchain-engineer",
+      "role": "LangChain Integration Engineer",
+      "teamId": 3,
+      "file": "3.1-langchain-engineer.md",
+      "mcps": ["langgraph", "vectorstore-tools"],
+      "plugins": ["api-documentation-generator", "langchain-pack"]
+    },
+    {
+      "id": "3.2",
+      "name": "llm-workflow-engineer",
+      "role": "LLM Workflow Engineer",
+      "teamId": 3,
+      "file": "3.2-llm-workflow-engineer.md",
+      "mcps": ["tiktoken", "promptlayer"],
+      "plugins": ["nlp-text-analyzer"]
+    },
+    {
+      "id": "3.3",
+      "name": "sr-cornell-validator",
+      "role": "SR-CORNELL Validation Engineer",
+      "teamId": 3,
+      "file": "3.3-sr-cornell-validator.md",
+      "mcps": ["zod-tools", "json-schema"],
+      "plugins": ["unit-test-generator", "api-schema-validator"]
+    },
+    {
+      "id": "4.1",
+      "name": "vector-store-engineer",
+      "role": "Vector Store Engineer",
+      "teamId": 4,
+      "file": "4.1-vector-store-engineer.md",
+      "mcps": ["pinecone", "embedding-tools"],
+      "plugins": ["sql-query-optimizer"]
+    },
+    {
+      "id": "4.2",
+      "name": "cache-engineer",
+      "role": "Cache Engineer",
+      "teamId": 4,
+      "file": "4.2-cache-engineer.md",
+      "mcps": ["redis-insight", "memcached"],
+      "plugins": ["cache-performance-optimizer"]
+    },
+    {
+      "id": "4.3",
+      "name": "observability-engineer",
+      "role": "Observability Engineer",
+      "teamId": 4,
+      "file": "4.3-observability-engineer.md",
+      "mcps": ["grafana", "pagerduty"],
+      "plugins": ["monitoring-stack-deployer", "cloud-cost-optimizer"]
+    },
+    {
+      "id": "5.1",
+      "name": "product-strategy",
+      "role": "Product Strategy Agent",
+      "teamId": 5,
+      "file": "5.1-product-strategy.md",
+      "mcps": ["mixpanel", "google-analytics"],
+      "plugins": ["sentiment-analysis-tool", "posthog-pack"]
+    },
+    {
+      "id": "5.2",
+      "name": "product-manager",
+      "role": "Product Manager Agent",
+      "teamId": 5,
+      "file": "5.2-product-manager.md",
+      "mcps": ["figma", "loom"],
+      "plugins": ["mattyp-changelog", "linear-pack"]
+    },
+    {
+      "id": "5.3",
+      "name": "technical-program-manager",
+      "role": "Technical Program Manager (TPM)",
+      "teamId": 5,
+      "file": "5.3-technical-program-manager.md",
+      "mcps": ["github-projects", "slack", "confluence"],
+      "plugins": ["mattyp-changelog", "project-health-auditor"]
+    },
+    {
+      "id": "6.1",
+      "name": "qa-engineer",
+      "role": "QA Engineer",
+      "teamId": 6,
+      "file": "6.1-qa-engineer.md",
+      "mcps": ["axe-core", "lighthouse", "istanbul"],
+      "plugins": ["test-coverage-analyzer", "e2e-test-framework"]
+    },
+    {
+      "id": "6.2",
+      "name": "documentation-engineer",
+      "role": "Documentation Engineer",
+      "teamId": 6,
+      "file": "6.2-documentation-engineer.md",
+      "mcps": ["mdx-tools", "openapi", "mermaid"],
+      "plugins": ["api-documentation-generator", "prettier-markdown-hook"]
+    }
+  ],
+
+  "colorReference": {
+    "platform-engineering": {"hex": "#3B82F6", "ansi": "\\033[38;2;59;130;246m"},
+    "frontend": {"hex": "#8B5CF6", "ansi": "\\033[38;2;139;92;246m"},
+    "ai-agents": {"hex": "#10B981", "ansi": "\\033[38;2;16;185;129m"},
+    "data-infrastructure": {"hex": "#F59E0B", "ansi": "\\033[38;2;245;158;11m"},
+    "product-planning": {"hex": "#F43F5E", "ansi": "\\033[38;2;244;63;94m"},
+    "quality-docs": {"hex": "#06B6D4", "ansi": "\\033[38;2;6;182;212m"}
+  }
+}

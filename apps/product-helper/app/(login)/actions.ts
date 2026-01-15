@@ -1,7 +1,8 @@
 'use server';
 
+import crypto from 'crypto';
 import { z } from 'zod';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, sql, isNull, lt } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import {
   User,
@@ -14,8 +15,10 @@ import {
   type NewTeamMember,
   type NewActivityLog,
   ActivityType,
-  invitations
+  invitations,
+  passwordResetTokens
 } from '@/lib/db/schema';
+import { sendPasswordResetEmail } from '@/lib/email/send-password-reset';
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
@@ -117,7 +120,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   if (existingUser.length > 0) {
     return {
-      error: 'Failed to create user. Please try again.',
+      error: 'An account with this email already exists. Please sign in instead.',
       email,
       password
     };
@@ -131,7 +134,17 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     role: 'owner' // Default role, will be overridden if there's an invitation
   };
 
-  const [createdUser] = await db.insert(users).values(newUser).returning();
+  let createdUser;
+  try {
+    [createdUser] = await db.insert(users).values(newUser).returning();
+  } catch (error) {
+    console.error('Database error during signup:', error);
+    return {
+      error: 'Failed to create user. Please try again.',
+      email,
+      password
+    };
+  }
 
   if (!createdUser) {
     return {
@@ -455,5 +468,197 @@ export const inviteTeamMember = validatedActionWithUser(
     // await sendInvitationEmail(email, userWithTeam.team.name, role)
 
     return { success: 'Invitation sent successfully' };
+  }
+);
+
+// ============================================================
+// Password Reset Actions
+// ============================================================
+
+const requestPasswordResetSchema = z.object({
+  email: z.string().email()
+});
+
+export const requestPasswordReset = validatedAction(
+  requestPasswordResetSchema,
+  async (data) => {
+    const { email } = data;
+
+    // Find user by email, excluding soft-deleted users
+    const [foundUser] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.email, email), isNull(users.deletedAt)))
+      .limit(1);
+
+    // Always return success message to prevent email enumeration
+    const successMessage =
+      'If an account with that email exists, we have sent a password reset link.';
+
+    if (!foundUser) {
+      return { success: successMessage };
+    }
+
+    // Invalidate any existing unused tokens for this user
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(passwordResetTokens.userId, foundUser.id),
+          isNull(passwordResetTokens.usedAt)
+        )
+      );
+
+    // Generate 32-byte random token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash token with SHA-256 for storage
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+
+    // Store hash in DB with 1-hour expiry
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    await db.insert(passwordResetTokens).values({
+      userId: foundUser.id,
+      tokenHash,
+      expiresAt
+    });
+
+    // Send email with raw token
+    const emailResult = await sendPasswordResetEmail({
+      to: foundUser.email,
+      resetToken: rawToken
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send password reset email:', emailResult.error);
+      // Still return success to prevent email enumeration
+    }
+
+    return { success: successMessage };
+  }
+);
+
+const verifyResetTokenSchema = z.object({
+  token: z.string().min(1)
+});
+
+export const verifyResetToken = validatedAction(
+  verifyResetTokenSchema,
+  async (data) => {
+    const { token } = data;
+
+    // Hash the incoming token
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Look up in DB where tokenHash matches AND usedAt is null
+    const [foundToken] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(
+        and(
+          eq(passwordResetTokens.tokenHash, tokenHash),
+          isNull(passwordResetTokens.usedAt)
+        )
+      )
+      .limit(1);
+
+    if (!foundToken) {
+      return { error: 'Invalid or expired reset link.' };
+    }
+
+    // Check if expired
+    if (foundToken.expiresAt < new Date()) {
+      return { error: 'Invalid or expired reset link.' };
+    }
+
+    return { valid: true };
+  }
+);
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string().min(8).max(100),
+  confirmPassword: z.string().min(8).max(100)
+});
+
+export const resetPassword = validatedAction(
+  resetPasswordSchema,
+  async (data) => {
+    const { token, newPassword, confirmPassword } = data;
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      return {
+        error: 'New password and confirmation password do not match.'
+      };
+    }
+
+    // Hash incoming token
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find token in DB (unused, not expired)
+    const [foundToken] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(
+        and(
+          eq(passwordResetTokens.tokenHash, tokenHash),
+          isNull(passwordResetTokens.usedAt)
+        )
+      )
+      .limit(1);
+
+    if (!foundToken) {
+      return { error: 'Invalid or expired reset link.' };
+    }
+
+    // Check if expired
+    if (foundToken.expiresAt < new Date()) {
+      return { error: 'Invalid or expired reset link.' };
+    }
+
+    // Get the associated user
+    const [foundUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, foundToken.userId))
+      .limit(1);
+
+    if (!foundUser) {
+      return { error: 'User not found.' };
+    }
+
+    // Hash new password
+    const newPasswordHash = await hashPassword(newPassword);
+
+    // Update user's passwordHash
+    await db
+      .update(users)
+      .set({ passwordHash: newPasswordHash, updatedAt: new Date() })
+      .where(eq(users.id, foundUser.id));
+
+    // Mark token as used
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokens.id, foundToken.id));
+
+    // Log activity - get user's team for activity logging
+    const userWithTeam = await getUserWithTeam(foundUser.id);
+    await logActivity(
+      userWithTeam?.teamId,
+      foundUser.id,
+      ActivityType.REQUEST_PASSWORD_RESET
+    );
+
+    return {
+      success:
+        'Your password has been reset successfully. Please sign in with your new password.'
+    };
   }
 );

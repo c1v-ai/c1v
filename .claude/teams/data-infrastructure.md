@@ -1,8 +1,121 @@
+---
+team_name: data-infrastructure
+team_id: 4
+color: "#F59E0B"
+color_name: amber
+icon: "💾"
+enabled: true
+
+global_mcps:
+  - filesystem
+  - github
+  - ralph-wiggum
+  - sequential-thinking
+
+team_mcps:
+  - redis
+  - upstash
+  - postgres
+  - prometheus
+
+global_plugins:
+  - git-commit-smart
+  - code-reviewer
+  - overnight-dev
+
+team_plugins:
+  - data-analysis-pack
+
+agents:
+  - id: "4.1"
+    name: vector-store-engineer
+    role: Vector Store Engineer
+    mcps: [pinecone, embedding-tools]
+    plugins: [database-query-optimizer]
+  - id: "4.2"
+    name: cache-engineer
+    role: Cache Engineer
+    mcps: [redis-insight, memcached]
+    plugins: [redis-helper]
+  - id: "4.3"
+    name: observability-engineer
+    role: Observability Engineer
+    mcps: [grafana, pagerduty]
+    plugins: [monitoring-setup, cost-attribution-system]
+---
+
 # 💾 Data & Infrastructure Team
+
+![Team Color](https://img.shields.io/badge/team-data--infrastructure-F59E0B?style=flat-square)
 
 **Version:** 1.0.0
 **Last Updated:** 2026-01-12
 **Team Size:** 3 Agents
+
+---
+
+## MCP Configuration
+
+### Global MCPs (Always Loaded)
+- `filesystem` - File operations
+- `github` - Repository management
+- `ralph-wiggum` - Autonomous loop execution
+- `sequential-thinking` - Multi-step reasoning
+
+### Team MCPs (Deferred)
+- `redis` / `upstash` - Cache operations
+- `postgres` - Vector operations (pgvector)
+- `prometheus` - Metrics collection
+
+### Agent-Specific MCPs
+
+| Agent | MCPs |
+|-------|------|
+| 4.1 Vector Store Engineer | `pinecone`, `embedding-tools` |
+| 4.2 Cache Engineer | `redis-insight`, `memcached` |
+| 4.3 Observability Engineer | `grafana`, `pagerduty` |
+
+---
+
+## Tool Discovery
+
+This team uses Claude's Tool Search for efficient context management.
+
+**How it works:**
+1. Core tools (filesystem, github, ralph-wiggum) are always available
+2. Specialized tools are loaded on-demand via search
+3. Use natural language to find tools: "I need to optimize a query"
+
+**Search tips:**
+- Describe what you need: "caching", "vector search", "monitoring dashboard"
+- Tools are discovered from names AND descriptions
+
+---
+
+## Marketplace Plugins
+
+**Source:** `jeremylongshore/claude-code-plugins-plus-skills` (v4.9.0)
+
+### Global Plugins (All Teams)
+- `git-commit-smart` - Intelligent commit messages
+- `code-reviewer` - Automated code review
+- `overnight-dev` - Async task execution
+
+### Team Plugins
+- `data-analysis-pack` - Data processing, visualization
+
+### Agent-Specific Plugins
+
+| Agent | Plugins |
+|-------|---------|
+| 4.1 Vector Store Engineer | `database-query-optimizer` |
+| 4.2 Cache Engineer | `redis-helper` |
+| 4.3 Observability Engineer | `monitoring-setup`, `cost-attribution-system` |
+
+**Installation:**
+```bash
+ccpi install data-analysis-pack database-query-optimizer redis-helper monitoring-setup cost-attribution-system
+```
 
 ---
 
