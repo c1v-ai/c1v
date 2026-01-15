@@ -70,6 +70,20 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('password_reset_tokens_user_id_idx').on(table.userId),
+  tokenHashIdx: index('password_reset_tokens_token_hash_idx').on(table.tokenHash),
+}));
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -79,6 +93,14 @@ export const teamsRelations = relations(teams, ({ many }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   teamMembers: many(teamMembers),
   invitationsSent: many(invitations),
+  passwordResetTokens: many(passwordResetTokens),
+}));
+
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetTokens.userId],
+    references: [users.id],
+  }),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -251,6 +273,8 @@ export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
 export type NewInvitation = typeof invitations.$inferInsert;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type NewPasswordResetToken = typeof passwordResetTokens.$inferInsert;
 export type TeamDataWithMembers = Team & {
   teamMembers: (TeamMember & {
     user: Pick<User, 'id' | 'name' | 'email'>;
@@ -313,6 +337,7 @@ export enum ActivityType {
   REMOVE_TEAM_MEMBER = 'REMOVE_TEAM_MEMBER',
   INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
   ACCEPT_INVITATION = 'ACCEPT_INVITATION',
+  REQUEST_PASSWORD_RESET = 'REQUEST_PASSWORD_RESET',
 }
 
 export enum ProjectStatus {
