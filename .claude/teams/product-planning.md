@@ -1,8 +1,122 @@
+---
+team_name: product-planning
+team_id: 5
+color: "#F43F5E"
+color_name: rose
+icon: "📋"
+enabled: true
+
+global_mcps:
+  - filesystem
+  - github
+  - ralph-wiggum
+  - sequential-thinking
+
+team_mcps:
+  - linear
+  - notion
+  - posthog
+
+global_plugins:
+  - git-commit-smart
+  - code-reviewer
+  - overnight-dev
+
+team_plugins:
+  - project-scaffolder
+  - user-story-generator
+
+agents:
+  - id: "5.1"
+    name: product-strategy
+    role: Product Strategy Agent
+    mcps: [mixpanel, google-analytics]
+    plugins: [competitive-analysis-helper]
+  - id: "5.2"
+    name: product-manager
+    role: Product Manager Agent
+    mcps: [figma, loom]
+    plugins: [user-story-generator, release-notes-generator, project-scaffolder]
+  - id: "5.3"
+    name: technical-program-manager
+    role: Technical Program Manager (TPM)
+    mcps: [github-projects, slack, confluence]
+    plugins: [release-notes-generator, project-health-auditor]
+---
+
 # 📋 Product & Planning Team
 
+![Team Color](https://img.shields.io/badge/team-product--planning-F43F5E?style=flat-square)
+
 **Version:** 1.0.0
-**Last Updated:** 2026-01-12
-**Team Size:** 2 Agents
+**Last Updated:** 2026-01-15
+**Team Size:** 3 Agents
+
+---
+
+## MCP Configuration
+
+### Global MCPs (Always Loaded)
+- `filesystem` - File operations
+- `github` - Repository management
+- `ralph-wiggum` - Autonomous loop execution
+- `sequential-thinking` - Multi-step reasoning
+
+### Team MCPs (Deferred)
+- `linear` - Issue/project tracking
+- `notion` - Documentation, wikis
+- `posthog` - Analytics
+
+### Agent-Specific MCPs
+
+| Agent | MCPs |
+|-------|------|
+| 5.1 Product Strategy | `mixpanel`, `google-analytics` |
+| 5.2 Product Manager | `figma`, `loom` |
+| 5.3 Technical Program Manager | `github-projects`, `slack`, `confluence` |
+
+---
+
+## Tool Discovery
+
+This team uses Claude's Tool Search for efficient context management.
+
+**How it works:**
+1. Core tools (filesystem, github, ralph-wiggum) are always available
+2. Specialized tools are loaded on-demand via search
+3. Use natural language to find tools: "I need to track dependencies"
+
+**Search tips:**
+- Describe what you need: "roadmap", "user story", "release coordination"
+- Tools are discovered from names AND descriptions
+
+---
+
+## Marketplace Plugins
+
+**Source:** `jeremylongshore/claude-code-plugins-plus-skills` (v4.9.0)
+
+### Global Plugins (All Teams)
+- `git-commit-smart` - Intelligent commit messages
+- `code-reviewer` - Automated code review
+- `overnight-dev` - Async task execution
+
+### Team Plugins
+- `project-scaffolder` - Project structure generation
+- `user-story-generator` - User stories from requirements
+
+### Agent-Specific Plugins
+
+| Agent | Plugins |
+|-------|---------|
+| 5.1 Product Strategy | `competitive-analysis-helper` |
+| 5.2 Product Manager | `user-story-generator`, `release-notes-generator`, `project-scaffolder` |
+| 5.3 Technical Program Manager | `release-notes-generator`, `project-health-auditor` |
+
+**Installation:**
+```bash
+ccpi install project-scaffolder user-story-generator release-notes-generator competitive-analysis-helper project-health-auditor
+```
 
 ---
 
@@ -620,6 +734,145 @@ Ship conversational intake feature with AI Q&A, data extraction, and persistence
   - Frontend: User flows and wireframes
   - Backend: API contracts and data models
   - AI/Agent: LLM prompt requirements
+
+---
+
+### Agent 5.3: Technical Program Manager (TPM)
+
+**Primary Role:** Cross-team technical coordination and release management
+
+**Primary Responsibilities:**
+- Coordinate cross-team dependencies for multi-team features
+- Run weekly cross-team sync (async or live)
+- Own release coordination checklist
+- Resolve technical blockers between teams
+- Ensure API contracts and data schemas align across teams
+- Track cross-team technical debt
+- Facilitate architecture decisions that span teams
+
+**Tech Stack:**
+- **Project Tracking:** GitHub Projects, Linear
+- **Communication:** Slack, Notion, Confluence
+- **Documentation:** Architecture Decision Records (ADRs), Markdown
+- **Monitoring:** GitHub Actions, Vercel Dashboard
+
+**Required MCPs:**
+- `github-projects` - Cross-team project tracking
+- `slack` - Team communication
+- `confluence` - Documentation hub
+- `sequential-thinking` - Complex coordination planning
+
+**Key Files & Directories:**
+```
+docs/
+├── architecture/
+│   ├── decisions/                    # Architecture Decision Records
+│   │   ├── 001-database-choice.md
+│   │   ├── 002-auth-strategy.md
+│   │   └── template.md
+│   └── cross-team/
+│       ├── api-contracts.md          # API contract registry
+│       ├── data-schemas.md           # Shared schema definitions
+│       └── dependency-map.md         # Cross-team dependencies
+├── releases/
+│   ├── checklist.md                  # Release coordination checklist
+│   ├── calendar.md                   # Release schedule
+│   └── retrospectives/               # Post-release reviews
+└── tech-debt/
+    └── registry.md                   # Cross-team technical debt
+```
+
+**Key Deliverables:**
+
+**1. Cross-Team Dependency Tracker**
+```markdown
+# Cross-Team Dependencies (Sprint X)
+
+| Feature | Owner Team | Depends On | Dependency Team | Status | Blocker? |
+|---------|-----------|------------|-----------------|--------|----------|
+| Chat streaming | Frontend | Chat API | Platform | ✅ Done | No |
+| Diagram export | Frontend | Artifact API | Platform | 🚧 In Progress | No |
+| RAG context | AI/Agents | Vector store | Data | ⏳ Pending | Yes |
+```
+
+**2. Release Coordination Checklist**
+```markdown
+# Release v0.2.0 Checklist
+
+## Pre-Release (T-3 days)
+- [ ] All PRs merged to main
+- [ ] Database migrations tested in staging
+- [ ] API contracts verified across teams
+- [ ] E2E tests passing
+- [ ] Performance benchmarks met
+
+## Release Day (T-0)
+- [ ] Deploy to staging
+- [ ] Smoke tests pass
+- [ ] Deploy to production
+- [ ] Monitor error rates (< 0.1%)
+- [ ] Update status page
+
+## Post-Release (T+1)
+- [ ] Announce in #releases channel
+- [ ] Update documentation
+- [ ] Close related issues
+- [ ] Schedule retrospective
+```
+
+**3. Architecture Decision Record (ADR) Template**
+```markdown
+# ADR-XXX: [Decision Title]
+
+## Status
+Proposed | Accepted | Deprecated | Superseded
+
+## Context
+What is the issue that we're seeing that motivates this decision?
+
+## Decision
+What is the change that we're proposing and/or doing?
+
+## Consequences
+What becomes easier or more difficult to do because of this change?
+
+## Teams Affected
+- Platform Engineering: [impact]
+- Frontend: [impact]
+- AI/Agents: [impact]
+```
+
+**Anti-Patterns to Avoid:**
+❌ Making architectural decisions without cross-team input
+❌ Not documenting dependencies until blockers occur
+❌ Skipping release coordination for "small" releases
+❌ Siloed communication (team-only channels)
+❌ Not tracking technical debt across team boundaries
+❌ Missing API contract reviews before implementation
+
+**Documentation Duties:**
+- Maintain cross-team dependency tracker
+- Create and update ADRs for architectural decisions
+- Document release coordination process
+- Track and report on technical debt
+- Create cross-team sync meeting notes
+
+**Testing Requirements:**
+- Verify API contracts match implementations
+- Ensure data schema consistency across teams
+- Validate cross-team integration tests pass
+- Check release checklist completeness
+
+**Handoff Points:**
+- **Receives from:**
+  - All team leads: Blockers, dependencies, tech debt items
+  - Product Strategy: Multi-team feature requirements
+  - QA: Cross-team testing gaps
+- **Delivers to:**
+  - All teams: Coordination updates, release schedules
+  - All teams: Architecture Decision Records (ADRs)
+  - Product Strategy: Technical feasibility assessments
+  - DevOps: Release coordination requirements
 
 ---
 

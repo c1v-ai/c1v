@@ -15,6 +15,13 @@
       "when": 1768198880555,
       "tag": "0001_white_thunderbird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768511757701,
+      "tag": "0002_green_bucky",
+      "breakpoints": true
     }
   ]
 }

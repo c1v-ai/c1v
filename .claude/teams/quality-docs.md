@@ -1,8 +1,113 @@
+---
+team_name: quality-docs
+team_id: 6
+color: "#06B6D4"
+color_name: cyan
+icon: "🔍"
+enabled: true
+
+global_mcps:
+  - filesystem
+  - github
+  - ralph-wiggum
+  - sequential-thinking
+
+team_mcps:
+  - puppeteer
+  - playwright
+  - nextra
+
+global_plugins:
+  - git-commit-smart
+  - code-reviewer
+  - overnight-dev
+
+team_plugins:
+  - project-health-auditor
+
+agents:
+  - id: "6.1"
+    name: qa-engineer
+    role: QA Engineer
+    mcps: [axe-core, lighthouse, istanbul]
+    plugins: [project-health-auditor, test-coverage-analyzer]
+  - id: "6.2"
+    name: documentation-engineer
+    role: Documentation Engineer
+    mcps: [mdx-tools, openapi, mermaid]
+    plugins: [documentation-generator, api-docs-generator, prettier-markdown-hook]
+---
+
 # 🔍 Quality & Documentation Team
+
+![Team Color](https://img.shields.io/badge/team-quality--docs-06B6D4?style=flat-square)
 
 **Version:** 1.0.0
 **Last Updated:** 2026-01-12
 **Team Size:** 2 Agents
+
+---
+
+## MCP Configuration
+
+### Global MCPs (Always Loaded)
+- `filesystem` - File operations
+- `github` - Repository management
+- `ralph-wiggum` - Autonomous loop execution
+- `sequential-thinking` - Multi-step reasoning
+
+### Team MCPs (Deferred)
+- `puppeteer` - E2E testing, screenshots
+- `playwright` - Cross-browser testing
+- `nextra` - Docs site
+
+### Agent-Specific MCPs
+
+| Agent | MCPs |
+|-------|------|
+| 6.1 QA Engineer | `axe-core`, `lighthouse`, `istanbul` |
+| 6.2 Documentation Engineer | `mdx-tools`, `openapi`, `mermaid` |
+
+---
+
+## Tool Discovery
+
+This team uses Claude's Tool Search for efficient context management.
+
+**How it works:**
+1. Core tools (filesystem, github, ralph-wiggum) are always available
+2. Specialized tools are loaded on-demand via search
+3. Use natural language to find tools: "I need to run accessibility tests"
+
+**Search tips:**
+- Describe what you need: "test coverage", "API docs", "accessibility audit"
+- Tools are discovered from names AND descriptions
+
+---
+
+## Marketplace Plugins
+
+**Source:** `jeremylongshore/claude-code-plugins-plus-skills` (v4.9.0)
+
+### Global Plugins (All Teams)
+- `git-commit-smart` - Intelligent commit messages
+- `code-reviewer` - Automated code review
+- `overnight-dev` - Async task execution
+
+### Team Plugins
+- `project-health-auditor` - Codebase analysis, health scoring
+
+### Agent-Specific Plugins
+
+| Agent | Plugins |
+|-------|---------|
+| 6.1 QA Engineer | `project-health-auditor`, `test-coverage-analyzer` |
+| 6.2 Documentation Engineer | `documentation-generator`, `api-docs-generator`, `prettier-markdown-hook` |
+
+**Installation:**
+```bash
+ccpi install project-health-auditor test-coverage-analyzer documentation-generator api-docs-generator prettier-markdown-hook
+```
 
 ---
 

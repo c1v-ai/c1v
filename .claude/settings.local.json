@@ -18,7 +18,18 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(npm run db:generate:*)",
+      "Bash(pnpm exec tsc:*)"
     ]
+  },
+  "enabledPlugins": {
+    "claude-reflect@claude-code-plugins-plus": true,
+    "devops-automation-pack@claude-code-plugins-plus": true,
+    "creator-studio-pack@claude-code-plugins-plus": true,
+    "ai-ml-engineering-pack@claude-code-plugins-plus": true,
+    "sql-query-optimizer@claude-code-plugins-plus": true,
+    "fullstack-starter-pack@claude-code-plugins-plus": true,
+    "project-health-auditor@claude-code-plugins-plus": true
   }
 }
