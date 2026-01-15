@@ -1,8 +1,138 @@
+---
+team_name: frontend
+team_id: 2
+color: "#8B5CF6"
+color_name: purple
+icon: "🎨"
+enabled: true
+
+global_mcps:
+  - filesystem
+  - github
+  - ralph-wiggum
+  - sequential-thinking
+
+team_mcps:
+  - vercel
+  - puppeteer
+  - cursor-ide-browser
+  - front-end-plugin
+
+global_plugins:
+  - git-commit-smart
+  - code-reviewer
+  - overnight-dev
+
+team_plugins:
+  - frontend-skills
+
+team_skills:
+  - react-best-practices  # Vercel's 40+ React/Next.js performance rules
+
+agents:
+  - id: "2.1"
+    name: ui-ux-engineer
+    role: UI/UX Engineer
+    mcps: [figma, lighthouse]
+    plugins: [accessibility-auditor, component-documenter]
+  - id: "2.2"
+    name: chat-engineer
+    role: Chat Engineer
+    mcps: [websocket-tools, vercel-ai-sdk]
+    plugins: [api-development-pack]
+  - id: "2.3"
+    name: data-viz-engineer
+    role: Data Visualization Engineer
+    mcps: [mermaid, d3-tools]
+    plugins: [mermaid-diagram-generator]
+---
+
 # 🎨 Frontend Team
+
+![Team Color](https://img.shields.io/badge/team-frontend-8B5CF6?style=flat-square)
 
 **Version:** 1.0.0
 **Last Updated:** 2026-01-12
 **Team Size:** 3 Agents
+
+---
+
+## MCP Configuration
+
+### Global MCPs (Always Loaded)
+- `filesystem` - File operations
+- `github` - Repository management
+- `ralph-wiggum` - Autonomous loop execution
+- `sequential-thinking` - Multi-step reasoning
+
+### Team MCPs (Deferred)
+- `vercel` - Deployment, preview URLs
+- `puppeteer` - Browser automation, screenshots
+- `cursor-ide-browser` - Web interaction, frontend testing
+- `front-end-plugin` - Frontend development utilities
+
+### Agent-Specific MCPs
+
+| Agent | MCPs |
+|-------|------|
+| 2.1 UI/UX Engineer | `figma`, `lighthouse` |
+| 2.2 Chat Engineer | `websocket-tools`, `vercel-ai-sdk` |
+| 2.3 Data Viz Engineer | `mermaid`, `d3-tools` |
+
+---
+
+## Tool Discovery
+
+This team uses Claude's Tool Search for efficient context management.
+
+**How it works:**
+1. Core tools (filesystem, github, ralph-wiggum) are always available
+2. Specialized tools are loaded on-demand via search
+3. Use natural language to find tools: "I need to take a screenshot"
+
+**Search tips:**
+- Describe what you need: "deployment", "accessibility audit", "diagram generation"
+- Tools are discovered from names AND descriptions
+
+---
+
+## Marketplace Plugins
+
+**Source:** `jeremylongshore/claude-code-plugins-plus-skills` (v4.9.0)
+
+### Global Plugins (All Teams)
+- `git-commit-smart` - Intelligent commit messages
+- `code-reviewer` - Automated code review
+- `overnight-dev` - Async task execution
+
+### Team Plugins
+- `frontend-skills` - UI/UX improvements, responsive design, accessibility
+
+### Team Skills (Agent Skills)
+- `react-best-practices` - [Vercel's React Best Practices](https://github.com/vercel-labs/agent-skills) with 40+ performance rules across 8 categories:
+  1. Eliminating async waterfalls (CRITICAL)
+  2. Bundle size optimization (CRITICAL)
+  3. Server-side performance (HIGH)
+  4. Client-side data fetching (HIGH)
+  5. Re-render optimization (MEDIUM)
+  6. Rendering performance (MEDIUM)
+  7. JavaScript performance (LOW)
+  8. Advanced patterns (LOW)
+
+**Skill file:** [@.claude/skills/react-best-practices.md](../skills/react-best-practices.md)
+
+### Agent-Specific Plugins
+
+| Agent | Plugins |
+|-------|---------|
+| 2.1 UI/UX Engineer | `accessibility-auditor`, `component-documenter` |
+| 2.2 Chat Engineer | `api-development-pack` |
+| 2.3 Data Viz Engineer | `mermaid-diagram-generator` |
+
+**Installation:**
+```bash
+ccpi install frontend-skills accessibility-auditor component-documenter api-development-pack mermaid-diagram-generator
+```
 
 ---
 

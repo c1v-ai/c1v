@@ -1,8 +1,120 @@
+---
+team_name: ai-agents
+team_id: 3
+color: "#10B981"
+color_name: emerald
+icon: "🧠"
+enabled: true
+
+global_mcps:
+  - filesystem
+  - github
+  - ralph-wiggum
+  - sequential-thinking
+
+team_mcps:
+  - langsmith
+  - openai
+  - context7
+
+global_plugins:
+  - git-commit-smart
+  - code-reviewer
+  - overnight-dev
+
+team_plugins:
+  - structured-output-helper
+
+agents:
+  - id: "3.1"
+    name: langchain-engineer
+    role: LangChain Integration Engineer
+    mcps: [langgraph, vectorstore-tools]
+    plugins: [api-development-pack, structured-output-helper]
+  - id: "3.2"
+    name: llm-workflow-engineer
+    role: LLM Workflow Engineer
+    mcps: [tiktoken, promptlayer]
+    plugins: [prompt-engineering-toolkit]
+  - id: "3.3"
+    name: sr-cornell-validator
+    role: SR-CORNELL Validation Engineer
+    mcps: [zod-tools, json-schema]
+    plugins: [test-generator, json-schema-validator]
+---
+
 # 🧠 AI/Agent Engineering Team
+
+![Team Color](https://img.shields.io/badge/team-ai--agents-10B981?style=flat-square)
 
 **Version:** 1.0.0
 **Last Updated:** 2026-01-12
 **Team Size:** 3 Agents
+
+---
+
+## MCP Configuration
+
+### Global MCPs (Always Loaded)
+- `filesystem` - File operations
+- `github` - Repository management
+- `ralph-wiggum` - Autonomous loop execution
+- `sequential-thinking` - Multi-step reasoning
+
+### Team MCPs (Deferred)
+- `langsmith` - LLM observability, tracing
+- `openai` - Direct API access
+- `context7` - Documentation lookup
+
+### Agent-Specific MCPs
+
+| Agent | MCPs |
+|-------|------|
+| 3.1 LangChain Engineer | `langgraph`, `vectorstore-tools` |
+| 3.2 LLM Workflow Engineer | `tiktoken`, `promptlayer` |
+| 3.3 SR-CORNELL Validator | `zod-tools`, `json-schema` |
+
+---
+
+## Tool Discovery
+
+This team uses Claude's Tool Search for efficient context management.
+
+**How it works:**
+1. Core tools (filesystem, github, ralph-wiggum) are always available
+2. Specialized tools are loaded on-demand via search
+3. Use natural language to find tools: "I need to trace LLM calls"
+
+**Search tips:**
+- Describe what you need: "prompt optimization", "schema validation", "token counting"
+- Tools are discovered from names AND descriptions
+
+---
+
+## Marketplace Plugins
+
+**Source:** `jeremylongshore/claude-code-plugins-plus-skills` (v4.9.0)
+
+### Global Plugins (All Teams)
+- `git-commit-smart` - Intelligent commit messages
+- `code-reviewer` - Automated code review
+- `overnight-dev` - Async task execution
+
+### Team Plugins
+- `structured-output-helper` - Zod schema generation
+
+### Agent-Specific Plugins
+
+| Agent | Plugins |
+|-------|---------|
+| 3.1 LangChain Engineer | `api-development-pack`, `structured-output-helper` |
+| 3.2 LLM Workflow Engineer | `prompt-engineering-toolkit` |
+| 3.3 SR-CORNELL Validator | `test-generator`, `json-schema-validator` |
+
+**Installation:**
+```bash
+ccpi install structured-output-helper api-development-pack prompt-engineering-toolkit test-generator json-schema-validator
+```
 
 ---
 
