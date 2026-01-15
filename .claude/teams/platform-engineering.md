@@ -1,8 +1,120 @@
+---
+team_name: platform-engineering
+team_id: 1
+color: "#3B82F6"
+color_name: blue
+icon: "🏗️"
+enabled: true
+
+global_mcps:
+  - filesystem
+  - github
+  - ralph-wiggum
+  - sequential-thinking
+
+team_mcps:
+  - postgres
+  - docker
+  - sentry
+
+global_plugins:
+  - git-commit-smart
+  - code-reviewer
+  - overnight-dev
+
+team_plugins:
+  - devops-automation-pack
+
+agents:
+  - id: "1.1"
+    name: backend-architect
+    role: Backend Architect
+    mcps: [openapi, postman]
+    plugins: [docker-compose-generator]
+  - id: "1.2"
+    name: database-engineer
+    role: Database Engineer
+    mcps: [drizzle-studio, pgadmin]
+    plugins: [database-migration-helper]
+  - id: "1.3"
+    name: devops-engineer
+    role: Security & DevOps Engineer
+    mcps: [vault, github-actions, clerk]
+    plugins: [ansible-playbook-creator, security-pack]
+---
+
 # 🏗️ Platform Engineering Team
+
+![Team Color](https://img.shields.io/badge/team-platform--engineering-3B82F6?style=flat-square)
 
 **Version:** 1.0.0
 **Last Updated:** 2026-01-12
 **Team Size:** 3 Agents
+
+---
+
+## MCP Configuration
+
+### Global MCPs (Always Loaded)
+- `filesystem` - File operations
+- `github` - Repository management
+- `ralph-wiggum` - Autonomous loop execution
+- `sequential-thinking` - Multi-step reasoning
+
+### Team MCPs (Deferred)
+- `postgres` - Direct database access
+- `docker` - Container management
+- `sentry` - Error tracking
+
+### Agent-Specific MCPs
+
+| Agent | MCPs |
+|-------|------|
+| 1.1 Backend Architect | `openapi`, `postman` |
+| 1.2 Database Engineer | `drizzle-studio`, `pgadmin` |
+| 1.3 DevOps Engineer | `vault`, `github-actions`, `clerk` |
+
+---
+
+## Tool Discovery
+
+This team uses Claude's Tool Search for efficient context management.
+
+**How it works:**
+1. Core tools (filesystem, github, ralph-wiggum) are always available
+2. Specialized tools are loaded on-demand via search
+3. Use natural language to find tools: "I need to check database schema"
+
+**Search tips:**
+- Describe what you need: "deployment", "database query", "error tracking"
+- Tools are discovered from names AND descriptions
+
+---
+
+## Marketplace Plugins
+
+**Source:** `jeremylongshore/claude-code-plugins-plus-skills` (v4.9.0)
+
+### Global Plugins (All Teams)
+- `git-commit-smart` - Intelligent commit messages
+- `code-reviewer` - Automated code review
+- `overnight-dev` - Async task execution
+
+### Team Plugins
+- `devops-automation-pack` - CI/CD, deployment automation
+
+### Agent-Specific Plugins
+
+| Agent | Plugins |
+|-------|---------|
+| 1.1 Backend Architect | `docker-compose-generator` |
+| 1.2 Database Engineer | `database-migration-helper` |
+| 1.3 DevOps Engineer | `ansible-playbook-creator`, `security-pack` |
+
+**Installation:**
+```bash
+ccpi install devops-automation-pack git-commit-smart security-pack ansible-playbook-creator docker-compose-generator database-migration-helper
+```
 
 ---
 
