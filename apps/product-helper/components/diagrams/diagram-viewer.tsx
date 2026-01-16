@@ -37,7 +37,7 @@ export interface DiagramViewerProps {
   /** Mermaid syntax string */
   syntax: string;
   /** Diagram type for identification */
-  type: 'context' | 'useCase' | 'class';
+  type: 'context' | 'useCase' | 'class' | 'activity';
   /** Optional title */
   title?: string;
   /** Optional description */
@@ -79,11 +79,6 @@ export function DiagramViewer({
       return;
     }
 
-    // Wait for container ref
-    if (!containerRef.current) {
-      return;
-    }
-
     let isCancelled = false;
     let timeoutId: NodeJS.Timeout;
 
@@ -100,23 +95,11 @@ export function DiagramViewer({
           if (!isCancelled) {
             isCancelled = true;
             setIsRendering(false);
-            setError('Diagram rendering timed out. The syntax may be invalid.');
+            setError('Diagram rendering timed out after 15 seconds. The syntax may be invalid.');
           }
-        }, 5000); // 5 second timeout
+        }, 15000); // 15 second timeout
 
-        // First, try to parse/validate the syntax
-        try {
-          await mermaid.parse(syntax);
-        } catch (parseErr) {
-          clearTimeout(timeoutId);
-          if (!isCancelled) {
-            setIsRendering(false);
-            setError(`Invalid mermaid syntax: ${parseErr instanceof Error ? parseErr.message : 'Parse error'}`);
-          }
-          return;
-        }
-
-        // If parse succeeded, render
+        // Render the diagram (mermaid.render validates internally)
         const { svg } = await mermaid.render(id, syntax);
 
         clearTimeout(timeoutId);
@@ -366,16 +349,25 @@ export function DiagramViewer({
           className={cn(
             'overflow-auto border rounded-lg p-6',
             'bg-muted/30',
-            'min-h-[400px] flex items-center justify-center'
+            'min-h-[400px] relative'
           )}
         >
-          {isRendering ? (
-            <div className="text-center">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Rendering diagram...</p>
+          {/* Always render the container to avoid ref deadlock */}
+          <div
+            ref={containerRef}
+            className={cn(
+              'diagram-container flex items-center justify-center',
+              isRendering && 'invisible'
+            )}
+          />
+          {/* Loading overlay */}
+          {isRendering && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
+              <div className="text-center">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">Rendering diagram...</p>
+              </div>
             </div>
-          ) : (
-            <div ref={containerRef} className="diagram-container" />
           )}
         </div>
       </CardContent>
@@ -389,7 +381,7 @@ export function DiagramViewer({
  */
 export interface DiagramGridProps {
   diagrams: Array<{
-    type: 'context' | 'useCase' | 'class';
+    type: 'context' | 'useCase' | 'class' | 'activity';
     syntax: string;
     title: string;
     description?: string;
