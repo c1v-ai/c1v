@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import type { Message } from 'ai';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from './markdown-renderer';
+import { DiagramPopup } from './diagram-popup';
 import { User, Bot } from 'lucide-react';
 
 /**
@@ -23,10 +25,12 @@ export function ChatMessageBubble({
   sources,
   isLoading = false,
 }: ChatMessageBubbleProps) {
+  const [activeDiagram, setActiveDiagram] = useState<string | null>(null);
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
   return (
+    <>
     <div
       className={cn(
         'mb-6 flex w-full',
@@ -70,8 +74,11 @@ export function ChatMessageBubble({
             // User messages: plain text with white-space preserved
             <div className="whitespace-pre-wrap">{message.content}</div>
           ) : (
-            // Assistant messages: rendered markdown
-            <MarkdownRenderer content={message.content} />
+            // Assistant messages: rendered markdown with diagram click handler
+            <MarkdownRenderer
+              content={message.content}
+              onDiagramClick={(syntax) => setActiveDiagram(syntax)}
+            />
           )}
         </div>
 
@@ -149,6 +156,16 @@ export function ChatMessageBubble({
         </div>
       )}
     </div>
+
+    {/* Diagram Popup Modal */}
+    {activeDiagram && (
+      <DiagramPopup
+        isOpen={!!activeDiagram}
+        onClose={() => setActiveDiagram(null)}
+        syntax={activeDiagram}
+      />
+    )}
+    </>
   );
 }
 
