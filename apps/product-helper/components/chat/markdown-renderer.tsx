@@ -2,15 +2,20 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { InlineMermaid } from '@/components/chat/inline-mermaid';
+import { DiagramLinkCard } from './diagram-link-card';
 
 /**
  * Markdown Renderer Component
  * Renders markdown content with GitHub Flavored Markdown support
- * Includes Mermaid diagram rendering
+ * Includes Mermaid diagram support via clickable link cards
  * Styled to match the custom theme
  */
-export function MarkdownRenderer({ content }: { content: string }) {
+export interface MarkdownRendererProps {
+  content: string;
+  onDiagramClick?: (syntax: string) => void;
+}
+
+export function MarkdownRenderer({ content, onDiagramClick }: MarkdownRendererProps) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -61,9 +66,14 @@ export function MarkdownRenderer({ content }: { content: string }) {
           const language = match ? match[1] : '';
           const codeContent = String(children).replace(/\n$/, '');
 
-          // Render mermaid diagrams inline
+          // Render mermaid diagrams as clickable link cards
           if (!inline && language === 'mermaid') {
-            return <InlineMermaid syntax={codeContent} />;
+            return (
+              <DiagramLinkCard
+                syntax={codeContent}
+                onViewClick={() => onDiagramClick?.(codeContent)}
+              />
+            );
           }
 
           if (inline) {
@@ -102,7 +112,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
             childrenArray[0]?.props?.className?.includes('language-mermaid');
 
           if (hasOnlyMermaidChild) {
-            // Return just the children (DiagramViewer) without pre wrapper
+            // Return just the children (DiagramLinkCard) without pre wrapper
             return <>{children}</>;
           }
 
