@@ -30,7 +30,7 @@ export function DiagramPopup({
   const diagramInfo = detectDiagramType(syntax);
 
   // Map diagram type to DiagramViewer type prop
-  const getViewerType = (): 'context' | 'useCase' | 'class' => {
+  const getViewerType = (): 'context' | 'useCase' | 'class' | 'activity' => {
     switch (diagramInfo.type) {
       case 'context':
         return 'context';
@@ -38,11 +38,11 @@ export function DiagramPopup({
         return 'useCase';
       case 'class':
         return 'class';
-      case 'sequence':
       case 'activity':
+        return 'activity';
+      case 'sequence':
       default:
-        // DiagramViewer only supports context, useCase, class
-        // Default to 'context' for other types
+        // Default to 'context' for unsupported types like sequence
         return 'context';
     }
   };
