@@ -1,7 +1,7 @@
 # Product Helper v1.1 Roadmap
 
 **Created:** 2026-01-19
-**Status:** In Progress (Phase 1 Complete)
+**Status:** In Progress (Phase 1 & 2 Complete, Phase 3 Planned)
 **Target:** Stabilization, Security Hardening, Quality Improvement
 
 ---
@@ -10,9 +10,10 @@
 
 Product Helper v1.0 is a functional AI-powered PRD generation SaaS with LangGraph-based conversational intake, SR-CORNELL validation, and diagram generation. Version 1.1 focuses on:
 
-1. **Stabilization** - Fix 15 failing tests
-2. **Security Hardening** - Address critical vulnerabilities
-3. **Quality Improvement** - Accessibility, performance, documentation
+1. **Stabilization** - Fix 15 failing tests ✓
+2. **Security Hardening** - Address critical vulnerabilities ✓
+3. **Mobile-First & Web Revamp** - PWA, dark mode, responsive design
+4. **Quality Improvement** - Performance, documentation
 
 ---
 
@@ -22,7 +23,7 @@ Product Helper v1.0 is a functional AI-powered PRD generation SaaS with LangGrap
 |------|-------|--------|
 | Test Suite | 317/317 passing (100%) | ✓ All tests pass |
 | Security | Good | ✓ Critical issues addressed |
-| Accessibility | Poor | Missing mobile nav, ARIA gaps |
+| Mobile/Responsive | Poor | Missing mobile nav, no dark mode |
 | Performance | Good | Some optimization opportunities |
 | Documentation | 65/100 | Major gaps in user/API docs |
 
@@ -66,31 +67,34 @@ Plans:
 
 ---
 
-### Phase 3: Accessibility & Mobile UX
-**Goal:** WCAG compliance, mobile usability
-**Effort:** Medium
-**Dependencies:** None
+### Phase 3: Mobile-First & Web Revamp
+**Goal:** Modern, responsive, mobile-first experience with PWA capabilities and dark mode
+**Effort:** High
+**Dependencies:** Phase 2
+**Plans:** 6 plans in 3 waves
 
-#### Tasks
+Plans:
+- [ ] 03-01-PLAN.md — Light/dark mode with next-themes (Wave 1)
+- [ ] 03-02-PLAN.md — PWA setup with manifest and service worker (Wave 1)
+- [ ] 03-03-PLAN.md — Mobile navigation: bottom nav and hamburger menu (Wave 2)
+- [ ] 03-04-PLAN.md — Mobile-first design system: touch targets, typography (Wave 2)
+- [ ] 03-05-PLAN.md — Desktop enhancements: keyboard shortcuts, multi-column (Wave 3)
+- [ ] 03-06-PLAN.md — Cross-platform testing with Playwright and Lighthouse (Wave 3)
 
-**3.1 Add mobile navigation (CRITICAL)**
-- [ ] Create hamburger menu component for header
-- [ ] Add mobile navigation drawer/sheet
-- [ ] Ensure proper ARIA attributes (role, aria-expanded, aria-controls)
+#### Success Criteria
+1. Web app works seamlessly on mobile devices (< 768px) with native-feel interactions
+2. PWA installable with offline capabilities for core features
+3. Desktop experience enhanced with modern UI patterns and improved navigation
+4. Light/dark mode follows system preference with manual override option
+5. Lighthouse mobile score >= 90
 
-**3.2 Fix chat accessibility**
-- [ ] Add `aria-live="polite"` region for new messages
-- [ ] Add `aria-label` to loading indicators
-- [ ] Fix auto-scroll useEffect dependency array (line 64-68 in chat-window.tsx)
+#### Wave Structure
 
-**3.3 Fix form accessibility**
-- [ ] Add `aria-describedby` linking inputs to error messages
-- [ ] Add `aria-required="true"` to required fields
-- [ ] Implement focus management on validation errors
-
-**3.4 Fix tab navigation**
-- [ ] Add `role="tablist"` to project tabs in `[id]/layout.tsx`
-- [ ] Add proper `role="tab"`, `aria-selected`, `aria-controls`
+| Wave | Plans | Parallel | Focus |
+|------|-------|----------|-------|
+| 1 | 03-01, 03-02 | Yes | Foundation (theme, PWA) |
+| 2 | 03-03, 03-04 | Yes | Mobile (nav, design system) |
+| 3 | 03-05, 03-06 | Yes | Desktop + Testing |
 
 ---
 
@@ -126,7 +130,7 @@ Plans:
 ### Phase 5: Performance Optimization
 **Goal:** Faster, more efficient application
 **Effort:** Medium
-**Dependencies:** Phase 1, 3
+**Dependencies:** Phase 1
 
 #### Tasks
 
@@ -181,7 +185,7 @@ Plans:
 ### Phase 7: Component Testing
 **Goal:** Frontend test coverage
 **Effort:** High
-**Dependencies:** Phase 3, 5
+**Dependencies:** Phase 5
 
 #### Tasks
 
@@ -195,62 +199,11 @@ Plans:
 - [ ] Test ChatInput component (submit, keyboard handling)
 - [ ] Test ArtifactsSidebar (collapse, data display)
 - [ ] Test DiagramViewer (rendering, zoom, export)
-
-**7.3 Accessibility tests**
-- [ ] Add axe-core for automated a11y testing
-- [ ] Test keyboard navigation flows
-- [ ] Test screen reader announcements
+- [ ] Test theme toggle and dark mode switching
 
 ---
 
-### Phase 8: Complete Web-App & Mobile Revamp
-**Goal:** Modern, responsive, mobile-first experience with PWA capabilities
-**Effort:** High
-**Dependencies:** Phase 3 (Accessibility), Phase 5 (Performance)
-
-#### Success Criteria
-1. Web app works seamlessly on mobile devices (< 768px) with native-feel interactions
-2. PWA installable with offline capabilities for core features
-3. Desktop experience enhanced with modern UI patterns and improved navigation
-4. Performance metrics meet mobile-first standards (Lighthouse mobile score >= 90)
-5. Cross-platform design system implemented (consistent across web/mobile)
-
-#### Tasks
-
-**8.1 Mobile-First Design System**
-- [ ] Audit current responsive breakpoints and mobile UX patterns
-- [ ] Create comprehensive mobile design system (spacing, typography, touch targets)
-- [ ] Implement mobile-first component library updates
-- [ ] Add touch gesture support (swipe, pull-to-refresh where appropriate)
-
-**8.2 PWA Implementation**
-- [ ] Add Next.js PWA plugin (`next-pwa`)
-- [ ] Create service worker for offline functionality
-- [ ] Implement app manifest with proper icons and metadata
-- [ ] Add install prompt and offline fallback pages
-- [ ] Cache strategy for API calls and static assets
-
-**8.3 Mobile Navigation Overhaul**
-- [ ] Replace basic hamburger menu with modern mobile navigation
-- [ ] Implement bottom navigation bar for mobile (common pattern)
-- [ ] Add swipe gestures for navigation
-- [ ] Improve mobile chat interface (larger touch targets, better keyboard handling)
-
-**8.4 Desktop Experience Enhancement**
-- [ ] Modernize desktop navigation (sidebar improvements, keyboard shortcuts)
-- [ ] Enhance dashboard layout for larger screens
-- [ ] Add desktop-specific features (multi-column views, advanced filtering)
-- [ ] Improve desktop chat experience (better message threading, keyboard navigation)
-
-**8.5 Cross-Platform Testing**
-- [ ] Set up device testing (iOS Safari, Android Chrome, desktop browsers)
-- [ ] Implement responsive testing automation
-- [ ] Performance testing on real devices
-- [ ] Accessibility testing across platforms
-
----
-
-### Phase 9: Planning Agents & Codebase Upgrade
+### Phase 8: Planning Agents & Codebase Upgrade
 **Goal:** Upgrade planning agents to fully leverage get-shit-done methodology and create comprehensive skill library
 **Effort:** Medium
 **Dependencies:** None (can run parallel with other phases)
@@ -297,36 +250,32 @@ Plans:
 |-------|----------|--------|-----------------|
 | Phase 1: Test Stabilization | P0 | Low | Bugs ship to prod |
 | Phase 2: Critical Security | P0 | Low | Data breach |
-| Phase 3: Accessibility | P1 | Medium | Users blocked, legal risk |
+| Phase 3: Mobile-First & Web Revamp | P1 | High | Mobile users blocked, poor UX |
 | Phase 4: Backend Hardening | P1 | Medium | Production incidents |
 | Phase 5: Performance | P2 | Medium | Poor UX |
 | Phase 6: Documentation | P2 | Medium | Onboarding friction |
 | Phase 7: Component Testing | P3 | High | Regression risk |
-| Phase 8: Web/Mobile Revamp | P1 | High | Mobile users blocked, competitive disadvantage |
-| Phase 9: Planning Agents Upgrade | P2 | Medium | Future planning inefficiency |
+| Phase 8: Planning Agents Upgrade | P2 | Medium | Future planning inefficiency |
 
 ---
 
 ## Recommended Execution Order
 
 ```
-Week 1: Phase 1 + Phase 2 (parallel)
+Week 1: Phase 1 + Phase 2 (parallel) ✓ COMPLETE
          └── Tests + Critical Security
 
-Week 2: Phase 3 + Phase 6.1-6.2 + Phase 9 (parallel)
-         └── Accessibility + User/API Docs + Agent Upgrade
+Week 2-3: Phase 3 + Phase 6.1-6.2 (parallel)
+         └── Mobile-First & Web Revamp + User/API Docs
 
-Week 3: Phase 4
-         └── Backend Hardening
+Week 4: Phase 4 + Phase 8 (parallel)
+         └── Backend Hardening + Agent Upgrade
 
-Week 4: Phase 5 + Phase 6.3-6.4 (parallel)
+Week 5: Phase 5 + Phase 6.3-6.4 (parallel)
          └── Performance + Dev Docs
 
-Week 5+: Phase 7
+Week 6+: Phase 7
          └── Component Testing
-
-Week 6+: Phase 8 (after Phase 3 & 5 complete)
-         └── Web/Mobile Revamp
 ```
 
 ---
@@ -334,18 +283,21 @@ Week 6+: Phase 8 (after Phase 3 & 5 complete)
 ## Success Criteria
 
 ### Phase 1 Complete When:
-- [ ] 272/272 tests passing (100%)
-- [ ] CI pipeline green
+- [x] 317/317 tests passing (100%)
+- [x] CI pipeline green
 
 ### Phase 2 Complete When:
-- [ ] `/api/user` no longer returns passwordHash
-- [ ] Database SSL configured for production
-- [ ] Startup validation prevents missing secrets
+- [x] `/api/user` no longer returns passwordHash
+- [x] Database SSL configured for production
+- [x] Startup validation prevents missing secrets
 
 ### Phase 3 Complete When:
+- [ ] Light/dark mode working with system preference detection
+- [ ] Theme toggle accessible in header/settings
 - [ ] Mobile navigation functional on all screen sizes
-- [ ] Lighthouse accessibility score >= 90
-- [ ] No WCAG 2.1 AA violations
+- [ ] Bottom navigation bar working on mobile
+- [ ] PWA installable and works offline for core features
+- [ ] Lighthouse mobile score >= 90
 
 ### Phase 4 Complete When:
 - [ ] Rate limiting active on all endpoints
@@ -367,13 +319,6 @@ Week 6+: Phase 8 (after Phase 3 & 5 complete)
 - [ ] Accessibility tests in CI
 
 ### Phase 8 Complete When:
-- [ ] Lighthouse mobile score >= 90
-- [ ] PWA installable and works offline for core features
-- [ ] Mobile navigation fully functional with bottom nav bar
-- [ ] Desktop experience enhanced with keyboard shortcuts
-- [ ] Cross-platform design consistency verified across iOS/Android/desktop
-
-### Phase 9 Complete When:
 - [ ] 5+ skill files created and documented in `.claude/skills/`
 - [ ] Skills README.md with index and usage guide exists
 - [ ] gsd-planner.md references skills library
@@ -389,7 +334,7 @@ Week 6+: Phase 8 (after Phase 3 & 5 complete)
 | Duplicate `teamsRelations` definition | lib/db/schema.ts:88,296 | Low | Phase 4 |
 | `as any` casts in validation | app/api/projects/[id]/validate/route.ts | Medium | Phase 4 |
 | Dual chat mode (LangGraph + legacy) | Multiple files | Medium | Future |
-| Duplicate CSS variable systems | theme.css + globals.css | Low | Phase 3 |
+| Duplicate CSS variable systems | theme.css + globals.css | Low | Phase 3 (dark mode work) |
 | `estimateTokenCount` in 3 files | Multiple | Low | Phase 5 |
 
 ---
@@ -409,10 +354,26 @@ Week 6+: Phase 8 (after Phase 3 & 5 complete)
 - Create: `lib/config/env.ts`
 
 ### Phase 3
-- `app/(dashboard)/layout.tsx`
-- `components/chat/chat-window.tsx`
-- `app/(dashboard)/projects/[id]/layout.tsx`
-- `components/projects/project-form.tsx`
+- `app/layout.tsx` (theme provider, viewport, PWA metadata)
+- `app/(dashboard)/layout.tsx` (mobile nav, theme toggle, keyboard shortcuts)
+- `app/globals.css` (mobile-first utilities)
+- `app/theme.css` (mobile form sizing)
+- `app/manifest.ts` (create - PWA manifest)
+- `app/offline/page.tsx` (create - offline fallback)
+- `public/sw.js` (create - service worker)
+- `components/theme/theme-provider.tsx` (create)
+- `components/theme/mode-toggle.tsx` (create)
+- `components/navigation/bottom-nav.tsx` (create)
+- `components/navigation/mobile-menu.tsx` (create)
+- `components/sw-register.tsx` (create)
+- `components/projects/project-card.tsx` (create/enhance)
+- `components/chat/chat-window.tsx` (mobile optimizations)
+- `components/chat/chat-input.tsx` (mobile keyboard handling)
+- `lib/hooks/use-media-query.ts` (create)
+- `lib/hooks/use-keyboard-shortcuts.ts` (create)
+- `playwright.config.ts` (create)
+- `tests/e2e/responsive.spec.ts` (create)
+- `tests/e2e/pwa.spec.ts` (create)
 
 ### Phase 4
 - Create: `lib/middleware/rate-limit.ts`
