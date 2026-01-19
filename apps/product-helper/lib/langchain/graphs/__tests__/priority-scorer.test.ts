@@ -91,7 +91,7 @@ function calculateScore(question: Question, state: ScoringState): number {
   }
 
   // Penalty 2: Late-stage question when early data missing (-1)
-  const phaseOrder = ['actors', 'external_systems', 'use_cases', 'scope', 'data_entities'];
+  const phaseOrder = ['context_diagram', 'actors', 'external_systems', 'use_cases', 'scope', 'data_entities'];
   const questionPhaseIndex = phaseOrder.indexOf(question.phase);
   const currentPhaseIndex = phaseOrder.indexOf(state.currentPhase as string);
 
@@ -454,7 +454,7 @@ describe('out of order penalty scoring', () => {
 
   it('does not penalize adjacent phase questions', () => {
     const state = createTestState({
-      currentPhase: 'context_diagram',
+      currentPhase: 'actors',
       validationStatus: {
         hardGates: {
           EXTERNAL_ENTITIES_DEFINED: true,
