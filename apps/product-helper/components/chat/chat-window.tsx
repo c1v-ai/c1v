@@ -1,9 +1,8 @@
 'use client';
 
-import React, { type FormEvent, type ReactNode } from 'react';
+import React, { type FormEvent, type ReactNode, useRef, useEffect, useCallback } from 'react';
 import { type Message, useChat } from 'ai/react';
 import { toast } from 'sonner';
-import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom';
 import { ChatMessageBubble, ChatLoadingBubble } from './chat-message-bubble';
 import { ChatInput } from './chat-input';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,12 @@ export function ChatMessages({
   }
 
   return (
-    <div className={cn('flex w-full flex-col pb-4', className)}>
+    <div className={cn(
+      'flex w-full flex-col',
+      'gap-3 pb-4', // Mobile-first: smaller gap
+      'md:gap-4', // Desktop: larger spacing
+      className
+    )}>
       {messages.map((message) => (
         <ChatMessageBubble
           key={message.id}
@@ -48,70 +52,9 @@ export function ChatMessages({
 }
 
 /**
- * Scroll to Bottom Button
- * Shows when user scrolls up, allows quick return to latest message
- */
-function ScrollToBottomButton({ className }: { className?: string }) {
-  const { isAtBottom, scrollToBottom } = useStickToBottomContext();
-
-  if (isAtBottom) return null;
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className={cn('gap-2', className)}
-      onClick={() => scrollToBottom()}
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderColor: 'var(--border)',
-      }}
-    >
-      <ArrowDown className="h-4 w-4" />
-      <span>Scroll to bottom</span>
-    </Button>
-  );
-}
-
-/**
- * Sticky to Bottom Content Wrapper
- * Manages scroll behavior to keep chat at bottom during new messages
- */
-interface StickyToBottomContentProps {
-  content: ReactNode;
-  footer?: ReactNode;
-  className?: string;
-  contentClassName?: string;
-}
-
-function StickyToBottomContent({
-  content,
-  footer,
-  className,
-  contentClassName,
-}: StickyToBottomContentProps) {
-  const context = useStickToBottomContext();
-
-  return (
-    <div
-      ref={context.scrollRef as unknown as React.RefObject<HTMLDivElement>}
-      style={{ width: '100%', height: '100%' }}
-      className={cn('grid grid-rows-[1fr,auto]', className)}
-    >
-      <div
-        ref={context.contentRef as unknown as React.RefObject<HTMLDivElement>}
-        className={contentClassName}
-      >
-        {content}
-      </div>
-      {footer}
-    </div>
-  );
-}
-
-/**
  * Chat Layout
  * Provides the overall structure for the chat interface
+ * Uses simple flex layout with auto-scroll to bottom
  */
 export interface ChatLayoutProps {
   content: ReactNode;
@@ -119,20 +62,93 @@ export interface ChatLayoutProps {
 }
 
 export function ChatLayout({ content, footer }: ChatLayoutProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = React.useState(false);
+
+  // Scroll to bottom helper
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior,
+      });
+    }
+  }, []);
+
+  // Auto-scroll to bottom when content changes
+  useEffect(() => {
+    scrollToBottom('instant');
+  });
+
+  // Handle virtual keyboard on iOS - scroll to bottom when keyboard appears
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'visualViewport' in window) {
+      const viewport = window.visualViewport;
+      const handleResize = () => {
+        // Scroll to bottom when keyboard appears (viewport shrinks)
+        scrollToBottom('instant');
+      };
+      viewport?.addEventListener('resize', handleResize);
+      return () => viewport?.removeEventListener('resize', handleResize);
+    }
+  }, [scrollToBottom]);
+
+  // Track scroll position to show/hide scroll button
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollButton(!isNearBottom);
+    }
+  }, []);
+
   return (
-    <div className="absolute inset-0 flex flex-col">
-      <StickToBottom resize="smooth" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <StickyToBottomContent
-          contentClassName="py-4 px-4"
-          content={content}
-          footer={
-            <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-[var(--bg-primary)]">
-              <ScrollToBottomButton className="mx-auto mb-2" />
-              {footer}
-            </div>
-          }
-        />
-      </StickToBottom>
+    <div className="flex flex-col h-full">
+      {/* Scrollable messages area - mobile optimized */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className={cn(
+          "flex-1 overflow-y-auto",
+          "py-3 px-3", // Mobile-first: tighter padding
+          "md:py-4 md:px-4", // Desktop: more padding
+          "overscroll-contain" // Prevent scroll chaining on mobile
+        )}
+      >
+        {content}
+      </div>
+
+      {/* Fixed footer with input - mobile optimized */}
+      <div
+        className={cn(
+          "flex-shrink-0 border-t bg-[var(--bg-primary)]",
+          "px-3 pb-4 pt-2", // Mobile-first: tighter padding
+          "md:px-4 md:pb-8", // Desktop: more padding
+          "safe-bottom" // iOS safe area
+        )}
+        style={{ borderColor: 'var(--border)' }}
+      >
+        {showScrollButton && (
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "mx-auto mb-2 gap-2 flex",
+              "min-h-[44px]", // Touch target
+              "tap-highlight-none"
+            )}
+            onClick={() => scrollToBottom('smooth')}
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              borderColor: 'var(--border)',
+            }}
+          >
+            <ArrowDown className="h-4 w-4" />
+            <span>Scroll to bottom</span>
+          </Button>
+        )}
+        {footer}
+      </div>
     </div>
   );
 }
