@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { use, useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut, MessageSquare, Settings, FolderOpen } from 'lucide-react';
+import { CircleIcon, Home, LogOut, MessageSquare, FolderOpen } from 'lucide-react';
 import { ModeToggle } from '@/components/theme/mode-toggle';
 import {
   DropdownMenu,
@@ -16,6 +16,8 @@ import { signOut } from '@/app/(login)/actions';
 import { useRouter } from 'next/navigation';
 import { User } from '@/lib/db/schema';
 import useSWR, { mutate } from 'swr';
+import { BottomNav } from '@/components/navigation/bottom-nav';
+import { MobileMenu } from '@/components/navigation/mobile-menu';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -98,12 +100,16 @@ function Header() {
   return (
     <header className="border-b" style={{ borderColor: 'var(--border)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center">
-          <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Product Helper</span>
-        </Link>
+        {/* Mobile menu button - only visible on mobile */}
+        <div className="flex items-center gap-2">
+          {user && <MobileMenu />}
+          <Link href="/" className="flex items-center">
+            <CircleIcon className="h-6 w-6 text-orange-500" />
+            <span className="ml-2 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Product Helper</span>
+          </Link>
+        </div>
 
-        {/* Navigation - only show when user is logged in */}
+        {/* Desktop Navigation - hidden on mobile */}
         {user && (
           <nav className="hidden md:flex items-center space-x-6">
             <Link
@@ -148,9 +154,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <section className="flex flex-col h-screen">
       <Header />
-      <div className="flex-1 min-h-0 overflow-hidden">
+      {/* Add bottom padding on mobile to account for bottom nav */}
+      <div className="flex-1 min-h-0 overflow-hidden pb-16 md:pb-0">
         {children}
       </div>
+      <BottomNav />
     </section>
   );
 }
