@@ -20,7 +20,13 @@
       "Bash(git push:*)",
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(npm run db:generate:*)",
-      "Bash(pnpm exec tsc:*)"
+      "Bash(pnpm exec tsc:*)",
+      "Bash(git show:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "Bash(done)",
+      "Bash(cd:*)",
+      "Bash(pnpm --filter=product-helper exec tsc:*)",
+      "Bash(git diff:*)"
     ]
   },
   "enabledPlugins": {
@@ -30,6 +36,8 @@
     "ai-ml-engineering-pack@claude-code-plugins-plus": true,
     "sql-query-optimizer@claude-code-plugins-plus": true,
     "fullstack-starter-pack@claude-code-plugins-plus": true,
-    "project-health-auditor@claude-code-plugins-plus": true
+    "project-health-auditor@claude-code-plugins-plus": true,
+    "frontend-design@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
   }
 }
