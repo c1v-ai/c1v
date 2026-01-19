@@ -45,7 +45,7 @@ interface CompletionState {
  */
 const STOP_PHRASES = [
   /^no(pe)?\.?$/i,
-  /^that'?s (enough|it|all)\.?$/i,
+  /^that'?s (enough|it|all)(\s+(for now|now))?\.?$/i,
   /^done\.?$/i,
   /^move on\.?$/i,
   /^let'?s (see|proceed|continue|generate)\.?$/i,
