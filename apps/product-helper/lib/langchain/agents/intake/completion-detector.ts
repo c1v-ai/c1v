@@ -33,7 +33,7 @@ export interface CompletionResult {
  */
 const STOP_PHRASES = [
   /^no(pe)?\.?$/i,
-  /^that'?s (enough|it|all)\.?$/i,
+  /^that'?s (enough|it|all)(\s+(for now|now))?\.?$/i,
   /^done\.?$/i,
   /^move on\.?$/i,
   /^let'?s (see|proceed|continue|generate)\.?$/i,
@@ -50,9 +50,10 @@ const STOP_PHRASES = [
  * Phrases that indicate the user wants to see/generate an artifact
  */
 const GENERATE_PHRASES = [
+  /^generate\.?$/i, // bare "generate" command
   /show (me|it)\.?$/i,
-  /generate (it|the|a)?\s*(diagram|artifact)?\.?$/i,
-  /create (it|the|a)?\s*(diagram|artifact)?\.?$/i,
+  /generate (it|the|a)?(\s+\w+)*\s*(diagram|artifact)?\.?$/i,
+  /create (it|the|a)?(\s+\w+)*\s*(diagram|artifact)?\.?$/i,
   /let'?s see (it|the|what we have)\.?$/i,
   /what does (it|the diagram) look like/i,
   /can (i|you) see (the|a)?\s*(diagram|preview|artifact)/i,
