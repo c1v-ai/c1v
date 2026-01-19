@@ -1215,8 +1215,10 @@ function parseRelationship(
 ): string | null {
   const text = relationshipText.toLowerCase();
 
-  // Find target entity mentioned in relationship
+  // Find target entity mentioned in relationship, excluding the source entity
+  // This prevents "User has many Orders" from finding "User" as the target
   const targetEntity = allEntities.find((e) =>
+    e.name.toLowerCase() !== sourceEntity.toLowerCase() &&
     text.includes(e.name.toLowerCase())
   );
 
