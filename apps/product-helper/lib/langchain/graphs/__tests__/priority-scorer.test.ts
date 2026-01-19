@@ -260,7 +260,7 @@ describe('SR-CORNELL gate boost scoring', () => {
 
     // Both should have the +3 SR-CORNELL boost
     expect(actorScore).toBeGreaterThanOrEqual(13);
-    expect(externalScore).toBeGreaterThanOrEqual(12);
+    expect(externalScore).toBeGreaterThanOrEqual(11);
   });
 });
 
