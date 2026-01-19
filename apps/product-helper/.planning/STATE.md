@@ -9,8 +9,8 @@
 ## Current Focus
 
 **Active Milestone:** v1.1 - Stabilization & Security
-**Current Phase:** Phase 1 - Test Stabilization (Complete)
-**Last Activity:** Completed 01-03-PLAN.md (Completion Detector Tests)
+**Current Phase:** Phase 2 - Critical Security Fixes (In Progress)
+**Last Activity:** Completed 02-01-PLAN.md (Environment Variable Validation)
 
 ---
 
@@ -19,12 +19,19 @@
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Test Stabilization | Complete (Plan 01,02,03/03 complete) |
-| 2 | Critical Security Fixes | Pending |
+| 2 | Critical Security Fixes | In Progress (Plan 01/02 complete) |
 | 3 | Accessibility & Mobile UX | Pending |
 | 4 | Backend Hardening | Pending |
 | 5 | Performance Optimization | Pending |
 | 6 | Documentation | Pending |
 | 7 | Component Testing | Pending |
+
+### Phase 2 Plan Progress
+
+| Plan | Name | Status |
+|------|------|--------|
+| 02-01 | Environment Variable Validation | Complete |
+| 02-02 | Password Hash Exposure Fix | Pending |
 
 ### Phase 1 Plan Progress
 
@@ -56,22 +63,23 @@
 | 2026-01-19 | 01-02 | Changed adjacent phase test currentPhase to actors | external_systems is adjacent to actors, not context_diagram |
 | 2026-01-19 | 01-03 | Flexible word matching for diagram types | Support variations like "context diagram", "flow diagram" |
 | 2026-01-19 | 01-03 | Explicit "for now" suffix in stop phrases | Prevent false positives vs generic trailing content |
+| 2026-01-19 | 02-01 | Validate only critical env vars | POSTGRES_URL, AUTH_SECRET, OPENAI_API_KEY; others added later |
 
 ---
 
 ## Session Continuity
 
 **Last session:** 2026-01-19
-**Stopped at:** Completed 01-03-PLAN.md
+**Stopped at:** Completed 02-01-PLAN.md
 **Resume file:** None
 
 ---
 
 ## Next Steps
 
-1. Begin Phase 2 - Critical Security Fixes
-2. Address passwordHash exposure issue
-3. Address missing mobile nav issue
+1. Execute 02-02-PLAN.md - Password Hash Exposure Fix
+2. Address missing mobile nav issue (Phase 3)
+3. Continue with Phase 2 completion
 
 ---
 
@@ -79,7 +87,9 @@
 
 - **Roadmap:** `.planning/ROADMAP-1.1.md`
 - **Phase 1 Plans:** `.planning/phases/01-test-stabilization/`
+- **Phase 2 Plans:** `.planning/phases/02-critical-security-fixes/`
 - **01-01 Summary:** `.planning/phases/01-test-stabilization/01-01-SUMMARY.md`
 - **01-02 Summary:** `.planning/phases/01-test-stabilization/01-02-SUMMARY.md`
 - **01-03 Summary:** `.planning/phases/01-test-stabilization/01-03-SUMMARY.md`
+- **02-01 Summary:** `.planning/phases/02-critical-security-fixes/02-01-SUMMARY.md`
 - **This file:** `.planning/STATE.md`
