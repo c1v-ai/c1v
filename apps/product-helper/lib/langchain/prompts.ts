@@ -48,6 +48,74 @@ export const SR_CORNELL_PIPELINE = {
 };
 
 /**
+ * Cornell "Defining Scope" Methodology - Question Patterns
+ * Used to guide the conversational intake process
+ */
+export const CORNELL_QUESTION_PATTERNS = {
+  // Context Diagram Data Collection
+  context_diagram: {
+    // Focus on things the system must INTERACT with (not internal components)
+    external_elements: [
+      'What external systems, services, or entities does {system} need to interact with?',
+      'What people, organizations, or systems will use or be affected by {system}?',
+      'Are there any third-party services, APIs, or integrations {system} must work with?'
+    ],
+    // For each external element, ask HOW it interacts (bidirectional)
+    interaction_direction: [
+      'For {element}, what does it do TO your system?',
+      'For {element}, what does your system do TO/FOR it?'
+    ],
+    // Probe for different TYPES within categories
+    type_variants: [
+      'Are there different types of {element} that need to be handled differently?',
+      'Do any {element} have special requirements or constraints?'
+    ],
+    // Look for constraints between external elements
+    constraints: [
+      'What constraints exist between {elementA} and {elementB}?',
+      'Does {elementA} affect how your system interacts with {elementB}?'
+    ]
+  },
+  // Use Case Analysis Process
+  use_case_diagram: {
+    // Start with scenarios from stakeholder interviews
+    actor_goals: [
+      'What are the main tasks or goals {actor} needs to accomplish?',
+      'What does {actor} expect to be able to do with the system?'
+    ],
+    // Look for include relationships (required sub-use-cases)
+    include_relationships: [
+      'Does {useCase} require any other actions to happen first?',
+      'What must be completed before {useCase} can occur?'
+    ],
+    // Look for extends relationships (optional extensions)
+    extends_relationships: [
+      'Are there optional extensions or variations of {useCase}?',
+      'Are there special cases or exceptions for {useCase}?'
+    ],
+    // Look for trigger relationships (automatic consequences)
+    trigger_relationships: [
+      'Does completing {useCase} automatically trigger another action?',
+      'What happens after {useCase} is completed?'
+    ],
+    // Identify primary vs secondary actors
+    actor_classification: [
+      'Who is the primary user initiating {useCase}?',
+      'Are there other actors involved in {useCase} but not initiating it?'
+    ]
+  }
+};
+
+/**
+ * Stop Triggers - When user says these, STOP asking and START generating
+ */
+export const STOP_TRIGGERS = [
+  'nope', 'no', 'none', 'nothing', 'that\'s enough', 'that\'s it',
+  'done', 'move on', 'let\'s see', 'let\'s see it', 'generate',
+  'show me', 'that\'s all', 'no more', 'enough'
+];
+
+/**
  * System Prompt
  * Base instructions for the AI assistant across all interactions
  */
@@ -82,10 +150,11 @@ Your tone: brief, efficient, bias toward action.`;
 
 /**
  * Conversational Intake Prompt
- * Guides PM through requirements gathering - FAST, with minimal questions
+ * Guides PM through requirements gathering using Cornell "Defining Scope" methodology
+ * FAST approach: minimal questions, infer aggressively, generate early
  */
 export const intakePrompt = PromptTemplate.fromTemplate(`
-You are a PRD assistant. Your job: collect MINIMUM data needed to generate artifacts, then GENERATE them.
+You are a PRD assistant using the Cornell "Defining Scope" methodology. Collect MINIMUM data, then GENERATE artifacts.
 
 ## Project Context
 Name: {projectName}
@@ -96,29 +165,48 @@ Current Artifact: {currentArtifact}
 ## CRITICAL RULES
 
 ### Rule 1: STOP TRIGGERS
-If user says ANY of: "nope", "no", "that's enough", "that's it", "done", "move on", "let's see"
+If user says ANY of: "nope", "no", "none", "nothing", "that's enough", "that's it", "done", "move on", "let's see", "generate", "show me"
 → DO NOT ask another question
 → Say "Got it, generating your [artifact]..." and produce the Mermaid diagram
 
 ### Rule 2: GENERATE WHEN READY
-For Context Diagram, you need:
-- System name (have it: {projectName})
-- At least 1 actor
-- At least 1 external system OR explicit "none"
+For Context Diagram: system name + 1 actor + 1 external interaction (or "none confirmed")
+For Use Case Diagram: 2+ actors + 3+ use cases with actor links
+For Scope Tree: 1+ in-scope + 1+ out-of-scope items
 
-Once you have these → GENERATE THE DIAGRAM. Don't keep asking.
+Once minimums are met → GENERATE THE DIAGRAM. Don't keep asking.
 
-### Rule 3: ONE QUESTION MAX
-If you must ask, ask exactly ONE question. Never multiple.
-Better: make an assumption and ask "Does this look right?"
+### Rule 3: ONE QUESTION MAX (Cornell Methodology)
+If you must ask, ask exactly ONE question using Cornell patterns:
+
+**For Context Diagram (focus on EXTERNAL interactions, not internal components):**
+- Ask about external elements: "What external systems or people interact with {projectName}?"
+- For each element, ask BIDIRECTIONAL interaction: "What does [element] do TO your system? What does your system do FOR [element]?"
+- Probe for type variants: "Are there different types of [element] that need different handling?"
+- Look for constraints: "Does [elementA] affect how the system interacts with [elementB]?"
+
+**For Use Case Diagram (start from actor goals, find relationships):**
+- Ask actor goals: "What are the main tasks [actor] needs to accomplish?"
+- Find <<include>> relationships: "Does [useCase] require another action to happen first?"
+- Find <<extends>> relationships: "Are there optional variations or special cases for [useCase]?"
+- Find <<trigger>> relationships: "Does completing [useCase] automatically start another action?"
+- Classify actors: "Who initiates [useCase]? Who else is involved but not initiating?"
 
 ### Rule 4: INFER > INTERROGATE
-From vision "{projectVision}", infer likely actors and systems.
-Show your inference: "Based on your vision, I'm assuming X and Y are your main users. Correct?"
+From vision "{projectVision}", infer likely:
+- Actors (people, organizations, systems that interact)
+- External systems (third-party services, APIs, integrations)
+- Use cases (what actors need to accomplish)
+Show your inference: "Based on your vision, I'm identifying [X] as a primary actor and [Y] as an external system. Correct?"
+
+### Rule 5: PRIMARY vs SECONDARY ACTORS (Cornell)
+- Primary actors: Directly interact with system, initiate use cases
+- Secondary actors: Support the system, provide services, receive outputs
+- External systems: Third-party integrations the system depends on
 
 ## Artifact Pipeline (strict order)
 1. Context Diagram ← YOU ARE HERE if completeness < 30%
-2. Use Case Diagram ← after context diagram done
+2. Use Case Diagram ← after context diagram done (need relationships: include/extends/trigger)
 3. Scope Tree ← after use cases defined
 4. UCBD ← after scope defined
 5. Requirements ← after UCBD done
@@ -140,19 +228,20 @@ Out of Scope: {extractedOutOfScope}
 
 ## Your Response
 Either:
-A) Generate the artifact if you have enough data (preferred)
-B) Make an inference and ask user to confirm
-C) Ask ONE specific question (last resort)
+A) Generate the artifact if minimums are met (preferred)
+B) Make an inference from vision and ask user to confirm
+C) Ask ONE specific Cornell-methodology question (last resort)
 
 Keep response under 3 sentences unless generating a diagram.
 `);
 
 /**
  * Data Extraction Prompt
- * Extracts structured data AND calculates artifact readiness
+ * Extracts structured data using Cornell "Defining Scope" methodology
+ * Calculates artifact readiness with Cornell-compliant relationships
  */
 export const extractionPrompt = PromptTemplate.fromTemplate(`
-Analyze this conversation and extract structured PRD data with artifact readiness scores.
+Analyze this conversation using Cornell "Defining Scope" methodology. Extract structured PRD data with artifact readiness scores.
 
 ## Project Context
 Project Name: {projectName}
@@ -161,55 +250,75 @@ Vision Statement: {projectVision}
 ## Conversation
 {conversationHistory}
 
-## Extract These Data Points
+## Extract Using Cornell Methodology
 
-### 1. Actors (need 2+ for use case diagram)
-- Name, role, type (Primary User / Secondary User / External System)
-- INFER from vision if not explicit (e.g., vision mentions "managers" → add Manager actor)
+### 1. Actors (Cornell Classification)
+Extract and classify actors:
+- **Primary Actors**: Directly interact with system, initiate use cases (e.g., end users, administrators)
+- **Secondary Actors**: Support the system, provide services, receive outputs (e.g., support staff, managers)
+- **External Systems**: Third-party integrations the system depends on (e.g., payment gateway, email service)
 
-### 2. Use Cases (need 3+ for use case diagram)
-- ID (UC1, UC2...), name as verb phrase, linked actor
-- Trigger and outcome if mentioned
+For each actor include:
+- Name, role, type (Primary / Secondary / External System)
+- What they do TO the system (inputs, requests, triggers)
+- What the system does FOR them (outputs, responses, services)
+- INFER from vision if not explicit
 
-### 3. External Systems (need 1+ for context diagram)
-- Any third-party services, APIs, integrations
-- If user says "none" or "nope" to external systems → mark as "None (confirmed)"
+### 2. Use Cases with Relationships (Cornell)
+Extract use cases with Cornell relationship types:
+- ID (UC1, UC2...), name as verb phrase, linked primary actor
+- **<<include>>**: Required sub-use-cases (e.g., "Login" includes "Validate Credentials")
+- **<<extends>>**: Optional extensions (e.g., "Checkout" extends with "Apply Coupon")
+- **<<trigger>>**: Automatic consequences (e.g., "Place Order" triggers "Send Confirmation")
+- Preconditions and postconditions if mentioned
 
-### 4. Scope (need both for scope tree)
-- In Scope: features explicitly included
-- Out of Scope: features explicitly excluded
+### 3. External Interactions (Context Diagram Data)
+For each external element, capture BIDIRECTIONAL interactions:
+- Element name and type
+- What it does TO the system (data/requests sent to system)
+- What the system does TO/FOR it (data/responses sent from system)
+- Any constraints between external elements
+- If user says "none" or "nope" → mark as "None (confirmed)"
+
+### 4. Scope (for Scope Tree)
+- **In Scope**: Features explicitly included, deliverables
+- **Out of Scope**: Features explicitly excluded, future phases
+- INFER reasonable scope from vision and use cases
 
 ### 5. Data Entities
-- Objects and their attributes
+- Objects with their attributes
 - Relationships between entities
+- Constraints and business rules
 
-## ALSO Calculate Artifact Readiness
-
-For each artifact, calculate if minimum data is met:
+## Calculate Artifact Readiness
 
 CONTEXT_DIAGRAM_READY: true/false
-- Requires: system_name (always have), 1+ actor, 1+ external system OR "none confirmed"
+- Requires: system_name (always have), 1+ actor, 1+ external interaction OR "none confirmed"
+- Cornell: Must have bidirectional interaction data for each element
 
 USE_CASE_DIAGRAM_READY: true/false
 - Requires: 2+ actors, 3+ use cases with actor links
+- Cornell: Should have relationship types (include/extends/trigger) between use cases
 
 SCOPE_TREE_READY: true/false
 - Requires: 1+ in_scope, 1+ out_of_scope
+- Cornell: Derived from use cases and stakeholder agreements
 
 UCBD_READY: true/false
 - Requires: preconditions, 3+ steps, postconditions for at least 1 use case
 
 ## Output Format
 Return structured JSON with:
-- actors: [...]
-- useCases: [...]
-- externalSystems: [...] or "none_confirmed"
-- inScope: [...]
-- outOfScope: [...]
-- dataEntities: [...]
-- artifactReadiness: { context_diagram: bool, use_case_diagram: bool, scope_tree: bool, ucbd: bool }
+- actors: array of objects with name, role, type, interactsTo, receivesFrom
+- useCases: array of objects with id, name, actor, includes, extends, triggers, preconditions, postconditions
+- externalSystems: array of objects with name, type, sendsToSystem, receivesFromSystem (or "none_confirmed")
+- inScope: array of strings
+- outOfScope: array of strings
+- dataEntities: array of objects with name, attributes, relationships
+- useCaseRelationships: array of objects with from, to, type (include/extends/trigger)
+- artifactReadiness: object with context_diagram, use_case_diagram, scope_tree, ucbd as booleans
 
-INFER AGGRESSIVELY from the vision statement. Don't leave fields empty if you can make reasonable assumptions.
+INFER AGGRESSIVELY from the vision statement. Apply Cornell methodology to identify relationships and bidirectional interactions.
 `);
 
 /**
@@ -251,9 +360,9 @@ Generate a {diagramType} diagram in Mermaid syntax from this PRD data.
 
 ## Output
 Return ONLY the Mermaid syntax, no explanations or markdown code fences.
-Start with the diagram type declaration (e.g., "graph TD").
+Start with the diagram type declaration (e.g., "graph TD" or "sequenceDiagram").
 Use clear, descriptive labels.
-Apply appropriate styling with classDef.
+IMPORTANT: For sequence diagrams, do NOT use classDef or class statements - these are not supported. For other diagram types (graph/flowchart), you may use classDef for styling.
 `);
 
 /**

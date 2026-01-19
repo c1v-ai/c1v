@@ -61,9 +61,9 @@ function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="flex flex-col gap-1">
         <DropdownMenuItem className="cursor-pointer">
-          <Link href="/dashboard" className="flex w-full items-center">
+          <Link href="/projects" className="flex w-full items-center">
             <Home className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            <span>Home</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">
@@ -106,12 +106,12 @@ function Header() {
         {user && (
           <nav className="hidden md:flex items-center space-x-6">
             <Link
-              href="/dashboard"
+              href="/projects"
               className="text-sm font-medium flex items-center gap-2"
               style={{ color: 'var(--text-primary)' }}
             >
               <Home className="h-4 w-4" />
-              Dashboard
+              Home
             </Link>
             <Link
               href="/projects"

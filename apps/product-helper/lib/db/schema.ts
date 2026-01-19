@@ -7,6 +7,7 @@ import {
   integer,
   jsonb,
   index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -181,6 +182,9 @@ export const projectData = pgTable('project_data', {
   systemBoundaries: jsonb('system_boundaries'),
   dataEntities: jsonb('data_entities'),
 
+  // Intake agent state (serialized IntakeState for LangGraph)
+  intakeState: jsonb('intake_state'),
+
   // Metadata
   completeness: integer('completeness').default(0), // 0-100
   lastExtractedAt: timestamp('last_extracted_at'),
@@ -219,6 +223,32 @@ export const conversations = pgTable('conversations', {
   createdAtIdx: index('conversations_created_at_idx').on(table.createdAt),
 }));
 
+// LangGraph State Checkpointing
+export const graphCheckpoints = pgTable('graph_checkpoints', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' })
+    .unique(),
+  threadId: text('thread_id').notNull(),
+  checkpointNs: text('checkpoint_ns').default(''),
+  checkpointId: text('checkpoint_id').notNull(),
+  parentCheckpointId: text('parent_checkpoint_id'),
+  channelValues: jsonb('channel_values').notNull(),
+  channelVersions: jsonb('channel_versions').notNull(),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  projectIdx: index('graph_checkpoints_project_idx').on(table.projectId),
+  threadIdx: index('graph_checkpoints_thread_idx').on(table.projectId, table.threadId),
+  uniqueCheckpoint: uniqueIndex('graph_checkpoints_unique').on(
+    table.projectId,
+    table.threadId,
+    table.checkpointNs,
+    table.checkpointId
+  ),
+}));
+
 // PRD Relations
 export const projectsRelations = relations(projects, ({ one, many }) => ({
   team: one(teams, {
@@ -232,6 +262,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   projectData: one(projectData),
   artifacts: many(artifacts),
   conversations: many(conversations),
+  graphCheckpoint: one(graphCheckpoints),
 }));
 
 export const projectDataRelations = relations(projectData, ({ one }) => ({
@@ -251,6 +282,13 @@ export const artifactsRelations = relations(artifacts, ({ one }) => ({
 export const conversationsRelations = relations(conversations, ({ one }) => ({
   project: one(projects, {
     fields: [conversations.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const graphCheckpointsRelations = relations(graphCheckpoints, ({ one }) => ({
+  project: one(projects, {
+    fields: [graphCheckpoints.projectId],
     references: [projects.id],
   }),
 }));
@@ -290,6 +328,8 @@ export type Artifact = typeof artifacts.$inferSelect;
 export type NewArtifact = typeof artifacts.$inferInsert;
 export type Conversation = typeof conversations.$inferSelect;
 export type NewConversation = typeof conversations.$inferInsert;
+export type GraphCheckpoint = typeof graphCheckpoints.$inferSelect;
+export type NewGraphCheckpoint = typeof graphCheckpoints.$inferInsert;
 
 // PRD Data Structures
 export type Actor = {

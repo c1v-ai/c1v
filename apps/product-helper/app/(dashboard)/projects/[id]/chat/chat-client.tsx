@@ -1,18 +1,33 @@
 'use client';
 
 import { useChat, type Message } from 'ai/react';
-import { FormEvent, useEffect } from 'react';
+import { FormEvent, useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { saveAssistantMessage } from '@/app/actions/conversations';
 import { ChatMessages } from '@/components/chat/chat-window';
 import { ChatInput } from '@/components/chat/chat-input';
 import { ChatLayout } from '@/components/chat/chat-window';
+import { ArtifactsSidebar } from '@/components/chat/artifacts-sidebar';
+import { DiagramPopup } from '@/components/chat/diagram-popup';
+import {
+  parseProjectData,
+  parseArtifacts,
+  type ParsedProjectData,
+  type ParsedArtifact,
+} from '@/lib/db/type-guards';
+import { useIsDesktop, useIsMobile } from '@/hooks/use-media-query';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { PanelLeft } from 'lucide-react';
 
 interface ProjectChatClientProps {
   projectId: number;
   projectName: string;
   projectVision: string;
   initialMessages: Message[];
+  initialProjectData: any;
+  initialArtifacts: any[];
 }
 
 function ProjectEmptyState({ projectName }: { projectName: string }) {
@@ -43,7 +58,7 @@ function ProjectEmptyState({ projectName }: { projectName: string }) {
           className="text-left text-sm space-y-2"
           style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}
         >
-          <p>💬 I'll guide you through:</p>
+          <p>I'll guide you through:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>Identifying actors (users, systems, external entities)</li>
             <li>Defining use cases (what users can do)</li>
@@ -67,7 +82,37 @@ export function ProjectChatClient({
   projectName,
   projectVision,
   initialMessages,
+  initialProjectData,
+  initialArtifacts,
 }: ProjectChatClientProps) {
+  // Sidebar state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [selectedDiagram, setSelectedDiagram] = useState<ParsedArtifact | null>(null);
+
+  // Responsive hooks
+  const isDesktop = useIsDesktop();
+  const isMobile = useIsMobile();
+
+  // SWR for real-time updates of project data and artifacts
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const { data: projectResponse, mutate } = useSWR(
+    `/api/projects/${projectId}`,
+    fetcher,
+    {
+      fallbackData: { projectData: initialProjectData, artifacts: initialArtifacts },
+      revalidateOnFocus: false,
+    }
+  );
+
+  // Parse data with type guards for type safety
+  const parsedProjectData = parseProjectData(
+    projectResponse?.projectData ?? initialProjectData
+  );
+  const parsedArtifacts = parseArtifacts(
+    projectResponse?.artifacts ?? initialArtifacts
+  );
+
   const chat = useChat({
     api: `/api/chat/projects/${projectId}`,
     initialMessages: initialMessages.length > 0 ? initialMessages : undefined,
@@ -85,6 +130,8 @@ export function ProjectChatClient({
           console.error('Failed to save assistant message:', result.error);
           // Don't show error to user as message still displays
         }
+        // Delayed refetch to allow extraction to complete
+        setTimeout(() => mutate(), 3000);
       }
     },
   });
@@ -95,30 +142,107 @@ export function ProjectChatClient({
     chat.handleSubmit(e);
   };
 
+  const handleDiagramClick = useCallback((artifact: ParsedArtifact) => {
+    setSelectedDiagram(artifact);
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => !prev);
+  }, []);
+
   const emptyState = initialMessages.length === 0
     ? <ProjectEmptyState projectName={projectName} />
     : undefined;
 
+  // #region agent log
+  const chatAreaRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (chatAreaRef.current && typeof window !== 'undefined') {
+      const el = chatAreaRef.current;
+      const rect = el.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(el);
+      fetch('http://127.0.0.1:7246/ingest/17309ef6-212e-49ae-b11e-d63578000a1b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-client.tsx:157',message:'Chat area container dimensions',data:{width:rect.width,height:rect.height,top:rect.top,bottom:rect.bottom,computedHeight:computedStyle.height,display:computedStyle.display,position:computedStyle.position,viewportHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    }
+  });
+  // #endregion
+
   return (
-    <ChatLayout
-      content={
-        <ChatMessages
-          messages={chat.messages}
-          emptyStateComponent={emptyState}
-          aiEmoji="🤖"
-          isLoading={chat.isLoading}
+    <div className="flex h-full overflow-hidden" style={{ height: '100%' }}>
+      {/* Desktop Sidebar */}
+      {isDesktop && (
+        <ArtifactsSidebar
+          projectData={parsedProjectData}
+          artifacts={parsedArtifacts}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={handleToggleSidebar}
+          onDiagramClick={handleDiagramClick}
         />
-      }
-      footer={
-        <ChatInput
-          value={chat.input}
-          onChange={chat.handleInputChange}
-          onSubmit={handleSubmit}
-          onStop={chat.stop}
-          loading={chat.isLoading}
-          placeholder="Share your thoughts about the project..."
+      )}
+
+      {/* Mobile Sheet */}
+      {isMobile && (
+        <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="fixed bottom-24 left-4 z-50 rounded-full shadow-lg"
+              style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72 p-0">
+            <ArtifactsSidebar
+              projectData={parsedProjectData}
+              artifacts={parsedArtifacts}
+              isCollapsed={false}
+              onToggleCollapse={() => setMobileSheetOpen(false)}
+              onDiagramClick={(artifact) => {
+                handleDiagramClick(artifact);
+                setMobileSheetOpen(false);
+              }}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Chat Area */}
+      <div 
+        ref={chatAreaRef}
+        className="flex-1 flex flex-col min-h-0 overflow-hidden relative"
+      >
+        <ChatLayout
+          content={
+            <ChatMessages
+              messages={chat.messages}
+              emptyStateComponent={emptyState}
+              aiEmoji="🤖"
+              isLoading={chat.isLoading}
+            />
+          }
+          footer={
+            <ChatInput
+              value={chat.input}
+              onChange={chat.handleInputChange}
+              onSubmit={handleSubmit}
+              onStop={chat.stop}
+              loading={chat.isLoading}
+              placeholder="Share your thoughts about the project..."
+            />
+          }
         />
-      }
-    />
+      </div>
+
+      {/* Diagram Popup */}
+      {selectedDiagram && (
+        <DiagramPopup
+          isOpen={!!selectedDiagram}
+          onClose={() => setSelectedDiagram(null)}
+          syntax={selectedDiagram.mermaid}
+          title={selectedDiagram.type.replace('_', ' ')}
+        />
+      )}
+    </div>
   );
 }

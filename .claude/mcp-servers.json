@@ -25,12 +25,6 @@
       "description": "PostgreSQL database access for schema management and queries",
       "requiredFor": ["platform-engineering", "data-infrastructure"]
     },
-    "puppeteer": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
-      "description": "Browser automation for E2E testing and web scraping",
-      "requiredFor": ["quality-docs", "frontend"]
-    },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],

@@ -23,6 +23,14 @@
       "file": ".claude/skills/react-best-practices.md",
       "teams": [2],
       "description": "40+ React/Next.js performance rules from Vercel"
+    },
+    {
+      "id": "dev-browser",
+      "name": "Dev Browser",
+      "source": "sawyerhood/dev-browser",
+      "file": ".claude/skills/dev-browser.md",
+      "teams": [2, 6],
+      "description": "Browser automation for testing and web interaction"
     }
   ],
 
@@ -48,9 +56,9 @@
       "icon": "🎨",
       "agentCount": 3,
       "lead": "ui-ux-engineer",
-      "mcps": ["vercel", "puppeteer", "cursor-ide-browser", "front-end-plugin"],
+      "mcps": ["vercel", "front-end-plugin"],
       "plugins": ["creator-studio-pack"],
-      "skills": ["react-best-practices"]
+      "skills": ["react-best-practices", "dev-browser"]
     },
     {
       "id": 3,
@@ -97,8 +105,9 @@
       "icon": "🔍",
       "agentCount": 2,
       "lead": "qa-engineer",
-      "mcps": ["puppeteer", "playwright", "nextra"],
-      "plugins": ["project-health-auditor"]
+      "mcps": ["playwright", "nextra"],
+      "plugins": ["project-health-auditor"],
+      "skills": ["dev-browser"]
     }
   ],
 
