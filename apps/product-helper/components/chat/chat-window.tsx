@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type FormEvent, type ReactNode, useEffect, useRef } from 'react';
+import React, { type FormEvent, type ReactNode } from 'react';
 import { type Message, useChat } from 'ai/react';
 import { toast } from 'sonner';
 import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom';
@@ -92,29 +92,6 @@ function StickyToBottomContent({
 }: StickyToBottomContentProps) {
   const context = useStickToBottomContext();
 
-  // #region agent log
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7246/ingest/17309ef6-212e-49ae-b11e-d63578000a1b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-window.tsx:93',message:'StickyToBottomContent render',data:{hasScrollRef:!!context.scrollRef,hasContentRef:!!context.contentRef,className,layoutType:'flex flex-col'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
-      
-      // Log scrollRef dimensions after mount
-      setTimeout(() => {
-        const scrollEl = context.scrollRef?.current;
-        const contentEl = context.contentRef?.current;
-        if (scrollEl) {
-          const scrollRect = scrollEl.getBoundingClientRect();
-          const scrollStyle = window.getComputedStyle(scrollEl);
-          fetch('http://127.0.0.1:7246/ingest/17309ef6-212e-49ae-b11e-d63578000a1b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-window.tsx:100',message:'scrollRef element dimensions',data:{scrollHeight:scrollEl.scrollHeight,clientHeight:scrollEl.clientHeight,offsetHeight:scrollEl.offsetHeight,width:scrollRect.width,height:scrollRect.height,display:scrollStyle.display,overflow:scrollStyle.overflow},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        }
-        if (contentEl) {
-          const contentRect = contentEl.getBoundingClientRect();
-          fetch('http://127.0.0.1:7246/ingest/17309ef6-212e-49ae-b11e-d63578000a1b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-window.tsx:103',message:'contentRef element dimensions',data:{scrollHeight:contentEl.scrollHeight,clientHeight:contentEl.clientHeight,offsetHeight:contentEl.offsetHeight,width:contentRect.width,height:contentRect.height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        }
-      }, 100);
-    }
-  }, [context.scrollRef, context.contentRef, className]);
-  // #endregion
-
   return (
     <div
       ref={context.scrollRef as unknown as React.RefObject<HTMLDivElement>}
@@ -142,24 +119,8 @@ export interface ChatLayoutProps {
 }
 
 export function ChatLayout({ content, footer }: ChatLayoutProps) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // #region agent log
-  useEffect(() => {
-    if (wrapperRef.current && typeof window !== 'undefined') {
-      const el = wrapperRef.current;
-      const rect = el.getBoundingClientRect();
-      const computedStyle = window.getComputedStyle(el);
-      fetch('http://127.0.0.1:7246/ingest/17309ef6-212e-49ae-b11e-d63578000a1b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-window.tsx:124',message:'ChatLayout wrapper dimensions',data:{width:rect.width,height:rect.height,top:rect.top,bottom:rect.bottom,position:computedStyle.position,display:computedStyle.display,viewportHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C,D'})}).catch(()=>{});
-    }
-  });
-  // #endregion
-
   return (
-    <div 
-      ref={wrapperRef}
-      className="absolute inset-0 flex flex-col"
-    >
+    <div className="absolute inset-0 flex flex-col">
       <StickToBottom resize="smooth" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <StickyToBottomContent
           contentClassName="py-4 px-4"
