@@ -4,6 +4,8 @@ import type { Metadata, Viewport } from 'next';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 import { Toaster } from 'sonner';
+import { ServiceWorkerRegister } from '@/components/sw-register';
+import { ThemeProvider } from '@/components/theme/theme-provider';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -30,7 +32,6 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="light"
       suppressHydrationWarning
     >
       <body className="min-h-[100dvh]">
@@ -44,9 +45,17 @@ export default function RootLayout({
             }
           }}
         >
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
         </SWRConfig>
         <Toaster position="top-center" richColors />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
