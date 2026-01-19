@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { use, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { CircleIcon, Home, LogOut, MessageSquare, Settings, FolderOpen } from 'lucide-react';
+import { ModeToggle } from '@/components/theme/mode-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -133,6 +134,7 @@ function Header() {
         )}
 
         <div className="flex items-center space-x-4">
+          <ModeToggle />
           <Suspense fallback={<div className="h-9" />}>
             <UserMenu />
           </Suspense>
@@ -144,9 +146,11 @@ function Header() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <section className="flex flex-col min-h-screen">
+    <section className="flex flex-col h-screen">
       <Header />
-      {children}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {children}
+      </div>
     </section>
   );
 }
