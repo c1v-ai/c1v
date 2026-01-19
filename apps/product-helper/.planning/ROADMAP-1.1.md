@@ -74,8 +74,8 @@ Plans:
 **Plans:** 6 plans in 3 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Light/dark mode with next-themes (Wave 1)
-- [ ] 03-02-PLAN.md — PWA setup with manifest and service worker (Wave 1)
+- [x] 03-01-PLAN.md — Light/dark mode with next-themes (Wave 1)
+- [x] 03-02-PLAN.md — PWA setup with manifest and service worker (Wave 1)
 - [ ] 03-03-PLAN.md — Mobile navigation: bottom nav and hamburger menu (Wave 2)
 - [ ] 03-04-PLAN.md — Mobile-first design system: touch targets, typography (Wave 2)
 - [ ] 03-05-PLAN.md — Desktop enhancements: keyboard shortcuts, multi-column (Wave 3)
