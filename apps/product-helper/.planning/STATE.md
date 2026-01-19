@@ -9,8 +9,8 @@
 ## Current Focus
 
 **Active Milestone:** v1.1 - Stabilization & Security
-**Current Phase:** Phase 2 - Critical Security Fixes (Complete)
-**Last Activity:** Completed 02-02-PLAN.md (Password Hash Exposure Fix + SSL)
+**Current Phase:** Phase 3 - Mobile-First & Web Revamp (In Progress)
+**Last Activity:** Completed 03-02-PLAN.md (PWA Setup)
 
 ---
 
@@ -20,33 +20,30 @@
 |-------|------|--------|
 | 1 | Test Stabilization | Complete (Plan 01,02,03/03 complete) |
 | 2 | Critical Security Fixes | Complete (Plan 01,02/02 complete) |
-| 3 | Accessibility & Mobile UX | Pending |
+| 3 | Mobile-First & Web Revamp | In Progress (Plan 02/06 complete) |
 | 4 | Backend Hardening | Pending |
 | 5 | Performance Optimization | Pending |
 | 6 | Documentation | Pending |
 | 7 | Component Testing | Pending |
+| 8 | Planning Agents Upgrade | Pending |
 
-### Phase 2 Plan Progress
-
-| Plan | Name | Status |
-|------|------|--------|
-| 02-01 | Environment Variable Validation | Complete |
-| 02-02 | Password Hash Exposure Fix + SSL | Complete |
-
-### Phase 1 Plan Progress
+### Phase 3 Plan Progress
 
 | Plan | Name | Status |
 |------|------|--------|
-| 01-01 | Diagram Generator Tests | Complete |
-| 01-02 | Priority Scorer Tests | Complete |
-| 01-03 | Completion Detector Tests | Complete |
+| 03-01 | Theme System (Light/Dark Mode) | Pending |
+| 03-02 | PWA Setup | Complete |
+| 03-03 | Bottom Navigation | Pending |
+| 03-04 | Touch Interactions | Pending |
+| 03-05 | Safe Area Handling | Pending |
+| 03-06 | Mobile Chat Optimization | Pending |
 
 ---
 
 ## Quick Stats
 
 - **Tests:** 317/317 passing (100%)
-- **Critical Issues:** 1 (missing mobile nav)
+- **Critical Issues:** 1 (missing mobile nav) - dark mode in progress
 - **Documentation:** 65/100
 
 ---
@@ -66,33 +63,31 @@
 | 2026-01-19 | 02-01 | Validate only critical env vars | POSTGRES_URL, AUTH_SECRET, OPENAI_API_KEY; others added later |
 | 2026-01-19 | 02-02 | Use process.env.NODE_ENV for SSL check | Runtime check works regardless of Zod schema |
 | 2026-01-19 | 02-02 | Connection pool: max 10, idle 20s, connect 10s | Sensible defaults for most workloads |
+| 2026-01-19 | 03-02 | Manual SW over next-pwa | Turbopack incompatible with webpack-based plugins |
+| 2026-01-19 | 03-02 | Network-first for navigation | Fresh content priority, offline fallback |
+| 2026-01-19 | 03-02 | Production-only SW registration | Avoid dev caching issues |
 
 ---
 
 ## Session Continuity
 
 **Last session:** 2026-01-19
-**Stopped at:** Completed 02-02-PLAN.md (Phase 2 complete)
+**Stopped at:** Completed 03-02-PLAN.md (PWA Setup)
 **Resume file:** None
 
 ---
 
 ## Next Steps
 
-1. Begin Phase 3 - Accessibility & Mobile UX
-2. Address missing mobile nav issue
-3. Continue with v1.1 stabilization
+1. Execute 03-01-PLAN.md (Theme System) or continue to 03-03-PLAN.md (Bottom Navigation)
+2. Test PWA installability with production build
+3. Replace placeholder PWA icons with designed assets
 
 ---
 
 ## Files
 
 - **Roadmap:** `.planning/ROADMAP-1.1.md`
-- **Phase 1 Plans:** `.planning/phases/01-test-stabilization/`
-- **Phase 2 Plans:** `.planning/phases/02-critical-security-fixes/`
-- **01-01 Summary:** `.planning/phases/01-test-stabilization/01-01-SUMMARY.md`
-- **01-02 Summary:** `.planning/phases/01-test-stabilization/01-02-SUMMARY.md`
-- **01-03 Summary:** `.planning/phases/01-test-stabilization/01-03-SUMMARY.md`
-- **02-01 Summary:** `.planning/phases/02-critical-security-fixes/02-01-SUMMARY.md`
-- **02-02 Summary:** `.planning/phases/02-critical-security-fixes/02-02-SUMMARY.md`
+- **Phase 3 Plans:** `.planning/phases/03-mobile-first-web-revamp/`
+- **03-02 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-02-SUMMARY.md`
 - **This file:** `.planning/STATE.md`
