@@ -34,12 +34,18 @@ async function ProjectChatContent({ projectId }: { projectId: number }) {
     createdAt: conv.createdAt,
   }));
 
+  // Extract project data and artifacts for the sidebar
+  const projectData = project.projectData;
+  const artifacts = project.artifacts || [];
+
   return (
     <ProjectChatClient
       projectId={projectId}
       projectName={project.name}
       projectVision={project.vision}
       initialMessages={initialMessages}
+      initialProjectData={projectData}
+      initialArtifacts={artifacts}
     />
   );
 }
@@ -57,9 +63,9 @@ export default async function ProjectChatPage({ params }: ProjectChatPageProps) 
   }
 
   return (
-    <section className="flex-1 flex flex-col h-[calc(100vh-12rem)]">
+    <section className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 236px)' }}>
       {/* Chat Interface */}
-      <div className="flex-1 relative">
+      <div className="flex-1 min-h-0 overflow-hidden h-full">
         <Suspense fallback={<ChatLoadingSkeleton />}>
           <ProjectChatContent projectId={projectId} />
         </Suspense>

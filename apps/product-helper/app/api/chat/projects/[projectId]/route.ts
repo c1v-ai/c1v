@@ -7,11 +7,31 @@ import { SR_CORNELL_PIPELINE } from '@/lib/langchain/prompts';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, type NewConversation } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
+import {
+  processWithLangGraph,
+  streamWithLangGraph,
+  isLangGraphEnabled,
+  type ProjectContext,
+} from './langgraph-handler';
 
 /**
  * Project Chat API Endpoint
- * Authenticated streaming chat with project context
- * Uses intakePrompt for conversational requirements gathering
+ *
+ * Authenticated streaming chat with project context.
+ * Supports two modes controlled by USE_LANGGRAPH environment variable:
+ *
+ * 1. LangGraph Mode (USE_LANGGRAPH=true):
+ *    - Uses LangGraph state machine for multi-agent orchestration
+ *    - Supports conversation checkpointing and resumption
+ *    - Automatic data extraction and project data updates
+ *    - Full SR-CORNELL pipeline integration
+ *
+ * 2. Legacy Mode (USE_LANGGRAPH=false or unset):
+ *    - Uses simple LangChain chain with prompt-based approach
+ *    - Manual extraction trigger via /save endpoint
+ *
+ * @see langgraph-handler.ts for LangGraph implementation
+ * @see PLAN_API_INTEGRATION.md for architecture details
  */
 
 // Using Node.js runtime because this route uses Drizzle ORM with database operations
@@ -108,6 +128,64 @@ export async function POST(
 
     // Get the last user message
     const lastMessage = messages[messages.length - 1];
+
+    // ============================================================
+    // Feature Flag: Use LangGraph State Machine
+    // ============================================================
+    if (isLangGraphEnabled()) {
+      // Prepare project context for LangGraph
+      const projectContext: ProjectContext = {
+        id: projectId,
+        name: project.name,
+        vision: project.vision,
+        teamId: team.id,
+        projectData: project.projectData
+          ? {
+              actors: project.projectData.actors,
+              useCases: project.projectData.useCases,
+              systemBoundaries: project.projectData.systemBoundaries,
+              dataEntities: project.projectData.dataEntities,
+              completeness: project.projectData.completeness ?? 0,
+            }
+          : null,
+      };
+
+      // Check if streaming is requested (default: yes for chat)
+      const useStreaming = req.headers.get('Accept')?.includes('text/event-stream') !== false;
+
+      if (useStreaming) {
+        // Return streaming response using LangGraph
+        const stream = await streamWithLangGraph(projectContext, lastMessage.content);
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Transfer-Encoding': 'chunked',
+            'Cache-Control': 'no-cache',
+          },
+        });
+      } else {
+        // Return non-streaming response
+        const result = await processWithLangGraph(projectContext, lastMessage.content);
+
+        if (result.error) {
+          return new Response(
+            JSON.stringify({ error: 'Processing Error', message: result.error }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
+        }
+
+        return new Response(result.response, {
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
+      }
+    }
+
+    // ============================================================
+    // Legacy Implementation (USE_LANGGRAPH=false or unset)
+    // ============================================================
 
     // Load conversation history from database
     const dbConversations = await db.query.conversations.findMany({

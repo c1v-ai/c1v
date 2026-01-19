@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ZoomIn, ZoomOut, Maximize2, Download, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
 
 // Initialize Mermaid
 if (typeof window !== 'undefined') {
@@ -68,8 +69,24 @@ export function DiagramViewer({
       return;
     }
 
+    // Safety net: Clean invalid syntax from sequence diagrams
+    // Primary cleanup happens on save (conversations.ts), but this handles:
+    // 1. Existing bad data in DB from before the fix was deployed
+    // 2. Edge cases where detection might have failed on save
+    // The function is idempotent - returns original if no cleanup needed
+    const cleanedSyntax = cleanSequenceDiagramSyntax(syntax);
+
+    // Log when safety net catches bad data - helps identify if new bad data is still being saved
+    if (cleanedSyntax !== syntax) {
+      console.warn(
+        '[DiagramViewer] Safety net cleaned invalid syntax from sequence diagram.',
+        'This indicates bad data in the database that should have been cleaned on save.',
+        { originalLength: syntax.length, cleanedLength: cleanedSyntax.length }
+      );
+    }
+
     // Basic validation - check for common mermaid diagram declarations
-    const trimmedSyntax = syntax.trim().toLowerCase();
+    const trimmedSyntax = cleanedSyntax.trim().toLowerCase();
     const validStartPatterns = ['graph', 'flowchart', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'gantt', 'pie', 'journey'];
     const hasValidStart = validStartPatterns.some(p => trimmedSyntax.startsWith(p));
 
@@ -100,7 +117,7 @@ export function DiagramViewer({
         }, 15000); // 15 second timeout
 
         // Render the diagram (mermaid.render validates internally)
-        const { svg } = await mermaid.render(id, syntax);
+        const { svg } = await mermaid.render(id, cleanedSyntax);
 
         clearTimeout(timeoutId);
         if (!isCancelled) {
@@ -123,7 +140,7 @@ export function DiagramViewer({
       isCancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [syntax, type]);
+  }, [syntax, type]); // Note: cleanedSyntax is computed inside, so we use original syntax in deps
 
   // Update container with SVG
   useEffect(() => {
