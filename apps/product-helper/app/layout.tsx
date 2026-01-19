@@ -5,13 +5,21 @@ import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 import { Toaster } from 'sonner';
 
-export const metadata: Metadata = {
-  title: 'Product Helper - AI-Powered PRD Generation',
-  description: 'Create engineering-quality Product Requirements Documents in minutes through AI-powered conversational requirements gathering.'
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover', // Critical for iOS safe areas
 };
 
-export const viewport: Viewport = {
-  maximumScale: 1
+export const metadata: Metadata = {
+  title: 'Product Helper - AI-Powered PRD Generation',
+  description: 'Create engineering-quality Product Requirements Documents in minutes through AI-powered conversational requirements gathering.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Product Helper',
+  },
 };
 
 export default function RootLayout({
