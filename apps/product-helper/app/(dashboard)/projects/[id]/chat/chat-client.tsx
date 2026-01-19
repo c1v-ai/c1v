@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat, type Message } from 'ai/react';
-import { FormEvent, useState, useCallback, useEffect, useRef } from 'react';
+import { FormEvent, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { saveAssistantMessage } from '@/app/actions/conversations';
@@ -154,18 +154,6 @@ export function ProjectChatClient({
     ? <ProjectEmptyState projectName={projectName} />
     : undefined;
 
-  // #region agent log
-  const chatAreaRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (chatAreaRef.current && typeof window !== 'undefined') {
-      const el = chatAreaRef.current;
-      const rect = el.getBoundingClientRect();
-      const computedStyle = window.getComputedStyle(el);
-      fetch('http://127.0.0.1:7246/ingest/17309ef6-212e-49ae-b11e-d63578000a1b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-client.tsx:157',message:'Chat area container dimensions',data:{width:rect.width,height:rect.height,top:rect.top,bottom:rect.bottom,computedHeight:computedStyle.height,display:computedStyle.display,position:computedStyle.position,viewportHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    }
-  });
-  // #endregion
-
   return (
     <div className="flex h-full overflow-hidden" style={{ height: '100%' }}>
       {/* Desktop Sidebar */}
@@ -208,10 +196,7 @@ export function ProjectChatClient({
       )}
 
       {/* Chat Area */}
-      <div 
-        ref={chatAreaRef}
-        className="flex-1 flex flex-col min-h-0 overflow-hidden relative"
-      >
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <ChatLayout
           content={
             <ChatMessages
