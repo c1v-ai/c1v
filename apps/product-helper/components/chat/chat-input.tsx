@@ -1,6 +1,6 @@
 'use client';
 
-import { type FormEvent, type ReactNode, useRef, useEffect } from 'react';
+import { type FormEvent, type ReactNode, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -77,7 +77,7 @@ export function ChatInput({
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className={cn('flex w-full flex-col', className)}
+      className={cn('flex w-full flex-col', 'safe-bottom', className)}
     >
       <div
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-lg border"
@@ -86,7 +86,7 @@ export function ChatInput({
           borderColor: 'var(--border)',
         }}
       >
-        {/* Textarea Field */}
+        {/* Textarea Field - Mobile optimized */}
         <textarea
           ref={textareaRef}
           value={value}
@@ -95,13 +95,19 @@ export function ChatInput({
           placeholder={placeholder}
           disabled={isDisabled}
           rows={1}
-          className="border-none bg-transparent p-4 outline-none"
+          inputMode="text"
+          enterKeyHint="send"
+          className={cn(
+            "border-none bg-transparent p-4 outline-none",
+            "text-base", // 16px - prevents iOS zoom on focus
+            "min-h-[44px]", // Touch target minimum
+            "resize-none" // Prevent resize handle on mobile
+          )}
           style={{
             fontFamily: 'var(--font-body)',
             color: 'var(--text-primary)',
-            minHeight: '24px',
+            fontSize: '16px', // Explicit to prevent iOS zoom
             maxHeight: '200px',
-            resize: 'none',
             overflow: 'auto',
           }}
           autoFocus
@@ -119,7 +125,11 @@ export function ChatInput({
               type="submit"
               disabled={isDisabled || (!loading && !value.trim())}
               size="sm"
-              className="gap-2"
+              className={cn(
+                "gap-2",
+                "min-h-[44px] min-w-[44px]", // Touch target minimum
+                "tap-highlight-none" // Remove tap highlight on mobile
+              )}
               style={{
                 backgroundColor: 'var(--accent)',
                 color: '#FFFFFF',
