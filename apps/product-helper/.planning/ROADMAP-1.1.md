@@ -31,35 +31,15 @@ Product Helper v1.0 is a functional AI-powered PRD generation SaaS with LangGrap
 ## Phase Breakdown
 
 ### Phase 1: Test Stabilization
-**Goal:** 100% passing test suite
+**Goal:** 100% passing test suite (272/272 tests passing)
 **Effort:** Low-Medium
 **Dependencies:** None
+**Plans:** 3 plans
 
-#### Tasks
-
-**1.1 Fix generators.test.ts (10 tests)**
-- [ ] Fix B&W styling test - regex contradiction (line 100)
-  - Update regex to exclude white/black: `/fill:#(?!ffffff|000000)[a-f0-9]{6}/i`
-- [ ] Fix CTX-* validation tests (7 tests) - wrong Jest matcher
-  - Replace `toContain(expect.stringContaining())` with `toEqual(expect.arrayContaining([expect.stringContaining()]))`
-- [ ] Fix interaction labels test - pattern order in `inferInteraction()`
-  - Decision needed: reorder patterns or update test expectation
-- [ ] Fix class diagram test - `parseRelationship()` finds wrong target
-  - Exclude source entity when searching for target in relationship text
-
-**1.2 Fix priority-scorer.test.ts (2 tests)**
-- [ ] Fix "multiple unpassed gates" test - expected >= 12, received 11
-  - Update expectation to >= 11 (penalty applies due to phase distance)
-- [ ] Fix "adjacent phase questions" test - phase not in phaseOrder array
-  - Add 'context_diagram' to phaseOrder OR change test's currentPhase
-
-**1.3 Fix completion-detector.test.ts (3 tests)**
-- [ ] Add regex for bare "generate" command
-  - Add `/^generate\.?$/i` to GENERATE_PHRASES
-- [ ] Fix "That's enough for now" stop phrase
-  - Update regex: `/^that'?s (enough|it|all)(\s+.*)?\s*\.?$/i`
-- [ ] Fix "Generate the context diagram" detection
-  - Update regex to allow adjectives: `/generate (it|the|a)?\s*(\w+\s+)?(diagram|artifact)?\.?$/i`
+Plans:
+- [ ] 01-01-PLAN.md - Fix 10 failing tests in generators.test.ts
+- [ ] 01-02-PLAN.md - Fix 2 failing tests in priority-scorer.test.ts
+- [ ] 01-03-PLAN.md - Fix 3 failing tests in completion-detector.test.ts
 
 ---
 
