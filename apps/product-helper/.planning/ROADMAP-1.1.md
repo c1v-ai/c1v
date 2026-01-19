@@ -46,6 +46,11 @@ Plans:
 **Goal:** Address critical security vulnerabilities
 **Effort:** Low
 **Dependencies:** None (can run parallel with Phase 1)
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Environment validation setup (Zod schema, startup validation)
+- [ ] 02-02-PLAN.md — Apply security fixes (passwordHash filtering, database SSL)
 
 #### Tasks
 
@@ -408,7 +413,7 @@ Week 6+: Phase 8 (after Phase 3 & 5 complete)
 ### Phase 2
 - `app/api/user/route.ts`
 - `lib/db/drizzle.ts`
-- Create: `lib/startup-validation.ts`
+- Create: `lib/config/env.ts`
 
 ### Phase 3
 - `app/(dashboard)/layout.tsx`
