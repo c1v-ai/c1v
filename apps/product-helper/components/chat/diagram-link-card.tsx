@@ -94,6 +94,8 @@ export function DiagramLinkCard({
   onViewClick,
   className,
 }: DiagramLinkCardProps) {
+  // Note: Primary syntax cleanup happens on save (conversations.ts)
+  // and as a safety net on render (diagram-viewer.tsx)
   const diagramInfo = detectDiagramType(syntax);
   const IconComponent = diagramInfo.icon;
 

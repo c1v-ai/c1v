@@ -5,6 +5,7 @@ import { conversations, projects, projectData, artifacts, type NewConversation, 
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { extractProjectData, calculateCompleteness, mergeExtractionData } from '@/lib/langchain/agents/extraction-agent';
+import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
 
 /**
  * Extract mermaid code blocks from content
@@ -76,11 +77,13 @@ export async function saveAssistantMessage(
     if (mermaidBlocks.length > 0) {
       console.log(`[Diagrams] Found ${mermaidBlocks.length} mermaid diagram(s) in message`);
       for (const mermaidSyntax of mermaidBlocks) {
-        const diagramType = detectDiagramType(mermaidSyntax);
+        // Clean invalid syntax from sequence diagrams (remove classDef/class statements)
+        const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
+        const diagramType = detectDiagramType(cleanedSyntax);
         const newArtifact: NewArtifact = {
           projectId,
           type: diagramType,
-          content: { mermaid: mermaidSyntax },
+          content: { mermaid: cleanedSyntax },
           status: 'draft',
         };
         await db.insert(artifacts).values(newArtifact);

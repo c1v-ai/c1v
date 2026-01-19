@@ -176,3 +176,35 @@
 }
 
 /* Remove duplicate definitions - the first @layer base block (lines 96-167) handles theming */
+
+/* Collapsible animations for radix-ui/react-collapsible */
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .animate-collapsible-down {
+    animation: collapsible-down 200ms ease-out;
+  }
+  .animate-collapsible-up {
+    animation: collapsible-up 200ms ease-out;
+  }
+}
