@@ -261,7 +261,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
+    <section className="flex-1 p-4 pb-20 md:pb-8 lg:p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto">
         <Suspense fallback={<ProjectDetailSkeleton />}>
           <ProjectDetail projectId={projectId} />
