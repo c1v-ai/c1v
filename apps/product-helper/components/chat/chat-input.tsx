@@ -77,7 +77,7 @@ export function ChatInput({
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className={cn('flex w-full flex-col', 'safe-bottom', className)}
+      className={cn('flex w-full flex-col', className)}
     >
       <div
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-lg border"

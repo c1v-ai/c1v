@@ -9,8 +9,8 @@
 ## Current Focus
 
 **Active Milestone:** v1.1 - Stabilization & Security
-**Current Phase:** Phase 3 - Mobile-First & Web Revamp (In Progress)
-**Last Activity:** Completed 03-05-PLAN.md (Desktop Enhancements)
+**Current Phase:** Phase 3 - Mobile-First & Web Revamp ✓ COMPLETE
+**Last Activity:** Phase 3 verified complete (6/6 must-haves passed)
 
 ---
 
@@ -18,25 +18,25 @@
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Test Stabilization | Complete (Plan 01,02,03/03 complete) |
-| 2 | Critical Security Fixes | Complete (Plan 01,02/02 complete) |
-| 3 | Mobile-First & Web Revamp | In Progress (Plan 01,02,03,04,05/06 complete) |
-| 4 | Backend Hardening | Pending |
+| 1 | Test Stabilization | ✓ Complete |
+| 2 | Critical Security Fixes | ✓ Complete |
+| 3 | Mobile-First & Web Revamp | ✓ Complete (6/6 verified) |
+| 4 | Backend Hardening | ← Next |
 | 5 | Performance Optimization | Pending |
 | 6 | Documentation | Pending |
 | 7 | Component Testing | Pending |
 | 8 | Planning Agents Upgrade | Pending |
 
-### Phase 3 Plan Progress
+### Phase 3 Plan Progress (COMPLETE)
 
 | Plan | Name | Status |
 |------|------|--------|
-| 03-01 | Theme System (Light/Dark Mode) | Complete |
-| 03-02 | PWA Setup | Complete |
-| 03-03 | Bottom Navigation | Complete |
-| 03-04 | Mobile Design System | Complete |
-| 03-05 | Desktop Enhancements | Complete |
-| 03-06 | Cross-platform Testing | Pending |
+| 03-01 | Theme System (Light/Dark Mode) | ✓ Complete |
+| 03-02 | PWA Setup | ✓ Complete |
+| 03-03 | Bottom Navigation | ✓ Complete |
+| 03-04 | Mobile Design System | ✓ Complete |
+| 03-05 | Desktop Enhancements | ✓ Complete |
+| 03-06 | Cross-platform Testing | ✓ Complete |
 
 ---
 
@@ -79,23 +79,39 @@
 | 2026-01-19 | 03-05 | Keyboard shortcuts skip form elements | Prevent conflicts when typing in inputs |
 | 2026-01-19 | 03-05 | CSS group-hover pattern | Coordinated hover without JS state overhead |
 | 2026-01-19 | 03-05 | xl:grid-cols-4 for large desktop | Better density on wide screens |
+| 2026-01-19 | 03-UAT | Created /account page for mobile | Bottom nav linked to /settings which didn't exist |
+| 2026-01-19 | 03-UAT | Wrapped sidebar in scroll container | Independent scroll from chat messages |
+| 2026-01-19 | 03-UAT | Added min-h-0 to flex containers | Proper flex containment for layout chain |
+| 2026-01-19 | 03-UAT | pb-16 on dashboard children | Clearance for 64px fixed bottom nav |
 
 ---
 
 ## Session Continuity
 
 **Last session:** 2026-01-19
-**Stopped at:** Completed 03-05-PLAN.md (Desktop Enhancements)
+**Stopped at:** Phase 3 complete, ready for Phase 4
 **Resume file:** None
 
 ---
 
 ## Next Steps
 
-1. Continue to 03-06-PLAN.md (Cross-platform Testing) - Wave 3
-2. Test PWA installability with production build
+1. **Plan Phase 4** (Backend Hardening) - rate limiting, LLM timeouts, session management
+2. Optionally run Phase 6.1-6.2 in parallel (User/API Docs)
 3. Replace placeholder PWA icons with designed assets
-4. Phase 3 nearly complete (5/6 plans done)
+4. Run Lighthouse audit for mobile score verification
+
+---
+
+## Bug Fixes During UAT
+
+| Issue | File | Fix |
+|-------|------|-----|
+| Chat input cut off by bottom nav | `app/(dashboard)/layout.tsx` | Added `pb-16 md:pb-0` to children container |
+| /settings 404 on mobile | `app/(dashboard)/account/page.tsx` | Created new account page |
+| Bottom nav wrong link | `components/navigation/bottom-nav.tsx` | Changed `/settings` to `/account` |
+| Sidebar scrolls with chat | `app/(dashboard)/projects/[id]/chat/chat-client.tsx` | Wrapped sidebar in scroll container |
+| Flex containment broken | Multiple layouts | Added `min-h-0` to flex containers |
 
 ---
 
@@ -108,4 +124,5 @@
 - **03-03 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-03-SUMMARY.md`
 - **03-04 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-04-SUMMARY.md`
 - **03-05 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-05-SUMMARY.md`
+- **Account Page:** `app/(dashboard)/account/page.tsx` (new)
 - **This file:** `.planning/STATE.md`

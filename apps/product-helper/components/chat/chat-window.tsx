@@ -122,9 +122,9 @@ export function ChatLayout({ content, footer }: ChatLayoutProps) {
       <div
         className={cn(
           "flex-shrink-0 border-t bg-[var(--bg-primary)]",
-          "px-3 pb-4 pt-2", // Mobile-first padding
-          "md:px-4 md:pb-8", // Desktop: more padding
-          "safe-bottom" // iOS safe area
+          "px-3 pt-2", // Horizontal and top padding
+          "md:px-4", // Desktop: more horizontal padding
+          "chat-footer-safe" // Combined: visual + BottomNav clearance + safe area
         )}
         style={{ borderColor: 'var(--border)' }}
       >

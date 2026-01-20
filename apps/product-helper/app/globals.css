@@ -274,6 +274,19 @@
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
+  /* Chat footer padding - combines visual padding + BottomNav clearance + safe area */
+  .chat-footer-safe {
+    /* Mobile: 16px visual + 64px nav + safe area */
+    padding-bottom: calc(16px + 64px + env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 768px) {
+    .chat-footer-safe {
+      /* Desktop: 32px visual only (no BottomNav) */
+      padding-bottom: 32px;
+    }
+  }
+
   /* Mobile typography scale */
   .text-mobile-base {
     font-size: 16px; /* Prevents iOS zoom on focus */
