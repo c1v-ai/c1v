@@ -168,8 +168,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <section className="flex flex-col h-screen">
       <DashboardShortcuts />
       <Header />
-      {/* Main content area - handles scroll, bottom nav padding on mobile */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      {/* Main content area - pb-16 on mobile for fixed bottom nav (64px) */}
+      <div className="flex-1 min-h-0 overflow-y-auto pb-16 md:pb-0">
         {children}
       </div>
       <BottomNav />
