@@ -7,8 +7,8 @@ import { FolderPlus, Loader2 } from 'lucide-react';
 
 function ProjectsListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[1, 2, 3].map((i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+      {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
           className="h-64 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
@@ -57,7 +57,7 @@ async function ProjectsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {projects.map((project) => (
         <ProjectCard key={project.id} project={project} />
       ))}
