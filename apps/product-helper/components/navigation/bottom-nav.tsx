@@ -10,7 +10,7 @@ const navItems = [
   { href: '/projects', icon: FolderOpen, label: 'Projects' },
   // Chat link will go to most recent project's chat or a default
   { href: '/chat', icon: MessageSquare, label: 'Chat' },
-  { href: '/settings', icon: User, label: 'Account' },
+  { href: '/account', icon: User, label: 'Account' },
 ]
 
 export function BottomNav() {
