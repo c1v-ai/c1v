@@ -18,8 +18,14 @@ import { User } from '@/lib/db/schema';
 import useSWR, { mutate } from 'swr';
 import { BottomNav } from '@/components/navigation/bottom-nav';
 import { MobileMenu } from '@/components/navigation/mobile-menu';
+import { useAppKeyboardShortcuts } from '@/lib/hooks/use-keyboard-shortcuts';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+function DashboardShortcuts() {
+  useAppKeyboardShortcuts();
+  return null;
+}
 
 function UserMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -109,16 +115,23 @@ function Header() {
           </Link>
         </div>
 
-        {/* Desktop Navigation - hidden on mobile */}
+        {/* Desktop Navigation - hidden on mobile, shows keyboard shortcuts on lg+ */}
         {user && (
           <nav className="hidden md:flex items-center space-x-6">
             <Link
               href="/projects"
-              className="text-sm font-medium flex items-center gap-2"
+              className="text-sm font-medium flex items-center gap-2 group"
               style={{ color: 'var(--text-primary)' }}
             >
               <Home className="h-4 w-4" />
-              Home
+              <span>Home</span>
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-muted-foreground bg-muted rounded border border-border font-mono">
+                <span>Cmd</span>
+                <span>+</span>
+                <span>Shift</span>
+                <span>+</span>
+                <span>H</span>
+              </kbd>
             </Link>
             <Link
               href="/projects"
@@ -153,6 +166,7 @@ function Header() {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <section className="flex flex-col h-screen">
+      <DashboardShortcuts />
       <Header />
       {/* Add bottom padding on mobile to account for bottom nav */}
       <div className="flex-1 min-h-0 overflow-hidden pb-16 md:pb-0">
