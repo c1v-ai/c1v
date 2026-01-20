@@ -78,7 +78,7 @@ Plans:
 - [x] 03-02-PLAN.md — PWA setup with manifest and service worker (Wave 1)
 - [ ] 03-03-PLAN.md — Mobile navigation: bottom nav and hamburger menu (Wave 2)
 - [x] 03-04-PLAN.md — Mobile-first design system: touch targets, typography (Wave 2)
-- [ ] 03-05-PLAN.md — Desktop enhancements: keyboard shortcuts, multi-column (Wave 3)
+- [x] 03-05-PLAN.md — Desktop enhancements: keyboard shortcuts, multi-column (Wave 3)
 - [ ] 03-06-PLAN.md — Cross-platform testing with Playwright and Lighthouse (Wave 3)
 
 #### Success Criteria

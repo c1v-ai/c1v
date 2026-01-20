@@ -10,7 +10,7 @@
 
 **Active Milestone:** v1.1 - Stabilization & Security
 **Current Phase:** Phase 3 - Mobile-First & Web Revamp (In Progress)
-**Last Activity:** Completed 03-04-PLAN.md (Mobile Design System)
+**Last Activity:** Completed 03-05-PLAN.md (Desktop Enhancements)
 
 ---
 
@@ -20,7 +20,7 @@
 |-------|------|--------|
 | 1 | Test Stabilization | Complete (Plan 01,02,03/03 complete) |
 | 2 | Critical Security Fixes | Complete (Plan 01,02/02 complete) |
-| 3 | Mobile-First & Web Revamp | In Progress (Plan 01,02,03,04/06 complete) |
+| 3 | Mobile-First & Web Revamp | In Progress (Plan 01,02,03,04,05/06 complete) |
 | 4 | Backend Hardening | Pending |
 | 5 | Performance Optimization | Pending |
 | 6 | Documentation | Pending |
@@ -35,8 +35,8 @@
 | 03-02 | PWA Setup | Complete |
 | 03-03 | Bottom Navigation | Complete |
 | 03-04 | Mobile Design System | Complete |
-| 03-05 | Safe Area Handling | Pending |
-| 03-06 | Mobile Chat Optimization | Pending |
+| 03-05 | Desktop Enhancements | Complete |
+| 03-06 | Cross-platform Testing | Pending |
 
 ---
 
@@ -76,23 +76,26 @@
 | 2026-01-19 | 03-04 | 16px font-size on inputs | Prevents iOS Safari auto-zoom on focus |
 | 2026-01-19 | 03-04 | env() for safe areas | Browser-native, future-proof safe area handling |
 | 2026-01-19 | 03-04 | visualViewport API | Modern virtual keyboard detection |
+| 2026-01-19 | 03-05 | Keyboard shortcuts skip form elements | Prevent conflicts when typing in inputs |
+| 2026-01-19 | 03-05 | CSS group-hover pattern | Coordinated hover without JS state overhead |
+| 2026-01-19 | 03-05 | xl:grid-cols-4 for large desktop | Better density on wide screens |
 
 ---
 
 ## Session Continuity
 
 **Last session:** 2026-01-19
-**Stopped at:** Completed 03-04-PLAN.md (Mobile Design System)
+**Stopped at:** Completed 03-05-PLAN.md (Desktop Enhancements)
 **Resume file:** None
 
 ---
 
 ## Next Steps
 
-1. Continue to 03-05-PLAN.md (Desktop Enhancements) - Wave 3
-2. Continue to 03-06-PLAN.md (Cross-platform Testing) - Wave 3
-3. Test PWA installability with production build
-4. Replace placeholder PWA icons with designed assets
+1. Continue to 03-06-PLAN.md (Cross-platform Testing) - Wave 3
+2. Test PWA installability with production build
+3. Replace placeholder PWA icons with designed assets
+4. Phase 3 nearly complete (5/6 plans done)
 
 ---
 
@@ -104,4 +107,5 @@
 - **03-02 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-02-SUMMARY.md`
 - **03-03 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-03-SUMMARY.md`
 - **03-04 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-04-SUMMARY.md`
+- **03-05 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-05-SUMMARY.md`
 - **This file:** `.planning/STATE.md`
