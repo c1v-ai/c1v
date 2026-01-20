@@ -195,7 +195,7 @@ export default function ProjectLayout({ children, params }: ProjectLayoutProps) 
   const { id } = use(params);
 
   return (
-    <div className="flex-1 flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="flex-1 flex flex-col min-h-0" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <Suspense
         fallback={
           <div
@@ -206,7 +206,7 @@ export default function ProjectLayout({ children, params }: ProjectLayoutProps) 
       >
         <ProjectHeader projectId={id} />
       </Suspense>
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 min-h-0 flex flex-col">{children}</main>
     </div>
   );
 }
