@@ -83,7 +83,7 @@ If it sounds like corporate PM theater, delete it.
 
 ## Using Skills in Plans
 
-The `.claude/skills/` directory contains domain-specific best practices and patterns. Reference relevant skills in plan context sections to ensure consistent implementation.
+The `.claude/skills/` directory contains domain-specific best practices and patterns. Reference relevant skills in plan context sections to ensure **enterprise-grade** implementation.
 
 **Available Skills:**
 
@@ -94,6 +94,8 @@ The `.claude/skills/` directory contains domain-specific best practices and patt
 | `testing-strategies.md` | Unit tests, component tests, mocking |
 | `database-patterns.md` | Drizzle schemas, queries, migrations |
 | `api-design.md` | API routes, validation, error handling |
+| `security-patterns.md` | Auth, XSS, CSRF, injection prevention, OWASP |
+| `code-quality.md` | Naming, functions, types, maintainability |
 
 **Also available at monorepo root:**
 
@@ -108,6 +110,7 @@ The `.claude/skills/` directory contains domain-specific best practices and patt
 @.planning/PROJECT.md
 @.planning/ROADMAP.md
 @.claude/skills/nextjs-best-practices.md   # For UI work
+@.claude/skills/security-patterns.md        # For auth/security tasks
 @.claude/skills/testing-strategies.md       # For test tasks
 </context>
 ```
@@ -117,10 +120,17 @@ The `.claude/skills/` directory contains domain-specific best practices and patt
 1. **UI/Frontend tasks** → `nextjs-best-practices.md` + `react-best-practices.md`
 2. **LangGraph/AI tasks** → `langchain-patterns.md`
 3. **Database tasks** → `database-patterns.md`
-4. **API tasks** → `api-design.md`
-5. **Any task with tests** → `testing-strategies.md`
+4. **API tasks** → `api-design.md` + `security-patterns.md`
+5. **Auth/Security tasks** → `security-patterns.md`
+6. **Any task with tests** → `testing-strategies.md`
+7. **Refactoring tasks** → `code-quality.md`
 
 Include 1-2 relevant skills max per plan to avoid context bloat.
+
+**Enterprise Quality Enforcement:**
+- ALL API tasks MUST include `security-patterns.md`
+- ALL public endpoints MUST reference rate limiting patterns
+- ALL user input handling MUST follow validation patterns
 
 </skills_library>
 
