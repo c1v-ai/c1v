@@ -3,9 +3,9 @@ import postgres from 'postgres';
 import * as schema from './schema';
 import { env } from '@/lib/config/env';
 
-// SSL configuration - strict verification in production, disabled for local dev
+// SSL configuration for Supabase - require SSL in production
 const ssl = process.env.NODE_ENV === 'production'
-  ? { rejectUnauthorized: true }
+  ? 'require'
   : undefined;
 
 // Connection pooling configuration
