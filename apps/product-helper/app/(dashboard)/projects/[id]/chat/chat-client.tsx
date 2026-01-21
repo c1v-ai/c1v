@@ -155,16 +155,18 @@ export function ProjectChatClient({
     : undefined;
 
   return (
-    <div className="flex h-full overflow-hidden" style={{ height: '100%' }}>
-      {/* Desktop Sidebar */}
+    <div className="flex h-full" style={{ height: '100%' }}>
+      {/* Desktop Sidebar - fixed height, independent scroll */}
       {isDesktop && (
-        <ArtifactsSidebar
-          projectData={parsedProjectData}
-          artifacts={parsedArtifacts}
-          isCollapsed={sidebarCollapsed}
-          onToggleCollapse={handleToggleSidebar}
-          onDiagramClick={handleDiagramClick}
-        />
+        <div className="flex-shrink-0 h-full overflow-y-auto">
+          <ArtifactsSidebar
+            projectData={parsedProjectData}
+            artifacts={parsedArtifacts}
+            isCollapsed={sidebarCollapsed}
+            onToggleCollapse={handleToggleSidebar}
+            onDiagramClick={handleDiagramClick}
+          />
+        </div>
       )}
 
       {/* Mobile Sheet */}
@@ -195,8 +197,8 @@ export function ProjectChatClient({
         </Sheet>
       )}
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+      {/* Chat Area - flex-1 fills remaining space, min-h-0 allows shrinking */}
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden relative">
         <ChatLayout
           content={
             <ChatMessages

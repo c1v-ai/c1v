@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { use, useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut, MessageSquare, Settings, FolderOpen } from 'lucide-react';
+import { CircleIcon, Home, LogOut, MessageSquare, FolderOpen } from 'lucide-react';
+import { ModeToggle } from '@/components/theme/mode-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +16,16 @@ import { signOut } from '@/app/(login)/actions';
 import { useRouter } from 'next/navigation';
 import { User } from '@/lib/db/schema';
 import useSWR, { mutate } from 'swr';
+import { BottomNav } from '@/components/navigation/bottom-nav';
+import { MobileMenu } from '@/components/navigation/mobile-menu';
+import { useAppKeyboardShortcuts } from '@/lib/hooks/use-keyboard-shortcuts';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+function DashboardShortcuts() {
+  useAppKeyboardShortcuts();
+  return null;
+}
 
 function UserMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -97,21 +106,32 @@ function Header() {
   return (
     <header className="border-b" style={{ borderColor: 'var(--border)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center">
-          <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Product Helper</span>
-        </Link>
+        {/* Mobile menu button - only visible on mobile */}
+        <div className="flex items-center gap-2">
+          {user && <MobileMenu />}
+          <Link href="/" className="flex items-center">
+            <CircleIcon className="h-6 w-6 text-orange-500" />
+            <span className="ml-2 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Product Helper</span>
+          </Link>
+        </div>
 
-        {/* Navigation - only show when user is logged in */}
+        {/* Desktop Navigation - hidden on mobile, shows keyboard shortcuts on lg+ */}
         {user && (
           <nav className="hidden md:flex items-center space-x-6">
             <Link
               href="/projects"
-              className="text-sm font-medium flex items-center gap-2"
+              className="text-sm font-medium flex items-center gap-2 group"
               style={{ color: 'var(--text-primary)' }}
             >
               <Home className="h-4 w-4" />
-              Home
+              <span>Home</span>
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-muted-foreground bg-muted rounded border border-border font-mono">
+                <span>Cmd</span>
+                <span>+</span>
+                <span>Shift</span>
+                <span>+</span>
+                <span>H</span>
+              </kbd>
             </Link>
             <Link
               href="/projects"
@@ -133,6 +153,7 @@ function Header() {
         )}
 
         <div className="flex items-center space-x-4">
+          <ModeToggle />
           <Suspense fallback={<div className="h-9" />}>
             <UserMenu />
           </Suspense>
@@ -144,9 +165,14 @@ function Header() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <section className="flex flex-col min-h-screen">
+    <section className="flex flex-col h-screen">
+      <DashboardShortcuts />
       <Header />
-      {children}
+      {/* Main content area - pb-16 on mobile for fixed bottom nav (64px) */}
+      <div className="flex-1 min-h-0 overflow-y-auto pb-16 md:pb-0">
+        {children}
+      </div>
+      <BottomNav />
     </section>
   );
 }

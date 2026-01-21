@@ -358,12 +358,10 @@ function inferInteraction(name: string): string {
   if (/user|customer|admin/i.test(nameLower)) {
     return 'interacts with';
   }
-  if (/api|gateway/i.test(nameLower)) {
-    return 'integrates with';
-  }
   if (/database|storage/i.test(nameLower)) {
     return 'stores data in';
   }
+  // Check payment BEFORE gateway to ensure "Payment Gateway" returns "processes payments via"
   if (/payment/i.test(nameLower)) {
     return 'processes payments via';
   }
@@ -372,6 +370,10 @@ function inferInteraction(name: string): string {
   }
   if (/auth/i.test(nameLower)) {
     return 'authenticates via';
+  }
+  // Check api|gateway after more specific patterns
+  if (/api|gateway/i.test(nameLower)) {
+    return 'integrates with';
   }
 
   return 'connects to';
@@ -1213,8 +1215,10 @@ function parseRelationship(
 ): string | null {
   const text = relationshipText.toLowerCase();
 
-  // Find target entity mentioned in relationship
+  // Find target entity mentioned in relationship, excluding the source entity
+  // This prevents "User has many Orders" from finding "User" as the target
   const targetEntity = allEntities.find((e) =>
+    e.name.toLowerCase() !== sourceEntity.toLowerCase() &&
     text.includes(e.name.toLowerCase())
   );
 

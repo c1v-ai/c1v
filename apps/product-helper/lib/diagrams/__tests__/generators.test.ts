@@ -97,7 +97,8 @@ describe('Diagram Generators', () => {
 
       expect(result.mermaidSyntax).toContain('fill:#ffffff');
       expect(result.mermaidSyntax).toContain('stroke:#000000');
-      expect(result.mermaidSyntax).not.toMatch(/fill:#[a-f0-9]{6}/i);
+      // Exclude white (#ffffff) and black (#000000) from the "no colors" check
+      expect(result.mermaidSyntax).not.toMatch(/fill:#(?!ffffff|000000)[a-f0-9]{6}/i);
     });
 
     it('should use dashed line for boundary', () => {
@@ -174,8 +175,8 @@ describe('Diagram Generators', () => {
 
       const result = generateCornellContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
-      expect(result.validation.errors).toContain(
-        expect.stringContaining('CTX-002')
+      expect(result.validation.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-002')])
       );
     });
 
@@ -192,8 +193,8 @@ describe('Diagram Generators', () => {
 
       const result = generateCornellContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
-      expect(result.validation.errors).toContain(
-        expect.stringContaining('CTX-003')
+      expect(result.validation.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-003')])
       );
     });
 
@@ -210,8 +211,8 @@ describe('Diagram Generators', () => {
 
       const result = generateCornellContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
-      expect(result.validation.errors).toContain(
-        expect.stringContaining('CTX-004')
+      expect(result.validation.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-004')])
       );
     });
 
@@ -228,8 +229,8 @@ describe('Diagram Generators', () => {
 
       const result = generateCornellContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
-      expect(result.validation.errors).toContain(
-        expect.stringContaining('CTX-005')
+      expect(result.validation.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-005')])
       );
     });
 
@@ -246,8 +247,8 @@ describe('Diagram Generators', () => {
 
       const result = generateCornellContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
-      expect(result.validation.errors).toContain(
-        expect.stringContaining('CTX-006')
+      expect(result.validation.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-006')])
       );
     });
 
@@ -263,8 +264,8 @@ describe('Diagram Generators', () => {
       };
 
       const result = generateCornellContextDiagram(spec);
-      expect(result.validation.warnings).toContain(
-        expect.stringContaining('CTX-W01')
+      expect(result.validation.warnings).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-W01')])
       );
     });
 
@@ -288,8 +289,8 @@ describe('Diagram Generators', () => {
       };
 
       const result = generateCornellContextDiagram(spec);
-      expect(result.validation.warnings).toContain(
-        expect.stringContaining('CTX-W04')
+      expect(result.validation.warnings).toEqual(
+        expect.arrayContaining([expect.stringContaining('CTX-W04')])
       );
     });
   });

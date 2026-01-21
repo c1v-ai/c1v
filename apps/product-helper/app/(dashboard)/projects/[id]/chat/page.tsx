@@ -63,9 +63,9 @@ export default async function ProjectChatPage({ params }: ProjectChatPageProps) 
   }
 
   return (
-    <section className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 236px)' }}>
+    <section className="flex-1 flex flex-col min-h-0">
       {/* Chat Interface */}
-      <div className="flex-1 min-h-0 overflow-hidden h-full">
+      <div className="flex-1 min-h-0">
         <Suspense fallback={<ChatLoadingSkeleton />}>
           <ProjectChatContent projectId={projectId} />
         </Suspense>
