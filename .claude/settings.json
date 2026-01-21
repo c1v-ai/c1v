@@ -1,5 +1,8 @@
 {
   "enabledPlugins": {
     "git-commit-smart@claude-code-plugins-plus": true
+  },
+  "env": {
+    "ENABLE_TOOL_SEARCH": "true"
   }
 }
