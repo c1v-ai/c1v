@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://c1v.dev/schemas/plan.schema.json",
+  "title": "GSD Plan Schema",
+  "description": "JSON Schema for validating GSD (Get Stuff Done) plan file frontmatter. Plans are execution units within phases, containing tasks and validation requirements.",
+  "type": "object",
+  "required": ["phase", "plan", "wave"],
+  "properties": {
+    "planId": {
+      "type": "string",
+      "pattern": "^\\d{2}-\\d{2}$",
+      "description": "Plan identifier derived from phase and plan number (e.g., '03-01' for phase 03, plan 01). Computed from phase + plan fields when not explicitly provided."
+    },
+    "phase": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "Phase identifier slug (e.g., '01-test-stabilization', '03-mobile-first-web-revamp')"
+        },
+        {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Phase number"
+        }
+      ],
+      "description": "Phase this plan belongs to"
+    },
+    "plan": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Plan number within the phase (e.g., 1, 2, 3)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Human-readable title for the plan"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["execute", "research", "review", "verify", "gap-closure"],
+      "default": "execute",
+      "description": "Type of plan - execute for implementation, research for investigation, review for code review, verify for validation, gap-closure for addressing verification gaps"
+    },
+    "wave": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Execution wave number. Plans in the same wave can run in parallel. Wave 1 runs first, wave 2 runs after wave 1 completes, etc."
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\d{2}-\\d{2}$",
+        "description": "Plan ID this plan depends on (e.g., '03-03')"
+      },
+      "uniqueItems": true,
+      "default": [],
+      "description": "List of plan IDs that must complete before this plan can start"
+    },
+    "autonomous": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the plan can execute without manual checkpoints. True = fully automated, False = requires human review at checkpoints"
+    },
+    "gap_closure": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this plan is specifically for closing verification gaps identified in previous plans"
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "backend-architect",
+        "database-engineer",
+        "devops-engineer",
+        "ui-ux-engineer",
+        "chat-engineer",
+        "data-viz-engineer",
+        "langchain-engineer",
+        "llm-workflow-engineer",
+        "sr-cornell-validator",
+        "vector-store-engineer",
+        "cache-engineer",
+        "observability-engineer",
+        "product-manager",
+        "product-strategy",
+        "technical-program-manager",
+        "qa-engineer",
+        "documentation-engineer"
+      ],
+      "description": "Explicit agent type to execute this plan. Overrides automatic routing based on subsystem/tags."
+    },
+    "subsystem": {
+      "type": "string",
+      "enum": [
+        "ui",
+        "api",
+        "database",
+        "security",
+        "auth",
+        "ai",
+        "agents",
+        "infrastructure",
+        "testing",
+        "documentation",
+        "analytics",
+        "chat",
+        "diagrams",
+        "validation"
+      ],
+      "description": "Domain/subsystem for automatic agent routing when agent is not explicitly specified"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50,
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true,
+      "default": [],
+      "description": "Tags for routing fallback when subsystem doesn't provide a clear agent match (e.g., ['secrets', 'env-validation', 'startup'])"
+    },
+    "files_modified": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "File path relative to project root"
+      },
+      "uniqueItems": true,
+      "default": [],
+      "description": "List of files expected to be modified by this plan"
+    },
+    "must_haves": {
+      "type": "object",
+      "description": "Validation requirements that must be satisfied for the plan to be considered complete",
+      "properties": {
+        "truths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Boolean assertions that must be true after plan execution (e.g., 'All tests pass')"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "provides"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "File path relative to project root"
+              },
+              "provides": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Description of what this artifact provides"
+              },
+              "exports": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Named exports the artifact must provide"
+              },
+              "contains": {
+                "type": "string",
+                "description": "String or pattern that must be present in the file"
+              },
+              "min_lines": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Minimum number of lines the file must have"
+              }
+            }
+          },
+          "description": "Files that must exist and meet specified criteria"
+        },
+        "key_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "via"],
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Source file or component"
+              },
+              "to": {
+                "type": "string",
+                "description": "Target file or component"
+              },
+              "via": {
+                "type": "string",
+                "description": "Description of how they are linked"
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regex pattern to verify the link exists"
+              }
+            }
+          },
+          "description": "Required connections between files/components"
+        }
+      },
+      "additionalProperties": false
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "default": "medium",
+      "description": "Execution priority within the same wave"
+    },
+    "estimated_duration": {
+      "type": "string",
+      "pattern": "^\\d+[mh]$",
+      "description": "Estimated duration to complete (e.g., '30m', '2h')"
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "phase": "01-test-stabilization",
+      "plan": 1,
+      "type": "execute",
+      "wave": 1,
+      "depends_on": [],
+      "files_modified": [
+        "lib/diagrams/__tests__/generators.test.ts",
+        "lib/diagrams/generators.ts"
+      ],
+      "autonomous": true,
+      "must_haves": {
+        "truths": [
+          "All 7 CTX-* validation tests pass",
+          "B&W styling test passes"
+        ],
+        "artifacts": [
+          {
+            "path": "lib/diagrams/__tests__/generators.test.ts",
+            "provides": "Fixed test assertions",
+            "contains": "expect.arrayContaining"
+          }
+        ]
+      }
+    },
+    {
+      "phase": "02-critical-security-fixes",
+      "plan": 1,
+      "type": "execute",
+      "wave": 1,
+      "depends_on": [],
+      "autonomous": true,
+      "subsystem": "security",
+      "tags": ["secrets", "env-validation", "startup"],
+      "agent": "devops-engineer",
+      "files_modified": [
+        "lib/config/env.ts",
+        "next.config.ts"
+      ],
+      "must_haves": {
+        "truths": [
+          "Application fails fast if AUTH_SECRET is less than 32 characters"
+        ],
+        "artifacts": [
+          {
+            "path": "lib/config/env.ts",
+            "provides": "Zod schema for environment validation",
+            "exports": ["env", "Env"],
+            "min_lines": 20
+          }
+        ]
+      }
+    }
+  ]
+}
