@@ -16,6 +16,11 @@
       "require": "./dist/exit-codes.js",
       "types": "./dist/exit-codes.d.ts"
     },
+    "./audit": {
+      "import": "./dist/audit.mjs",
+      "require": "./dist/audit.js",
+      "types": "./dist/audit.d.ts"
+    },
     "./schemas/state": {
       "import": "./schemas/state.schema.json",
       "require": "./schemas/state.schema.json"
