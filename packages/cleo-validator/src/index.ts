@@ -44,3 +44,23 @@ export {
   auditDecision,
   auditTaskCreate,
 } from './audit';
+
+// Export all validation utilities
+export {
+  type SchemaName,
+  type ValidationResult,
+  type ValidationError,
+  loadSchemas,
+  getSchema,
+  validate,
+  validateState,
+  validatePlan,
+  validateTaskRegistry,
+  validateWithExitCode,
+  validateFile,
+  validateFileWithExitCode,
+  validateProjectState,
+  validateProjectTasks,
+  validateProject,
+  validateProjectWithExitCode,
+} from './validator';

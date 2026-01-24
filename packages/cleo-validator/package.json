@@ -7,19 +7,24 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./exit-codes": {
+      "types": "./dist/exit-codes.d.ts",
       "import": "./dist/exit-codes.mjs",
-      "require": "./dist/exit-codes.js",
-      "types": "./dist/exit-codes.d.ts"
+      "require": "./dist/exit-codes.js"
     },
     "./audit": {
+      "types": "./dist/audit.d.ts",
       "import": "./dist/audit.mjs",
-      "require": "./dist/audit.js",
-      "types": "./dist/audit.d.ts"
+      "require": "./dist/audit.js"
+    },
+    "./validator": {
+      "types": "./dist/validator.d.ts",
+      "import": "./dist/validator.mjs",
+      "require": "./dist/validator.js"
     },
     "./schemas/state": {
       "import": "./schemas/state.schema.json",
@@ -49,7 +54,12 @@
   ],
   "author": "C1V Team",
   "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1"
+  },
   "devDependencies": {
+    "@types/node": "^20.10.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
