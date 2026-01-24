@@ -87,3 +87,39 @@ export {
   createFileReadErrorResult,
   createParseErrorResult,
 } from './layers/schema';
+
+// Export semantic validation layer
+export {
+  semanticLayer,
+  validateStatusTransition,
+  getValidTransitions,
+  VALID_TASK_STATUSES,
+  VALID_STATE_STATUSES,
+  VALID_PRIORITIES,
+  VALID_STATUS_TRANSITIONS,
+} from './layers/semantic';
+
+// Export referential integrity validation layer
+export {
+  referentialLayer,
+  detectCircularDependencies,
+  buildDependencyGraph,
+  validateDependenciesExist,
+  validateNoSelfReferences,
+  validateLastTaskId,
+  validateOpenQuestionUniqueness,
+  KNOWN_AGENTS,
+} from './layers/referential';
+
+// Export state machine validation layer
+export {
+  stateMachineLayer,
+  isValidTransition,
+  isTerminalState,
+  getNextStates,
+  validateTaskTransition,
+  validatePhaseTransition,
+  TASK_TRANSITIONS,
+  PHASE_TRANSITIONS,
+  PLAN_TRANSITIONS,
+} from './layers/state-machine';
