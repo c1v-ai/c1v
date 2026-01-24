@@ -140,3 +140,20 @@ export {
   type FileValidationResult,
   type ProjectValidationResult,
 } from './layers/runner';
+
+// Export validation hooks for GSD commands
+export {
+  beforeMutation,
+  afterMutation,
+  validateProjectHook,
+  validateTaskStateChange,
+  withValidation,
+  withMutationValidation,
+  validateFileExists,
+  createValidationCheckpoint,
+  ValidationError,
+  type ValidationHookOptions,
+  type HookValidationResult,
+  type HookProjectValidationResult,
+  type TaskStateChangeResult,
+} from './hooks';
