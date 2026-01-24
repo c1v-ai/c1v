@@ -64,3 +64,26 @@ export {
   validateProject,
   validateProjectWithExitCode,
 } from './validator';
+
+// Export validation layer types
+export {
+  type FileType,
+  type LayerName,
+  type ValidationContext,
+  type ValidationError as LayerValidationError,
+  type ValidationWarning,
+  type LayerResult,
+  type LayerMetadata,
+  type ValidationLayer,
+  type ValidationPipelineResult,
+  createSuccessResult,
+  createFailureResult,
+} from './layers/types';
+
+// Export schema validation layer
+export {
+  schemaLayer,
+  validateDataPresence,
+  createFileReadErrorResult,
+  createParseErrorResult,
+} from './layers/schema';
