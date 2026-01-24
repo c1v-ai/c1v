@@ -1,0 +1,52 @@
+{
+  "name": "@c1v/cleo-validator",
+  "version": "0.1.0",
+  "description": "CLEO validation framework for GSD workflow - exit codes, task validation, and audit logging",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./exit-codes": {
+      "import": "./dist/exit-codes.mjs",
+      "require": "./dist/exit-codes.js",
+      "types": "./dist/exit-codes.d.ts"
+    },
+    "./schemas/state": {
+      "import": "./schemas/state.schema.json",
+      "require": "./schemas/state.schema.json"
+    },
+    "./schemas/*": "./schemas/*"
+  },
+  "files": [
+    "dist",
+    "src",
+    "schemas"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "cleo",
+    "gsd",
+    "validation",
+    "exit-codes",
+    "workflow"
+  ],
+  "author": "C1V Team",
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}
