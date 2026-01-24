@@ -123,3 +123,20 @@ export {
   PHASE_TRANSITIONS,
   PLAN_TRANSITIONS,
 } from './layers/state-machine';
+
+// Export validation runner
+export {
+  runValidation,
+  runValidationOnFile,
+  runProjectValidation,
+  runValidationOnFiles,
+  runSingleLayer,
+  detectFileType,
+  getLayerNames,
+  isValidLayerName,
+  type RunnerOptions,
+  type PipelineMetadata,
+  type ExtendedPipelineResult,
+  type FileValidationResult,
+  type ProjectValidationResult,
+} from './layers/runner';
