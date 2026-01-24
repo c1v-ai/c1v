@@ -23,3 +23,24 @@ export {
   failure,
   isValidExitCode,
 } from './exit-codes';
+
+// Export all audit trail utilities
+export {
+  AUDIT_LOG_FILENAME,
+  type AuditAction,
+  type AuditEntry,
+  type AuditEntryInput,
+  initAuditLog,
+  appendAuditEntry,
+  readAuditLog,
+  auditTaskStart,
+  auditTaskComplete,
+  auditValidation,
+  auditAgentStart,
+  auditAgentEnd,
+  auditStateChange,
+  auditError,
+  auditCheckpoint,
+  auditDecision,
+  auditTaskCreate,
+} from './audit';
