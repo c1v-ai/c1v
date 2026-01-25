@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Clock,
 } from 'lucide-react';
+import { WelcomeOnboarding } from '@/components/onboarding/welcome-onboarding';
 
 // Landing page for non-authenticated users
 function LandingPage() {
@@ -296,6 +297,12 @@ async function DashboardContent() {
   }
 
   const projects = await getProjects();
+
+  // Show welcome onboarding for first-time users (no projects)
+  if (projects.length === 0) {
+    return <WelcomeOnboarding />;
+  }
+
   const recentProjects = projects.slice(0, 5);
 
   // Calculate stats
@@ -368,7 +375,7 @@ async function DashboardContent() {
                 asChild
                 style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
               >
-                <Link href="/projects/new">
+                <Link href="/welcome-test">
                   <FolderPlus className="mr-2 h-4 w-4" />
                   New Project
                 </Link>
@@ -426,7 +433,7 @@ async function DashboardContent() {
                   asChild
                   style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
                 >
-                  <Link href="/projects/new">
+                  <Link href="/welcome-test">
                     <FolderPlus className="mr-2 h-4 w-4" />
                     Create First Project
                   </Link>

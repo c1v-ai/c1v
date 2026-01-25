@@ -14,6 +14,11 @@
  */
 
 import type { Actor, UseCase, DataEntity } from '@/lib/langchain/schemas';
+import type {
+  TechStackModel,
+  APISpecification,
+  InfrastructureSpec,
+} from '@/lib/db/schema/v2-types';
 
 // ============================================================
 // Context Diagram Types (Cornell CESYS521 Compliant)
@@ -1419,6 +1424,549 @@ export function cleanSequenceDiagramSyntax(syntax: string): string {
 }
 
 // ============================================================
+// System Architecture Diagram Types
+// ============================================================
+
+/**
+ * Layer type for system architecture diagram
+ */
+export type ArchitectureLayer =
+  | 'client'
+  | 'frontend'
+  | 'api'
+  | 'services'
+  | 'data'
+  | 'external';
+
+/**
+ * Component in a system architecture diagram
+ */
+export interface ArchitectureComponent {
+  /** Unique identifier for the component */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Which layer this component belongs to */
+  layer: ArchitectureLayer;
+  /** Optional icon or shape hint */
+  shape?: 'rectangle' | 'database' | 'circle' | 'hexagon';
+  /** Description for tooltips */
+  description?: string;
+}
+
+/**
+ * Connection between components in the architecture
+ */
+export interface ArchitectureConnection {
+  /** Source component ID */
+  from: string;
+  /** Target component ID */
+  to: string;
+  /** Connection label (optional) */
+  label?: string;
+  /** Connection style */
+  style?: 'solid' | 'dashed';
+}
+
+/**
+ * Configuration options for system architecture diagram
+ */
+export interface SystemArchitectureDiagramOptions {
+  /** Title for the diagram */
+  title?: string;
+  /** Direction of the diagram */
+  direction?: 'TB' | 'LR';
+  /** Show layer labels */
+  showLayerLabels?: boolean;
+  /** Use color coding for layers */
+  useColorCoding?: boolean;
+}
+
+/**
+ * Result from system architecture diagram generation
+ */
+export interface SystemArchitectureDiagramResult {
+  mermaidSyntax: string;
+  validation: {
+    passed: boolean;
+    warnings: string[];
+    componentCount: number;
+    connectionCount: number;
+  };
+}
+
+// ============================================================
+// System Architecture Diagram Helper Functions
+// ============================================================
+
+/**
+ * Sanitize a string to be a valid Mermaid node ID
+ * - Removes special characters
+ * - Replaces spaces with underscores
+ * - Ensures it doesn't start with a number
+ *
+ * @param name - The name to sanitize
+ * @returns A valid Mermaid node ID
+ */
+export function sanitizeNodeId(name: string): string {
+  return name
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/^[0-9]/, '_$&');
+}
+
+/**
+ * Get the appropriate style class for a layer
+ *
+ * @param layer - The architecture layer
+ * @returns CSS class name for styling
+ */
+export function selectSubgraphStyle(layer: ArchitectureLayer): string {
+  const styles: Record<ArchitectureLayer, string> = {
+    client: 'clientLayer',
+    frontend: 'frontendLayer',
+    api: 'apiLayer',
+    services: 'servicesLayer',
+    data: 'dataLayer',
+    external: 'externalLayer',
+  };
+  return styles[layer] || 'defaultLayer';
+}
+
+/**
+ * Infer connections between components based on tech stack and API spec
+ *
+ * @param techStack - Tech stack configuration
+ * @param apiSpec - API specification
+ * @returns Array of inferred connections
+ */
+export function inferConnections(
+  techStack: TechStackModel | null,
+  apiSpec: APISpecification | null
+): ArchitectureConnection[] {
+  const connections: ArchitectureConnection[] = [];
+
+  // Default architectural connections
+  const defaultConnections: ArchitectureConnection[] = [
+    { from: 'Browser', to: 'Frontend', style: 'solid' },
+    { from: 'Frontend', to: 'APIRoutes', style: 'solid' },
+    { from: 'APIRoutes', to: 'Middleware', style: 'solid' },
+  ];
+
+  connections.push(...defaultConnections);
+
+  // Infer from tech stack
+  if (techStack) {
+    const categories = techStack.categories || [];
+
+    // Check for database
+    const dbChoice = categories.find((c) => c.category === 'database');
+    if (dbChoice) {
+      connections.push({ from: 'APIRoutes', to: 'Database', style: 'solid' });
+    }
+
+    // Check for cache
+    const cacheChoice = categories.find((c) => c.category === 'cache');
+    if (cacheChoice) {
+      connections.push({ from: 'APIRoutes', to: 'Cache', style: 'solid' });
+    }
+
+    // Check for auth
+    const authChoice = categories.find((c) => c.category === 'auth');
+    if (authChoice) {
+      connections.push({ from: 'Middleware', to: 'Auth', style: 'solid' });
+    }
+
+    // Check for AI/ML
+    const aiChoice = categories.find((c) => c.category === 'ai-ml');
+    if (aiChoice) {
+      connections.push({ from: 'Agents', to: 'AI', style: 'solid' });
+      connections.push({ from: 'Middleware', to: 'Agents', style: 'solid' });
+    }
+
+    // Check for storage
+    const storageChoice = categories.find((c) => c.category === 'storage');
+    if (storageChoice) {
+      connections.push({ from: 'APIRoutes', to: 'Storage', style: 'dashed' });
+    }
+  }
+
+  // Infer from API spec - add vector store if search endpoints exist
+  if (apiSpec) {
+    const hasSearch = apiSpec.endpoints?.some(
+      (e) =>
+        e.path.includes('search') ||
+        e.operationId.toLowerCase().includes('search')
+    );
+    if (hasSearch) {
+      connections.push({ from: 'Agents', to: 'VectorStore', style: 'solid' });
+    }
+  }
+
+  return connections;
+}
+
+/**
+ * Extract components from tech stack
+ */
+function extractComponentsFromTechStack(
+  techStack: TechStackModel | null
+): ArchitectureComponent[] {
+  const components: ArchitectureComponent[] = [];
+
+  if (!techStack) return components;
+
+  const categories = techStack.categories || [];
+
+  // Map tech categories to architecture layers
+  const categoryToLayer: Record<string, ArchitectureLayer> = {
+    frontend: 'frontend',
+    backend: 'api',
+    database: 'data',
+    cache: 'data',
+    auth: 'services',
+    'ai-ml': 'services',
+    storage: 'services',
+    hosting: 'external',
+    monitoring: 'external',
+    payments: 'external',
+    email: 'external',
+  };
+
+  for (const choice of categories) {
+    const layer = categoryToLayer[choice.category] || 'services';
+    const id = sanitizeNodeId(choice.choice);
+
+    // Determine shape based on category
+    let shape: ArchitectureComponent['shape'] = 'rectangle';
+    if (choice.category === 'database' || choice.category === 'cache') {
+      shape = 'database';
+    }
+
+    components.push({
+      id,
+      name: choice.choice,
+      layer,
+      shape,
+      description: choice.rationale,
+    });
+  }
+
+  return components;
+}
+
+/**
+ * Get display name for a layer
+ */
+function getLayerDisplayName(layer: ArchitectureLayer): string {
+  const names: Record<ArchitectureLayer, string> = {
+    client: 'Client Layer',
+    frontend: 'Frontend Layer',
+    api: 'API Layer',
+    services: 'Service Layer',
+    data: 'Data Layer',
+    external: 'External Services',
+  };
+  return names[layer];
+}
+
+// ============================================================
+// System Architecture Diagram Generator
+// ============================================================
+
+/**
+ * Generate a System Architecture Diagram
+ *
+ * Creates a visual representation of the system architecture showing:
+ * - Client layer (browsers, mobile apps)
+ * - Frontend layer (Next.js, React components)
+ * - API layer (routes, middleware, agents)
+ * - Service layer (auth, storage, AI)
+ * - Data layer (databases, caches, vector stores)
+ *
+ * @param techStack - Technology stack configuration
+ * @param apiSpec - API specification (optional)
+ * @param infrastructureSpec - Infrastructure specification (optional)
+ * @param options - Diagram configuration options
+ * @returns SystemArchitectureDiagramResult with Mermaid syntax and validation
+ *
+ * @example
+ * ```typescript
+ * const result = generateSystemArchitectureDiagram(
+ *   techStackData,
+ *   apiSpecData,
+ *   infrastructureData
+ * );
+ * // Returns Mermaid flowchart with layered subgraphs
+ * ```
+ */
+export function generateSystemArchitectureDiagram(
+  techStack: TechStackModel | null,
+  apiSpec: APISpecification | null = null,
+  infrastructureSpec: InfrastructureSpec | null = null,
+  options: SystemArchitectureDiagramOptions = {}
+): SystemArchitectureDiagramResult {
+  const {
+    title = 'System Architecture',
+    direction = 'TB',
+    showLayerLabels = true,
+    useColorCoding = true,
+  } = options;
+
+  const lines: string[] = [];
+  const warnings: string[] = [];
+
+  // Collect all components by layer
+  const componentsByLayer: Record<ArchitectureLayer, ArchitectureComponent[]> = {
+    client: [],
+    frontend: [],
+    api: [],
+    services: [],
+    data: [],
+    external: [],
+  };
+
+  // Add default client layer components
+  componentsByLayer.client.push(
+    { id: 'Browser', name: 'Web Browser', layer: 'client', shape: 'rectangle' },
+    { id: 'Mobile', name: 'Mobile App', layer: 'client', shape: 'rectangle' }
+  );
+
+  // Add default frontend layer components (infer from tech stack if available)
+  const frontendTech = techStack?.categories?.find((c) => c.category === 'frontend');
+  if (frontendTech) {
+    componentsByLayer.frontend.push({
+      id: sanitizeNodeId(frontendTech.choice),
+      name: frontendTech.choice,
+      layer: 'frontend',
+      shape: 'rectangle',
+    });
+  } else {
+    componentsByLayer.frontend.push(
+      { id: 'Frontend', name: 'Frontend App', layer: 'frontend', shape: 'rectangle' }
+    );
+  }
+
+  // Add default API layer components
+  componentsByLayer.api.push(
+    { id: 'APIRoutes', name: 'API Routes', layer: 'api', shape: 'rectangle' },
+    { id: 'Middleware', name: 'Auth Middleware', layer: 'api', shape: 'rectangle' }
+  );
+
+  // Check for AI/agents
+  const aiTech = techStack?.categories?.find((c) => c.category === 'ai-ml');
+  if (aiTech) {
+    componentsByLayer.api.push({
+      id: 'Agents',
+      name: 'LangChain Agents',
+      layer: 'api',
+      shape: 'hexagon',
+    });
+  }
+
+  // Add services from tech stack
+  const authTech = techStack?.categories?.find((c) => c.category === 'auth');
+  if (authTech) {
+    componentsByLayer.services.push({
+      id: 'Auth',
+      name: authTech.choice,
+      layer: 'services',
+      shape: 'rectangle',
+    });
+  }
+
+  const storageTech = techStack?.categories?.find((c) => c.category === 'storage');
+  if (storageTech) {
+    componentsByLayer.services.push({
+      id: 'Storage',
+      name: storageTech.choice,
+      layer: 'services',
+      shape: 'rectangle',
+    });
+  }
+
+  if (aiTech) {
+    componentsByLayer.services.push({
+      id: 'AI',
+      name: aiTech.choice,
+      layer: 'services',
+      shape: 'rectangle',
+    });
+  }
+
+  // Add data layer components
+  const dbTech = techStack?.categories?.find((c) => c.category === 'database');
+  if (dbTech) {
+    componentsByLayer.data.push({
+      id: 'Database',
+      name: dbTech.choice,
+      layer: 'data',
+      shape: 'database',
+    });
+  } else {
+    componentsByLayer.data.push({
+      id: 'Database',
+      name: 'PostgreSQL',
+      layer: 'data',
+      shape: 'database',
+    });
+  }
+
+  const cacheTech = techStack?.categories?.find((c) => c.category === 'cache');
+  if (cacheTech) {
+    componentsByLayer.data.push({
+      id: 'Cache',
+      name: cacheTech.choice,
+      layer: 'data',
+      shape: 'database',
+    });
+  }
+
+  // Check if vector store is needed
+  if (aiTech || apiSpec?.endpoints?.some((e) => e.path.includes('search'))) {
+    componentsByLayer.data.push({
+      id: 'VectorStore',
+      name: 'pgvector',
+      layer: 'data',
+      shape: 'database',
+    });
+  }
+
+  // Start building the diagram
+  lines.push(`flowchart ${direction}`);
+  lines.push('');
+
+  // Add subgraphs for each layer with components
+  const layerOrder: ArchitectureLayer[] = ['client', 'frontend', 'api', 'services', 'data'];
+
+  for (const layer of layerOrder) {
+    const components = componentsByLayer[layer];
+    if (components.length === 0) continue;
+
+    const layerName = getLayerDisplayName(layer);
+    const layerId = sanitizeNodeId(layerName);
+
+    if (showLayerLabels) {
+      lines.push(`    subgraph ${layerId}["${layerName}"]`);
+    } else {
+      lines.push(`    subgraph ${layerId}[" "]`);
+    }
+
+    for (const component of components) {
+      const nodeId = sanitizeNodeId(component.id);
+      const displayName = escapeLabel(component.name);
+
+      // Choose shape based on component type
+      if (component.shape === 'database') {
+        lines.push(`        ${nodeId}[("${displayName}")]`);
+      } else if (component.shape === 'hexagon') {
+        lines.push(`        ${nodeId}{{${displayName}}}`);
+      } else {
+        lines.push(`        ${nodeId}["${displayName}"]`);
+      }
+    }
+
+    lines.push('    end');
+    lines.push('');
+  }
+
+  // Generate connections
+  const connections = inferConnections(techStack, apiSpec);
+
+  // Add custom connections based on infrastructure
+  if (infrastructureSpec?.database) {
+    // Database connections are already handled
+  }
+
+  // Map all component IDs for validation
+  const allComponentIds = new Set<string>();
+  for (const components of Object.values(componentsByLayer)) {
+    for (const component of components) {
+      allComponentIds.add(sanitizeNodeId(component.id));
+    }
+  }
+
+  // Add connections to diagram
+  lines.push('    %% Connections');
+  for (const conn of connections) {
+    const fromId = sanitizeNodeId(conn.from);
+    const toId = sanitizeNodeId(conn.to);
+
+    // Only add connection if both endpoints exist
+    if (allComponentIds.has(fromId) && allComponentIds.has(toId)) {
+      const arrow = conn.style === 'dashed' ? '-.->' : '-->';
+      if (conn.label) {
+        lines.push(`    ${fromId} ${arrow}|"${escapeLabel(conn.label)}"| ${toId}`);
+      } else {
+        lines.push(`    ${fromId} ${arrow} ${toId}`);
+      }
+    }
+  }
+
+  lines.push('');
+
+  // Add styling
+  if (useColorCoding) {
+    lines.push('    %% Layer Styling');
+    lines.push('    classDef clientLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px');
+    lines.push('    classDef frontendLayer fill:#e8f5e9,stroke:#388e3c,stroke-width:2px');
+    lines.push('    classDef apiLayer fill:#fff3e0,stroke:#f57c00,stroke-width:2px');
+    lines.push('    classDef servicesLayer fill:#fce4ec,stroke:#c2185b,stroke-width:2px');
+    lines.push('    classDef dataLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px');
+    lines.push('    classDef database fill:#e1f5fe,stroke:#0288d1,stroke-width:2px');
+    lines.push('');
+
+    // Apply styles to components
+    for (const [layer, components] of Object.entries(componentsByLayer)) {
+      if (components.length === 0) continue;
+
+      const styleClass = selectSubgraphStyle(layer as ArchitectureLayer);
+      const ids = components.map((c) => sanitizeNodeId(c.id)).join(',');
+
+      // Database components get special styling
+      const dbComponents = components.filter((c) => c.shape === 'database');
+      const nonDbComponents = components.filter((c) => c.shape !== 'database');
+
+      if (nonDbComponents.length > 0) {
+        lines.push(`    class ${nonDbComponents.map((c) => sanitizeNodeId(c.id)).join(',')} ${styleClass}`);
+      }
+      if (dbComponents.length > 0) {
+        lines.push(`    class ${dbComponents.map((c) => sanitizeNodeId(c.id)).join(',')} database`);
+      }
+    }
+  }
+
+  // Count components and connections for validation
+  let componentCount = 0;
+  for (const components of Object.values(componentsByLayer)) {
+    componentCount += components.length;
+  }
+
+  // Add warnings if diagram is minimal
+  if (componentCount < 5) {
+    warnings.push('Diagram has fewer than 5 components. Consider adding more tech stack details.');
+  }
+
+  if (!techStack || !techStack.categories || techStack.categories.length === 0) {
+    warnings.push('No tech stack provided. Using default components.');
+  }
+
+  return {
+    mermaidSyntax: lines.join('\n'),
+    validation: {
+      passed: warnings.length === 0,
+      warnings,
+      componentCount,
+      connectionCount: connections.filter((conn) => {
+        const fromId = sanitizeNodeId(conn.from);
+        const toId = sanitizeNodeId(conn.to);
+        return allComponentIds.has(fromId) && allComponentIds.has(toId);
+      }).length,
+    },
+  };
+}
+
+// ============================================================
 // Unified Diagram Generator
 // ============================================================
 
@@ -1426,12 +1974,12 @@ export function cleanSequenceDiagramSyntax(syntax: string): string {
  * Generate diagram from extracted project data
  * Convenience function that selects the appropriate generator
  *
- * @param type - Diagram type ('context' | 'useCase' | 'class')
- * @param data - Project data with actors, useCases, boundaries, entities
+ * @param type - Diagram type ('context' | 'useCase' | 'class' | 'system_architecture')
+ * @param data - Project data with actors, useCases, boundaries, entities, techStack, apiSpec, etc.
  * @returns Mermaid diagram syntax
  */
 export function generateDiagram(
-  type: 'context' | 'useCase' | 'class',
+  type: 'context' | 'useCase' | 'class' | 'system_architecture',
   data: {
     projectName?: string;
     actors?: (Actor | ActorExtended)[];
@@ -1440,6 +1988,10 @@ export function generateDiagram(
     dataEntities?: DataEntity[];
     contextSpec?: ContextDiagramSpec;
     useCaseOptions?: UseCaseDiagramOptions;
+    // System architecture diagram inputs
+    techStack?: TechStackModel | null;
+    apiSpecification?: APISpecification | null;
+    infrastructureSpec?: InfrastructureSpec | null;
   }
 ): string {
   switch (type) {
@@ -1469,6 +2021,13 @@ export function generateDiagram(
 
     case 'class':
       return generateClassDiagram(data.dataEntities || []);
+
+    case 'system_architecture':
+      return generateSystemArchitectureDiagram(
+        data.techStack || null,
+        data.apiSpecification || null,
+        data.infrastructureSpec || null
+      ).mermaidSyntax;
 
     default:
       return 'graph TD\n  NoData["Unknown diagram type"]';

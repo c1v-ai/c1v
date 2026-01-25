@@ -1,0 +1,408 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://c1v.dev/schemas/state.schema.json",
+  "title": "GSD State Schema",
+  "description": "JSON Schema for validating STATE.md structure in the GSD (Get Stuff Done) workflow. Tracks current position, decisions, blockers, and session activity.",
+  "type": "object",
+  "required": ["currentPosition", "nextSteps"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "description": "Project metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "description": "Project version (e.g., '1.1 (Planning)')"
+        },
+        "updated": {
+          "type": "string",
+          "description": "Last updated date in ISO format",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      }
+    },
+    "currentPosition": {
+      "type": "object",
+      "description": "Current workflow position within the GSD process",
+      "required": ["phase", "status"],
+      "properties": {
+        "phase": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Phase number (0 = Planning)"
+            },
+            {
+              "type": "string",
+              "description": "Phase name or identifier"
+            }
+          ]
+        },
+        "plan": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Plan number within phase"
+            },
+            {
+              "type": "string",
+              "description": "Plan identifier (e.g., '03-01')"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Current plan within the phase"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planning", "executing", "verifying", "complete", "blocked", "Ready to start"],
+          "description": "Current workflow status"
+        },
+        "milestone": {
+          "type": "string",
+          "description": "Active milestone name (e.g., 'v1.1 - Stabilization & Security')"
+        },
+        "lastActivity": {
+          "type": "string",
+          "description": "Description of last activity performed"
+        }
+      }
+    },
+    "activeTask": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^T\\d{3}$",
+              "description": "Stable task ID in CLEO format (e.g., T001, T042)"
+            },
+            "description": {
+              "type": "string",
+              "description": "Task description"
+            },
+            "assignedTo": {
+              "type": "string",
+              "description": "Agent or person assigned to task"
+            }
+          }
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "description": "Simple text description of active task or 'None'"
+        }
+      ],
+      "description": "Currently active task, null if no active task"
+    },
+    "milestoneProgress": {
+      "type": "array",
+      "description": "Progress tracking for each phase/milestone",
+      "items": {
+        "type": "object",
+        "required": ["phase", "name", "status"],
+        "properties": {
+          "phase": {
+            "oneOf": [
+              { "type": "integer", "minimum": 1 },
+              { "type": "string" }
+            ],
+            "description": "Phase number or identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Phase name"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Pending", "In Progress", "Complete", "Blocked", "Skipped"],
+            "description": "Phase completion status"
+          },
+          "details": {
+            "type": "string",
+            "description": "Additional status details (e.g., '6/6 verified')"
+          }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Log of decisions made during the project",
+      "items": {
+        "type": "object",
+        "required": ["date", "decision", "rationale"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Decision date in YYYY-MM-DD format"
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What was decided"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Why this decision was made"
+          },
+          "decidedBy": {
+            "type": "string",
+            "description": "Person or agent who made the decision"
+          },
+          "phase": {
+            "type": "string",
+            "description": "Phase identifier when decision was made (e.g., '01-01')"
+          }
+        }
+      },
+      "default": []
+    },
+    "blockers": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Blocker description"
+              },
+              {
+                "type": "object",
+                "required": ["description"],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Blocker identifier"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "What is blocking progress"
+                  },
+                  "owner": {
+                    "type": "string",
+                    "description": "Who is responsible for resolving"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "description": "Severity of the blocker"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}",
+                    "description": "When blocker was identified"
+                  }
+                }
+              }
+            ]
+          },
+          "description": "List of current blockers"
+        },
+        {
+          "type": "string",
+          "enum": ["None", "None currently.", "none"],
+          "description": "Indicates no blockers"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Current blockers preventing progress"
+    },
+    "openQuestions": {
+      "type": "array",
+      "description": "Questions that need resolution",
+      "items": {
+        "type": "object",
+        "required": ["id", "question", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^Q\\d+$",
+            "description": "Question identifier (e.g., Q1, Q2)"
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The question to be answered"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Open", "In Progress", "Resolved", "Deferred"],
+            "description": "Current status of the question"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Person or agent responsible for answering"
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Answer to the question (when resolved)"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}",
+            "description": "When the question was resolved"
+          }
+        }
+      },
+      "default": []
+    },
+    "sessionLog": {
+      "type": "array",
+      "description": "Log of actions taken during sessions",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "action"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "description": "When the action occurred (ISO 8601 or 'YYYY-MM-DD HH:mm' format)"
+          },
+          "agent": {
+            "type": "string",
+            "description": "Agent that performed the action"
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What action was taken"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional context about the action"
+          },
+          "taskId": {
+            "type": "string",
+            "pattern": "^T\\d{3}$",
+            "description": "Associated task ID if applicable"
+          }
+        }
+      },
+      "default": []
+    },
+    "filesModified": {
+      "type": "array",
+      "description": "Files modified during the current session",
+      "items": {
+        "type": "string",
+        "description": "File path (relative to project root)"
+      },
+      "default": []
+    },
+    "sessionContinuity": {
+      "type": "object",
+      "description": "Information for resuming work between sessions",
+      "properties": {
+        "lastSession": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Date of last session"
+        },
+        "stoppedAt": {
+          "type": "string",
+          "description": "Description of where work stopped"
+        },
+        "resumeFile": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ],
+          "description": "File path to resume from, or null"
+        }
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "description": "Ordered list of next actions to take",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Description of next step"
+      },
+      "minItems": 0
+    },
+    "quickStats": {
+      "type": "object",
+      "description": "Quick metrics and statistics",
+      "properties": {
+        "tests": {
+          "type": "string",
+          "description": "Test status (e.g., '317/317 passing (100%)')"
+        },
+        "criticalIssues": {
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "string" }
+          ],
+          "description": "Number of critical issues"
+        },
+        "documentation": {
+          "type": "string",
+          "description": "Documentation completeness (e.g., '65/100')"
+        }
+      },
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "number" }
+        ]
+      }
+    },
+    "bugFixes": {
+      "type": "array",
+      "description": "Bug fixes applied during development",
+      "items": {
+        "type": "object",
+        "required": ["issue", "fix"],
+        "properties": {
+          "issue": {
+            "type": "string",
+            "description": "Description of the bug"
+          },
+          "file": {
+            "type": "string",
+            "description": "File where fix was applied"
+          },
+          "fix": {
+            "type": "string",
+            "description": "Description of the fix"
+          }
+        }
+      }
+    },
+    "relatedFiles": {
+      "type": "array",
+      "description": "Related files referenced by this state",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name for the file"
+          },
+          "path": {
+            "type": "string",
+            "description": "File path relative to project root"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat, type Message } from 'ai/react';
-import { FormEvent, useState, useCallback } from 'react';
+import { FormEvent, useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { saveAssistantMessage } from '@/app/actions/conversations';
@@ -16,7 +16,7 @@ import {
   type ParsedProjectData,
   type ParsedArtifact,
 } from '@/lib/db/type-guards';
-import { useIsDesktop, useIsMobile } from '@/hooks/use-media-query';
+import { useIsDesktop, useIsMobile } from '@/lib/hooks/use-media-query';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { PanelLeft } from 'lucide-react';
@@ -141,6 +141,52 @@ export function ProjectChatClient({
     if (chat.isLoading || !chat.input.trim()) return;
     chat.handleSubmit(e);
   };
+
+  // Auto-send first message for new projects
+  const hasSentInitialMessage = useRef(false);
+  useEffect(() => {
+    // Only auto-send if:
+    // 1. No existing messages (new project)
+    // 2. Haven't already sent
+    // 3. Vision contains user description (not just mode context)
+    if (
+      initialMessages.length === 0 &&
+      !hasSentInitialMessage.current &&
+      projectVision
+    ) {
+      // Extract user description from vision (remove mode prefix and context)
+      const visionLines = projectVision.split('\n');
+      const modeLineIndex = visionLines.findIndex(line => line.startsWith('[Mode:'));
+      const separatorIndex = visionLines.findIndex(line => line === '---');
+
+      // Get content between mode line and separator (the actual user input)
+      let userDescription = '';
+      if (modeLineIndex !== -1 && separatorIndex !== -1) {
+        userDescription = visionLines
+          .slice(modeLineIndex + 1, separatorIndex)
+          .join('\n')
+          .trim();
+      } else if (modeLineIndex !== -1) {
+        // No separator, take everything after mode line
+        userDescription = visionLines
+          .slice(modeLineIndex + 1)
+          .join('\n')
+          .trim();
+      }
+
+      // Only auto-send if there's actual user content
+      if (userDescription && userDescription.length > 10) {
+        hasSentInitialMessage.current = true;
+        // Small delay to ensure UI is ready
+        setTimeout(() => {
+          chat.append({
+            role: 'user',
+            content: userDescription,
+          });
+        }, 500);
+      }
+    }
+  }, [initialMessages.length, projectVision, chat]);
 
   const handleDiagramClick = useCallback((artifact: ParsedArtifact) => {
     setSelectedDiagram(artifact);
