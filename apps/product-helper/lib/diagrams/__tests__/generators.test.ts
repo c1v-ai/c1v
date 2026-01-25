@@ -9,6 +9,10 @@ import {
   isSequenceDiagram,
   hasInvalidSequenceSyntax,
   cleanSequenceDiagramSyntax,
+  generateSystemArchitectureDiagram,
+  sanitizeNodeId,
+  selectSubgraphStyle,
+  inferConnections,
   type ContextDiagramSpec,
   type ContextDiagramElement,
 } from '../generators';
@@ -679,6 +683,243 @@ System-->>User: Response`;
       expect(cleaned).toContain('else Failure');
       expect(cleaned).toContain('end');
       expect(cleaned).not.toContain('classDef');
+    });
+  });
+
+  // ============================================================
+  // System Architecture Diagram Tests
+  // ============================================================
+  describe('generateSystemArchitectureDiagram', () => {
+    describe('sanitizeNodeId', () => {
+      it('should remove special characters', () => {
+        expect(sanitizeNodeId('Next.js')).toBe('Nextjs');
+        expect(sanitizeNodeId('Node@14')).toBe('Node14');
+      });
+
+      it('should replace spaces with underscores', () => {
+        expect(sanitizeNodeId('Web Browser')).toBe('Web_Browser');
+      });
+
+      it('should prefix IDs starting with numbers', () => {
+        expect(sanitizeNodeId('123abc')).toBe('_123abc');
+      });
+    });
+
+    describe('selectSubgraphStyle', () => {
+      it('should return correct style for each layer', () => {
+        expect(selectSubgraphStyle('client')).toBe('clientLayer');
+        expect(selectSubgraphStyle('frontend')).toBe('frontendLayer');
+        expect(selectSubgraphStyle('api')).toBe('apiLayer');
+        expect(selectSubgraphStyle('services')).toBe('servicesLayer');
+        expect(selectSubgraphStyle('data')).toBe('dataLayer');
+        expect(selectSubgraphStyle('external')).toBe('externalLayer');
+      });
+    });
+
+    describe('inferConnections', () => {
+      it('should return default connections when no tech stack provided', () => {
+        const connections = inferConnections(null, null);
+        expect(connections.length).toBeGreaterThan(0);
+        expect(connections).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ from: 'Browser', to: 'Frontend' }),
+            expect.objectContaining({ from: 'Frontend', to: 'APIRoutes' }),
+          ])
+        );
+      });
+
+      it('should add database connection when database in tech stack', () => {
+        const techStack = {
+          categories: [{ category: 'database', choice: 'PostgreSQL', rationale: 'test', alternatives: [] }],
+        };
+        const connections = inferConnections(techStack, null);
+        expect(connections).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ from: 'APIRoutes', to: 'Database' }),
+          ])
+        );
+      });
+
+      it('should add cache connection when cache in tech stack', () => {
+        const techStack = {
+          categories: [{ category: 'cache', choice: 'Redis', rationale: 'test', alternatives: [] }],
+        };
+        const connections = inferConnections(techStack, null);
+        expect(connections).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ from: 'APIRoutes', to: 'Cache' }),
+          ])
+        );
+      });
+
+      it('should add AI connections when ai-ml in tech stack', () => {
+        const techStack = {
+          categories: [{ category: 'ai-ml', choice: 'OpenAI', rationale: 'test', alternatives: [] }],
+        };
+        const connections = inferConnections(techStack, null);
+        expect(connections).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ from: 'Agents', to: 'AI' }),
+            expect.objectContaining({ from: 'Middleware', to: 'Agents' }),
+          ])
+        );
+      });
+    });
+
+    describe('generateSystemArchitectureDiagram', () => {
+      it('should generate valid Mermaid flowchart syntax', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null);
+        expect(result.mermaidSyntax).toContain('flowchart TB');
+        expect(result.mermaidSyntax).toContain('subgraph');
+        expect(result.mermaidSyntax).toContain('end');
+      });
+
+      it('should include all default layers', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null);
+        expect(result.mermaidSyntax).toContain('Client Layer');
+        expect(result.mermaidSyntax).toContain('Frontend Layer');
+        expect(result.mermaidSyntax).toContain('API Layer');
+        expect(result.mermaidSyntax).toContain('Data Layer');
+      });
+
+      it('should include default components', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null);
+        expect(result.mermaidSyntax).toContain('Web Browser');
+        expect(result.mermaidSyntax).toContain('Mobile App');
+        expect(result.mermaidSyntax).toContain('API Routes');
+        expect(result.mermaidSyntax).toContain('PostgreSQL');
+      });
+
+      it('should use tech stack components when provided', () => {
+        const techStack = {
+          categories: [
+            { category: 'frontend', choice: 'Next.js 15', rationale: 'Latest', alternatives: [] },
+            { category: 'database', choice: 'Supabase', rationale: 'BaaS', alternatives: [] },
+            { category: 'auth', choice: 'Clerk', rationale: 'Easy auth', alternatives: [] },
+          ],
+          constraints: [],
+          rationale: 'Modern stack',
+        };
+        const result = generateSystemArchitectureDiagram(techStack, null, null);
+
+        expect(result.mermaidSyntax).toContain('Next.js 15');
+        expect(result.mermaidSyntax).toContain('Supabase');
+        expect(result.mermaidSyntax).toContain('Clerk');
+      });
+
+      it('should include connections in the diagram', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null);
+        expect(result.mermaidSyntax).toContain('-->');
+        expect(result.mermaidSyntax).toContain('%% Connections');
+      });
+
+      it('should include layer styling', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null, {
+          useColorCoding: true,
+        });
+        expect(result.mermaidSyntax).toContain('classDef');
+        expect(result.mermaidSyntax).toContain('clientLayer');
+        expect(result.mermaidSyntax).toContain('frontendLayer');
+      });
+
+      it('should use database shape for database components', () => {
+        const techStack = {
+          categories: [{ category: 'database', choice: 'PostgreSQL', rationale: 'test', alternatives: [] }],
+          constraints: [],
+          rationale: 'test',
+        };
+        const result = generateSystemArchitectureDiagram(techStack, null, null);
+        // Database shape in Mermaid uses [("...")]
+        expect(result.mermaidSyntax).toMatch(/\[\(".*"\)\]/);
+      });
+
+      it('should return validation result', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null);
+        expect(result.validation).toBeDefined();
+        expect(result.validation.componentCount).toBeGreaterThan(0);
+        expect(result.validation.connectionCount).toBeGreaterThan(0);
+      });
+
+      it('should warn when no tech stack provided', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null);
+        expect(result.validation.warnings).toContain(
+          'No tech stack provided. Using default components.'
+        );
+      });
+
+      it('should handle missing optional data gracefully', () => {
+        // Should not throw
+        expect(() =>
+          generateSystemArchitectureDiagram(null, null, null)
+        ).not.toThrow();
+
+        expect(() =>
+          generateSystemArchitectureDiagram({ categories: [] } as any, null, null)
+        ).not.toThrow();
+      });
+
+      it('should support LR direction', () => {
+        const result = generateSystemArchitectureDiagram(null, null, null, {
+          direction: 'LR',
+        });
+        expect(result.mermaidSyntax).toContain('flowchart LR');
+      });
+
+      it('should add agents component when AI tech is present', () => {
+        const techStack = {
+          categories: [{ category: 'ai-ml', choice: 'OpenAI', rationale: 'GPT', alternatives: [] }],
+          constraints: [],
+          rationale: 'test',
+        };
+        const result = generateSystemArchitectureDiagram(techStack, null, null);
+        expect(result.mermaidSyntax).toContain('LangChain Agents');
+        expect(result.mermaidSyntax).toContain('OpenAI');
+      });
+
+      it('should add vector store when AI tech is present', () => {
+        const techStack = {
+          categories: [{ category: 'ai-ml', choice: 'OpenAI', rationale: 'GPT', alternatives: [] }],
+          constraints: [],
+          rationale: 'test',
+        };
+        const result = generateSystemArchitectureDiagram(techStack, null, null);
+        expect(result.mermaidSyntax).toContain('pgvector');
+      });
+    });
+  });
+
+  // ============================================================
+  // generateDiagram Router with system_architecture Tests
+  // ============================================================
+  describe('generateDiagram with system_architecture', () => {
+    it('should route to system architecture generator', () => {
+      const result = generateDiagram('system_architecture', {
+        techStack: {
+          categories: [
+            { category: 'frontend', choice: 'React', rationale: 'Popular', alternatives: [] },
+          ],
+          constraints: [],
+          rationale: 'test',
+        },
+      });
+
+      expect(result).toContain('flowchart');
+      expect(result).toContain('React');
+    });
+
+    it('should handle null tech stack', () => {
+      const result = generateDiagram('system_architecture', {
+        techStack: null,
+      });
+
+      expect(result).toContain('flowchart');
+      expect(result).toContain('PostgreSQL'); // Default database
+    });
+
+    it('should handle empty data object', () => {
+      const result = generateDiagram('system_architecture', {});
+
+      expect(result).toContain('flowchart');
     });
   });
 });
