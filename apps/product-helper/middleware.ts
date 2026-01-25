@@ -15,22 +15,41 @@ export async function middleware(request: NextRequest) {
 
   let res = NextResponse.next();
 
-  if (sessionCookie && request.method === 'GET') {
+  // Security headers (OWASP best practices)
+  res.headers.set('X-Frame-Options', 'DENY');
+  res.headers.set('X-Content-Type-Options', 'nosniff');
+  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.headers.set('X-XSS-Protection', '1; mode=block');
+
+  if (sessionCookie) {
     try {
       const parsed = await verifyToken(sessionCookie.value);
-      const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      res.cookies.set({
-        name: 'session',
-        value: await signToken({
-          ...parsed,
-          expires: expiresInOneDay.toISOString()
-        }),
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        expires: expiresInOneDay
-      });
+      // Check expiration for ALL methods
+      if (new Date(parsed.expires) < new Date()) {
+        res.cookies.delete('session');
+        if (isProtectedRoute) {
+          return NextResponse.redirect(new URL('/sign-in', request.url));
+        }
+      }
+
+      // Only refresh session on GET to avoid mutation side effects
+      if (request.method === 'GET') {
+        const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        res.cookies.set({
+          name: 'session',
+          value: await signToken({
+            ...parsed,
+            expires: expiresInOneDay.toISOString()
+          }),
+          httpOnly: true,
+          secure: true,
+          sameSite: 'lax',
+          expires: expiresInOneDay
+        });
+      }
     } catch (error) {
       console.error('Error updating session:', error);
       res.cookies.delete('session');
