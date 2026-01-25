@@ -1,128 +1,147 @@
 # Project State
 
 **Project:** Product Helper
-**Version:** 1.1 (Planning)
-**Updated:** 2026-01-19
+**Version:** 2.0 (In Progress)
+**Updated:** 2026-01-25
 
 ---
 
 ## Current Focus
 
-**Active Milestone:** v1.1 - Stabilization & Security
-**Current Phase:** Phase 3 - Mobile-First & Web Revamp ✓ COMPLETE
-**Last Activity:** Phase 3 verified complete (6/6 must-haves passed)
+**Active Milestone:** v2.0 - Competitive Catch-Up (Epic.dev Parity)
+**Current Phase:** Phase 10 - Generators & Agents
+**Last Activity:** Plan 10-04 COMPLETE - System Architecture Diagram Generator
+
+### Phase 9 Completion Status ✅ COMPLETE
+
+| Sub-Phase | Component | Status | Notes |
+|-----------|-----------|--------|-------|
+| 9.1 | Enhanced Use Cases Schema | ✅ DONE | `lib/langchain/schemas.ts` updated |
+| 9.2 | Schema Extraction Agent | ✅ DONE | `lib/langchain/agents/schema-extraction-agent.ts` |
+| 9.3 | Tech Stack Agent | ✅ DONE | `lib/langchain/agents/tech-stack-agent.ts` |
+| 9.4 | User Stories Agent | ✅ DONE | `lib/langchain/agents/user-stories-agent.ts` |
+| DB | Schema + Migrations | ✅ DONE | Migration applied via Supabase MCP |
+| API | Stories Routes | ✅ DONE | `app/api/projects/[id]/stories/*` |
+| API | Tech Stack Route | ✅ DONE | `app/api/projects/[id]/tech-stack/route.ts` |
+| Tests | Type Check & Tests | ✅ DONE | 317/317 tests passing |
+
+### Fixes Applied This Session
+
+1. **Migration Applied** - Used Supabase MCP `apply_migration` (drizzle-kit push had a bug)
+2. **yaml package installed** - `pnpm add yaml` for OpenAPI export
+3. **teamsRelations duplicate fixed** - Merged into single relation with projects
+4. **sendInvitationEmail created** - `lib/email/send-invitation.ts` + fixed actions.ts
+5. **api-spec-agent.ts type fix** - Cast through `unknown` for LLM output flexibility
+6. **priority-scorer.test.ts fix** - Changed test to use valid ArtifactPhase
 
 ---
 
 ## Milestone Progress
 
+### v1.1 - Stabilization (COMPLETE)
+
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Test Stabilization | ✓ Complete |
 | 2 | Critical Security Fixes | ✓ Complete |
-| 3 | Mobile-First & Web Revamp | ✓ Complete (6/6 verified) |
-| 4 | Backend Hardening | ← Next |
-| 5 | Performance Optimization | Pending |
-| 6 | Documentation | Pending |
-| 7 | Component Testing | Pending |
-| 8 | Planning Agents Upgrade | Pending |
+| 3 | Mobile-First & Web Revamp | ✓ Complete |
 
-### Phase 3 Plan Progress (COMPLETE)
+### v2.0 - Competitive Catch-Up (IN PROGRESS)
 
-| Plan | Name | Status |
-|------|------|--------|
-| 03-01 | Theme System (Light/Dark Mode) | ✓ Complete |
-| 03-02 | PWA Setup | ✓ Complete |
-| 03-03 | Bottom Navigation | ✓ Complete |
-| 03-04 | Mobile Design System | ✓ Complete |
-| 03-05 | Desktop Enhancements | ✓ Complete |
-| 03-06 | Cross-platform Testing | ✓ Complete |
+| Phase | Name | Status | Priority |
+|-------|------|--------|----------|
+| 9 | Data Model Depth | ✅ COMPLETE | P1 |
+| 10 | Generators & Agents | ✅ COMPLETE | P1 |
+| 11 | MCP Server | ← NEXT | **P0 CRITICAL** |
+| 12 | Project Explorer UI | Pending | P2 |
+| 13 | Data Views & Diagrams | Pending | P2 |
+| 14 | Polish & Validation | Pending | P2 |
 
 ---
 
 ## Quick Stats
 
-- **Tests:** 317/317 passing (100%)
-- **Critical Issues:** 0 (mobile nav complete)
-- **Documentation:** 65/100
+- **Tests:** 358/358 passing (100%)
+- **Type Check:** Passing
+- **Critical Issues:** 0
+- **Phase 9 Progress:** 100% COMPLETE
+- **Phase 10 Progress:** 100% COMPLETE (all 4 plans done)
 
 ---
 
-## Decisions Log
+## Phase 10 Plan
 
-| Date | Phase | Decision | Rationale |
-|------|-------|----------|-----------|
-| 2026-01-19 | 01-01 | B&W regex excludes #ffffff and #000000 | Valid B&W colors should not trigger "no colors" check |
-| 2026-01-19 | 01-01 | Jest asymmetric matchers need arrayContaining | toContain() checks exact element match |
-| 2026-01-19 | 01-01 | Pattern order: specific before general | Payment check before gateway ensures correct match |
-| 2026-01-19 | 01-02 | Fixed test expectation >= 11 (not >= 12) | Score calculation: base(9) + SR-CORNELL(3) - out-of-order(1) = 11 |
-| 2026-01-19 | 01-02 | Added context_diagram to phaseOrder | Tests default to context_diagram as currentPhase |
-| 2026-01-19 | 01-02 | Changed adjacent phase test currentPhase to actors | external_systems is adjacent to actors, not context_diagram |
-| 2026-01-19 | 01-03 | Flexible word matching for diagram types | Support variations like "context diagram", "flow diagram" |
-| 2026-01-19 | 01-03 | Explicit "for now" suffix in stop phrases | Prevent false positives vs generic trailing content |
-| 2026-01-19 | 02-01 | Validate only critical env vars | POSTGRES_URL, AUTH_SECRET, OPENAI_API_KEY; others added later |
-| 2026-01-19 | 02-02 | Use process.env.NODE_ENV for SSL check | Runtime check works regardless of Zod schema |
-| 2026-01-19 | 02-02 | Connection pool: max 10, idle 20s, connect 10s | Sensible defaults for most workloads |
-| 2026-01-19 | 03-01 | Use next-themes for theme management | Industry standard, handles SSR/hydration properly |
-| 2026-01-19 | 03-01 | attribute="class" for dark mode | Compatible with existing .dark CSS rules |
-| 2026-01-19 | 03-01 | defaultTheme="system" | Respects user OS preference |
-| 2026-01-19 | 03-02 | Manual SW over next-pwa | Turbopack incompatible with webpack-based plugins |
-| 2026-01-19 | 03-02 | Network-first for navigation | Fresh content priority, offline fallback |
-| 2026-01-19 | 03-02 | Production-only SW registration | Avoid dev caching issues |
-| 2026-01-19 | 03-03 | md:hidden for bottom nav | Auto-hide on desktop without JavaScript |
-| 2026-01-19 | 03-03 | useMediaQuery starts false | Prevents hydration mismatch (window undefined on server) |
-| 2026-01-19 | 03-03 | 64px minimum touch target | Follows Apple HIG for accessible touch targets |
-| 2026-01-19 | 03-04 | 44px touch targets | Apple HIG specifies 44x44 points minimum |
-| 2026-01-19 | 03-04 | 16px font-size on inputs | Prevents iOS Safari auto-zoom on focus |
-| 2026-01-19 | 03-04 | env() for safe areas | Browser-native, future-proof safe area handling |
-| 2026-01-19 | 03-04 | visualViewport API | Modern virtual keyboard detection |
-| 2026-01-19 | 03-05 | Keyboard shortcuts skip form elements | Prevent conflicts when typing in inputs |
-| 2026-01-19 | 03-05 | CSS group-hover pattern | Coordinated hover without JS state overhead |
-| 2026-01-19 | 03-05 | xl:grid-cols-4 for large desktop | Better density on wide screens |
-| 2026-01-19 | 03-UAT | Created /account page for mobile | Bottom nav linked to /settings which didn't exist |
-| 2026-01-19 | 03-UAT | Wrapped sidebar in scroll container | Independent scroll from chat messages |
-| 2026-01-19 | 03-UAT | Added min-h-0 to flex containers | Proper flex containment for layout chain |
-| 2026-01-19 | 03-UAT | pb-16 on dashboard children | Clearance for 64px fixed bottom nav |
+Per the plan in `~/.claude/plans/kind-enchanting-lightning.md`:
+
+### 10.1 API Specification Route - COMPLETE
+- **Status:** COMPLETE
+- **Files Created:**
+  - `app/api/projects/[id]/api-spec/route.ts` (306 lines)
+  - `app/api/projects/[id]/api-spec/__tests__/route.test.ts` (392 lines)
+- **Tests:** 17 passing
+- **Commits:** `492c4e9`, `2d99d38`
+- **Summary:** `.planning/phases/10-generators/10-01-SUMMARY.md`
+
+### 10.2 Infrastructure Specification Generator - COMPLETE
+- **Status:** COMPLETE
+- **Files Created:**
+  - `lib/langchain/agents/infrastructure-agent.ts` (535 lines)
+  - `app/api/projects/[id]/infrastructure/route.ts` (242 lines)
+- **Commits:** `052487c`, `7e9fce7`
+- **Summary:** `.planning/phases/10-generators/10-02-SUMMARY.md`
+
+### 10.3 Coding Guidelines Generator - COMPLETE
+- **Status:** COMPLETE
+- **Files Created:**
+  - `lib/langchain/agents/guidelines-agent.ts` (477 lines)
+  - `app/api/projects/[id]/guidelines/route.ts` (259 lines)
+  - Zod validators added to `lib/db/schema/v2-validators.ts`
+- **Commits:** `891e042`, `c8eb4bb`, `c9c8c1a`
+- **Summary:** `.planning/phases/10-generators/10-03-SUMMARY.md`
+
+### 10.4 System Architecture Diagram Generator - COMPLETE
+- **Status:** COMPLETE
+- **Files Modified:**
+  - `lib/diagrams/generators.ts` (+562 lines)
+  - `lib/diagrams/__tests__/generators.test.ts` (+241 lines)
+- **Commits:** `cf5407d`, `79fdc94`
+- **Summary:** `.planning/phases/10-generators/10-04-SUMMARY.md`
 
 ---
 
 ## Session Continuity
 
-**Last session:** 2026-01-19
-**Stopped at:** Phase 3 complete, ready for Phase 4
-**Resume file:** None
+**Last session:** 2026-01-25
+**Stopped at:** Plan 10-04 COMPLETE
+**Resume action:** Begin Phase 11 (MCP Server) - P0 CRITICAL
+
+### Phase 10 Progress
+
+- [x] 10-01: API Specification Route - COMPLETE
+- [x] 10-02: Infrastructure Specification Agent - COMPLETE
+- [x] 10-03: Coding Guidelines Agent - COMPLETE
+- [x] 10-04: System Architecture Diagram Generator - COMPLETE
 
 ---
 
-## Next Steps
+## Files Reference
 
-1. **Plan Phase 4** (Backend Hardening) - rate limiting, LLM timeouts, session management
-2. Optionally run Phase 6.1-6.2 in parallel (User/API Docs)
-3. Replace placeholder PWA icons with designed assets
-4. Run Lighthouse audit for mobile score verification
+### Phase 9 (Complete)
+- `lib/langchain/agents/schema-extraction-agent.ts`
+- `lib/langchain/agents/user-stories-agent.ts`
+- `lib/langchain/agents/tech-stack-agent.ts`
+- `lib/db/schema/v2-types.ts`
+- `lib/db/schema/v2-validators.ts`
+- `lib/db/migrations/0004_v2_data_model_depth.sql` ✅ Applied
 
----
+### Phase 10 (Complete)
 
-## Bug Fixes During UAT
-
-| Issue | File | Fix |
-|-------|------|-----|
-| Chat input cut off by bottom nav | `app/(dashboard)/layout.tsx` | Added `pb-16 md:pb-0` to children container |
-| /settings 404 on mobile | `app/(dashboard)/account/page.tsx` | Created new account page |
-| Bottom nav wrong link | `components/navigation/bottom-nav.tsx` | Changed `/settings` to `/account` |
-| Sidebar scrolls with chat | `app/(dashboard)/projects/[id]/chat/chat-client.tsx` | Wrapped sidebar in scroll container |
-| Flex containment broken | Multiple layouts | Added `min-h-0` to flex containers |
-
----
-
-## Files
-
-- **Roadmap:** `.planning/ROADMAP-1.1.md`
-- **Phase 3 Plans:** `.planning/phases/03-mobile-first-web-revamp/`
-- **03-01 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-01-SUMMARY.md`
-- **03-02 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-02-SUMMARY.md`
-- **03-03 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-03-SUMMARY.md`
-- **03-04 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-04-SUMMARY.md`
-- **03-05 Summary:** `.planning/phases/03-mobile-first-web-revamp/03-05-SUMMARY.md`
-- **Account Page:** `app/(dashboard)/account/page.tsx` (new)
-- **This file:** `.planning/STATE.md`
+**All Complete:**
+- `lib/langchain/agents/api-spec-agent.ts` (10-01)
+- `app/api/projects/[id]/api-spec/route.ts` (10-01)
+- `lib/langchain/agents/infrastructure-agent.ts` (10-02)
+- `app/api/projects/[id]/infrastructure/route.ts` (10-02)
+- `lib/langchain/agents/guidelines-agent.ts` (10-03)
+- `app/api/projects/[id]/guidelines/route.ts` (10-03)
+- Zod validators in `lib/db/schema/v2-validators.ts`
+- `lib/diagrams/generators.ts` - System Architecture Diagram (10-04)
