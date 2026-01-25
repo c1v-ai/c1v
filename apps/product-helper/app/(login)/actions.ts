@@ -19,6 +19,7 @@ import {
   passwordResetTokens
 } from '@/lib/db/schema';
 import { sendPasswordResetEmail } from '@/lib/email/send-password-reset';
+import { sendInvitationEmail } from '@/lib/email/send-invitation';
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
@@ -100,7 +101,8 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return createCheckoutSession({ team: foundTeam, priceId });
   }
 
-  redirect('/dashboard');
+  // Redirect to welcome page - WelcomeOnboarding handles new vs returning users
+  redirect('/welcome-test');
 });
 
 const signUpSchema = z.object({
@@ -231,7 +233,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     return createCheckoutSession({ team: createdTeam, priceId });
   }
 
-  redirect('/dashboard');
+  // Redirect to welcome page for new users to start their first project
+  redirect('/welcome-test');
 });
 
 export async function signOut() {
@@ -450,13 +453,13 @@ export const inviteTeamMember = validatedActionWithUser(
     }
 
     // Create a new invitation
-    await db.insert(invitations).values({
+    const [newInvitation] = await db.insert(invitations).values({
       teamId: userWithTeam.teamId,
       email,
       role,
       invitedBy: user.id,
       status: 'pending'
-    });
+    }).returning();
 
     await logActivity(
       userWithTeam.teamId,
@@ -464,8 +467,29 @@ export const inviteTeamMember = validatedActionWithUser(
       ActivityType.INVITE_TEAM_MEMBER
     );
 
-    // TODO: Send invitation email and include ?inviteId={id} to sign-up URL
-    // await sendInvitationEmail(email, userWithTeam.team.name, role)
+    // Send invitation email
+    if (newInvitation) {
+      // Query team to get the name
+      const [team] = await db
+        .select({ name: teams.name })
+        .from(teams)
+        .where(eq(teams.id, userWithTeam.teamId!))
+        .limit(1);
+
+      const emailResult = await sendInvitationEmail({
+        to: email,
+        teamName: team?.name || 'Your Team',
+        inviterName: user.name || user.email,
+        role,
+        inviteId: newInvitation.id.toString(),
+      });
+
+      if (!emailResult.success) {
+        // Log error but don't fail the invitation creation
+        console.error('Failed to send invitation email:', emailResult.error);
+        // Still return success since invitation was created
+      }
+    }
 
     return { success: 'Invitation sent successfully' };
   }
