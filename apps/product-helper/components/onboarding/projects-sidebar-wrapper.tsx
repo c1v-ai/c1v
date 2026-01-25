@@ -5,14 +5,15 @@ import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { ProjectsSidebar } from './projects-sidebar';
 
 // Lightweight project fetch - only what sidebar needs
+// Wrapped in try-catch to prevent RSC streaming failures
 async function getSidebarProjects() {
-  const user = await getUser();
-  if (!user) return [];
-
-  const team = await getTeamForUser();
-  if (!team) return [];
-
   try {
+    const user = await getUser();
+    if (!user) return [];
+
+    const team = await getTeamForUser();
+    if (!team) return [];
+
     // Only fetch id, name, status - no relations
     const teamProjects = await db
       .select({
@@ -27,12 +28,14 @@ async function getSidebarProjects() {
 
     return teamProjects;
   } catch (error) {
-    console.error('Error fetching sidebar projects:', error);
+    // Log error for debugging but don't crash RSC stream
+    console.error('[ProjectsSidebarWrapper] Error fetching projects:', error);
     return [];
   }
 }
 
 // Server component that fetches and renders the sidebar
+// Returns empty sidebar on error to prevent 404/RSC failures
 export async function ProjectsSidebarWrapper() {
   const sidebarProjects = await getSidebarProjects();
   return <ProjectsSidebar projects={sidebarProjects} />;

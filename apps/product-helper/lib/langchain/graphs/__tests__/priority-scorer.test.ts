@@ -454,20 +454,20 @@ describe('out of order penalty scoring', () => {
 
   it('does not penalize adjacent phase questions', () => {
     const state = createTestState({
-      currentPhase: 'actors',
+      currentPhase: 'context_diagram',
       validationStatus: {
         hardGates: {
-          EXTERNAL_ENTITIES_DEFINED: true,
+          PRIMARY_ACTORS_DEFINED: true,
         },
       },
     });
 
-    // external_systems is adjacent to actors phase
-    const externalQuestion = testQuestions.find(q => q.id === 'Q_EXTERNAL_SYSTEMS')!;
-    const score = calculateScore(externalQuestion, state);
+    // actors phase (index 1) is adjacent to context_diagram (index 0)
+    const actorsQuestion = testQuestions.find(q => q.id === 'Q_ACTORS_PRIMARY')!;
+    const score = calculateScore(actorsQuestion, state);
 
-    // No out-of-order penalty
-    expect(score).toBe(externalQuestion.basePriority);
+    // No out-of-order penalty for adjacent phase
+    expect(score).toBe(actorsQuestion.basePriority);
   });
 });
 

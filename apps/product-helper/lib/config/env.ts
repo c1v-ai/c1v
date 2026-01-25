@@ -8,9 +8,9 @@ const envSchema = z.object({
   AUTH_SECRET: z.string()
     .min(32, 'AUTH_SECRET must be at least 32 characters for security'),
 
-  // AI Services - must be valid format
-  OPENAI_API_KEY: z.string()
-    .startsWith('sk-', 'OPENAI_API_KEY must be a valid OpenAI key starting with sk-'),
+  // AI Services - Anthropic Claude API
+  ANTHROPIC_API_KEY: z.string()
+    .min(1, 'ANTHROPIC_API_KEY is required'),
 
   // Optional with defaults
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

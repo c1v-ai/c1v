@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProjectById } from '@/app/actions/projects';
-import { MessageSquare, Edit, TrendingUp, Calendar, User, Database, GitBranch, FileDown } from 'lucide-react';
+import { MessageSquare, Edit, TrendingUp, Calendar, User, Database, GitBranch, FileDown, Plug } from 'lucide-react';
 import { DeleteProjectButton } from './delete-button';
 import { ValidationReport } from '@/components/validation/validation-report';
 import { ExportButton } from '@/components/export/export-button';
@@ -128,7 +128,7 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Button
               asChild
               style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
@@ -178,6 +178,24 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
                   </div>
                   <span className="text-xs">
                     Context, use case, and class diagrams
+                  </span>
+                </div>
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4"
+            >
+              <Link href={`/projects/${project.id}/connections`}>
+                <div className="flex flex-col items-start w-full">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Plug className="h-5 w-5" />
+                    <span className="font-semibold">Connections</span>
+                  </div>
+                  <span className="text-xs">
+                    MCP server for Claude Code
                   </span>
                 </div>
               </Link>
