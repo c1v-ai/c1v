@@ -10,7 +10,7 @@
 
 **Active Milestone:** v2.0 - Competitive Catch-Up (Epic.dev Parity)
 **Current Phase:** Phase 12 - Educational Content Integration [ACTIVE]
-**Last Activity:** 6 Deepened Knowledge Banks created 2026-01-25
+**Last Activity:** Bug fix for /welcome-test 404 on Vercel 2026-01-25
 
 ### Phase 12 Educational Content Work (IN PROGRESS)
 
@@ -145,6 +145,8 @@ Code review identified **~6,500 lines of duplicate code** (~15-20% of codebase) 
 4. **sendInvitationEmail created** - `lib/email/send-invitation.ts` + fixed actions.ts
 5. **api-spec-agent.ts type fix** - Cast through `unknown` for LLM output flexibility
 6. **priority-scorer.test.ts fix** - Changed test to use valid ArtifactPhase
+7. **RSC streaming failure fix** - Wrapped `ProjectsSidebarWrapper` in try-catch to prevent 404 on Vercel when auth/DB fails (`d6f8de6`)
+8. **Env validation fix** - Updated `lib/config/env.ts` to validate `ANTHROPIC_API_KEY` instead of `OPENAI_API_KEY` (`eb7b369`)
 
 ---
 
@@ -229,8 +231,36 @@ Per the plan in `~/.claude/plans/kind-enchanting-lightning.md`:
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Welcome onboarding page `/welcome-test` - initial implementation done, needs more work
-**Resume action:** Continue building `/welcome-test` page to match Epic.dev design:
+**Stopped at:** Bug fix for `/welcome-test` 404 on Vercel - COMPLETE
+**Resume action:** Push commits to Vercel and verify deployment works
+
+### Bug Fix Session (2026-01-25 - Latest)
+
+**Issue:** `/welcome-test` returning 404 on Vercel with "Connection closed" RSC streaming error
+
+**Root Cause:** `ProjectsSidebarWrapper` async component threw unhandled errors when `getUser()` or `getTeamForUser()` failed (missing `AUTH_SECRET` or DB connection issues), breaking the React Server Component stream.
+
+**Commits:**
+- `d6f8de6` - fix: prevent RSC streaming failure on welcome-test page
+- `eb7b369` - fix: update env validation to use ANTHROPIC_API_KEY
+
+**Files Changed:**
+- `components/onboarding/projects-sidebar-wrapper.tsx` - Wrapped entire function in try-catch
+- `lib/config/env.ts` - Changed from `OPENAI_API_KEY` to `ANTHROPIC_API_KEY`
+- `.env.example` - Updated to reflect Anthropic API
+
+**Required Vercel Env Vars:**
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `POSTGRES_URL` | ✅ | Database connection |
+| `AUTH_SECRET` | ✅ | 32+ characters for JWT |
+| `ANTHROPIC_API_KEY` | ✅ | Claude API key |
+
+**CLEO Tasks:** T012-T015 (all complete)
+
+---
+
+### Previous Session: /welcome-test Implementation
 
 ### /welcome-test Session Work (2026-01-25)
 
@@ -275,7 +305,7 @@ Per the plan in `~/.claude/plans/kind-enchanting-lightning.md`:
 - `ContextDiagramExample copy.md` - Step-by-step diagram building
 - `ScopeTree_BuildingTheDeliverableTree.md` - Detailed tree building process
 
-**API Key Status:** `@langchain/anthropic` installed, needs `ANTHROPIC_API_KEY` in `.env.local`
+**API Key Status:** `@langchain/anthropic` installed, `ANTHROPIC_API_KEY` required (env validation updated)
 
 ---
 

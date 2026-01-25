@@ -1,0 +1,62 @@
+{
+  "UCBD Template": [],
+  "UCBD Sample": [],
+  "Guidelines for Requirements": [
+    {
+      "Properties and Guidelines for Writing Requirements": "1. Write as Shall Statements",
+      "col_1": "meaning that the word shall is used in the requirement"
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": null,
+      "col_1": "(i.e. \"The system shall\u2026\")"
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "2. Write as Correct Statements ",
+      "col_1": "what you\u2019re saying is accurate"
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "3. Write Clear & Precise Statements",
+      "col_1": "Share only one idea per requirement."
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": null,
+      "col_1": "If you have the word \u201cand\u201d or similar conjunction in your requirements, it\u2019s considered better to split the requirement into two."
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": null,
+      "col_1": " "
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "4. Write Unambiguous Statements",
+      "col_1": "Let there only be one way to interpret the statement."
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "5. Write Objective Statements",
+      "col_1": "If any part of the requirement is subjective, qualify it with some quantifiable measure"
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "6. Write Verifiable Statements",
+      "col_1": "There is some measureable way you could say this requirement is met."
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "7. Write Consistent Statements",
+      "col_1": "This requirement does not contradict another requirement."
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "Additional guidelines:",
+      "col_1": "Some organizations may also include the following in their lists of best practices."
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "8. Implementation Independent",
+      "col_1": "functional, not structural"
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "9. Achievable",
+      "col_1": "feasible, meaning that it can be achieved"
+    },
+    {
+      "Properties and Guidelines for Writing Requirements": "10. Conforming",
+      "col_1": "consistent with reguluations imposed by stakeholders and any other governing entity"
+    }
+  ]
+}

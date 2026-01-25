@@ -13,10 +13,10 @@
   --radius: 10px;
 
   /* Light theme (default) */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F7F9FC;
-  --text-primary: #1F2937;
-  --accent: #0A5C4E;
+  --bg-primary: #DDEBEA;
+  --bg-secondary: #E6E9EE;
+  --text-primary: #010E0D;
+  --accent: #CA8652;
 
   --text-muted: rgba(31, 41, 55, 0.70);
   --border: rgba(31, 41, 55, 0.12);
@@ -25,10 +25,10 @@
 
 /* Dark theme - uses .dark class (Tailwind convention) */
 .dark {
-  --bg-primary: #0A2F35;
-  --bg-secondary: #0D3D47;
+  --bg-primary: #010E0D;
+  --bg-secondary: #0E275E;
   --text-primary: #FFFFFF;
-  --accent: #0ea5e9;
+  --accent: #CA8652;
 
   --text-muted: rgba(255, 255, 255, 0.72);
   --border: rgba(255, 255, 255, 0.12);

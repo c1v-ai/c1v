@@ -23,8 +23,49 @@ export const actorSchema = z.object({
 export type Actor = z.infer<typeof actorSchema>;
 
 /**
+ * Flow Step Schema
+ * Represents a single step in the main flow of a use case
+ */
+export const flowStepSchema = z.object({
+  stepNumber: z.number().describe('Step number in the flow sequence'),
+  actor: z.string().describe('Actor performing this step (user or system)'),
+  action: z.string().describe('Action taken in this step'),
+  systemResponse: z.string().optional().describe('System response to the action (if applicable)'),
+});
+
+export type FlowStep = z.infer<typeof flowStepSchema>;
+
+/**
+ * Alternative Flow Schema
+ * Represents an alternative or exception flow branching from the main flow
+ */
+export const alternativeFlowSchema = z.object({
+  id: z.string().describe('Unique identifier for the alternative flow (e.g., "AF1", "EF1")'),
+  name: z.string().describe('Name describing the alternative flow'),
+  branchPoint: z.number().describe('Step number in main flow where this branches off'),
+  condition: z.string().describe('Condition that triggers this alternative flow'),
+  steps: z.array(flowStepSchema).describe('Steps in this alternative flow'),
+  rejoinsAt: z.number().optional().describe('Step number in main flow where this rejoins (null if terminates)'),
+});
+
+export type AlternativeFlow = z.infer<typeof alternativeFlowSchema>;
+
+/**
+ * Use Case Priority (MoSCoW method)
+ */
+export const useCasePrioritySchema = z.enum(['must', 'should', 'could', 'wont']);
+export type UseCasePriority = z.infer<typeof useCasePrioritySchema>;
+
+/**
+ * Use Case Status
+ */
+export const useCaseStatusSchema = z.enum(['draft', 'validated']);
+export type UseCaseStatus = z.infer<typeof useCaseStatusSchema>;
+
+/**
  * Use Case Schema
  * Represents a specific action or workflow a user can perform
+ * Enhanced with v2.0 fields for mainFlow, alternativeFlows, acceptanceCriteria
  */
 export const useCaseSchema = z.object({
   id: z.string().describe('Unique identifier (e.g., "UC1", "UC2")'),
@@ -35,9 +76,37 @@ export const useCaseSchema = z.object({
   postconditions: z.array(z.string()).optional().describe('Conditions that are true after successful completion'),
   trigger: z.string().optional().describe('Event or action that initiates this use case'),
   outcome: z.string().optional().describe('Expected result or outcome of this use case'),
+  // Enhanced v2.0 fields (all optional for backward compatibility)
+  mainFlow: z.array(flowStepSchema).optional().describe('Main flow steps with actor, action, and system response'),
+  alternativeFlows: z.array(alternativeFlowSchema).optional().describe('Alternative or exception flows'),
+  acceptanceCriteria: z.array(z.string()).optional().describe('Testable acceptance criteria for this use case'),
+  priority: useCasePrioritySchema.optional().describe('MoSCoW priority (must/should/could/wont)'),
+  status: useCaseStatusSchema.optional().describe('Draft or validated status'),
 });
 
 export type UseCase = z.infer<typeof useCaseSchema>;
+
+/**
+ * Enhanced Use Case Schema (requires all v2.0 fields)
+ * Use this for validated use cases with complete data
+ */
+export const enhancedUseCaseSchema = z.object({
+  id: z.string().describe('Unique identifier (e.g., "UC1", "UC2")'),
+  name: z.string().describe('Name as verb phrase (e.g., "Place Order", "View Dashboard")'),
+  description: z.string().describe('Detailed description of what happens in this use case'),
+  actor: z.string().describe('Name of the primary actor for this use case'),
+  trigger: z.string().describe('Event or action that initiates this use case'),
+  outcome: z.string().describe('Expected result or outcome of this use case'),
+  preconditions: z.array(z.string()).describe('Conditions that must be true before this use case'),
+  postconditions: z.array(z.string()).describe('Conditions that are true after successful completion'),
+  mainFlow: z.array(flowStepSchema).describe('Main flow steps with actor, action, and system response'),
+  alternativeFlows: z.array(alternativeFlowSchema).describe('Alternative or exception flows'),
+  acceptanceCriteria: z.array(z.string()).describe('Testable acceptance criteria for this use case'),
+  priority: useCasePrioritySchema.describe('MoSCoW priority (must/should/could/wont)'),
+  status: useCaseStatusSchema.describe('Draft or validated status'),
+});
+
+export type EnhancedUseCase = z.infer<typeof enhancedUseCaseSchema>;
 
 /**
  * System Boundaries Schema
@@ -251,6 +320,28 @@ export function isActor(obj: unknown): obj is Actor {
  */
 export function isUseCase(obj: unknown): obj is UseCase {
   return useCaseSchema.safeParse(obj).success;
+}
+
+/**
+ * Type guard to check if an object is a valid EnhancedUseCase
+ * Validates that all enhanced v2.0 fields are present and valid
+ */
+export function isEnhancedUseCase(obj: unknown): obj is EnhancedUseCase {
+  return enhancedUseCaseSchema.safeParse(obj).success;
+}
+
+/**
+ * Type guard to check if an object is a valid FlowStep
+ */
+export function isFlowStep(obj: unknown): obj is FlowStep {
+  return flowStepSchema.safeParse(obj).success;
+}
+
+/**
+ * Type guard to check if an object is a valid AlternativeFlow
+ */
+export function isAlternativeFlow(obj: unknown): obj is AlternativeFlow {
+  return alternativeFlowSchema.safeParse(obj).success;
 }
 
 /**
