@@ -370,8 +370,8 @@ apps/product-helper/
 │   │   ├── queries.ts
 │   │   └── queries.test.ts            ← Unit test
 │   └── validators/
-│       ├── sr-cornell.ts
-│       └── sr-cornell.test.ts         ← Unit test
+│       ├── prd-spec-validator.ts
+│       └── prd-spec-validator.test.ts         ← Unit test
 ├── components/
 │   └── projects/
 │       ├── project-card.tsx

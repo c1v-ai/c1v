@@ -43,7 +43,7 @@ const KNOWN_AGENTS = new Set([
   'data-viz-engineer',
   'langchain-engineer',
   'llm-workflow-engineer',
-  'sr-cornell-validator',
+  'prd-spec-validator',
   'vector-store-engineer',
   'cache-engineer',
   'observability-engineer',

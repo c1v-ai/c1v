@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type FormEvent, type ReactNode, useRef, useEffect, useCallback } from 'react';
+import React, { type FormEvent, type ReactNode, useRef, useEffect, useCallback, useState } from 'react';
 import { type Message, useChat } from 'ai/react';
 import { toast } from 'sonner';
 import { ChatMessageBubble, ChatLoadingBubble } from './chat-message-bubble';
@@ -8,6 +8,9 @@ import { ChatInput } from './chat-input';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ThinkingState } from '@/components/education/thinking-state';
+import { getEducationContext } from '@/lib/education/phase-mapping';
+import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
 
 /**
  * Chat Messages Container

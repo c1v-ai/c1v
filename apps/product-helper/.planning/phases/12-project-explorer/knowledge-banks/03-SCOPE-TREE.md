@@ -14,12 +14,29 @@ The Scope Tree prevents the classic stakeholder surprise:
 
 **The Rule:** If it's not on this tree, it's not in scope.
 
+**The stakeholder conversation it enables:**
+> "You asked for a report. This is what we believe a report entails. This is what we believe an analysis entails. These are the kinds of tests we're going to run. Is that what you're expecting, or were you expecting something else?"
+
+Having this conversation early prevents the far worse conversation at delivery:
+> "This is very nice, but where is X? Where is Y? We said we wanted a report. We naturally assumed you'd do all these other things, which you didn't actually assume yourself."
+
 Benefits:
 - Clear definition of what WILL be delivered
 - Clear definition of what WON'T be delivered (yet)
-- Foundation for timelines and resource planning
+- Foundation for timelines, resource planning, and charts (e.g., PERT)
 - Protection against scope creep
 - Starting point for Phase 2 (cut items saved, not deleted)
+
+**Additional layers you can add:**
+- **Resources needed** — What resources (people, equipment, data) are required for each task?
+- **Performance criteria** — How will you assess whether a deliverable is good, bad, or better? Discussing these with the stakeholder helps define quality expectations.
+
+**Realistic expectations:** Building a scope tree takes considerable time and iteration. Experienced practitioners often spend a week or more, going through multiple iterations and team conversations before producing a version ready to share externally. Your first attempt won't be your last — and that's the point.
+
+**Prerequisites:** You should have completed:
+- Context diagram (Step 1.1) — shows what your system interacts with
+- Use case diagram (Step 1.2) — shows all scenarios your system must handle
+- These feed directly into the scope tree — your use cases reveal what needs to be delivered
 
 ---
 
@@ -38,6 +55,106 @@ Also called:
 3. Break into sub-deliverables
 4. Keep drilling until you reach **atomic tasks**
 5. Follow the tree back up = your complete scope
+
+---
+
+## BUILDING THE TREE: PRACTICAL PROCESS
+
+Building a scope tree is messy — and that's expected. Here's how it actually works in practice:
+
+### 1. First Pass Is Rough
+
+Start by getting ideas down. Don't worry about perfect structure, precise placement, or whether every branch is complete. Some branches will be broken down further, some won't even be connected yet. Structure emerges as you work.
+
+```
+PH: This is a first pass. Some branches are broken down further,
+some aren't connected yet. We'll organize and expand as we go.
+The goal right now is to capture everything we can think of.
+```
+
+### 2. Reorganize As You Go
+
+As you work, you'll realize nodes belong in different places. Move them. For example, you might initially list "Cost Estimates" as a top-level deliverable, then realize it belongs under "Panel Options" because cost is a property of each panel type. This reorganization is a natural part of the process.
+
+### 3. Explore Branches Individually
+
+When a branch gets complex, zoom in on just that branch. Work it out in detail before returning to the broader tree. You don't need to develop every branch to the same depth at the same time.
+
+```
+PH: "[Branch]" has a lot of important tasks going into it.
+Let's explore just this branch for now before returning
+to the rest of the tree.
+```
+
+### 4. Branch Labeling Convention
+
+Label each branch for easy referencing, especially when splitting across pages or documents. The label grows to show provenance — where this branch came from:
+
+```
+Root:       Analysis
+Level 1:    Analysis.3Panels
+Level 2:    Analysis.3Panels.CostEst
+Level 3:    Analysis.3Panels.CostEst.GovtIncent
+
+Give labels any name you want — just make sure
+each has a clear and unique meaning.
+```
+
+### 5. When a Branch Outgrows the Page
+
+It's common for a branch to run off the page while you're working on it. When that happens:
+- **Cut it off** on the current page/slide
+- **Reference the branch label** where the full expansion can be found
+- **Start the new page** with a reference back to the parent, so the reader knows where they are
+
+```
+[On main tree]
+  Cost Estimates → (See Analysis.3Panels.CostEst)
+
+[On separate page]
+  Analysis.3Panels.CostEst
+  ├── Installation Cost Estimates
+  ├── Anticipated Maintenance Schedule & Costs
+  └── Government Incentive Options → (See Analysis.3Panels.CostEst.GovtIncent)
+```
+
+### 6. Repeating vs. Sharing Nodes
+
+When the same deliverable or data is needed by multiple parent branches, you have two options:
+
+- **Repeat the node** under each parent (usually preferred — clearer for the reader)
+- **Share the node** and connect it to both parents (when both parents' needs can easily be met at the same time by one person/task)
+
+Most of the time, repeat. Share only when the work is genuinely the same task serving both parents simultaneously.
+
+### 7. Handling Unknowns and Circular Dependencies
+
+You'll encounter situations where you need the output of one task to proceed with another, but that task depends on the first. When you discover circular dependencies:
+- **Add an estimation stage** — create an "estimate" version of the deliverable to use initially
+- **Add an "adjust" step** later to refine once the real data is available
+- **Flag the uncertainty** — leave it in the tree with a note, and plan to get the question answered soon
+
+```
+Example: Need panel layout to check building code,
+but need code approval to finalize layout.
+
+Solution:
+  ├── Calculate ESTIMATE of panels & their location
+  │   └── (uses building size, roof size, panel sizes)
+  ├── Create documentation showing code compliance
+  └── ADJUST calculation to meet code requirements
+```
+
+### 8. Color Coding (Optional)
+
+A useful convention for visual clarity — though normally you add color last since it's easier to track categories by written text during construction:
+
+| Color | Category | Examples |
+|-------|----------|----------|
+| **White** | Deliverables and tasks | "Install panels," "Create report" |
+| **Light Green** | Data needed | "Building size," "Panel efficiency data sheets" |
+| **Light Yellow** | Performance criteria | "Time to complete," "Estimated complexity" |
+| **Dashed border** | Out of scope | Deferred items for Phase 2 |
 
 ---
 
@@ -194,11 +311,19 @@ The branches of your tree end with different types of leaves:
 
 | Type | Visual | Description | Example |
 |------|--------|-------------|---------|
-| **Deliverable** | White box | Work product to deliver | "Login screen" |
-| **Data Needed** | Light Green | Information to gather | "User research results" |
-| **Performance Criteria** | Light Yellow | How to measure success | "Response time < 200ms" |
-| **Question** | White with "?" | Unknown needing answer | "Which auth provider?" |
-| **Out of Scope** | Dashed border | Deferred to later phase | "Mobile app (Phase 2)" |
+| **Atomic Task** | White box | Task you know how to complete | "Contact panel vendors for information" |
+| **Data Needed** | Light Green | Information to gather | "Building size, roof weight constraints" |
+| **Performance Criteria** | Light Yellow | How to measure success | "Time to complete, estimated complexity" |
+| **Question / Unknown** | White with "?" | Unknown needing answer | "How do you measure complexity?" |
+| **Resource Request** | White | Request for people/tools to proceed | "Who can we contact as a resource?" |
+| **Out of Scope** | Dashed border | Deferred to later phase | "Battery storage options (Phase 2)" |
+
+**Branches commonly end with one of these patterns:**
+- **Questions** about sources of data or how to do things — these are the most common leaf type. "Where can we find out the code?" "Who can we get this info from?" "What does this document look like?"
+- **Requests for additional resources** — people, expertise, or access needed to proceed
+- **Sets of data** that are already known or need gathering (green)
+- **Atomic tasks** that you know how to complete
+- **Performance criteria** describing how to assess quality (yellow)
 
 ---
 
@@ -298,6 +423,116 @@ Toy Catapult System
 └── [Dashed] Phase 2: Advanced Features
     ├── Adjustable power levels
     └── Score tracking
+```
+
+### Solar Panel Analysis (Multi-Page Tree — Key Patterns)
+
+This example demonstrates how a real tree grows across multiple pages with branch references, reorganization, and iterative refinement:
+
+```
+Analysis (Root)
+├── Solar Panel Analysis for Community Hall
+│   ├── Determine Top 3 Panel Choices
+│   │   ├── List of All Panel Options Investigated on Power
+│   │   ├── [Green] Cost Estimates → (See Analysis.3Panels.CostEst)
+│   │   ├── [Green] Payback Periods
+│   │   ├── [Green] Power Consumption / Generation Chart
+│   │   └── Calculate Solar Power Generation
+│   │       ├── Determine Panel Efficiency from Data Sheets
+│   │       └── Determine Incoming Solar Radiation
+│   │           └── → (See Analysis.3Panels.PanelList.PanelEff&SolarRad)
+│   │
+│   ├── [Dashed — CUT FROM SCOPE]
+│   │   ├── Battery Storage Options
+│   │   └── Building Renderings with Solar Panels Installed
+│   │
+│   └── Documentation on Related Building Code Compliance
+│
+├── Analysis.3Panels.CostEst (branch page)
+│   ├── Installation Cost Estimates
+│   │   ├── [Green] Parts Costs
+│   │   ├── [Green] Labor Costs
+│   │   ├── [Green] Shipping Costs
+│   │   ├── [Green] Parts Availability
+│   │   └── [Yellow] Time to Complete, Expertise, Complexity
+│   ├── Anticipated Maintenance Schedule & Costs
+│   │   └── [Yellow] Frequency, Cost, Time, Expertise, Complexity
+│   ├── Government Incentive Options → (See Analysis.3Panels.CostEst.GovtIncent)
+│   ├── Contact Panel Vendors for Information
+│   ├── Select "Baseline" Panel for comparison
+│   └── Contact Contractors for Estimates
+│       └── ? What info do they need? (Building size, roof size, etc.)
+│
+└── Analysis.3Panels.CostEst.GovtIncent (branch page)
+    ├── Determine Time Periods
+    ├── Qualification Requirements
+    ├── Discuss w/ Stakeholder Contact who handles this
+    ├── Application Procedure
+    │   └── ? Which Stakeholder Contact handles this?
+    ├── Research Government Websites  ←(serves both Determine + Qualification)
+    └── Contact Government Representatives
+```
+
+**Key patterns demonstrated in this example:**
+- Branch labels grow to show provenance: `Analysis.3Panels.CostEst.GovtIncent`
+- Branches are cut off and referenced when they outgrow the page
+- New pages start with parent reference for context
+- Nodes can be shared when one task serves multiple parents
+- [Dashed] items are cut from scope but preserved for the next phase
+- Leaf nodes are mostly questions ("?"), data needs ([Green]), and criteria ([Yellow])
+- Adding performance criteria (Yellow) revealed that more deliverables were needed
+- Uncertain items are left in with notes ("we'll have to find out")
+
+---
+
+## COMPLETENESS CHECK
+
+When you think your tree is done, use performance criteria as a validation tool:
+
+```
+PH: Let's check completeness by reviewing your performance criteria
+against your deliverables.
+
+For each performance criterion you've defined:
+  ? Is there a deliverable in the tree that addresses it?
+  ? Can you trace a path from the criterion to a leaf node
+    that will produce measurable evidence?
+
+For each major deliverable:
+  ? Does it have at least one performance criterion?
+  ? Will the leaf nodes under it actually produce what's needed?
+```
+
+**Common discovery at this stage:** Adding performance criteria often reveals that more deliverables are needed. A criterion like "must comply with building code" immediately spawns deliverables: "research building code," "create compliance documentation," "meet with code committee representative."
+
+**It's also common to need estimation stages mid-work.** As you build the tree, you may realize you need a way to estimate performance before you have final data. Creating intermediate estimation deliverables is expected and shows design maturity.
+
+---
+
+## WHEN THE TREE IS DONE
+
+Once your scope tree is complete enough to begin work:
+
+```
+PH: Your scope tree is ready. Here's what you can do with it:
+
+1. TRANSLATE TO A TIMELINE
+   Map your atomic tasks and dependencies to a schedule.
+   You may discover a few more tasks/deliverables in doing so.
+
+2. CREATE A PERT CHART
+   Identify critical path and parallel work streams.
+
+3. COMBINE INTO ONE LARGE TREE
+   Merge all branch pages into a single comprehensive view.
+   Consider color coding for categories.
+
+4. ASSIGN TASKS
+   Use leaf nodes to assign work among team members.
+
+5. REVIEW WITH STAKEHOLDERS
+   Walk them through the tree: "This is what we believe
+   [deliverable] entails. Is this what you're expecting?"
 ```
 
 ---
@@ -466,6 +701,24 @@ If it's not there, it's not in scope.
 Next: We'll dive into your high-priority use cases to extract
 the detailed requirements hiding inside them.
 ```
+
+---
+
+## PROCESS CONTEXT: WHERE SCOPE TREES FIT
+
+The scope tree is Step 1.3 in the defining-scope process. Here's the full sequence:
+
+| Step | Activity | Deliverable |
+|------|----------|-------------|
+| 0 | Remove system name — call it "The System" | Unbiased starting point |
+| 1-7 | Build and refine context diagram | Context diagram showing all interactions |
+| 8 | Develop use case list from context diagram | First pass at use cases |
+| 9 | Add use cases from other sources (internal, stakeholder) | Complete use case list |
+| 10 | Refine with includes/extends relationships | Refined use cases |
+| 11 | Quality check (boundaries, scope, uniqueness) | Validated use case list |
+| **1.3** | **Build scope tree from deliverables** | **Scope tree (this step)** |
+
+The scope tree takes the **scenarios** defined in steps 8-11 and translates them into **deliverables** — the actual things you'll build, the data you'll gather, the questions you'll answer, and the criteria you'll meet.
 
 ---
 

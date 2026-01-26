@@ -334,7 +334,7 @@
       "plan": "11-05",
       "wave": 2,
       "name": "Implement get_validation_status tool",
-      "description": "Return SR-CORNELL validation score and check results with verbose option",
+      "description": "Return PRD-SPEC validation score and check results with verbose option",
       "file": "app/api/mcp/tools/unique/get-validation-status.ts",
       "status": "pending",
       "agent": "langchain-engineer",

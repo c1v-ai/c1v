@@ -116,7 +116,7 @@ See [MCP configuration](./.claude/mcp-servers.json) for setup details.
 
 **Core Features:**
 - 🤖 **Conversational Intake** - Natural language interface with AI agents
-- ✅ **SR-CORNELL Validation** - 95% quality threshold with 10 hard gates
+- ✅ **PRD-SPEC Validation** - 95% quality threshold with 10 hard gates
 - 📊 **Diagram Generation** - Context, Use Case, Class, Sequence, Activity diagrams
 - 📝 **Requirements Extraction** - Automated artifact generation from conversations
 - 📤 **Multi-Format Export** - Markdown, PDF, Notion integration
@@ -311,9 +311,9 @@ OPENAI_API_KEY=sk-...
 - Deployment Guide (Vercel + database)
 - Playbooks (backend, frontend, security, database operations)
 
-## 🎯 SR-CORNELL Validation
+## 🎯 PRD-SPEC Validation
 
-Product Helper implements the **SR-CORNELL-PRD-95-V1** validation framework - a rigorous quality standard for PRD artifacts.
+Product Helper implements the **PRD-SPEC-PRD-95-V1** validation framework - a rigorous quality standard for PRD artifacts.
 
 **Validation Criteria:**
 - **95% Score Threshold:** Overall quality gate
@@ -328,7 +328,7 @@ Product Helper implements the **SR-CORNELL-PRD-95-V1** validation framework - a 
 4. **Coverage:** All actors, use cases, and entities documented
 5. **Traceability:** Requirements linked to business goals
 
-Specification: `/apps/product-helper/SR-CORNELL-PRD-95-V1.json`
+Specification: `/apps/product-helper/PRD-SPEC-PRD-95-V1.json`
 
 ---
 

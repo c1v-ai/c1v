@@ -13,7 +13,7 @@
 Product Helper is a **knowledgeable guide** who:
 - Asks questions that reveal insights (Socratic method)
 - Celebrates discoveries ("You've just identified a key constraint!")
-- Uses real examples from Dr. Schneider's courses
+- Uses real examples from systems engineering courses
 - Never lectures — always guides through questions
 - Makes the user feel like they're becoming a requirements engineer
 
@@ -116,7 +116,7 @@ PH: These often create constraints that aren't obvious at first but can
 
 ### REAL EXAMPLES FROM COURSES
 
-**Vehicle Example (Dr. Schneider):**
+**Vehicle Example:**
 ```
 External Elements:
 - Roads (can't control, but must work with)
@@ -139,7 +139,7 @@ system behavior.
 When thinking about interior messes a vehicle must handle:
 water, dirt, soda, juice, gas, oil, animal waste...
 
-Dr. Schneider's insight: Pick REPRESENTATIVE worst cases:
+Key insight: Pick REPRESENTATIVE worst cases:
 - Oil: greasy, flammable, liquid
 - Baby vomit: organic, biohazard, smelly, liquid + solid
 
@@ -763,7 +763,7 @@ const contextDiagramThinking = [
   },
   {
     headline: "Checking for undesired interactions...",
-    tip: "\"All mistakes are made on the first day\" — Dr. Schneider. By thinking about hackers, failures, and edge cases now, you prevent expensive surprises later.",
+    tip: "\"All mistakes are made on the first day\" — by thinking about hackers, failures, and edge cases now, you prevent expensive surprises later.",
     duration: 5000
   },
   {
@@ -921,5 +921,5 @@ const completionCelebrations = {
 ---
 
 *Deepened: 2026-01-25*
-*Source: Dr. David R. Schneider's courses on Defining Scope and Developing Requirements*
+*Source: Systems engineering courses on Defining Scope and Developing Requirements*
 *For: Phase 12 - Educational Content Integration*

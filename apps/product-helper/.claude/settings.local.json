@@ -40,7 +40,11 @@
       "Bash(ct update:*)",
       "Bash(ct complete:*)",
       "Bash(git -C /Users/davidancor/coding/c1v submodule status)",
-      "Bash(git -C /Users/davidancor/coding/c1v status:*)"
+      "Bash(git -C /Users/davidancor/coding/c1v status:*)",
+      "Skill(gsd:new-project)",
+      "Bash(ct phases:*)",
+      "Bash(ct find:*)",
+      "Bash(ct show:*)"
     ]
   },
   "enabledPlugins": {
