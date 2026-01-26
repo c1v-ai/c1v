@@ -1,8 +1,13 @@
 'use client';
 
+import React, { useMemo, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { DiagramLinkCard } from './diagram-link-card';
+import { TooltipTerm } from '@/components/education/tooltip-term';
+import { getEducationContext } from '@/lib/education/phase-mapping';
+import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
+import type { TooltipTerm as TooltipTermData } from '@/lib/education/knowledge-bank';
 
 /**
  * Markdown Renderer Component
@@ -13,9 +18,95 @@ import { DiagramLinkCard } from './diagram-link-card';
 export interface MarkdownRendererProps {
   content: string;
   onDiagramClick?: (syntax: string) => void;
+  currentPhase?: ArtifactPhase;
 }
 
-export function MarkdownRenderer({ content, onDiagramClick }: MarkdownRendererProps) {
+/** Escape special regex characters in a string. */
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Scan `text` for tooltip terms and return a ReactNode array where
+ * the first occurrence of each term is wrapped in a <TooltipTerm>.
+ * Only the first match per term is wrapped to avoid noise.
+ */
+function processTextWithTooltips(
+  text: string,
+  tooltipTerms: TooltipTermData[],
+): ReactNode {
+  if (tooltipTerms.length === 0) return text;
+
+  // Collect first-occurrence matches with their positions
+  const matches: { index: number; length: number; term: TooltipTermData }[] = [];
+
+  for (const t of tooltipTerms) {
+    const regex = new RegExp(`\\b${escapeRegExp(t.term)}\\b`, 'i');
+    const m = regex.exec(text);
+    if (m) {
+      matches.push({ index: m.index, length: m[0].length, term: t });
+    }
+  }
+
+  if (matches.length === 0) return text;
+
+  // Sort by position, then remove overlaps
+  matches.sort((a, b) => a.index - b.index);
+  const filtered: typeof matches = [];
+  for (const m of matches) {
+    const prev = filtered[filtered.length - 1];
+    if (!prev || m.index >= prev.index + prev.length) {
+      filtered.push(m);
+    }
+  }
+
+  // Build segments: plain text interspersed with TooltipTerm elements
+  const segments: ReactNode[] = [];
+  let cursor = 0;
+
+  for (const m of filtered) {
+    if (m.index > cursor) {
+      segments.push(text.slice(cursor, m.index));
+    }
+    segments.push(
+      <TooltipTerm
+        key={`tt-${m.index}`}
+        term={text.slice(m.index, m.index + m.length)}
+        definition={m.term.definition}
+      />,
+    );
+    cursor = m.index + m.length;
+  }
+
+  if (cursor < text.length) {
+    segments.push(text.slice(cursor));
+  }
+
+  return <>{segments}</>;
+}
+
+/**
+ * Iterate React children and process only string children through
+ * tooltip matching, leaving React elements untouched.
+ */
+function processChildrenWithTooltips(
+  children: ReactNode,
+  tooltipTerms: TooltipTermData[],
+): ReactNode {
+  return React.Children.map(children, (child) => {
+    if (typeof child === 'string') {
+      return processTextWithTooltips(child, tooltipTerms);
+    }
+    return child;
+  });
+}
+
+export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: MarkdownRendererProps) {
+  const tooltipTerms = useMemo(
+    () => (currentPhase ? getEducationContext(currentPhase).tooltipTerms : []),
+    [currentPhase],
+  );
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -43,9 +134,13 @@ export function MarkdownRenderer({ content, onDiagramClick }: MarkdownRendererPr
           />
         ),
 
-        // Paragraphs
-        p: ({ node, ...props }) => (
-          <p className="mb-3 leading-relaxed" {...props} />
+        // Paragraphs — apply tooltip processing
+        p: ({ node, children, ...props }) => (
+          <p className="mb-3 leading-relaxed" {...props}>
+            {tooltipTerms.length > 0
+              ? processChildrenWithTooltips(children, tooltipTerms)
+              : children}
+          </p>
         ),
 
         // Lists
@@ -55,8 +150,13 @@ export function MarkdownRenderer({ content, onDiagramClick }: MarkdownRendererPr
         ol: ({ node, ...props }) => (
           <ol className="list-decimal list-inside mb-3 space-y-1" {...props} />
         ),
-        li: ({ node, ...props }) => (
-          <li className="ml-4" {...props} />
+        // List items — apply tooltip processing
+        li: ({ node, children, ...props }) => (
+          <li className="ml-4" {...props}>
+            {tooltipTerms.length > 0
+              ? processChildrenWithTooltips(children, tooltipTerms)
+              : children}
+          </li>
         ),
 
         // Code - with mermaid diagram support
@@ -182,12 +282,12 @@ export function MarkdownRenderer({ content, onDiagramClick }: MarkdownRendererPr
           />
         ),
 
-        // Strong/Bold
+        // Strong/Bold — no tooltip processing
         strong: ({ node, ...props }) => (
           <strong className="font-bold" {...props} />
         ),
 
-        // Emphasis/Italic
+        // Emphasis/Italic — no tooltip processing
         em: ({ node, ...props }) => (
           <em className="italic" {...props} />
         ),

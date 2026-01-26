@@ -22,6 +22,7 @@ export interface ChatMessagesProps {
   aiEmoji?: string;
   isLoading?: boolean;
   className?: string;
+  currentPhase?: ArtifactPhase;
 }
 
 export function ChatMessages({
@@ -30,6 +31,7 @@ export function ChatMessages({
   aiEmoji,
   isLoading,
   className,
+  currentPhase,
 }: ChatMessagesProps) {
   if (messages.length === 0) {
     return <div className="flex h-full items-center justify-center">{emptyStateComponent}</div>;
@@ -47,9 +49,18 @@ export function ChatMessages({
           key={message.id}
           message={message}
           aiEmoji={aiEmoji}
+          currentPhase={currentPhase}
         />
       ))}
-      {isLoading && <ChatLoadingBubble aiEmoji={aiEmoji} />}
+      {isLoading && (
+        currentPhase ? (
+          <ThinkingState
+            messages={getEducationContext(currentPhase).thinkingMessages}
+          />
+        ) : (
+          <ChatLoadingBubble aiEmoji={aiEmoji} />
+        )
+      )}
     </div>
   );
 }
@@ -191,6 +202,8 @@ export function ChatWindow({
   projectId,
   chatOptions = {},
 }: ChatWindowProps) {
+  const [currentPhase, setCurrentPhase] = useState<ArtifactPhase | null>(null);
+
   // Initialize chat with Vercel AI SDK
   const chat = useChat({
     api: endpoint,
@@ -198,6 +211,10 @@ export function ChatWindow({
     headers: chatOptions.headers,
     body: chatOptions.body,
     streamMode: 'text',
+    onResponse: (response) => {
+      const phase = response.headers.get('X-Current-Phase') as ArtifactPhase | null;
+      if (phase) setCurrentPhase(phase);
+    },
     onError: (error) => {
       console.error('Chat error:', error);
       toast.error('Error while processing your request', {
@@ -256,6 +273,7 @@ export function ChatWindow({
           emptyStateComponent={emptyStateComponent}
           aiEmoji={emoji}
           isLoading={chat.isLoading}
+          currentPhase={currentPhase ?? undefined}
         />
       }
       footer={
