@@ -9,12 +9,12 @@
 ## Current Position
 
 **Milestone:** V2 -- Epic.dev Feature Parity
-**Current Phase:** Phase 2 -- Quick Start Pipeline [IN PROGRESS]
-**Active Requirement:** PIPE-08 (Quick Start synthesis agent)
+**Current Phase:** Phases 1, 3, 5 ready to plan (can run in parallel)
+**Last Completed:** Phase 2 -- Quick Start Pipeline ✓
 **Plan:** Not yet planned (awaiting `/gsd:plan-phase`)
 
 ```
-Progress: [##--------] Phase 2 of 9
+Progress: [##--------] 1 of 9 phases complete
 ```
 
 ---
@@ -24,7 +24,7 @@ Progress: [##--------] Phase 2 of 9
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
 | 1 | Onboarding & First Impressions | Pending | ONBD-01..05 |
-| **2** | **Quick Start Pipeline** | **In Progress** | **PIPE-08..10, CHAT-04** |
+| ~~2~~ | ~~Quick Start Pipeline~~ | ✓ Complete | ~~PIPE-08..10, CHAT-04~~ |
 | 3 | PRD Extraction Agents | Pending | PIPE-01..04 |
 | 4 | Pipeline Orchestration & Quality | Pending | PIPE-05..07, CHAT-01 |
 | 5 | Explorer Shell & Layout | Pending | EXPL-01, 02, 13, 14 |
@@ -47,22 +47,12 @@ Phases 1, 2, 3, and 5 can all run in parallel (no dependencies between them).
 
 ## Active Workstreams
 
-### 1. Quick Start Mode (T022) -- IN PROGRESS
+### 1. Quick Start Mode (T022) -- COMPLETE ✓
 
 **Branch:** `feature/T022-quick-start-mode`
-**Priority:** Critical (B10 epic-dev parity)
 **Architecture:** Direct API orchestration (not LangGraph) -- batch pipeline, not conversation
-
-**5-Phase Pipeline:**
-1. Synthesis (2-call: domain analysis -> use case derivation)
-2. Extraction (6 agents in parallel via `Promise.allSettled`)
-3. Validation (PRD-SPEC quality check -> show draft with score + CTA to guided mode)
-4. Artifacts (Mermaid diagrams)
-5. Persistence (DB writes)
-
 **Files (5):** synthesis-agent, orchestrator, SSE route, progress-cards, quick-start-button
-**Subtasks:** T029 (synthesis, active), T030 (orchestrator), T031 (SSE route), T032 (UI)
-**Key Decisions:** ChatAnthropic (not OpenAI), partial failures show red card with retry, validation failures show draft + "Switch to guided mode" CTA
+**All subtasks done:** T029 (synthesis), T030 (orchestrator), T031 (SSE route), T032 (UI)
 
 ### 2. KB <-> Agent Integration (T033) -- PAUSED
 
@@ -96,7 +86,7 @@ The following phases from the previous milestone are complete and form the found
 - 17 MCP tools with API key management
 - PRD-SPEC 10 hard-gate validation engine
 - SSE streaming, JWT auth, teams, PWA
-- 6 knowledge bank files (2 enriched from eCornell course)
+- 6 knowledge bank files (2 enriched from systems engineering course)
 - Education UI scaffolding (ThinkingState, TooltipTerm components)
 
 ---
@@ -143,7 +133,6 @@ The following phases from the previous milestone are complete and form the found
 | 5 | `05-FUNCTIONAL-REQUIREMENTS.md` | 2.2 | Initial |
 | 6 | `06-SYSML-ACTIVITY-DIAGRAM.md` | 2.3 | Initial |
 
-Source: eCornell CESYS521 course transcripts (Dr. David R. Schneider)
 Key concepts: "The System" naming, Delving Technique, Functional vs Structural, 10 Properties of Good Requirements, Requirement Constants, Contractor Test, AND Test
 
 ### Phase 15 (Code Cleanup) -- Paused
@@ -163,8 +152,8 @@ Waves 2-4 pending (security, refactoring, cleanup).
 
 **Last session:** 2026-01-26
 **Active branch:** `feature/T022-quick-start-mode`
-**Stopped at:** Roadmap creation for V2 GSD workflow
-**Resume action:** Run `/gsd:plan-phase 2` to create detailed execution plan for Quick Start Pipeline (the in-progress phase), or `/gsd:plan-phase 1` for Onboarding (can run in parallel)
+**Stopped at:** Phase 2 complete, project initialized
+**Resume action:** Run `/gsd:plan-phase 1` for Onboarding, `/gsd:plan-phase 3` for PRD Extraction Agents, or `/gsd:plan-phase 5` for Explorer Shell (all can run in parallel)
 
 ### Required Vercel Env Vars
 

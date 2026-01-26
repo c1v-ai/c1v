@@ -30,7 +30,7 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 ---
 
-## Phase 2: Quick Start Pipeline [IN PROGRESS]
+## Phase 2: Quick Start Pipeline ✓
 
 **Goal:** Users can generate a complete PRD from a single brief input in under 60 seconds
 
@@ -38,14 +38,14 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 **Requirements:** PIPE-08, PIPE-09, PIPE-10, CHAT-04
 
-**Status:** PIPE-08 (synthesis agent) is actively in progress. T029 in CLEO tracks this work.
+**Status:** Complete. All 4 subtasks done (T029-T032). Synthesis agent, orchestrator, SSE route, and progress cards UI shipped.
 
 **Success Criteria:**
-1. User can click "Quick Start" and provide a one-sentence product description
-2. System expands brief input into full project context via 2-call synthesis (domain analysis + use case derivation)
-3. User sees real-time progress cards ("Creating PRD... Done", "Creating API Spec... Done") as each artifact generates
-4. All standard artifacts (PRD, tech stack, schema, API spec, user stories, diagrams) generate from the Quick Start flow
-5. SSE stream delivers generation progress to the client in real time
+1. ✓ User can click "Quick Start" and provide a one-sentence product description
+2. ✓ System expands brief input into full project context via 2-call synthesis (domain analysis + use case derivation)
+3. ✓ User sees real-time progress cards ("Creating PRD... Done", "Creating API Spec... Done") as each artifact generates
+4. ✓ All standard artifacts (PRD, tech stack, schema, API spec, user stories, diagrams) generate from the Quick Start flow
+5. ✓ SSE stream delivers generation progress to the client in real time
 
 ---
 
@@ -164,7 +164,7 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | Pending |
-| 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | In Progress |
+| 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
 | 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | Pending |
 | 4 | Pipeline Orchestration & Quality | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Pending |
 | 5 | Explorer Shell & Layout | EXPL-01, EXPL-02, EXPL-13, EXPL-14 | Pending |
@@ -214,9 +214,9 @@ Phase 4: Orchestration ----+                                    |
 | PIPE-05 | Phase 4 | Pending |
 | PIPE-06 | Phase 4 | Pending |
 | PIPE-07 | Phase 4 | Pending |
-| PIPE-08 | Phase 2 | In Progress |
-| PIPE-09 | Phase 2 | Pending |
-| PIPE-10 | Phase 2 | Pending |
+| PIPE-08 | Phase 2 | Complete |
+| PIPE-09 | Phase 2 | Complete |
+| PIPE-10 | Phase 2 | Complete |
 | EXPL-01 | Phase 5 | Pending |
 | EXPL-02 | Phase 5 | Pending |
 | EXPL-03 | Phase 6 | Pending |
@@ -235,7 +235,7 @@ Phase 4: Orchestration ----+                                    |
 | CHAT-01 | Phase 4 | Pending |
 | CHAT-02 | Phase 8 | Pending |
 | CHAT-03 | Phase 8 | Pending |
-| CHAT-04 | Phase 2 | Pending |
+| CHAT-04 | Phase 2 | Complete |
 | ONBD-01 | Phase 1 | Pending |
 | ONBD-02 | Phase 1 | Pending |
 | ONBD-03 | Phase 1 | Pending |
