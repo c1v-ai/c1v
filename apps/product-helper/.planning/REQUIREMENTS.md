@@ -16,9 +16,9 @@ Requirements for V2 release. Each maps to roadmap phases.
 - [ ] **PIPE-05**: System enforces staged approval gates (PRD -> Tech -> Implementation -> Stories)
 - [ ] **PIPE-06**: System outputs dual-format artifacts (.md + machine-parseable: .mmd, .schema.json, .openapi.json)
 - [ ] **PIPE-07**: Knowledge graphs improved for scope definition and requirements training
-- [ ] **PIPE-08**: Quick Start synthesis agent expands brief input via 2-call context expansion (domain analysis + use case derivation)
-- [ ] **PIPE-09**: Quick Start orchestrator runs parallel agents with validation path
-- [ ] **PIPE-10**: Quick Start SSE API route streams generation progress to client
+- [x] **PIPE-08**: Quick Start synthesis agent expands brief input via 2-call context expansion (domain analysis + use case derivation)
+- [x] **PIPE-09**: Quick Start orchestrator runs parallel agents with validation path
+- [x] **PIPE-10**: Quick Start SSE API route streams generation progress to client
 
 ### Explorer UI
 
@@ -43,7 +43,7 @@ Requirements for V2 release. Each maps to roadmap phases.
 - [ ] **CHAT-01**: Knowledge graphs trained for improved scope definition and requirements building
 - [ ] **CHAT-02**: User can select agent role (e.g., "Architect") from dropdown
 - [ ] **CHAT-03**: Loading states show clear progress indicators during AI processing
-- [ ] **CHAT-04**: Quick Start button and progress cards UI for one-shot PRD generation
+- [x] **CHAT-04**: Quick Start button and progress cards UI for one-shot PRD generation
 
 ### Onboarding
 
@@ -105,9 +105,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PIPE-05 | Phase 4: Pipeline Orchestration & Quality | Pending |
 | PIPE-06 | Phase 4: Pipeline Orchestration & Quality | Pending |
 | PIPE-07 | Phase 4: Pipeline Orchestration & Quality | Pending |
-| PIPE-08 | Phase 2: Quick Start Pipeline | In Progress |
-| PIPE-09 | Phase 2: Quick Start Pipeline | Pending |
-| PIPE-10 | Phase 2: Quick Start Pipeline | Pending |
+| PIPE-08 | Phase 2: Quick Start Pipeline | Complete |
+| PIPE-09 | Phase 2: Quick Start Pipeline | Complete |
+| PIPE-10 | Phase 2: Quick Start Pipeline | Complete |
 | EXPL-01 | Phase 5: Explorer Shell & Layout | Pending |
 | EXPL-02 | Phase 5: Explorer Shell & Layout | Pending |
 | EXPL-03 | Phase 6: Content Section Views | Pending |
@@ -126,7 +126,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHAT-01 | Phase 4: Pipeline Orchestration & Quality | Pending |
 | CHAT-02 | Phase 8: Chat Enhancements | Pending |
 | CHAT-03 | Phase 8: Chat Enhancements | Pending |
-| CHAT-04 | Phase 2: Quick Start Pipeline | Pending |
+| CHAT-04 | Phase 2: Quick Start Pipeline | Complete |
 | ONBD-01 | Phase 1: Onboarding & First Impressions | Pending |
 | ONBD-02 | Phase 1: Onboarding & First Impressions | Pending |
 | ONBD-03 | Phase 1: Onboarding & First Impressions | Pending |
