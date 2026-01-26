@@ -99,7 +99,7 @@ const COMPLETION_THRESHOLD = 95;
  *   currentPhase: 'use_case_diagram' // Advanced to next phase
  * }
  */
-export async function checkSRindustry-standard(
+export async function checkPRDSpec(
   state: IntakeState
 ): Promise<Partial<IntakeState>> {
   const { extractedData, projectId, projectName, projectVision, currentPhase } = state;

@@ -217,7 +217,7 @@ function validateContextDiagramSpec(spec: ContextDiagramSpec): ContextDiagramVal
  *
  * @example
  * ```typescript
- * const result = generateindustry-standardContextDiagram({
+ * const result = generateIndustryStandardContextDiagram({
  *   projectId: "my-project",
  *   elements: [
  *     { id: "users", name: "End Users", category: "actor",
@@ -229,7 +229,7 @@ function validateContextDiagramSpec(spec: ContextDiagramSpec): ContextDiagramVal
  *
  * @see /docs/diagrams/context-diagram-spec.md
  */
-export function generateindustry-standardContextDiagram(spec: ContextDiagramSpec): ContextDiagramResult {
+export function generateIndustryStandardContextDiagram(spec: ContextDiagramSpec): ContextDiagramResult {
   const validation = validateContextDiagramSpec(spec);
   const lines: string[] = [];
 
@@ -434,14 +434,14 @@ export function migrateLegacyContextData(
  * Shows what's inside vs outside the system boundary.
  * This is the legacy interface maintained for backward compatibility.
  *
- * NOTE: For specification-compliant diagrams, use generateindustry-standardContextDiagram()
+ * NOTE: For specification-compliant diagrams, use generateIndustryStandardContextDiagram()
  *
  * @param systemName - Name of the system
  * @param internal - Array of internal components (not displayed per industry-standard)
  * @param external - Array of external systems
  * @returns Mermaid diagram syntax
  *
- * @deprecated Use generateindustry-standardContextDiagram for specification-compliant output
+ * @deprecated Use generateIndustryStandardContextDiagram for specification-compliant output
  *
  * @example
  * ```typescript
@@ -460,7 +460,7 @@ export function generateContextDiagram(
   // If we have enough external elements, use specification-compliant generator
   if (external.length >= CONTEXT_MIN_ELEMENTS) {
     const spec = migrateLegacyContextData(systemName, internal, external);
-    const result = generateindustry-standardContextDiagram(spec);
+    const result = generateIndustryStandardContextDiagram(spec);
     return result.mermaidSyntax;
   }
 
@@ -950,7 +950,7 @@ export function generateUseCaseDiagram(
  * @param options - Optional diagram configuration
  * @returns Object containing Mermaid syntax and validation results
  */
-export function generateindustry-standardUseCaseDiagram(
+export function generateIndustryStandardUseCaseDiagram(
   actors: (Actor | ActorExtended)[],
   useCases: (UseCase | UseCaseExtended)[],
   options: UseCaseDiagramOptions = {}
@@ -1998,7 +1998,7 @@ export function generateDiagram(
     case 'context':
       // Prefer new industry-standard spec if provided
       if (data.contextSpec) {
-        return generateindustry-standardContextDiagram(data.contextSpec).mermaidSyntax;
+        return generateIndustryStandardContextDiagram(data.contextSpec).mermaidSyntax;
       }
       // Fall back to legacy format
       return generateContextDiagram(

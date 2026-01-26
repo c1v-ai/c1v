@@ -47,13 +47,13 @@ import {
  *                  |                          |                         |
  *                  v                          v                         v
  *        +---------+--------+      +----------+---------+     +---------+--------+
- *        |   extract_data   |      | check_sr_industry-standard   |     | compute_next_    |
+ *        |   extract_data   |      | check_prd_spec   |     | compute_next_    |
  *        | (Data Extraction)|      | (Validation)       |     | question         |
  *        +---------+--------+      +----------+---------+     +---------+--------+
  *                  |                          |                         |
  *                  v                          v                         v
  *        +---------+--------+      +----------+---------+     +---------+--------+
- *        | check_sr_industry-standard |      | generate_artifact  |     | generate_response|
+ *        | check_prd_spec |      | generate_artifact  |     | generate_response|
  *        | or compute_next  |      | (Diagram/Table)    |     | (AI Reply)       |
  *        +---------+--------+      +----------+---------+     +---------+--------+
  *                  |                          |                         |
@@ -125,10 +125,10 @@ async function computeNextQuestion(state: IntakeState): Promise<Partial<IntakeSt
  *
  * This is a placeholder - actual implementation in nodes/check-prd-spec.ts
  */
-async function checkSRindustry-standard(state: IntakeState): Promise<Partial<IntakeState>> {
+async function checkPRDSpec(state: IntakeState): Promise<Partial<IntakeState>> {
   // Import dynamically to avoid circular dependencies
-  const { checkSRindustry-standard: checkSRindustry-standardImpl } = await import('./nodes/check-prd-spec');
-  return checkSRindustry-standardImpl(state);
+  const { checkPRDSpec: checkPRDSpecImpl } = await import('./nodes/check-prd-spec');
+  return checkPRDSpecImpl(state);
 }
 
 /**
@@ -263,7 +263,7 @@ export function buildIntakeGraph() {
     .addNode('analyze_response', analyzeResponse)
     .addNode('extract_data', extractData)
     .addNode('compute_next_question', computeNextQuestion)
-    .addNode('check_sr_industry-standard', checkSRindustry-standard)
+    .addNode('check_prd_spec', checkPRDSpec)
     .addNode('generate_artifact', generateArtifact)
     .addNode('generate_response', generateResponse)
     // ============================================================
@@ -277,17 +277,17 @@ export function buildIntakeGraph() {
     .addConditionalEdges(
       'analyze_response',
       routeAfterAnalysis,
-      ['extract_data', 'check_sr_industry-standard', 'compute_next_question']
+      ['extract_data', 'check_prd_spec', 'compute_next_question']
     )
     // After extraction: check validation or ask more questions
     .addConditionalEdges(
       'extract_data',
       routeAfterExtraction,
-      ['check_sr_industry-standard', 'compute_next_question']
+      ['check_prd_spec', 'compute_next_question']
     )
     // After validation: generate artifact, ask more, or end
     .addConditionalEdges(
-      'check_sr_industry-standard',
+      'check_prd_spec',
       routeAfterValidation,
       ['generate_artifact', 'compute_next_question', END]
     )
@@ -295,7 +295,7 @@ export function buildIntakeGraph() {
     .addConditionalEdges(
       'generate_artifact',
       routeAfterArtifact,
-      ['check_sr_industry-standard', END]
+      ['check_prd_spec', END]
     )
     // ============================================================
     // Add Simple Edges
