@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useActionState, useEffect, type ReactNode } from 'react';
+import { useState, useActionState, useEffect, startTransition, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { BuildingInput } from './building-input';
 import { QuickStartChips } from './quick-start-chips';
@@ -68,7 +68,9 @@ export function WelcomeOnboarding({ sidebar }: WelcomeOnboardingProps) {
     if (projectStage) formData.append('projectStage', projectStage);
     if (userRole) formData.append('userRole', userRole);
     if (budget) formData.append('budget', budget);
-    formAction(formData);
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 
   const handleChipSelect = (prompt: string) => {

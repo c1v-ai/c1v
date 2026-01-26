@@ -152,7 +152,7 @@ Generate the user stories now.`;
 
     const result = await structuredModel.invoke(prompt);
 
-    return result.stories.map(story => ({
+    return result.stories.map((story: z.infer<typeof generatedStorySchema>) => ({
       useCaseId: story.useCaseId,
       title: story.title,
       description: story.description,
