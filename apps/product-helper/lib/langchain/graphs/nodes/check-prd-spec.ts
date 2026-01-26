@@ -14,7 +14,6 @@ import {
   ArtifactPhase,
   ValidationResult as IntakeValidationResult,
   ARTIFACT_PHASE_SEQUENCE,
-  getNextPhase,
 } from '../types';
 import { validateProject } from '@/lib/validation/validator';
 import { ProjectValidationData, ValidationResult } from '@/lib/validation/types';
@@ -113,29 +112,19 @@ export async function checkPRDSpec(
     // Run validation
     const result = await validateProject(validationData);
 
-    // Check if current artifact threshold is met
-    const threshold = ARTIFACT_THRESHOLDS[currentPhase];
-    const artifactReady = result.overallScore >= threshold.minimumScore;
-
     // Check if overall 95% threshold is met
     const isComplete = result.overallScore >= COMPLETION_THRESHOLD;
 
     // Transform validation result to our format
     const validationResult = transformValidationResult(result);
 
-    // Determine next phase if current is ready
-    let nextPhase = currentPhase;
-    if (artifactReady && !isComplete) {
-      const potentialNextPhase = getNextPhase(currentPhase);
-      if (potentialNextPhase) {
-        nextPhase = potentialNextPhase;
-      }
-    }
+    // NOTE: Phase advancement is handled exclusively by generate_artifact.
+    // check_prd_spec only validates and reports — it does NOT advance currentPhase.
+    // This prevents the artifact generator from reading the wrong phase.
 
     return {
       validationResult,
       isComplete,
-      currentPhase: nextPhase,
       completeness: result.overallScore,
     };
   } catch (error) {

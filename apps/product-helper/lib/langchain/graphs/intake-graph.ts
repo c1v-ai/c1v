@@ -7,6 +7,8 @@ import type {
   ArtifactReadiness,
   ValidationResult,
   PendingArtifact,
+  StepStatus,
+  GuessHistoryEntry,
 } from './types';
 import type { KnowledgeBankStep } from '@/lib/education/knowledge-bank';
 import type { ExtractionResult } from '../schemas';
@@ -219,10 +221,54 @@ const IntakeStateAnnotation = Annotation.Root({
   currentKBStep: Annotation<KnowledgeBankStep>,
   kbStepConfidence: Annotation<number>,
   kbStepData: Annotation<Record<string, unknown>>({
-    reducer: (a, b) => b ?? a,
+    reducer: (a, b) => b ? { ...a, ...b } : a,
     default: () => ({}),
   }),
   approvalPending: Annotation<boolean>,
+  askedQuestions: Annotation<string[]>({
+    reducer: (existing, incoming) => {
+      if (!incoming) return existing;
+      const items = Array.isArray(incoming) ? incoming : [incoming];
+      return Array.from(new Set([...(existing || []), ...items]));
+    },
+    default: () => [],
+  }),
+  stepCompletionStatus: Annotation<Record<KnowledgeBankStep, StepStatus>>({
+    reducer: (existing, incoming) => {
+      if (!incoming) return existing;
+      const result = { ...existing };
+      for (const [key, val] of Object.entries(incoming)) {
+        const prev = result[key as KnowledgeBankStep];
+        if (prev && val) {
+          result[key as KnowledgeBankStep] = {
+            roundsAsked: val.roundsAsked ?? prev.roundsAsked,
+            coveredTopics: Array.from(new Set([...prev.coveredTopics, ...(val.coveredTopics ?? [])])),
+            confirmed: val.confirmed ?? prev.confirmed,
+            generationApproved: val.generationApproved ?? prev.generationApproved,
+          };
+        } else if (val) {
+          result[key as KnowledgeBankStep] = val;
+        }
+      }
+      return result;
+    },
+    default: () => {
+      const steps: KnowledgeBankStep[] = ['context-diagram', 'use-case-diagram', 'scope-tree', 'ucbd', 'functional-requirements', 'sysml-activity-diagram'];
+      const status = {} as Record<KnowledgeBankStep, StepStatus>;
+      for (const step of steps) {
+        status[step] = { roundsAsked: 0, coveredTopics: [], confirmed: false, generationApproved: false };
+      }
+      return status;
+    },
+  }),
+  guessHistory: Annotation<GuessHistoryEntry[]>({
+    reducer: (existing, incoming) => {
+      if (!incoming) return existing;
+      const items = Array.isArray(incoming) ? incoming : [incoming];
+      return [...(existing || []), ...items];
+    },
+    default: () => [],
+  }),
 
   // Control flags
   isComplete: Annotation<boolean>,

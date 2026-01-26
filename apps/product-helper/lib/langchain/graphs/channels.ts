@@ -1,5 +1,5 @@
 import { BaseMessage } from '@langchain/core/messages';
-import type { IntakeState, ArtifactPhase, ArtifactReadiness, ValidationResult, PendingArtifact } from './types';
+import type { IntakeState, ArtifactPhase, ArtifactReadiness, ValidationResult, PendingArtifact, StepStatus, GuessHistoryEntry } from './types';
 import type { ExtractionResult } from '../schemas';
 
 /**
@@ -319,13 +319,66 @@ export const intakeStateChannels: StateGraphChannels = {
   },
 
   kbStepData: {
-    reducer: replaceReducer as (existing: unknown, incoming: unknown) => unknown,
+    reducer: ((existing: Record<string, unknown>, incoming: Record<string, unknown> | undefined) => {
+      if (!incoming) return existing;
+      // Merge incoming data into existing, preserving history
+      return { ...existing, ...incoming };
+    }) as (existing: unknown, incoming: unknown) => unknown,
     default: () => ({}) as Record<string, unknown>,
   },
 
   approvalPending: {
     reducer: replaceReducer as (existing: unknown, incoming: unknown) => unknown,
     default: () => false,
+  },
+
+  askedQuestions: {
+    reducer: ((existing: string[], incoming: string | string[] | undefined) => {
+      if (!incoming) return existing;
+      const items = Array.isArray(incoming) ? incoming : [incoming];
+      return Array.from(new Set([...existing, ...items]));
+    }) as (existing: unknown, incoming: unknown) => unknown,
+    default: () => [] as string[],
+  },
+
+  stepCompletionStatus: {
+    reducer: ((existing: Record<string, StepStatus>, incoming: Record<string, StepStatus> | undefined) => {
+      if (!incoming) return existing;
+      // Deep merge: for each step key, merge fields
+      const result = { ...existing };
+      for (const [key, val] of Object.entries(incoming)) {
+        const prev = result[key];
+        if (prev) {
+          result[key] = {
+            roundsAsked: val.roundsAsked ?? prev.roundsAsked,
+            coveredTopics: Array.from(new Set([...prev.coveredTopics, ...(val.coveredTopics ?? [])])),
+            confirmed: val.confirmed ?? prev.confirmed,
+            generationApproved: val.generationApproved ?? prev.generationApproved,
+          };
+        } else {
+          result[key] = val;
+        }
+      }
+      return result;
+    }) as (existing: unknown, incoming: unknown) => unknown,
+    default: () => {
+      // Import would be circular, so inline the default
+      const steps = ['context-diagram', 'use-case-diagram', 'scope-tree', 'ucbd', 'functional-requirements', 'sysml-activity-diagram'];
+      const status: Record<string, StepStatus> = {};
+      for (const step of steps) {
+        status[step] = { roundsAsked: 0, coveredTopics: [], confirmed: false, generationApproved: false };
+      }
+      return status;
+    },
+  },
+
+  guessHistory: {
+    reducer: ((existing: GuessHistoryEntry[], incoming: GuessHistoryEntry | GuessHistoryEntry[] | undefined) => {
+      if (!incoming) return existing;
+      const items = Array.isArray(incoming) ? incoming : [incoming];
+      return [...existing, ...items];
+    }) as (existing: unknown, incoming: unknown) => unknown,
+    default: () => [] as GuessHistoryEntry[],
   },
 
   // ============================================================

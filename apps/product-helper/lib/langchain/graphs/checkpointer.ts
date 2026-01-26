@@ -72,6 +72,9 @@ interface SerializedState {
   kbStepConfidence?: number;
   kbStepData?: Record<string, unknown>;
   approvalPending?: boolean;
+  askedQuestions?: string[];
+  stepCompletionStatus?: Record<string, unknown>;
+  guessHistory?: unknown[];
 
   // Control flags
   isComplete: boolean;
@@ -142,6 +145,9 @@ export function serializeState(state: IntakeState): SerializedState {
     kbStepConfidence: state.kbStepConfidence,
     kbStepData: state.kbStepData,
     approvalPending: state.approvalPending,
+    askedQuestions: [...(state.askedQuestions ?? [])],
+    stepCompletionStatus: state.stepCompletionStatus ?? {},
+    guessHistory: [...(state.guessHistory ?? [])],
 
     // Control flags
     isComplete: state.isComplete,
@@ -199,6 +205,9 @@ export function deserializeState(serialized: SerializedState): IntakeState {
     kbStepConfidence: serialized.kbStepConfidence ?? 0,
     kbStepData: serialized.kbStepData ?? {},
     approvalPending: serialized.approvalPending ?? false,
+    askedQuestions: serialized.askedQuestions ?? [],
+    stepCompletionStatus: (serialized.stepCompletionStatus ?? {}) as IntakeState['stepCompletionStatus'],
+    guessHistory: (serialized.guessHistory ?? []) as IntakeState['guessHistory'],
     isComplete: serialized.isComplete,
     error: serialized.error,
     turnCount: serialized.turnCount,

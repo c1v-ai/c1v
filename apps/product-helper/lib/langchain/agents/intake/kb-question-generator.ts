@@ -277,6 +277,39 @@ export async function generateKBDrivenResponse(
   // Build KB step-specific context
   const kbContext = buildKBStepContext(kbStep, state);
 
+  // Build question history block from both askedQuestions and stepCompletionStatus
+  const askedQuestions = state.askedQuestions ?? [];
+  const stepStatus = state.stepCompletionStatus?.[kbStep];
+  const coveredTopics = stepStatus?.coveredTopics ?? [];
+  const allCoveredTopics = Array.from(new Set([...askedQuestions, ...coveredTopics]));
+  const questionHistoryBlock = allCoveredTopics.length > 0
+    ? `## Previously Covered Topics (DO NOT re-ask these)
+${allCoveredTopics.map(q => `- ${q}`).join('\n')}
+`
+    : '';
+
+  // Build guess history block so LLM sees its own previous output
+  const guessHistory = state.guessHistory ?? [];
+  const recentHistory = guessHistory
+    .filter(h => h.step === kbStep)
+    .slice(-3); // Last 3 turns for this step
+  const guessHistoryBlock = recentHistory.length > 0
+    ? `## Your Previous Guesses and Gaps (for context — do NOT repeat these)
+${recentHistory.map(h => `Turn ${h.turn} (confidence: ${h.confidence}%):
+  Guesses: ${h.guessSummaries.join(', ') || 'none'}
+  Gaps asked: ${h.gapTargets.join(', ') || 'none'}`).join('\n')}
+`
+    : '';
+
+  // Step progress info
+  const roundsAsked = stepStatus?.roundsAsked ?? 0;
+  const stepProgressBlock = roundsAsked > 0
+    ? `## Step Progress
+- Rounds on this step: ${roundsAsked}
+- ${roundsAsked >= 3 ? 'IMPORTANT: We have asked 3+ rounds. If no critical gaps remain, set confidence >= 80 to propose generation.' : `Rounds remaining before auto-advance: ${3 - roundsAsked}`}
+`
+    : '';
+
   try {
     const analysis = await kbAnalysisLLM.invoke(`
 You are a systems engineering expert guiding a user through PRD creation.
@@ -294,6 +327,9 @@ ${dataSummary}
 ## Previous KB Step Data
 ${JSON.stringify(state.kbStepData, null, 2)}
 
+${questionHistoryBlock}
+${guessHistoryBlock}
+${stepProgressBlock}
 ${educationBlock}
 
 ## Inference Rules for ${kbEntry.label}
@@ -309,11 +345,14 @@ ${rules.signals.map(s => `- ${s}`).join('\n')}
 2. Identify GAPS that need user input.
    - Generate 1-3 targeted questions about missing information.
    - Focus on what you CANNOT infer from context.
+   - NEVER ask about topics listed in "Previously Asked Topics" above.
+   - If all gaps have been asked about, return an empty gapQuestions array.
 
 3. Calculate CONFIDENCE (0-100).
    - Consider: how many of the minimum ${rules.minElements} elements do we have?
    - Are the existing elements well-defined?
    - Are there critical gaps remaining?
+   - If the user has already addressed a topic (it appears in existing data OR was previously asked), count it as covered even if the data isn't perfect.
 
 ${kbContext}
 
@@ -321,8 +360,10 @@ ${kbContext}
 - Be SPECIFIC, not generic. "USDA FoodData API" not "food database".
 - INFER aggressively from the vision statement. Don't ask for what you can deduce.
 - If the user already provided information, BUILD ON IT, don't repeat questions.
+- NEVER re-ask topics from the "Previously Asked Topics" list.
 - Focus gaps on what truly needs human input (business decisions, preferences).
 - The confidence score should reflect readiness to generate the ${kbEntry.label}.
+- If you have enough data to generate the artifact, set confidence >= 80 even if some data is imperfect.
 `);
 
     // Build gap questions with educational context
@@ -334,8 +375,13 @@ ${kbContext}
       })
     );
 
+    // Auto-propose when: (a) LLM confidence is high enough, OR
+    // (b) we've spent 3+ rounds on this step with no remaining gaps
+    const roundsOnStep = state.stepCompletionStatus?.[kbStep]?.roundsAsked ?? 0;
+    const noGapsRemaining = analysis.gapQuestions.length === 0;
     const shouldProposeGeneration =
-      analysis.confidence >= thresholds.proposeGeneration;
+      analysis.confidence >= thresholds.proposeGeneration ||
+      (roundsOnStep >= 3 && noGapsRemaining);
 
     // Map guesses with proper typing
     const typedGuesses: Guess[] = analysis.guesses.map(
