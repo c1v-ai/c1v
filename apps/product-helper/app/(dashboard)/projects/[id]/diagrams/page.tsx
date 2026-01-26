@@ -111,12 +111,12 @@ export default async function DiagramsPage({ params }: DiagramsPageProps) {
   }
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
+    <div className="p-4 lg:p-8">
       <div className="max-w-5xl mx-auto">
         <Suspense fallback={<DiagramsSkeleton />}>
           <DiagramsContent projectId={projectId} />
         </Suspense>
       </div>
-    </section>
+    </div>
   );
 }

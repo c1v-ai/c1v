@@ -50,12 +50,12 @@ export default async function DataPage({ params }: DataPageProps) {
   }
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
+    <div className="p-4 lg:p-8">
       <div className="max-w-5xl mx-auto">
         <Suspense fallback={<DataSkeleton />}>
           <DataContent projectId={projectId} />
         </Suspense>
       </div>
-    </section>
+    </div>
   );
 }

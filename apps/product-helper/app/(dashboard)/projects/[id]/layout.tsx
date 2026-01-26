@@ -1,77 +1,60 @@
-/**
- * Project Detail Layout
- *
- * Purpose: Provide explorer sidebar navigation for project sub-routes
- * Pattern: Server component layout that fetches explorer data and passes to client sidebar
- *
- * Replaces the previous flat tab navigation with a collapsible tree sidebar
- * matching Epic.dev's project explorer paradigm.
- */
-
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { ExplorerSidebar, MobileExplorer } from '@/components/projects/explorer';
-import { getExplorerData } from '@/lib/db/queries/explorer';
+import { Loader2 } from 'lucide-react';
+import { getProjectById } from '@/app/actions/projects';
+import { getConversations } from '@/app/actions/conversations';
+import { ProjectLayoutClient } from './project-layout-client';
 
-function ExplorerSkeleton() {
+function LayoutLoadingSkeleton() {
   return (
-    <aside
-      className="hidden md:flex flex-col w-64 shrink-0 h-full border-r animate-pulse"
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderColor: 'var(--border)',
-      }}
-    >
-      <div className="p-4 space-y-3">
-        <div
-          className="h-4 w-24 rounded"
-          style={{ backgroundColor: 'var(--bg-secondary)' }}
-        />
-        <div
-          className="h-6 w-40 rounded"
-          style={{ backgroundColor: 'var(--bg-secondary)' }}
-        />
+    <div className="flex-1 flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" style={{ color: 'var(--accent)' }} />
+        <p className="text-muted-foreground">Loading project...</p>
       </div>
-      <div className="p-3 space-y-2">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-8 rounded"
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              marginLeft: i > 0 && i < 5 ? 16 : 0,
-            }}
-          />
-        ))}
-      </div>
-    </aside>
+    </div>
   );
 }
 
-async function ExplorerLoader({
+async function ProjectLayoutContent({
   projectId,
   children,
 }: {
   projectId: number;
   children: React.ReactNode;
 }) {
-  const explorerData = await getExplorerData(projectId);
+  const project = await getProjectById(projectId);
 
-  if (!explorerData) {
+  if (!project) {
     notFound();
   }
 
+  // Load conversation history
+  const conversations = await getConversations(projectId);
+
+  // Convert to Vercel AI SDK format
+  const initialMessages = conversations.map((conv) => ({
+    id: `${conv.id}`,
+    role: conv.role as 'user' | 'assistant',
+    content: conv.content,
+    createdAt: conv.createdAt,
+  }));
+
+  const projectData = project.projectData;
+  const artifacts = project.artifacts || [];
+
   return (
-    <div
-      className="flex-1 flex min-h-0"
-      style={{ backgroundColor: 'var(--bg-primary)' }}
+    <ProjectLayoutClient
+      projectId={projectId}
+      projectName={project.name}
+      projectStatus={project.status}
+      projectVision={project.vision}
+      initialMessages={initialMessages}
+      initialProjectData={projectData}
+      initialArtifacts={artifacts}
     >
-      <ExplorerSidebar projectId={projectId} data={explorerData} />
-      <MobileExplorer projectId={projectId} data={explorerData} />
-      <main className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        {children}
-      </main>
-    </div>
+      {children}
+    </ProjectLayoutClient>
   );
 }
 
@@ -80,10 +63,7 @@ interface ProjectLayoutProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function ProjectLayout({
-  children,
-  params,
-}: ProjectLayoutProps) {
+export default async function ProjectLayout({ children, params }: ProjectLayoutProps) {
   const { id } = await params;
   const projectId = parseInt(id, 10);
 
@@ -92,20 +72,10 @@ export default async function ProjectLayout({
   }
 
   return (
-    <Suspense
-      fallback={
-        <div
-          className="flex-1 flex min-h-0"
-          style={{ backgroundColor: 'var(--bg-primary)' }}
-        >
-          <ExplorerSkeleton />
-          <main className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            {children}
-          </main>
-        </div>
-      }
-    >
-      <ExplorerLoader projectId={projectId}>{children}</ExplorerLoader>
+    <Suspense fallback={<LayoutLoadingSkeleton />}>
+      <ProjectLayoutContent projectId={projectId}>
+        {children}
+      </ProjectLayoutContent>
     </Suspense>
   );
 }
