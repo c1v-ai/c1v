@@ -2,7 +2,7 @@
 
 ## Overview
 
-This specification defines the exact requirements for generating Context Diagrams in the C1V Product Helper application, based on the **systems engineering Systems Engineering** methodology and **Schneider requirements engineering** principles.
+This specification defines the exact requirements for generating Context Diagrams in the C1V Product Helper application, based on **systems engineering** methodology and **requirements engineering** principles.
 
 A Context Diagram establishes the **system boundary** by showing what is inside the system versus what exists outside it. It is the first and most fundamental diagram in systems engineering, answering the question: "What does our system interact with?"
 
@@ -479,7 +479,7 @@ function migrateLegacyContextData(
 ## References
 
 - **systems engineering**: Systems Engineering Context Diagram Lecture
-- **Schneider Requirements Engineering**: System Boundary Definition
+- **Requirements Engineering**: System Boundary Definition
 - **SysML Specification**: Block Definition Diagrams (related)
 - **IEEE 1233**: Guide for Developing System Requirements Specifications
 

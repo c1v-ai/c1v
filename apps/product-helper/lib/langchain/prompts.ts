@@ -4,7 +4,7 @@ import { PromptTemplate } from '@langchain/core/prompts';
  * PRD-SPEC Artifact Pipeline (from PRD-SPEC-PRD-95-V1.json)
  * Each artifact has minimum required data before generation
  */
-export const SR_CORNELL_PIPELINE = {
+export const PRD_SPEC_PIPELINE = {
   sequence: [
     'context_diagram',
     'use_case_diagram',
@@ -51,7 +51,7 @@ export const SR_CORNELL_PIPELINE = {
  * structured requirements Methodology - Question Patterns
  * Used to guide the conversational intake process
  */
-export const CORNELL_QUESTION_PATTERNS = {
+export const INTAKE_QUESTION_PATTERNS = {
   // Context Diagram Data Collection
   context_diagram: {
     // Focus on things the system must INTERACT with (not internal components)
@@ -226,6 +226,8 @@ Out of Scope: {extractedOutOfScope}
 ## User's Message
 {input}
 
+{educationBlock}
+
 ## Your Response
 Either:
 A) Generate the artifact if minimums are met (preferred)
@@ -317,6 +319,8 @@ Return structured JSON with:
 - dataEntities: array of objects with name, attributes, relationships
 - useCaseRelationships: array of objects with from, to, type (include/extends/trigger)
 - artifactReadiness: object with context_diagram, use_case_diagram, scope_tree, ucbd as booleans
+
+{educationBlock}
 
 INFER AGGRESSIVELY from the vision statement. Apply structured methodology to identify relationships and bidirectional interactions.
 `);

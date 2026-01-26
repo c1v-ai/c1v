@@ -3,7 +3,7 @@ import { StreamingTextResponse } from 'ai';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
-import { SR_CORNELL_PIPELINE } from '@/lib/langchain/prompts';
+import { PRD_SPEC_PIPELINE } from '@/lib/langchain/prompts';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, type NewConversation } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
@@ -13,6 +13,8 @@ import {
   isLangGraphEnabled,
   type ProjectContext,
 } from './langgraph-handler';
+import { buildPromptEducationBlock } from '@/lib/education/phase-mapping';
+import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
 
 /**
  * Project Chat API Endpoint

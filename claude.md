@@ -1,3 +1,7 @@
+<!-- CLEO:START -->
+@.cleo/templates/AGENT-INJECTION.md
+<!-- CLEO:END -->
+
 # c1v Monorepo Recommendation (Claude + inline comments)
 
 **How to read this doc**
@@ -48,7 +52,7 @@ c1v-monorepo/
 │   │   │   └── projects/
 │   │   ├── lib/
 │   │   │   ├── agents/             # Orchestrator, specialists
-│   │   │   ├── validators/         # SR-CORNELL validator
+│   │   │   ├── validators/         # PRD-SPEC validator
 │   │   │   ├── tools/              # LangChain tools
 │   │   │   └── db/                 # Database layer
 │   │   └── package.json
