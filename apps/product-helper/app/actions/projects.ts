@@ -77,16 +77,16 @@ export const createProject = validatedActionWithUser(
       const newProject: NewProject = {
         name: data.name,
         vision: data.vision,
-        projectType: data.projectType,
-        projectStage: data.projectStage,
-        userRole: data.userRole,
-        budget: data.budget,
         status: ProjectStatus.INTAKE,
         teamId: team.id,
         createdBy: user.id,
         validationScore: 0,
         validationPassed: 0,
         validationFailed: 0,
+        ...(data.projectType ? { projectType: data.projectType } : {}),
+        ...(data.projectStage ? { projectStage: data.projectStage } : {}),
+        ...(data.userRole ? { userRole: data.userRole } : {}),
+        ...(data.budget ? { budget: data.budget } : {}),
       };
 
       const [project] = await db.insert(projects).values(newProject).returning();
