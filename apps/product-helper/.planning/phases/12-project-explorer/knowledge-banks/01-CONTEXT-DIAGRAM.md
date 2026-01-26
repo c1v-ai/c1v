@@ -46,125 +46,164 @@ Example: If someone asks for "a car," they might really need a boat-car, a flyin
 
 ---
 
-## IDEAL INTERACTION FLOW
+## THE 8 BOXES CHALLENGE
 
-### Opening (Set Context)
+**Goal:** Identify at least 8 (ideally 12-20) external elements before moving on.
 
-```
-PH: Let's start by mapping your system's world.
+**The Key Question:** What is affected by your system, or affects your system?
 
-We'll place "The System" in the center and surround it with everything
-it must interact with — users, external systems, and even unwanted
-interactions like security threats.
+**Approach:** Collaborative — PH makes educated guesses, user validates and fills gaps.
 
-The boundary we draw separates:
-- INSIDE: What you control (your system)
-- OUTSIDE: What you don't control (everything else)
+---
 
-Ready to discover what your system interacts with?
-```
+### THE COLLABORATIVE FLOW
 
-### Round 1: Primary Users
-
-**Goal:** Identify who directly uses the system
+**Step 1: PH makes educated guesses based on project description**
 
 ```
-PH: Who are the main people who will use your system directly?
+PH: Based on what you've described, here's what I think your system
+interacts with. Tell me what I got wrong or missed:
 
-Think about the person whose hands will be on this system most often.
+EXTERNAL SYSTEMS:
+✓ OAuth providers (Google, GitHub?) — for login
+✓ Email service — for notifications
+✓ Browsers (Chrome, Safari, Firefox)
+? Payment processor — do you have paid plans?
+? File storage — can users upload attachments?
 
-[User answers]
+STAKEHOLDERS:
+✓ Team members (viewers)
+✓ Team admins (managers)
+? Account owner / billing admin?
+? Support staff?
 
-PH: Got it. Now think about other user types:
-- Are there administrators?
-- Support staff?
-- Auditors or compliance reviewers?
-- Different permission levels?
-
-[User expands list]
+What did I miss? What did I get wrong?
 ```
 
-### Round 2: External Systems
+**Legend:**
+- ✓ = PH is confident this applies
+- ? = PH is uncertain, asking user to confirm
 
-**Goal:** Identify systems/APIs the system must integrate with
+**Step 2: User validates and corrects**
 
-```
-PH: What external systems, services, or APIs does this need to work with?
+User might say:
+- "Yes to payments, we use Stripe"
+- "No file uploads for now"
+- "Add: we also integrate with Slack for notifications"
+- "Remove: no support staff, it's self-serve"
 
-Think about:
-- Browsers (Chrome/Safari)
-- Mobile phones (iOS/Android)
-- Payment processors (Stripe, PayPal)
-- Authentication services (OAuth providers, SSO)
-- Third-party APIs (maps, email, SMS)
-- Legacy systems you can't change
-- Cloud services (storage, compute)
+**Step 3: PH probes specific gaps**
 
-[User lists systems]
-
-PH: For each of those, I'll ask two questions:
-1. What does IT do TO your system? (data/requests it sends)
-2. What does your system do FOR it? (responses/outputs)
-
-Let's start with [first system]...
-```
-
-### Round 3: Undesired Interactions (The Gold Mine)
-
-**Goal:** Surface edge cases and threats — often the most demanding requirements
+After user responds, PH checks for common gaps:
 
 ```
-PH: Here's where requirements engineering gets interesting.
+PH: A few things I want to make sure we haven't missed:
 
-What UNWANTED things might interact with your system?
+🔒 COMPLIANCE — Do you handle any sensitive data?
+   (If EU users → GDPR, health data → HIPAA, payments → PCI-DSS)
 
-Think about:
-- Malicious actors (hackers, spammers, fraudsters)
-- Bad data (corrupted inputs, edge cases)
-- System failures (API down, network timeout, database crash)
-- Environmental factors (high load, peak traffic)
-- Compliance/legal constraints
+⚡ BAD ACTORS — What happens if someone tries to abuse your system?
+   (Spammers, fake accounts, payment fraud, scrapers)
 
-[User identifies threats]
+📱 PLATFORMS — Any mobile app plans? Or web-only for now?
 
-PH: 💡 These undesired interactions often create more demanding
-requirements than the happy path!
-
-A system built only for "when everything works" fails when
-reality shows up.
+🌍 INTERNATIONAL — Will you have users in different countries/timezones?
 ```
 
-### Round 4: Secondary Stakeholders
+User answers only the relevant ones. PH doesn't force all questions.
 
-**Goal:** Identify those who don't use the system but influence/are affected by it
+---
+
+### PH INFERENCE RULES
+
+**How PH makes initial guesses based on keywords:**
+
+| User mentions | PH infers |
+|---------------|-----------|
+| "SaaS", "subscription", "plans" | Stripe/payments, billing admin role |
+| "teams", "collaboration" | Admin vs member roles, invitations |
+| "login", "accounts" | OAuth providers, password reset flows |
+| "notifications", "alerts" | Email service (SendGrid, etc.) |
+| "upload", "files", "attachments" | Cloud storage (S3, etc.) |
+| "API", "developers", "integrations" | API consumers as stakeholder |
+| "mobile app" | iOS, Android, App Store policies |
+| "enterprise", "B2B" | SSO/SAML, SOC 2, admin controls |
+| "health", "medical" | HIPAA compliance |
+| "payments", "checkout" | PCI-DSS, payment fraud |
+| "EU", "Europe", "international" | GDPR, timezone handling |
+
+---
+
+### GAP-PROBING QUESTIONS
+
+**Only ask if not already covered:**
+
+| Gap | Probe |
+|-----|-------|
+| No auth mentioned | "How do users log in? Email/password? Google? Magic links?" |
+| No compliance | "Do you handle sensitive data that might have regulations?" |
+| No bad actors | "What if someone tries to spam signups or abuse the system?" |
+| Only one user type | "Are there different permission levels? Admins vs regular users?" |
+| No failure modes | "What happens if Stripe goes down? Or email delivery fails?" |
+| No mobile | "Web-only for now, or mobile apps planned?" |
+
+---
+
+### CHECKPOINT
 
 ```
-PH: Now let's think one step removed.
+PH: 📊 Here's your context diagram so far: {TOTAL} external elements.
 
-Who doesn't USE your system directly, but:
-- Is affected by it?
-- Influences how it must be built?
-- Creates constraints you must follow?
+External Systems: {list}
+Stakeholders: {list}
 
-Common examples:
-- Regulators (GDPR, HIPAA, SOX, PCI-DSS)
-- Your company's policies (security standards, branding)
-- The environment (sustainability, accessibility)
-- Legal department
-- Finance/billing systems
+{IF < 8}
+We're at {TOTAL} — professional diagrams typically have 8-20.
+Let me ask a few more questions to make sure we haven't missed anything...
 
-[User identifies stakeholders]
-
-PH: These often create constraints that aren't obvious at first
-but can make or break your design later.
+{IF >= 8}
+Looking good! This gives us a solid foundation.
+Ready to move on, or want to add anything else?
 ```
 
-### Round 5: Interaction Details
+---
 
-**Goal:** Define what flows between each external element and the system
+### MISTAKE CATCHERS
+
+**If user adds a property instead of an actor:**
 
 ```
-PH: Let's detail the interactions for [element].
+// User adds: "security", "performance", "reliability"
+
+PH: "{input}" is a quality you WANT, not something that interacts
+with your system.
+
+What external thing CAUSES you to need {input}?
+• "Security" → Hackers, bots, fraudsters
+• "Performance" → High traffic, large uploads
+• "Reliability" → API outages, network failures
+```
+
+**If user adds an internal component:**
+
+```
+// User adds: "database", "API server", "cache"
+
+PH: That's INSIDE your system — something you'll build.
+
+The context diagram shows what you DON'T control.
+Your database is yours to design. But a managed database
+service like Supabase or RDS? That goes outside.
+```
+
+---
+
+## INTERACTION DETAILS FLOW
+
+After brainstorming the 8+ boxes, define the interactions:
+
+```
+PH: Now let's detail the interactions for {element}.
 
 Near the external box, write what IT does TO your system:
 - What data does it send?
@@ -175,8 +214,6 @@ Near the system box, write what your system does FOR it:
 - What responses does it return?
 - What services does it provide?
 - What data does it produce?
-
-[User defines interactions]
 ```
 
 ---
@@ -260,7 +297,88 @@ as an expensive surprise later.
 
 ## REAL EXAMPLES
 
-### Vehicle Example
+### SaaS Application Example
+
+**External Elements Identified (16):**
+
+```
+Users (6):
+• Free trial user
+• Paid subscriber
+• Team admin
+• Team member (viewer role)
+• API consumer (developer)
+• Support agent (internal)
+
+Integrations (5):
+• OAuth providers (Google, GitHub)
+• Stripe (payments)
+• SendGrid (transactional email)
+• Intercom (support chat widget)
+• Mixpanel (analytics)
+
+Platforms (2):
+• Modern browsers (Chrome, Safari, Firefox)
+• Mobile browsers (responsive web)
+
+Threats & Failures (4):
+• Bot signups (spam prevention)
+• Payment fraud (chargebacks)
+• API rate limits (Stripe, SendGrid quotas)
+• Account takeover attempts
+
+Constraints (2):
+• GDPR (EU users → data deletion, consent)
+• SOC 2 (enterprise customers require it)
+```
+
+**Key Insight — User Variants Matter:**
+```
+The user initially said "users."
+
+Delving revealed 6 distinct types:
+- Free trial vs paid (different feature access)
+- Admin vs member (different permissions)
+- API consumer (headless, needs docs)
+- Support agent (needs internal tools)
+
+Each variant = different requirements!
+```
+
+### API/Backend Service Example
+
+**External Elements Identified (14):**
+
+```
+Users (3):
+• API consumer (developer integrating)
+• DevOps engineer (monitoring, deployment)
+• On-call engineer (incident response)
+
+Integrations (6):
+• Client applications (web, mobile, CLI)
+• Webhook receivers (customer systems)
+• Upstream APIs (data providers)
+• Managed database (Postgres)
+• Cache layer (Redis)
+• Message queue (RabbitMQ/SQS)
+
+Platforms (2):
+• Container orchestrator (K8s, ECS)
+• Load balancer (ALB, nginx)
+
+Threats & Failures (4):
+• DDoS attacks
+• Malformed/malicious requests
+• Upstream API outages
+• Database connection exhaustion
+
+Constraints (2):
+• Rate limiting (protect downstream)
+• SLA commitments (99.9% uptime contract)
+```
+
+### Vehicle Example (Physical System)
 
 **External Elements Identified:**
 ```
@@ -319,6 +437,12 @@ If the system handles these two, it handles all the others.
 
 This is called an **"argument of dominance"** — covering edge cases efficiently without listing every possibility.
 
+**Software equivalent:** Instead of listing every invalid input, test with:
+- **Empty string** (boundary case)
+- **10MB of garbage** (size + invalid content)
+
+If you handle those, you handle most input validation edge cases.
+
 ---
 
 ## FORMATTING RULES (Professional Standards)
@@ -333,12 +457,15 @@ These ensure clarity and prevent misinterpretation.
 - Black and white only (NO color)
 - Names CAPITALIZED inside boxes
 - Same font and font size throughout
+- **Pick 8 most critical boxes** for the diagram (can add more later)
+- Consolidate variants if needed (just "PASSENGER" not all subtypes)
 
 ### Line Rules
 - **Rectilinear lines ONLY** (90° angles, no curves, no diagonals)
-- One line per connection (use commas for multiple interactions)
-- No crossing lines
-- No "jump" symbols where lines would cross
+- One line per connection
+- Multiple interactions on same line, separated by **commas** (not semicolons, dashes, slashes)
+- No crossing lines — rearrange boxes to avoid
+- No "jump" symbols (those little arc symbols have no place here)
 
 **Why rectilinear?**
 ```
@@ -349,18 +476,41 @@ Rectilinear lines clearly show which elements connect
 without ambiguity about crossings.
 ```
 
-### Interaction Label Rules
-- Written in **lowercase**
-- Near external box: what IT does TO the system
-- Near system box: what system does FOR it
-- Can expand system boundary to contain outbound labels
-- If too long, use letter references (A, B, C) with legend at bottom
+### Interaction Label Placement
+
+**Critical: Labels indicate DIRECTION of interaction**
+
+```
+┌─────────────┐                          ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+│             │      affects visibility       ┌───────────┐
+│   WEATHER   │──────────────────────────│    │    THE    │  │
+│             │      drives through           │   SYSTEM  │
+└─────────────┘◄─────────────────────────│    └───────────┘  │
+                                          └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+```
+
+- **Near external box:** what IT does TO the system (lowercase)
+- **Near system box:** what system does FOR it (lowercase, can be inside dashed boundary)
+- This reads as: "Your system drives through weather" ✓
+- NOT: "Weather drives through system" ✗
+
+### Long Labels
+- If text is too long, use capital letters in circles (A, B, C) as references
+- Place reference definitions together at bottom of diagram
+- Check with recipient if this format is acceptable
+
+### Outside-to-Outside Connections
+- Use **very sparingly**
+- Only include if that interaction strongly affects YOUR system's design
+- Example: "weather affects visibility of passengers" — relevant because system might need to overcome this
+- Most connections should be between external boxes and THE SYSTEM
 
 ### System Boundary
 - Dashed line around "The System" box
 - EVERYTHING inside = what you control
 - EVERYTHING outside = what you don't control
-- NEVER split the system into subsystems at this stage
+- **NEVER split the system into subsystems** — this is grounds for immediate rejection
+- Splitting forces subsystems to exist, preventing better solutions later
 
 ---
 

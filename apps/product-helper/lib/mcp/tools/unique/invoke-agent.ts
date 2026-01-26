@@ -18,7 +18,7 @@ type AgentType =
   | 'data-viz-engineer'
   | 'langchain-engineer'
   | 'llm-workflow-engineer'
-  | 'sr-cornell-validator'
+  | 'prd-spec-validator'
   | 'vector-store-engineer'
   | 'cache-engineer'
   | 'observability-engineer'
@@ -61,7 +61,7 @@ const definition: ToolDefinition = {
           'data-viz-engineer',
           'langchain-engineer',
           'llm-workflow-engineer',
-          'sr-cornell-validator',
+          'prd-spec-validator',
           'vector-store-engineer',
           'cache-engineer',
           'observability-engineer',
@@ -130,8 +130,8 @@ const AGENT_REGISTRY: Record<AgentType, AgentInfo> = {
     specialty: 'Prompt engineering, model selection',
     skills: ['Prompt design', 'Model selection', 'Token optimization', 'Fallback strategies'],
   },
-  'sr-cornell-validator': {
-    name: 'SR-CORNELL Validator',
+  'prd-spec-validator': {
+    name: 'PRD-SPEC Validator',
     specialty: 'Validation rules, quality gates',
     skills: ['Requirements validation', 'Quality gates', 'Completeness checks'],
   },

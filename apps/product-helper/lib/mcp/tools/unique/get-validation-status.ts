@@ -1,7 +1,7 @@
 /**
  * get_validation_status MCP Tool
  *
- * Returns SR-CORNELL validation score and individual check results.
+ * Returns PRD-SPEC validation score and individual check results.
  * Shows PRD completeness and quality metrics.
  */
 
@@ -29,7 +29,7 @@ interface ValidationCheck {
 const definition: ToolDefinition = {
   name: 'get_validation_status',
   description:
-    'Get SR-CORNELL validation score and individual check results. ' +
+    'Get PRD-SPEC validation score and individual check results. ' +
     'Shows PRD completeness, quality metrics, and which validation gates are passing or failing. ' +
     'Use this to understand the quality and completeness of the project requirements.',
   inputSchema: {
@@ -44,7 +44,7 @@ const definition: ToolDefinition = {
 };
 
 /**
- * SR-CORNELL validation checks
+ * PRD-SPEC validation checks
  */
 function runValidationChecks(project: {
   name: string;

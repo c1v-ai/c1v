@@ -6,11 +6,11 @@
  * Team: Frontend (Agent 2.3: Data Visualization Engineer)
  *
  * Diagram Types:
- * - Context Diagram: System boundaries (Cornell CESYS521 compliant)
+ * - Context Diagram: System boundaries (systems engineering compliant)
  * - Use Case Diagram: Actors and their use cases
  * - Class Diagram: Data entities with attributes and relationships
  *
- * @see /docs/diagrams/context-diagram-spec.md for Cornell specifications
+ * @see /docs/diagrams/context-diagram-spec.md for industry-standard specifications
  */
 
 import type { Actor, UseCase, DataEntity } from '@/lib/langchain/schemas';
@@ -21,7 +21,7 @@ import type {
 } from '@/lib/db/schema/v2-types';
 
 // ============================================================
-// Context Diagram Types (Cornell CESYS521 Compliant)
+// Context Diagram Types (systems engineering Compliant)
 // ============================================================
 
 /**
@@ -68,7 +68,7 @@ export interface ContextDiagramElement {
 }
 
 /**
- * Complete Context Diagram specification (Cornell CESYS521)
+ * Complete Context Diagram specification (systems engineering)
  */
 export interface ContextDiagramSpec {
   /** Project/system identifier */
@@ -107,7 +107,7 @@ export interface ContextDiagramResult {
 
 /**
  * System Boundaries interface for legacy context diagrams
- * @deprecated Use ContextDiagramSpec for Cornell-compliant diagrams
+ * @deprecated Use ContextDiagramSpec for specification-compliant diagrams
  */
 export interface SystemBoundaries {
   internal: string[];
@@ -115,7 +115,7 @@ export interface SystemBoundaries {
 }
 
 // ============================================================
-// Context Diagram Validation (Cornell Requirements)
+// Context Diagram Validation (Specification Requirements)
 // ============================================================
 
 const CONTEXT_MIN_ELEMENTS = 8;
@@ -123,7 +123,7 @@ const CONTEXT_MAX_ELEMENTS = 20;
 const GENERIC_TERMS = ['users', 'data', 'system', 'service', 'api', 'database'];
 
 /**
- * Validate context diagram specification against Cornell requirements
+ * Validate context diagram specification against industry-standard requirements
  */
 function validateContextDiagramSpec(spec: ContextDiagramSpec): ContextDiagramValidation {
   const errors: string[] = [];
@@ -198,13 +198,13 @@ function validateContextDiagramSpec(spec: ContextDiagramSpec): ContextDiagramVal
 }
 
 // ============================================================
-// Cornell-Compliant Context Diagram Generator
+// industry-standard-Compliant Context Diagram Generator
 // ============================================================
 
 /**
- * Generate a Cornell CESYS521 Compliant Context Diagram
+ * Generate a systems engineering Compliant Context Diagram
  *
- * Follows Cornell specifications:
+ * Follows industry-standard specifications:
  * - System in center labeled "THE SYSTEM" (generic)
  * - 8-20 external elements in boxes OUTSIDE the boundary
  * - Black and white styling only
@@ -217,7 +217,7 @@ function validateContextDiagramSpec(spec: ContextDiagramSpec): ContextDiagramVal
  *
  * @example
  * ```typescript
- * const result = generateCornellContextDiagram({
+ * const result = generateindustry-standardContextDiagram({
  *   projectId: "my-project",
  *   elements: [
  *     { id: "users", name: "End Users", category: "actor",
@@ -229,7 +229,7 @@ function validateContextDiagramSpec(spec: ContextDiagramSpec): ContextDiagramVal
  *
  * @see /docs/diagrams/context-diagram-spec.md
  */
-export function generateCornellContextDiagram(spec: ContextDiagramSpec): ContextDiagramResult {
+export function generateindustry-standardContextDiagram(spec: ContextDiagramSpec): ContextDiagramResult {
   const validation = validateContextDiagramSpec(spec);
   const lines: string[] = [];
 
@@ -270,7 +270,7 @@ export function generateCornellContextDiagram(spec: ContextDiagramSpec): Context
           lines.push(`    System -->|"${escapeLabel(label)}"| ${nodeId}`);
           break;
         case 'bidirectional':
-          // Split into two separate interactions per Cornell spec
+          // Split into two separate interactions per industry-standard spec
           const labels = label.split(',').map(l => l.trim());
           if (labels.length >= 2) {
             lines.push(`    ${nodeId} -->|"${escapeLabel(labels[0])}"| System`);
@@ -287,8 +287,8 @@ export function generateCornellContextDiagram(spec: ContextDiagramSpec): Context
 
   lines.push('');
 
-  // Cornell-compliant styling (B&W, square corners)
-  lines.push('    %% Cornell CESYS521 Styling: B&W, square corners');
+  // specification-compliant styling (B&W, square corners)
+  lines.push('    %% systems engineering Styling: B&W, square corners');
   lines.push('    classDef system fill:#ffffff,stroke:#000000,stroke-width:3px,color:#000000');
   lines.push('    classDef external fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000');
   lines.push('    classDef boundary fill:none,stroke:#000000,stroke-width:2px,stroke-dasharray:8 4');
@@ -385,12 +385,12 @@ function inferInteraction(name: string): string {
 }
 
 /**
- * Migrate legacy context data to Cornell-compliant format
+ * Migrate legacy context data to specification-compliant format
  *
- * @param systemName - Original system name (will be ignored per Cornell)
+ * @param systemName - Original system name (will be ignored per industry-standard)
  * @param internal - Internal components (not used in context diagrams)
  * @param external - External systems/elements
- * @returns Cornell-compliant ContextDiagramSpec
+ * @returns specification-compliant ContextDiagramSpec
  */
 export function migrateLegacyContextData(
   systemName: string,
@@ -398,7 +398,7 @@ export function migrateLegacyContextData(
   external: string[]
 ): ContextDiagramSpec {
   // Note: Internal components are part of "THE SYSTEM" and not shown separately
-  // per Cornell CESYS521 methodology
+  // per systems engineering methodology
 
   const elements: ContextDiagramElement[] = external.map((name, i) => ({
     id: `ext-${i}`,
@@ -434,14 +434,14 @@ export function migrateLegacyContextData(
  * Shows what's inside vs outside the system boundary.
  * This is the legacy interface maintained for backward compatibility.
  *
- * NOTE: For Cornell-compliant diagrams, use generateCornellContextDiagram()
+ * NOTE: For specification-compliant diagrams, use generateindustry-standardContextDiagram()
  *
  * @param systemName - Name of the system
- * @param internal - Array of internal components (not displayed per Cornell)
+ * @param internal - Array of internal components (not displayed per industry-standard)
  * @param external - Array of external systems
  * @returns Mermaid diagram syntax
  *
- * @deprecated Use generateCornellContextDiagram for Cornell-compliant output
+ * @deprecated Use generateindustry-standardContextDiagram for specification-compliant output
  *
  * @example
  * ```typescript
@@ -457,10 +457,10 @@ export function generateContextDiagram(
   internal: string[],
   external: string[]
 ): string {
-  // If we have enough external elements, use Cornell-compliant generator
+  // If we have enough external elements, use specification-compliant generator
   if (external.length >= CONTEXT_MIN_ELEMENTS) {
     const spec = migrateLegacyContextData(systemName, internal, external);
-    const result = generateCornellContextDiagram(spec);
+    const result = generateindustry-standardContextDiagram(spec);
     return result.mermaidSyntax;
   }
 
@@ -519,18 +519,18 @@ export function generateContextDiagram(
   // Add warning comment if under minimum
   if (external.length < CONTEXT_MIN_ELEMENTS) {
     lines.push('');
-    lines.push(`    %% WARNING: Only ${external.length} external elements. Cornell requires 8-20.`);
+    lines.push(`    %% WARNING: Only ${external.length} external elements. industry-standard requires 8-20.`);
   }
 
   return lines.join('\n');
 }
 
 // ============================================================
-// Use Case Diagram Types (Cornell CESYS521 Compliant)
+// Use Case Diagram Types (systems engineering Compliant)
 // ============================================================
 
 /**
- * Extended Actor interface with Cornell methodology support
+ * Extended Actor interface with structured methodology support
  * Supports primary/secondary actor classification and placement
  */
 export interface ActorExtended extends Actor {
@@ -597,11 +597,11 @@ export interface UseCaseDiagramResult {
 }
 
 // ============================================================
-// Use Case Diagram Validation (Cornell Requirements)
+// Use Case Diagram Validation (Specification Requirements)
 // ============================================================
 
 /**
- * Validate use case diagram specification against Cornell requirements
+ * Validate use case diagram specification against industry-standard requirements
  */
 function validateUseCaseDiagramSpec(
   actors: (Actor | ActorExtended)[],
@@ -709,13 +709,13 @@ function validateUseCaseDiagramSpec(
 }
 
 // ============================================================
-// Use Case Diagram Generator (Cornell CESYS521 Compliant)
+// Use Case Diagram Generator (systems engineering Compliant)
 // ============================================================
 
 /**
- * Generate Use Case Diagram (Cornell CESYS521 Methodology)
+ * Generate Use Case Diagram (systems engineering Methodology)
  *
- * Follows UML/SysML standards from Cornell CESYS521 course:
+ * Follows UML/SysML standards from systems engineering course:
  * - Actors as stick figures OUTSIDE the system boundary
  * - Use cases as ovals/bubbles INSIDE the system boundary
  * - Primary actors on LEFT side with solid connections
@@ -744,7 +744,7 @@ function validateUseCaseDiagramSpec(
  *   [{ id: "UC1", name: "Place Order", actor: "Customer", description: "..." }]
  * );
  *
- * // Advanced usage with relationships (Cornell compliant)
+ * // Advanced usage with relationships (industry-standard compliant)
  * const diagram = generateUseCaseDiagram(
  *   [
  *     { name: "Driver", role: "Primary User", description: "...", type: "primary" },
@@ -931,8 +931,8 @@ export function generateUseCaseDiagram(
     lines.push('');
   }
 
-  // Add styling (Cornell methodology colors)
-  lines.push('  %% Styling (Cornell CESYS521)');
+  // Add styling (structured methodology colors)
+  lines.push('  %% Styling (systems engineering)');
   lines.push('  classDef primaryActor fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,font-weight:bold');
   lines.push('  classDef secondaryActor fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,stroke-dasharray:5 5');
   lines.push('  classDef useCase fill:#fff3e0,stroke:#f57c00,stroke-width:2px');
@@ -941,7 +941,7 @@ export function generateUseCaseDiagram(
 }
 
 /**
- * Generate Use Case Diagram with validation (Cornell CESYS521)
+ * Generate Use Case Diagram with validation (systems engineering)
  *
  * Returns both the Mermaid syntax and validation results
  *
@@ -950,7 +950,7 @@ export function generateUseCaseDiagram(
  * @param options - Optional diagram configuration
  * @returns Object containing Mermaid syntax and validation results
  */
-export function generateCornellUseCaseDiagram(
+export function generateindustry-standardUseCaseDiagram(
   actors: (Actor | ActorExtended)[],
   useCases: (UseCase | UseCaseExtended)[],
   options: UseCaseDiagramOptions = {}
@@ -1076,8 +1076,8 @@ function getTriggerRelationships(
 }
 
 /**
- * Generate a Cornell Car System example diagram
- * Demonstrates all relationship types per CESYS521 methodology
+ * Generate a industry-standard Car System example diagram
+ * Demonstrates all relationship types per SE-COURSE methodology
  *
  * @returns Mermaid diagram syntax for the car system example
  */
@@ -1996,9 +1996,9 @@ export function generateDiagram(
 ): string {
   switch (type) {
     case 'context':
-      // Prefer new Cornell spec if provided
+      // Prefer new industry-standard spec if provided
       if (data.contextSpec) {
-        return generateCornellContextDiagram(data.contextSpec).mermaidSyntax;
+        return generateindustry-standardContextDiagram(data.contextSpec).mermaidSyntax;
       }
       // Fall back to legacy format
       return generateContextDiagram(
@@ -2008,7 +2008,7 @@ export function generateDiagram(
       );
 
     case 'useCase':
-      // Use Cornell-compliant generator with options
+      // Use specification-compliant generator with options
       return generateUseCaseDiagram(
         data.actors || [],
         data.useCases || [],

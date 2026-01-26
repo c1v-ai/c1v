@@ -345,7 +345,7 @@ export class IntakeStateManager {
   }
 
   /**
-   * Run SR-CORNELL validation and update status
+   * Run PRD-SPEC validation and update status
    */
   async runValidation(): Promise<void> {
     const validationData: ProjectValidationData = {

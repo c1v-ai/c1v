@@ -489,7 +489,7 @@ describe('artifact readiness check', () => {
     expect(artifact).toBeNull();
   });
 
-  it('prioritizes earlier artifacts in SR-CORNELL order', () => {
+  it('prioritizes earlier artifacts in PRD-SPEC order', () => {
     const state = createTestState({
       artifactReadiness: {
         context_diagram: { ready: false, generated: false },

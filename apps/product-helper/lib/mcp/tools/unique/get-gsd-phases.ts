@@ -99,7 +99,7 @@ function determinePhases(project: {
     {
       id: 'validation',
       name: 'Validation',
-      description: 'Validate requirements and ensure SR-CORNELL compliance',
+      description: 'Validate requirements and ensure PRD-SPEC compliance',
       status: 'pending',
       progress: 0,
       order: 5,

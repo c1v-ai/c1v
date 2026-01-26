@@ -1,6 +1,6 @@
 /**
- * SR-CORNELL Validation Engine
- * Implements the 10 hard gates from SR-CORNELL-PRD-95-V1 specification
+ * PRD-SPEC Validation Engine
+ * Implements the 10 hard gates from PRD-SPEC-PRD-95-V1 specification
  */
 
 import {
@@ -66,7 +66,7 @@ const HARD_GATE_DESCRIPTIONS: Record<HardGate, { name: string; description: stri
 
 /**
  * Main validation function
- * Evaluates a project against all SR-CORNELL hard gates
+ * Evaluates a project against all PRD-SPEC hard gates
  */
 export async function validateProject(data: ProjectValidationData): Promise<ValidationResult> {
   const hardGates: HardGateResult[] = [];

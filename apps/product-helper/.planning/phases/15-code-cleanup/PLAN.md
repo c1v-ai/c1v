@@ -504,7 +504,7 @@ dataEntities: (project.projectData?.dataEntities ?? []) as DataEntity[],
 
 | File | Line | TODO | Action |
 |------|------|------|--------|
-| `lib/langchain/graphs/nodes/check-sr-cornell.ts` | 194 | Track out-of-scope separately | Create issue or implement |
+| `lib/langchain/graphs/nodes/check-prd-spec.ts` | 194 | Track out-of-scope separately | Create issue or implement |
 | `lib/hooks/use-keyboard-shortcuts.ts` | 67 | Open command palette | Create issue for Phase 12 |
 | `lib/hooks/use-keyboard-shortcuts.ts` | 83 | Open new project dialog | Create issue for Phase 12 |
 

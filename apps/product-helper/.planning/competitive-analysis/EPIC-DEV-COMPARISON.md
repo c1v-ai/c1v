@@ -35,7 +35,7 @@
 | Use cases | ✅ With acceptance criteria | ⚠️ Basic (name, actor) | Epic |
 | Non-functional reqs | ✅ Generated | ❌ None | Epic |
 | Completeness score | ❓ Not visible | ✅ 73% real-time | **PH** |
-| Validation gates | ❌ None visible | ✅ SR-CORNELL 10 gates | **PH** |
+| Validation gates | ❌ None visible | ✅ PRD-SPEC 10 gates | **PH** |
 
 **Action:** Add problem statement, goals, NFRs extraction; enhance use cases
 
@@ -186,7 +186,7 @@ Based on their SKILL.md and CLAUDE.md exports:
 All 17 Epic tools replicated
 
 ### Our Unique Tools (+5)
-18. `get_validation_status` - SR-CORNELL score and check results
+18. `get_validation_status` - PRD-SPEC score and check results
 19. `get_gsd_phases` - GSD workflow phases with status
 20. `get_cleo_tasks` - CLEO task list with stable IDs
 21. `invoke_agent` - Trigger one of 17 domain agents
@@ -218,7 +218,7 @@ All 17 Epic tools replicated
 
 **Don't just copy Epic - beat them on quality:**
 
-1. **SR-CORNELL Validation**
+1. **PRD-SPEC Validation**
    - Epic has no visible validation
    - We validate before MCP export
    - "Validated PRD" badge = trust signal

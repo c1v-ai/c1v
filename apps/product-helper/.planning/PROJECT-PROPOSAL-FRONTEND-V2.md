@@ -481,7 +481,7 @@ src/
 - [ ] Complete user journey from signup to PRD export
 - [ ] Real-time entity extraction displayed in sidebar
 - [ ] Interactive diagram viewing with export
-- [ ] SR-CORNELL validation score displayed
+- [ ] PRD-SPEC validation score displayed
 
 ### Non-Functional Requirements
 - [ ] Page load < 2s (LCP)

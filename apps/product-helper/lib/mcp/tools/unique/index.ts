@@ -3,7 +3,7 @@
  *
  * Barrel export and registration for all unique tools that differentiate
  * the product-helper from competitors:
- * - SR-CORNELL validation status
+ * - PRD-SPEC validation status
  * - GSD workflow phases
  * - CLEO task management integration
  * - 17-agent system invocation
@@ -36,7 +36,7 @@ export type UniqueToolName = (typeof UNIQUE_TOOL_NAMES)[number];
  * Register all unique MCP tools
  *
  * This function registers all 6 unique tools that provide competitive advantage:
- * - get_validation_status: SR-CORNELL validation scores and gates
+ * - get_validation_status: PRD-SPEC validation scores and gates
  * - get_gsd_phases: GSD workflow phases and progress
  * - get_cleo_tasks: CLEO-style task management integration
  * - invoke_agent: 17-agent system invocation

@@ -41,7 +41,7 @@ Project Explorer
 ├── 📐 Architecture
 │   └── Diagrams (3)
 ├── 📝 User Stories (12)
-├── ✅ Validation (SR-CORNELL: 78%)
+├── ✅ Validation (PRD-SPEC: 78%)
 ├── 📖 Coding Guidelines
 └── 🔗 Connections (MCP)
 ```
@@ -298,7 +298,7 @@ lib/auth/
 | #8 | Technical Specifications sections | Tech Stack, Schema, API with empty states | M |
 | #9 | Architecture section | Diagram previews with empty states | M |
 | #10 | User Stories section | Backlog mini-list with empty state | S |
-| #11 | Validation section (SR-CORNELL) | Score, gates, recommendations | S |
+| #11 | Validation section (PRD-SPEC) | Score, gates, recommendations | S |
 | #12 | Coding Guidelines section | Conventions summary | S |
 | #13 | Connections section (MCP) | Status, integrations, API key | S |
 

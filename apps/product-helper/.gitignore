@@ -51,3 +51,19 @@ next-env.d.ts
 # Claude/CLEO (local agent state)
 .claude/
 .cleo/
+AGENTS.md
+GEMINI.md
+
+# Private source materials (not for public)
+.private/
+
+# Internal planning & status docs (local only)
+.planning/
+claudedocs/
+CURRENT-STATE.md
+CURRENT-STATUS.md
+DEBUG_*.md
+PHASE_*.md
+PLAN_*.md
+LOCAL_DEV_GUIDE.md
+upgrade v2/

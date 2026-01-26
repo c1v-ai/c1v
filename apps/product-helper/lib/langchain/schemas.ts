@@ -149,13 +149,13 @@ export const extractionSchema = z.object({
 export type ExtractionResult = z.infer<typeof extractionSchema>;
 
 // ============================================================
-// PRD Artifact Schemas (SR-CORNELL Compliance)
+// PRD Artifact Schemas (PRD-SPEC Compliance)
 // ============================================================
 
 /**
  * Requirements Table Row Schema
  * Structured representation of a single requirement
- * Aligns with SR-CORNELL requirements_table artifact minimum
+ * Aligns with PRD-SPEC requirements_table artifact minimum
  */
 export const requirementsTableRowSchema = z.object({
   id: z.string().describe('Unique requirement ID (e.g., "REQ-001")'),
@@ -197,7 +197,7 @@ export type RequirementsTable = z.infer<typeof requirementsTableSchema>;
 /**
  * Constants Table Row Schema
  * Represents system constants and configuration values
- * Aligns with SR-CORNELL constants_table artifact minimum
+ * Aligns with PRD-SPEC constants_table artifact minimum
  */
 export const constantsTableRowSchema = z.object({
   name: z.string().describe('Constant name (e.g., "MAX_LOGIN_ATTEMPTS")'),
@@ -263,7 +263,7 @@ export type ActivityDiagramStep = z.infer<typeof activityDiagramStepSchema>;
 /**
  * Activity Diagram Spec Schema
  * Complete structured representation of a SysML Activity Diagram
- * Aligns with SR-CORNELL sysml_activity_diagram artifact minimum
+ * Aligns with PRD-SPEC sysml_activity_diagram artifact minimum
  */
 export const activityDiagramSpecSchema = z.object({
   useCaseId: z.string().describe('Associated use case ID'),
@@ -289,7 +289,7 @@ export type ActivityDiagramSpec = z.infer<typeof activityDiagramSpecSchema>;
 
 /**
  * Validation Result Schema
- * Used by SR-CORNELL validation system
+ * Used by PRD-SPEC validation system
  */
 export const validationResultSchema = z.object({
   score: z.number().min(0).max(100).describe('Overall validation score (0-100)'),

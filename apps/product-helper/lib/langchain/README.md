@@ -118,7 +118,7 @@ Extract structured PRD data from conversations.
 ### Artifact Generation Prompts
 
 #### `requirementsTablePrompt`
-Generate SR-CORNELL compliant requirements.
+Generate PRD-SPEC compliant requirements.
 
 **Variables:**
 - `projectName`, `projectVision`
@@ -414,9 +414,9 @@ LANGCHAIN_TRACING_V2="true"       # Optional (enable tracing)
 
 ---
 
-## SR-CORNELL Compliance
+## PRD-SPEC Compliance
 
-All prompts and schemas are designed for SR-CORNELL PRD validation:
+All prompts and schemas are designed for PRD-SPEC PRD validation:
 
 **Hard Gates Addressed:**
 - System boundary (systemBoundariesSchema)
@@ -450,7 +450,7 @@ All prompts and schemas are designed for SR-CORNELL PRD validation:
 1. **Phase 5**: Integrate prompts with Chat UI components
 2. **Phase 6**: Create API endpoints using these configs
 3. **Phase 10**: Implement extraction agent with schemas
-4. **Phase 9**: Use validation schemas for SR-CORNELL checking
+4. **Phase 9**: Use validation schemas for PRD-SPEC checking
 
 ---
 

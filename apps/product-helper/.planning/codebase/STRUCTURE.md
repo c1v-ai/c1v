@@ -45,7 +45,7 @@ product-helper/
 │   │   │   ├── route.ts        # List/create
 │   │   │   └── [id]/
 │   │   │       ├── route.ts    # Get/update/delete
-│   │   │       ├── validate/   # SR-CORNELL validation
+│   │   │       ├── validate/   # PRD-SPEC validation
 │   │   │       └── export/     # Export to markdown
 │   │   ├── stripe/             # Payment webhooks
 │   │   │   ├── checkout/
@@ -150,7 +150,7 @@ product-helper/
 │   │   │   │   ├── analyze-response.ts
 │   │   │   │   ├── extract-data.ts
 │   │   │   │   ├── compute-next-question.ts
-│   │   │   │   ├── check-sr-cornell.ts
+│   │   │   │   ├── check-prd-spec.ts
 │   │   │   │   ├── generate-artifact.ts
 │   │   │   │   └── generate-response.ts
 │   │   │   └── __tests__/
@@ -158,7 +158,7 @@ product-helper/
 │   ├── payments/               # Stripe integration
 │   │   ├── stripe.ts           # Stripe client
 │   │   └── actions.ts          # Payment actions
-│   ├── validation/             # SR-CORNELL validation
+│   ├── validation/             # PRD-SPEC validation
 │   │   ├── types.ts            # HardGate enums, types
 │   │   └── validator.ts        # 10 hard-gate checks
 │   └── utils.ts                # General utilities (cn)
@@ -212,7 +212,7 @@ product-helper/
 - Key files: `schema.ts`, `queries.ts`, `drizzle.ts`
 
 **lib/validation/:**
-- Purpose: SR-CORNELL PRD validation engine
+- Purpose: PRD-SPEC PRD validation engine
 - Contains: 10 hard-gate validators
 - Key files: `validator.ts`, `types.ts`
 
@@ -243,7 +243,7 @@ product-helper/
 - `lib/langchain/graphs/intake-graph.ts`: Main LangGraph builder
 - `lib/langchain/graphs/types.ts`: IntakeState definition
 - `lib/db/schema.ts`: All Drizzle table definitions
-- `lib/validation/validator.ts`: SR-CORNELL validation
+- `lib/validation/validator.ts`: PRD-SPEC validation
 
 **Testing:**
 - `tests/e2e/`: Playwright E2E tests

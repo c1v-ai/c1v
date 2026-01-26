@@ -47,7 +47,7 @@ Wave 3: UI & Export (after Wave 2)
 
 | Tool | Description | Wave |
 |------|-------------|------|
-| `get_validation_status` | SR-CORNELL score + checks | 2 |
+| `get_validation_status` | PRD-SPEC score + checks | 2 |
 | `get_gsd_phases` | GSD workflow phases | 2 |
 | `get_cleo_tasks` | CLEO task list (stable IDs) | 2 |
 | `invoke_agent` | Trigger domain agent (17 specialists) | 2 |

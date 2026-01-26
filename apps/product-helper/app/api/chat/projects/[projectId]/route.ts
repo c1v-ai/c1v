@@ -24,7 +24,7 @@ import {
  *    - Uses LangGraph state machine for multi-agent orchestration
  *    - Supports conversation checkpointing and resumption
  *    - Automatic data extraction and project data updates
- *    - Full SR-CORNELL pipeline integration
+ *    - Full PRD-SPEC pipeline integration
  *
  * 2. Legacy Mode (USE_LANGGRAPH=false or unset):
  *    - Uses simple LangChain chain with prompt-based approach
@@ -221,7 +221,7 @@ export async function POST(
     if (completeness >= 90) currentArtifact = 'constants_table';
     if (completeness >= 95) currentArtifact = 'sysml_activity_diagram';
 
-    // Build the SR-CORNELL aware prompt
+    // Build the PRD-SPEC aware prompt
     const promptText = `You are a PRD assistant. Your job: collect MINIMUM data needed to generate artifacts, then GENERATE them.
 
 ## Project Context
@@ -253,7 +253,7 @@ Better: make an assumption and ask "Does this look right?"
 From vision "${project.vision}", infer likely actors and systems.
 Show your inference: "Based on your vision, I'm assuming X and Y are your main users. Correct?"
 
-## Artifact Pipeline (SR-CORNELL sequence)
+## Artifact Pipeline (PRD-SPEC sequence)
 1. Context Diagram ${currentArtifact === 'context_diagram' ? '← CURRENT' : completeness >= 30 ? '✓' : ''}
 2. Use Case Diagram ${currentArtifact === 'use_case_diagram' ? '← CURRENT' : completeness >= 50 ? '✓' : ''}
 3. Scope Tree ${currentArtifact === 'scope_tree' ? '← CURRENT' : completeness >= 65 ? '✓' : ''}

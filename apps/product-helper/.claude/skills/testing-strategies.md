@@ -8,9 +8,9 @@ Best practices for testing in the product-helper codebase using Vitest and React
 ```
 lib/
 ├── validators/
-│   ├── sr-cornell.ts
+│   ├── prd-spec.ts
 │   └── __tests__/
-│       └── sr-cornell.test.ts
+│       └── prd-spec.test.ts
 ├── langchain/
 │   └── graphs/
 │       ├── intake-graph.ts
@@ -34,11 +34,11 @@ components/
 
 ### Basic Test Structure
 ```typescript
-// lib/validators/__tests__/sr-cornell.test.ts
+// lib/validators/__tests__/prd-spec.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { validateProject, ValidationResult } from '../sr-cornell';
+import { validateProject, ValidationResult } from '../prd-spec';
 
-describe('SR-CORNELL Validator', () => {
+describe('PRD-SPEC Validator', () => {
   describe('validateProject', () => {
     it('should pass when all hard gates are met', () => {
       const project = createValidProject();

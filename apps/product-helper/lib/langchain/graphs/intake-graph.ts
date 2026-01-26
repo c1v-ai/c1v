@@ -47,13 +47,13 @@ import {
  *                  |                          |                         |
  *                  v                          v                         v
  *        +---------+--------+      +----------+---------+     +---------+--------+
- *        |   extract_data   |      | check_sr_cornell   |     | compute_next_    |
+ *        |   extract_data   |      | check_sr_industry-standard   |     | compute_next_    |
  *        | (Data Extraction)|      | (Validation)       |     | question         |
  *        +---------+--------+      +----------+---------+     +---------+--------+
  *                  |                          |                         |
  *                  v                          v                         v
  *        +---------+--------+      +----------+---------+     +---------+--------+
- *        | check_sr_cornell |      | generate_artifact  |     | generate_response|
+ *        | check_sr_industry-standard |      | generate_artifact  |     | generate_response|
  *        | or compute_next  |      | (Diagram/Table)    |     | (AI Reply)       |
  *        +---------+--------+      +----------+---------+     +---------+--------+
  *                  |                          |                         |
@@ -120,15 +120,15 @@ async function computeNextQuestion(state: IntakeState): Promise<Partial<IntakeSt
 }
 
 /**
- * Check SR-CORNELL Node
- * Validates extracted data against SR-CORNELL standards
+ * Check PRD-SPEC Node
+ * Validates extracted data against PRD-SPEC standards
  *
- * This is a placeholder - actual implementation in nodes/check-sr-cornell.ts
+ * This is a placeholder - actual implementation in nodes/check-prd-spec.ts
  */
-async function checkSRCornell(state: IntakeState): Promise<Partial<IntakeState>> {
+async function checkSRindustry-standard(state: IntakeState): Promise<Partial<IntakeState>> {
   // Import dynamically to avoid circular dependencies
-  const { checkSRCornell: checkSRCornellImpl } = await import('./nodes/check-sr-cornell');
-  return checkSRCornellImpl(state);
+  const { checkSRindustry-standard: checkSRindustry-standardImpl } = await import('./nodes/check-prd-spec');
+  return checkSRindustry-standardImpl(state);
 }
 
 /**
@@ -263,7 +263,7 @@ export function buildIntakeGraph() {
     .addNode('analyze_response', analyzeResponse)
     .addNode('extract_data', extractData)
     .addNode('compute_next_question', computeNextQuestion)
-    .addNode('check_sr_cornell', checkSRCornell)
+    .addNode('check_sr_industry-standard', checkSRindustry-standard)
     .addNode('generate_artifact', generateArtifact)
     .addNode('generate_response', generateResponse)
     // ============================================================
@@ -277,17 +277,17 @@ export function buildIntakeGraph() {
     .addConditionalEdges(
       'analyze_response',
       routeAfterAnalysis,
-      ['extract_data', 'check_sr_cornell', 'compute_next_question']
+      ['extract_data', 'check_sr_industry-standard', 'compute_next_question']
     )
     // After extraction: check validation or ask more questions
     .addConditionalEdges(
       'extract_data',
       routeAfterExtraction,
-      ['check_sr_cornell', 'compute_next_question']
+      ['check_sr_industry-standard', 'compute_next_question']
     )
     // After validation: generate artifact, ask more, or end
     .addConditionalEdges(
-      'check_sr_cornell',
+      'check_sr_industry-standard',
       routeAfterValidation,
       ['generate_artifact', 'compute_next_question', END]
     )
@@ -295,7 +295,7 @@ export function buildIntakeGraph() {
     .addConditionalEdges(
       'generate_artifact',
       routeAfterArtifact,
-      ['check_sr_cornell', END]
+      ['check_sr_industry-standard', END]
     )
     // ============================================================
     // Add Simple Edges
