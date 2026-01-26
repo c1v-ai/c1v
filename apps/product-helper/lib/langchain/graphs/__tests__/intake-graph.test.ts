@@ -104,13 +104,13 @@ describe('edge routing integration', () => {
       expect(route).toBe('extract_data');
     });
 
-    it('routes to check_sr_industry-standard for REQUEST_ARTIFACT', () => {
+    it('routes to check_prd_spec for REQUEST_ARTIFACT', () => {
       const state = createTestState({
         lastIntent: 'REQUEST_ARTIFACT',
       });
 
       const route = routeAfterAnalysis(state);
-      expect(route).toBe('check_sr_industry-standard');
+      expect(route).toBe('check_prd_spec');
     });
 
     it('routes to extract_data for PROVIDE_INFO when artifact not ready', () => {
@@ -132,7 +132,7 @@ describe('edge routing integration', () => {
       expect(route).toBe('extract_data');
     });
 
-    it('routes to check_sr_industry-standard for PROVIDE_INFO when artifact ready', () => {
+    it('routes to check_prd_spec for PROVIDE_INFO when artifact ready', () => {
       const state = createTestState({
         lastIntent: 'PROVIDE_INFO',
         currentPhase: 'context_diagram',
@@ -148,7 +148,7 @@ describe('edge routing integration', () => {
       });
 
       const route = routeAfterAnalysis(state);
-      expect(route).toBe('check_sr_industry-standard');
+      expect(route).toBe('check_prd_spec');
     });
 
     it('routes to compute_next_question for DENY', () => {
@@ -171,16 +171,16 @@ describe('edge routing integration', () => {
   });
 
   describe('routeAfterExtraction', () => {
-    it('routes to check_sr_industry-standard for STOP_TRIGGER', () => {
+    it('routes to check_prd_spec for STOP_TRIGGER', () => {
       const state = createTestState({
         lastIntent: 'STOP_TRIGGER',
       });
 
       const route = routeAfterExtraction(state);
-      expect(route).toBe('check_sr_industry-standard');
+      expect(route).toBe('check_prd_spec');
     });
 
-    it('routes to check_sr_industry-standard when artifact ready', () => {
+    it('routes to check_prd_spec when artifact ready', () => {
       const state = createTestState({
         lastIntent: 'PROVIDE_INFO',
         currentPhase: 'context_diagram',
@@ -196,10 +196,10 @@ describe('edge routing integration', () => {
       });
 
       const route = routeAfterExtraction(state);
-      expect(route).toBe('check_sr_industry-standard');
+      expect(route).toBe('check_prd_spec');
     });
 
-    it('routes to check_sr_industry-standard when completeness >= 30', () => {
+    it('routes to check_prd_spec when completeness >= 30', () => {
       const state = createTestState({
         lastIntent: 'PROVIDE_INFO',
         completeness: 35,
@@ -216,7 +216,7 @@ describe('edge routing integration', () => {
       });
 
       const route = routeAfterExtraction(state);
-      expect(route).toBe('check_sr_industry-standard');
+      expect(route).toBe('check_prd_spec');
     });
 
     it('routes to compute_next_question when need more data', () => {
@@ -323,14 +323,14 @@ describe('edge routing integration', () => {
       expect(route).toBe('__end__');
     });
 
-    it('routes to check_sr_industry-standard when more artifacts needed', () => {
+    it('routes to check_prd_spec when more artifacts needed', () => {
       const state = createTestState({
         isComplete: false,
         generatedArtifacts: ['context_diagram'],
       });
 
       const route = routeAfterArtifact(state);
-      expect(route).toBe('check_sr_industry-standard');
+      expect(route).toBe('check_prd_spec');
     });
   });
 });
@@ -394,7 +394,7 @@ describe('full intake flow integration', () => {
 
       // Step 4: After extraction, should route to validation
       const route2 = routeAfterExtraction(withStopTrigger);
-      expect(route2).toBe('check_sr_industry-standard');
+      expect(route2).toBe('check_prd_spec');
 
       // Step 5: After validation, should generate artifact
       const route3 = routeAfterValidation(withStopTrigger);
