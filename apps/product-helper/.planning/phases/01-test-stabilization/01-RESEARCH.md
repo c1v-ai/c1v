@@ -146,7 +146,7 @@ const targetEntity = allEntities.find((e) =>
 
 **Calculation for Q_EXTERNAL_SYSTEMS:**
 - Base: 9
-- SR-CORNELL gate boost: +3 (gate not passed)
+- PRD-SPEC gate boost: +3 (gate not passed)
 - Phase alignment: 0 (external_systems !== context_diagram)
 - Total: 12
 

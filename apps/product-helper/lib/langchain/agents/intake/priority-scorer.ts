@@ -3,7 +3,7 @@
  *
  * Calculates priority scores for intake questions based on multiple factors:
  * - Base priority
- * - SR-CORNELL hard gate status
+ * - PRD-SPEC hard gate status
  * - Current phase alignment
  * - Artifact completion proximity
  * - Clarification history
@@ -88,9 +88,9 @@ export class PriorityScorer {
   private calculateScore(question: Question, state: IntakeState): number {
     let score = question.basePriority;
 
-    // Boost 1: SR-CORNELL hard gate not yet passed (+3)
-    if (question.srCornellGate) {
-      const gatePassed = state.validationStatus.hardGates[question.srCornellGate];
+    // Boost 1: PRD-SPEC hard gate not yet passed (+3)
+    if (question.prdSpecGate) {
+      const gatePassed = state.validationStatus.hardGates[question.prdSpecGate];
       if (!gatePassed) {
         score += 3;
       }
@@ -176,10 +176,10 @@ export class PriorityScorer {
 
     reasons.push(`Base priority: ${question.basePriority}`);
 
-    if (question.srCornellGate) {
-      const gatePassed = state.validationStatus.hardGates[question.srCornellGate];
+    if (question.prdSpecGate) {
+      const gatePassed = state.validationStatus.hardGates[question.prdSpecGate];
       if (!gatePassed) {
-        reasons.push(`+3: Required for ${question.srCornellGate} hard gate`);
+        reasons.push(`+3: Required for ${question.prdSpecGate} hard gate`);
       }
     }
 

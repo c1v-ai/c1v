@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Product Helper v1.0 is a functional AI-powered PRD generation SaaS with LangGraph-based conversational intake, SR-CORNELL validation, and diagram generation. Version 1.1 focuses on:
+Product Helper v1.0 is a functional AI-powered PRD generation SaaS with LangGraph-based conversational intake, PRD-SPEC validation, and diagram generation. Version 1.1 focuses on:
 
 1. **Stabilization** - Fix 15 failing tests ✓
 2. **Security Hardening** - Address critical vulnerabilities ✓
@@ -160,7 +160,7 @@ Plans:
 **6.1 User documentation (CRITICAL)**
 - [ ] Create `docs/user-guide/getting-started.md`
 - [ ] Create `docs/user-guide/creating-your-first-prd.md`
-- [ ] Create `docs/user-guide/understanding-validation.md` (SR-CORNELL explained)
+- [ ] Create `docs/user-guide/understanding-validation.md` (PRD-SPEC explained)
 - [ ] Create `docs/user-guide/generating-diagrams.md`
 
 **6.2 API documentation (CRITICAL)**

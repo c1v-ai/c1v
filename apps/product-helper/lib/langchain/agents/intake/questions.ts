@@ -1,7 +1,7 @@
 /**
  * Pre-defined Question Bank
  *
- * Contains all intake questions organized by SR-CORNELL artifact phases.
+ * Contains all intake questions organized by PRD-SPEC artifact phases.
  * Each question is tied to specific hard gates and extraction targets.
  *
  * @module intake/questions
@@ -16,14 +16,14 @@ export type { Question } from './question-bank';
 /**
  * Complete question bank for intake conversations.
  * Questions are organized by phase and include:
- * - SR-CORNELL hard gate references
+ * - PRD-SPEC hard gate references
  * - Dependencies on prior questions
  * - Skip conditions for efficiency
  * - Clarification prompts for vague answers
  */
 export const INTAKE_QUESTIONS: Question[] = [
   // ============================================================
-  // Phase: Actors (SR-CORNELL HG2, HG3)
+  // Phase: Actors (PRD-SPEC HG2, HG3)
   // ============================================================
   {
     id: 'Q_ACTORS_PRIMARY',
@@ -31,7 +31,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'Who are the primary users of this system? (e.g., customers, admins, managers)',
     shortText: 'primary users',
     basePriority: 10,
-    srCornellGate: 'PRIMARY_ACTORS_DEFINED',
+    prdSpecGate: 'PRIMARY_ACTORS_DEFINED',
     requires: [],
     requiresData: [],
     extractsTo: ['actors'],
@@ -48,7 +48,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'Are there any secondary users or support roles? (e.g., support staff, auditors)',
     shortText: 'secondary users',
     basePriority: 7,
-    srCornellGate: 'PRIMARY_ACTORS_DEFINED',
+    prdSpecGate: 'PRIMARY_ACTORS_DEFINED',
     requires: ['Q_ACTORS_PRIMARY'],
     requiresData: ['actors'],
     extractsTo: ['actors'],
@@ -62,7 +62,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What permissions does each user type have? What can they do vs. what is restricted?',
     shortText: 'user permissions',
     basePriority: 8,
-    srCornellGate: 'ROLES_PERMISSIONS_DEFINED',
+    prdSpecGate: 'ROLES_PERMISSIONS_DEFINED',
     requires: ['Q_ACTORS_PRIMARY'],
     requiresData: ['actors'],
     extractsTo: ['actors.permissions'],
@@ -74,7 +74,7 @@ export const INTAKE_QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // Phase: External Systems (SR-CORNELL HG1, HG4)
+  // Phase: External Systems (PRD-SPEC HG1, HG4)
   // ============================================================
   {
     id: 'Q_EXTERNAL_SYSTEMS',
@@ -82,7 +82,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'Does your system integrate with any external services? (e.g., payment gateways, email services, third-party APIs)',
     shortText: 'external integrations',
     basePriority: 9,
-    srCornellGate: 'EXTERNAL_ENTITIES_DEFINED',
+    prdSpecGate: 'EXTERNAL_ENTITIES_DEFINED',
     requires: [],
     requiresData: [],
     extractsTo: ['systemBoundaries.external'],
@@ -98,7 +98,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'Does your system receive data from external sources? (e.g., imports, webhooks, feeds)',
     shortText: 'external data sources',
     basePriority: 6,
-    srCornellGate: 'EXTERNAL_ENTITIES_DEFINED',
+    prdSpecGate: 'EXTERNAL_ENTITIES_DEFINED',
     requires: ['Q_EXTERNAL_SYSTEMS'],
     requiresData: [],
     extractsTo: ['systemBoundaries.external'],
@@ -107,7 +107,7 @@ export const INTAKE_QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // Phase: Use Cases (SR-CORNELL HG5, HG6)
+  // Phase: Use Cases (PRD-SPEC HG5, HG6)
   // ============================================================
   {
     id: 'Q_USE_CASES_CORE',
@@ -115,7 +115,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What are the 3-5 most important things a user can do with your system?',
     shortText: 'core use cases',
     basePriority: 10,
-    srCornellGate: 'USE_CASE_LIST_5_TO_15',
+    prdSpecGate: 'USE_CASE_LIST_5_TO_15',
     requires: ['Q_ACTORS_PRIMARY'],
     requiresData: ['actors'],
     extractsTo: ['useCases'],
@@ -132,7 +132,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What are some additional actions users might take? Think about settings, reports, or edge cases.',
     shortText: 'additional use cases',
     basePriority: 6,
-    srCornellGate: 'USE_CASE_LIST_5_TO_15',
+    prdSpecGate: 'USE_CASE_LIST_5_TO_15',
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
     extractsTo: ['useCases'],
@@ -146,7 +146,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'For each action, what triggers it? (e.g., user clicks button, scheduled job, webhook)',
     shortText: 'triggers',
     basePriority: 7,
-    srCornellGate: 'USE_CASE_TRIGGER_OUTCOME',
+    prdSpecGate: 'USE_CASE_TRIGGER_OUTCOME',
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
     extractsTo: ['useCases.trigger'],
@@ -160,7 +160,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What is the expected outcome when each action completes successfully?',
     shortText: 'outcomes',
     basePriority: 7,
-    srCornellGate: 'USE_CASE_TRIGGER_OUTCOME',
+    prdSpecGate: 'USE_CASE_TRIGGER_OUTCOME',
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
     extractsTo: ['useCases.outcome'],
@@ -170,7 +170,7 @@ export const INTAKE_QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // Phase: Scope (SR-CORNELL HG1)
+  // Phase: Scope (PRD-SPEC HG1)
   // ============================================================
   {
     id: 'Q_SCOPE_IN',
@@ -178,7 +178,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What features are definitely IN scope for this release?',
     shortText: 'in-scope features',
     basePriority: 8,
-    srCornellGate: 'SYSTEM_BOUNDARY_DEFINED',
+    prdSpecGate: 'SYSTEM_BOUNDARY_DEFINED',
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
     extractsTo: ['systemBoundaries.inScope'],
@@ -191,7 +191,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What features are explicitly OUT of scope or deferred to a future release?',
     shortText: 'out-of-scope features',
     basePriority: 8,
-    srCornellGate: 'SYSTEM_BOUNDARY_DEFINED',
+    prdSpecGate: 'SYSTEM_BOUNDARY_DEFINED',
     requires: ['Q_SCOPE_IN'],
     requiresData: ['systemBoundaries.inScope'],
     extractsTo: ['systemBoundaries.outOfScope'],
@@ -202,7 +202,7 @@ export const INTAKE_QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // Phase: Data Entities (SR-CORNELL HG9)
+  // Phase: Data Entities (PRD-SPEC HG9)
   // ============================================================
   {
     id: 'Q_DATA_ENTITIES',
@@ -210,7 +210,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'What are the main data objects in your system? (e.g., User, Order, Product, Report)',
     shortText: 'data objects',
     basePriority: 8,
-    srCornellGate: 'CORE_DATA_OBJECTS_DEFINED',
+    prdSpecGate: 'CORE_DATA_OBJECTS_DEFINED',
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
     extractsTo: ['dataEntities'],
@@ -227,7 +227,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'How do these data objects relate to each other? (e.g., User has many Orders)',
     shortText: 'data relationships',
     basePriority: 6,
-    srCornellGate: 'CORE_DATA_OBJECTS_DEFINED',
+    prdSpecGate: 'CORE_DATA_OBJECTS_DEFINED',
     requires: ['Q_DATA_ENTITIES'],
     requiresData: ['dataEntities'],
     extractsTo: ['dataEntities.relationships'],
@@ -237,7 +237,7 @@ export const INTAKE_QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // Phase: Constraints (SR-CORNELL HG8)
+  // Phase: Constraints (PRD-SPEC HG8)
   // ============================================================
   {
     id: 'Q_CONSTRAINTS_BUSINESS',
@@ -245,7 +245,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'Are there any business constraints? (e.g., budget limits, timeline, regulatory requirements)',
     shortText: 'business constraints',
     basePriority: 5,
-    srCornellGate: 'CONSTRAINTS_PRESENT',
+    prdSpecGate: 'CONSTRAINTS_PRESENT',
     requires: [],
     requiresData: [],
     extractsTo: ['constraints.business'],
@@ -258,7 +258,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'Are there any technical constraints? (e.g., must use specific tech stack, integrate with legacy systems)',
     shortText: 'technical constraints',
     basePriority: 5,
-    srCornellGate: 'CONSTRAINTS_PRESENT',
+    prdSpecGate: 'CONSTRAINTS_PRESENT',
     requires: [],
     requiresData: [],
     extractsTo: ['constraints.technical'],
@@ -267,7 +267,7 @@ export const INTAKE_QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // Phase: Success Criteria (SR-CORNELL HG7)
+  // Phase: Success Criteria (PRD-SPEC HG7)
   // ============================================================
   {
     id: 'Q_SUCCESS_CRITERIA',
@@ -275,7 +275,7 @@ export const INTAKE_QUESTIONS: Question[] = [
     text: 'How will you measure success for this project? (e.g., user adoption rate, transaction volume, response time)',
     shortText: 'success metrics',
     basePriority: 4,
-    srCornellGate: 'SUCCESS_CRITERIA_MEASURABLE',
+    prdSpecGate: 'SUCCESS_CRITERIA_MEASURABLE',
     requires: [],
     requiresData: [],
     extractsTo: ['successCriteria'],
@@ -334,10 +334,10 @@ export function getQuestionById(id: string): Question | undefined {
 }
 
 /**
- * Get questions that target a specific SR-CORNELL gate
+ * Get questions that target a specific PRD-SPEC gate
  * @param gate - The hard gate identifier
  * @returns Array of questions addressing that gate
  */
 export function getQuestionsByGate(gate: string): Question[] {
-  return INTAKE_QUESTIONS.filter(q => q.srCornellGate === gate);
+  return INTAKE_QUESTIONS.filter(q => q.prdSpecGate === gate);
 }

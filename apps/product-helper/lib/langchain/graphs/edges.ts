@@ -14,14 +14,14 @@ import type {
  * ```
  * START -> analyze_response
  * analyze_response -> extract_data (PROVIDE_INFO/STOP_TRIGGER)
- * analyze_response -> check_sr_cornell (REQUEST_ARTIFACT)
+ * analyze_response -> check_sr_industry-standard (REQUEST_ARTIFACT)
  * analyze_response -> compute_next_question (DENY/UNKNOWN)
- * extract_data -> check_sr_cornell (artifact_ready)
+ * extract_data -> check_sr_industry-standard (artifact_ready)
  * extract_data -> compute_next_question (need_more_data)
- * check_sr_cornell -> generate_artifact (threshold_met)
- * check_sr_cornell -> compute_next_question (below_threshold)
- * check_sr_cornell -> END (is_complete)
- * generate_artifact -> check_sr_cornell (continue)
+ * check_sr_industry-standard -> generate_artifact (threshold_met)
+ * check_sr_industry-standard -> compute_next_question (below_threshold)
+ * check_sr_industry-standard -> END (is_complete)
+ * generate_artifact -> check_sr_industry-standard (continue)
  * generate_artifact -> END (all_complete)
  * compute_next_question -> generate_response
  * generate_response -> END
@@ -39,18 +39,18 @@ import type {
  */
 export type AnalyzeRouteTarget =
   | 'extract_data'           // User provided info -> extract it
-  | 'check_sr_cornell'       // User requested artifact -> check if ready
+  | 'check_sr_industry-standard'       // User requested artifact -> check if ready
   | 'compute_next_question'; // Need more data -> ask question
 
 /**
  * Routing targets from extract_data node
  */
 export type ExtractRouteTarget =
-  | 'check_sr_cornell'       // Artifact ready or stop trigger -> validate
+  | 'check_sr_industry-standard'       // Artifact ready or stop trigger -> validate
   | 'compute_next_question'; // Need more data -> ask question
 
 /**
- * Routing targets from check_sr_cornell (validation) node
+ * Routing targets from check_sr_industry-standard (validation) node
  */
 export type ValidationRouteTarget =
   | 'generate_artifact'      // Threshold met -> generate
@@ -61,7 +61,7 @@ export type ValidationRouteTarget =
  * Routing targets from generate_artifact node
  */
 export type ArtifactRouteTarget =
-  | 'check_sr_cornell'       // Continue to next phase
+  | 'check_sr_industry-standard'       // Continue to next phase
   | '__end__';               // All artifacts complete
 
 // ============================================================
@@ -73,7 +73,7 @@ export type ArtifactRouteTarget =
  *
  * Decision logic:
  * 1. STOP_TRIGGER or PROVIDE_INFO -> extract_data (extract info then proceed)
- * 2. REQUEST_ARTIFACT -> check_sr_cornell (check if ready to generate)
+ * 2. REQUEST_ARTIFACT -> check_sr_industry-standard (check if ready to generate)
  * 3. DENY or UNKNOWN -> compute_next_question (ask another question)
  *
  * @param state - Current intake state with lastIntent set
@@ -83,7 +83,7 @@ export type ArtifactRouteTarget =
  * ```typescript
  * const target = routeAfterAnalysis(state);
  * // If lastIntent is 'PROVIDE_INFO' -> 'extract_data'
- * // If lastIntent is 'REQUEST_ARTIFACT' -> 'check_sr_cornell'
+ * // If lastIntent is 'REQUEST_ARTIFACT' -> 'check_sr_industry-standard'
  * // If lastIntent is 'DENY' -> 'compute_next_question'
  * ```
  */
@@ -97,14 +97,14 @@ export function routeAfterAnalysis(state: IntakeState): AnalyzeRouteTarget {
 
   // User requested specific artifact - check if we can generate
   if (lastIntent === 'REQUEST_ARTIFACT') {
-    return 'check_sr_cornell';
+    return 'check_sr_industry-standard';
   }
 
   // User provided info or confirmed something
   if (lastIntent === 'PROVIDE_INFO' || lastIntent === 'CONFIRM') {
     // If artifact for current phase is ready, go to validation
     if (artifactReadiness[currentPhase]) {
-      return 'check_sr_cornell';
+      return 'check_sr_industry-standard';
     }
     // Otherwise extract what they said
     return 'extract_data';
@@ -133,9 +133,9 @@ export function routeAfterAnalysis(state: IntakeState): AnalyzeRouteTarget {
  * Route after data extraction
  *
  * Decision logic:
- * 1. If stop trigger was detected -> check_sr_cornell (to generate)
- * 2. If artifact ready for current phase -> check_sr_cornell
- * 3. If completeness >= 30% -> check_sr_cornell (periodic validation)
+ * 1. If stop trigger was detected -> check_sr_industry-standard (to generate)
+ * 2. If artifact ready for current phase -> check_sr_industry-standard
+ * 3. If completeness >= 30% -> check_sr_industry-standard (periodic validation)
  * 4. Otherwise -> compute_next_question (need more data)
  *
  * @param state - Current intake state with extractedData updated
@@ -144,8 +144,8 @@ export function routeAfterAnalysis(state: IntakeState): AnalyzeRouteTarget {
  * @example
  * ```typescript
  * const target = routeAfterExtraction(state);
- * // If lastIntent is 'STOP_TRIGGER' -> 'check_sr_cornell'
- * // If artifactReadiness.context_diagram && currentPhase === 'context_diagram' -> 'check_sr_cornell'
+ * // If lastIntent is 'STOP_TRIGGER' -> 'check_sr_industry-standard'
+ * // If artifactReadiness.context_diagram && currentPhase === 'context_diagram' -> 'check_sr_industry-standard'
  * // Otherwise -> 'compute_next_question'
  * ```
  */
@@ -154,18 +154,18 @@ export function routeAfterExtraction(state: IntakeState): ExtractRouteTarget {
 
   // After stop trigger, always proceed to validation/generation
   if (lastIntent === 'STOP_TRIGGER') {
-    return 'check_sr_cornell';
+    return 'check_sr_industry-standard';
   }
 
   // If current artifact is ready, validate it
   if (artifactReadiness[currentPhase]) {
-    return 'check_sr_cornell';
+    return 'check_sr_industry-standard';
   }
 
   // Periodic validation check at 30% and above
   // This helps track progress and can trigger early artifact generation
   if (completeness >= 30) {
-    return 'check_sr_cornell';
+    return 'check_sr_industry-standard';
   }
 
   // Need more data - ask another question
@@ -173,7 +173,7 @@ export function routeAfterExtraction(state: IntakeState): ExtractRouteTarget {
 }
 
 /**
- * Route after SR-CORNELL validation
+ * Route after PRD-SPEC validation
  *
  * Decision logic:
  * 1. If 95%+ complete (isComplete) -> __end__ (conversation complete)
@@ -252,7 +252,7 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
  * Decision logic:
  * 1. If all 7 artifacts generated -> __end__
  * 2. If 95%+ validation (isComplete) -> __end__
- * 3. Otherwise -> check_sr_cornell (move to next phase)
+ * 3. Otherwise -> check_sr_industry-standard (move to next phase)
  *
  * @param state - Current intake state with artifact generated
  * @returns Target node name
@@ -262,13 +262,13 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
  * const target = routeAfterArtifact(state);
  * // If generatedArtifacts.length >= 7 -> '__end__'
  * // If isComplete -> '__end__'
- * // Otherwise -> 'check_sr_cornell'
+ * // Otherwise -> 'check_sr_industry-standard'
  * ```
  */
 export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
   const { generatedArtifacts, isComplete } = state;
 
-  // All 7 SR-CORNELL artifacts generated
+  // All 7 PRD-SPEC artifacts generated
   if (generatedArtifacts.length >= 7) {
     return '__end__';
   }
@@ -279,7 +279,7 @@ export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
   }
 
   // Continue to next phase - validate and possibly generate more
-  return 'check_sr_cornell';
+  return 'check_sr_industry-standard';
 }
 
 // ============================================================
@@ -290,7 +290,7 @@ export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
  * Get the minimum validation score threshold for a phase
  *
  * These thresholds determine when an artifact can be generated.
- * Based on SR-CORNELL-PRD-95-V1 specification.
+ * Based on PRD-SPEC-PRD-95-V1 specification.
  *
  * @param phase - The artifact phase
  * @returns Minimum score required for this phase

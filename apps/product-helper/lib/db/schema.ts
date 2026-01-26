@@ -89,6 +89,7 @@ export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
+  projects: many(projects),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -182,6 +183,13 @@ export const projectData = pgTable('project_data', {
   systemBoundaries: jsonb('system_boundaries'),
   dataEntities: jsonb('data_entities'),
 
+  // Phase 9 v2.0 fields
+  databaseSchema: jsonb('database_schema'),
+  techStack: jsonb('tech_stack'),
+  apiSpecification: jsonb('api_specification'),
+  infrastructureSpec: jsonb('infrastructure_spec'),
+  codingGuidelines: jsonb('coding_guidelines'),
+
   // Intake agent state (serialized IntakeState for LangGraph)
   intakeState: jsonb('intake_state'),
 
@@ -249,6 +257,78 @@ export const graphCheckpoints = pgTable('graph_checkpoints', {
   ),
 }));
 
+// User Stories (Phase 9.4)
+export const userStories = pgTable('user_stories', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  useCaseId: varchar('use_case_id', { length: 50 }),
+
+  // Story content
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  actor: varchar('actor', { length: 100 }).notNull(),
+  epic: varchar('epic', { length: 100 }),
+
+  // Acceptance criteria as JSONB array
+  acceptanceCriteria: jsonb('acceptance_criteria').notNull().default([]),
+
+  // Tracking
+  status: varchar('status', { length: 20 }).notNull().default('backlog'),
+  priority: varchar('priority', { length: 20 }).notNull().default('medium'),
+  estimatedEffort: varchar('estimated_effort', { length: 20 }).notNull().default('medium'),
+
+  // Ordering for backlog/kanban
+  order: integer('order').notNull().default(0),
+
+  // Optional fields
+  assignee: varchar('assignee', { length: 100 }),
+  labels: jsonb('labels').default([]),
+  blockedBy: jsonb('blocked_by').default([]),
+
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  projectIdIdx: index('user_stories_project_id_idx').on(table.projectId),
+  statusIdx: index('user_stories_status_idx').on(table.status),
+  priorityIdx: index('user_stories_priority_idx').on(table.priority),
+  epicIdx: index('user_stories_epic_idx').on(table.epic),
+  orderIdx: index('user_stories_order_idx').on(table.projectId, table.order),
+}));
+
+// API Keys (Phase 11 preparation)
+export const apiKeys = pgTable('api_keys', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+
+  // Key info
+  keyHash: text('key_hash').notNull(),
+  keyPrefix: varchar('key_prefix', { length: 8 }).notNull(),
+  name: varchar('name', { length: 100 }).notNull(),
+
+  // Usage tracking
+  lastUsedAt: timestamp('last_used_at'),
+  usageCount: integer('usage_count').notNull().default(0),
+
+  // Expiration and revocation
+  expiresAt: timestamp('expires_at'),
+  revokedAt: timestamp('revoked_at'),
+
+  // Scopes as JSONB array
+  scopes: jsonb('scopes').notNull().default(['read:prd']),
+
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  projectIdIdx: index('api_keys_project_id_idx').on(table.projectId),
+  keyHashIdx: uniqueIndex('api_keys_key_hash_idx').on(table.keyHash),
+  keyPrefixIdx: index('api_keys_key_prefix_idx').on(table.keyPrefix),
+}));
+
 // PRD Relations
 export const projectsRelations = relations(projects, ({ one, many }) => ({
   team: one(teams, {
@@ -263,6 +343,8 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   artifacts: many(artifacts),
   conversations: many(conversations),
   graphCheckpoint: one(graphCheckpoints),
+  userStories: many(userStories),
+  apiKeys: many(apiKeys),
 }));
 
 export const projectDataRelations = relations(projectData, ({ one }) => ({
@@ -293,13 +375,20 @@ export const graphCheckpointsRelations = relations(graphCheckpoints, ({ one }) =
   }),
 }));
 
-// Update teams relations to include projects
-export const teamsRelationsExtended = relations(teams, ({ many }) => ({
-  teamMembers: many(teamMembers),
-  activityLogs: many(activityLogs),
-  invitations: many(invitations),
-  projects: many(projects),
+export const userStoriesRelations = relations(userStories, ({ one }) => ({
+  project: one(projects, {
+    fields: [userStories.projectId],
+    references: [projects.id],
+  }),
 }));
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  project: one(projects, {
+    fields: [apiKeys.projectId],
+    references: [projects.id],
+  }),
+}));
+
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -330,6 +419,10 @@ export type Conversation = typeof conversations.$inferSelect;
 export type NewConversation = typeof conversations.$inferInsert;
 export type GraphCheckpoint = typeof graphCheckpoints.$inferSelect;
 export type NewGraphCheckpoint = typeof graphCheckpoints.$inferInsert;
+export type UserStory = typeof userStories.$inferSelect;
+export type NewUserStory = typeof userStories.$inferInsert;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type NewApiKey = typeof apiKeys.$inferInsert;
 
 // PRD Data Structures
 export type Actor = {

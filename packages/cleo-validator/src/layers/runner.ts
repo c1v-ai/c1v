@@ -15,12 +15,11 @@
 
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
-import { ExitCode } from '../exit-codes';
+import { ExitCode, type ExitCodeValue } from '../exit-codes';
 import { schemaLayer } from './schema';
 import { semanticLayer } from './semantic';
 import { referentialLayer } from './referential';
 import { stateMachineLayer } from './state-machine';
-import type { ExitCodeValue } from '../exit-codes';
 import {
   type ValidationContext,
   type LayerResult,
@@ -408,7 +407,7 @@ export async function runProjectValidation(
   let totalErrors = 0;
   let totalWarnings = 0;
   let filesValidated = 0;
-  let firstExitCode: ExitCodeValue = ExitCode.SUCCESS;
+  let firstExitCode = ExitCode.SUCCESS as number;
 
   // Validate STATE.json (or STATE.md if JSON doesn't exist)
   const stateJsonPath = join(planningPath, 'STATE.json');
@@ -472,7 +471,7 @@ export async function runProjectValidation(
       errorCount: totalErrors,
       warningCount: totalWarnings,
       filesValidated,
-      exitCode: firstExitCode,
+      exitCode: firstExitCode as ExitCodeValue,
     },
   };
 }

@@ -34,7 +34,7 @@ import { formatMessagesAsText } from '../utils';
  * 2. Runs extraction using the existing extraction agent
  * 3. Merges new data with existing data (incremental updates)
  * 4. Computes completeness score
- * 5. Computes artifact readiness for each SR-CORNELL artifact
+ * 5. Computes artifact readiness for each PRD-SPEC artifact
  *
  * @param state - Current intake state with messages
  * @returns Partial state with updated extractedData, completeness, artifactReadiness

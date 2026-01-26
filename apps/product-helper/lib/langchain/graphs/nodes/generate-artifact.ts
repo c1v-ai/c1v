@@ -1,7 +1,7 @@
 /**
  * Generate Artifact Node
  *
- * Purpose: Generate the current artifact using SR-CORNELL templates.
+ * Purpose: Generate the current artifact using PRD-SPEC templates.
  * Produces Mermaid diagrams or markdown tables based on extracted data.
  *
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)

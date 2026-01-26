@@ -26,7 +26,19 @@
       "Bash(done)",
       "Bash(cd:*)",
       "Bash(pnpm --filter=product-helper exec tsc:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(python3:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm test:coverage:*)",
+      "Bash(git -C /Users/davidancor/Documents/MDR/c1v status:*)",
+      "Bash(git -C /Users/davidancor/Documents/MDR/c1v log --oneline -5)",
+      "Bash(git -C /Users/davidancor/Documents/MDR/c1v add packages/cleo-validator/src/layers/types.ts packages/cleo-validator/src/layers/schema.ts packages/cleo-validator/src/index.ts packages/cleo-validator/__tests__/layers/schema.test.ts)",
+      "Bash(git -C /Users/davidancor/Documents/MDR/c1v diff --cached --stat)",
+      "Bash(git -C /Users/davidancor/Documents/MDR/c1v commit -m \"$\\(cat <<''EOF''\nfeat\\(T008\\): implement schema validation layer\n\n- Define ValidationLayer interface and common types\n- Create schemaLayer wrapping ajv validation\n- Transform errors to common format\n- First of 4 CLEO validation layers\n\nTask: T008\nAgent: backend-architect\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(npm test:*)",
+      "Bash(npm run build:*)",
+      "Bash(git -C /Users/davidancor/Documents/MDR/c1v diff --name-only HEAD)",
+      "Bash(pnpm install:*)"
     ]
   },
   "enabledPlugins": {

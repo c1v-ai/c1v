@@ -2,7 +2,7 @@
  * Unit Tests for Priority Scorer Logic
  *
  * Tests the question scoring algorithm that determines
- * which question to ask next based on SR-CORNELL gates,
+ * which question to ask next based on PRD-SPEC gates,
  * phase alignment, and clarification penalties.
  *
  * @module graphs/__tests__/priority-scorer.test.ts
@@ -23,7 +23,7 @@ interface Question {
   id: string;
   phase: string;
   basePriority: number;
-  srCornellGate?: string;
+  prdSpecGate?: string;
   extractsTo: string[];
   requires: string[];
   requiresData: string[];
@@ -57,7 +57,7 @@ interface ScoringState {
  *
  * Scoring rules:
  * 1. Base priority from question definition (1-10)
- * 2. +3 if SR-CORNELL hard gate not yet passed
+ * 2. +3 if PRD-SPEC hard gate not yet passed
  * 3. +2 if question phase matches current phase
  * 4. +2 if this question would complete an artifact
  * 5. -2 per clarification already asked
@@ -68,12 +68,12 @@ function calculateScore(question: Question, state: ScoringState): number {
   let score = question.basePriority;
   const reasons: string[] = [];
 
-  // Boost 1: SR-CORNELL hard gate not yet passed (+3)
-  if (question.srCornellGate) {
-    const gatePassed = state.validationStatus.hardGates[question.srCornellGate];
+  // Boost 1: PRD-SPEC hard gate not yet passed (+3)
+  if (question.prdSpecGate) {
+    const gatePassed = state.validationStatus.hardGates[question.prdSpecGate];
     if (!gatePassed) {
       score += 3;
-      reasons.push('SR-CORNELL gate boost');
+      reasons.push('PRD-SPEC gate boost');
     }
   }
 
@@ -125,7 +125,7 @@ const testQuestions: Question[] = [
     id: 'Q_ACTORS_PRIMARY',
     phase: 'actors',
     basePriority: 10,
-    srCornellGate: 'PRIMARY_ACTORS_DEFINED',
+    prdSpecGate: 'PRIMARY_ACTORS_DEFINED',
     extractsTo: ['actors'],
     requires: [],
     requiresData: [],
@@ -134,7 +134,7 @@ const testQuestions: Question[] = [
     id: 'Q_ACTORS_SECONDARY',
     phase: 'actors',
     basePriority: 7,
-    srCornellGate: 'PRIMARY_ACTORS_DEFINED',
+    prdSpecGate: 'PRIMARY_ACTORS_DEFINED',
     extractsTo: ['actors'],
     requires: ['Q_ACTORS_PRIMARY'],
     requiresData: ['actors'],
@@ -143,7 +143,7 @@ const testQuestions: Question[] = [
     id: 'Q_EXTERNAL_SYSTEMS',
     phase: 'external_systems',
     basePriority: 9,
-    srCornellGate: 'EXTERNAL_ENTITIES_DEFINED',
+    prdSpecGate: 'EXTERNAL_ENTITIES_DEFINED',
     extractsTo: ['systemBoundaries.external'],
     requires: [],
     requiresData: [],
@@ -152,7 +152,7 @@ const testQuestions: Question[] = [
     id: 'Q_USE_CASES_CORE',
     phase: 'use_cases',
     basePriority: 10,
-    srCornellGate: 'USE_CASE_LIST_5_TO_15',
+    prdSpecGate: 'USE_CASE_LIST_5_TO_15',
     extractsTo: ['useCases'],
     requires: ['Q_ACTORS_PRIMARY'],
     requiresData: ['actors'],
@@ -161,7 +161,7 @@ const testQuestions: Question[] = [
     id: 'Q_SCOPE_IN',
     phase: 'scope',
     basePriority: 8,
-    srCornellGate: 'SYSTEM_BOUNDARY_DEFINED',
+    prdSpecGate: 'SYSTEM_BOUNDARY_DEFINED',
     extractsTo: ['systemBoundaries.inScope'],
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
@@ -170,7 +170,7 @@ const testQuestions: Question[] = [
     id: 'Q_DATA_ENTITIES',
     phase: 'data_entities',
     basePriority: 8,
-    srCornellGate: 'CORE_DATA_OBJECTS_DEFINED',
+    prdSpecGate: 'CORE_DATA_OBJECTS_DEFINED',
     extractsTo: ['dataEntities'],
     requires: ['Q_USE_CASES_CORE'],
     requiresData: ['useCases'],
@@ -199,11 +199,11 @@ function createTestState(overrides?: Partial<ScoringState>): ScoringState {
 }
 
 // ============================================================
-// SR-CORNELL Gate Boost Tests
+// PRD-SPEC Gate Boost Tests
 // ============================================================
 
-describe('SR-CORNELL gate boost scoring', () => {
-  it('adds +3 when SR-CORNELL gate has not passed', () => {
+describe('PRD-SPEC gate boost scoring', () => {
+  it('adds +3 when PRD-SPEC gate has not passed', () => {
     const state = createTestState({
       currentPhase: 'context_diagram',
       validationStatus: {
@@ -216,12 +216,12 @@ describe('SR-CORNELL gate boost scoring', () => {
     const actorQuestion = testQuestions.find(q => q.id === 'Q_ACTORS_PRIMARY')!;
     const score = calculateScore(actorQuestion, state);
 
-    // Base: 10 + SR-CORNELL boost: 3 + Phase alignment: 0 (actors !== context_diagram)
+    // Base: 10 + PRD-SPEC boost: 3 + Phase alignment: 0 (actors !== context_diagram)
     // But for context_diagram phase, actors phase questions are relevant
     expect(score).toBeGreaterThanOrEqual(13);
   });
 
-  it('does not add boost when SR-CORNELL gate has passed', () => {
+  it('does not add boost when PRD-SPEC gate has passed', () => {
     const state = createTestState({
       currentPhase: 'context_diagram',
       validationStatus: {
@@ -234,7 +234,7 @@ describe('SR-CORNELL gate boost scoring', () => {
     const actorQuestion = testQuestions.find(q => q.id === 'Q_ACTORS_PRIMARY')!;
     const score = calculateScore(actorQuestion, state);
 
-    // Base: 10 + SR-CORNELL boost: 0 (gate passed) = 10
+    // Base: 10 + PRD-SPEC boost: 0 (gate passed) = 10
     expect(score).toBe(10);
   });
 
@@ -258,7 +258,7 @@ describe('SR-CORNELL gate boost scoring', () => {
       state
     );
 
-    // Both should have the +3 SR-CORNELL boost
+    // Both should have the +3 PRD-SPEC boost
     expect(actorScore).toBeGreaterThanOrEqual(13);
     expect(externalScore).toBeGreaterThanOrEqual(11);
   });
@@ -454,20 +454,20 @@ describe('out of order penalty scoring', () => {
 
   it('does not penalize adjacent phase questions', () => {
     const state = createTestState({
-      currentPhase: 'actors',
+      currentPhase: 'context_diagram',
       validationStatus: {
         hardGates: {
-          EXTERNAL_ENTITIES_DEFINED: true,
+          PRIMARY_ACTORS_DEFINED: true,
         },
       },
     });
 
-    // external_systems is adjacent to actors phase
-    const externalQuestion = testQuestions.find(q => q.id === 'Q_EXTERNAL_SYSTEMS')!;
-    const score = calculateScore(externalQuestion, state);
+    // actors phase (index 1) is adjacent to context_diagram (index 0)
+    const actorsQuestion = testQuestions.find(q => q.id === 'Q_ACTORS_PRIMARY')!;
+    const score = calculateScore(actorsQuestion, state);
 
-    // No out-of-order penalty
-    expect(score).toBe(externalQuestion.basePriority);
+    // No out-of-order penalty for adjacent phase
+    expect(score).toBe(actorsQuestion.basePriority);
   });
 });
 
@@ -505,7 +505,7 @@ describe('question ranking', () => {
 
     const scored = scoreQuestions(testQuestions, state);
 
-    // Primary actors should be first (high base priority + SR-CORNELL boost)
+    // Primary actors should be first (high base priority + PRD-SPEC boost)
     expect(scored[0].question.id).toBe('Q_ACTORS_PRIMARY');
   });
 
@@ -553,7 +553,7 @@ describe('combined scoring scenarios', () => {
       id: 'Q_ACTORS_PRIMARY',
       phase: 'context_diagram', // +2 phase boost
       basePriority: 10,
-      srCornellGate: 'PRIMARY_ACTORS_DEFINED',
+      prdSpecGate: 'PRIMARY_ACTORS_DEFINED',
       extractsTo: ['actors'],
       requires: [],
       requiresData: [],
@@ -561,7 +561,7 @@ describe('combined scoring scenarios', () => {
 
     const score = calculateScore(question, state);
 
-    // Base: 10 + SR-CORNELL: 3 + Phase: 2 - Clarification: 2 = 13
+    // Base: 10 + PRD-SPEC: 3 + Phase: 2 - Clarification: 2 = 13
     expect(score).toBe(13);
   });
 

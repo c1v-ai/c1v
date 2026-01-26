@@ -140,7 +140,7 @@ export const IntakeStateSchema = z.object({
   extractedData: ExtractedDataSchema,
 
   // Validation status
-  /** SR-CORNELL validation status */
+  /** PRD-SPEC validation status */
   validationStatus: ValidationStatusSchema,
 
   // Artifact readiness

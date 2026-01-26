@@ -157,7 +157,7 @@ export const INTAKE_SYSTEM_PROMPT = `You are a product requirements analyst help
 Your role:
 1. Ask clarifying questions to understand the project
 2. Extract actors, use cases, and system boundaries
-3. Validate completeness against SR-CORNELL criteria
+3. Validate completeness against PRD-SPEC criteria
 
 Guidelines:
 - Ask ONE question at a time

@@ -32,7 +32,7 @@
 | `llm` | `llm-workflow-engineer` | Prompts, token optimization, model selection |
 | `vector` | `vector-store-engineer` | pgvector, embeddings, semantic search |
 | `diagrams` | `data-viz-engineer` | Mermaid, D3, visualization |
-| `validation` | `sr-cornell-validator` | SR-CORNELL gates, validation scoring |
+| `validation` | `prd-spec-validator` | PRD-SPEC gates, validation scoring |
 | `cache` | `cache-engineer` | Redis, Upstash, LLM caching |
 | `docs` | `documentation-engineer` | User guides, API docs, READMEs |
 | `monitoring` | `observability-engineer` | Logging, Sentry, metrics |
@@ -62,7 +62,7 @@ When `subsystem` doesn't match, check `tags` array (first match wins):
 | `prompt`, `llm`, `token` | `llm-workflow-engineer` |
 | `vector`, `embedding`, `rag`, `pgvector` | `vector-store-engineer` |
 | `mermaid`, `diagram`, `chart`, `d3` | `data-viz-engineer` |
-| `sr-cornell`, `validation`, `gates` | `sr-cornell-validator` |
+| `prd-spec`, `validation`, `gates` | `prd-spec-validator` |
 | `redis`, `cache`, `upstash` | `cache-engineer` |
 | `docs`, `documentation`, `readme` | `documentation-engineer` |
 | `sentry`, `logging`, `metrics` | `observability-engineer` |
@@ -125,7 +125,7 @@ If no routing match found:
 | `llm-workflow-engineer` | Prompts, token optimization | OpenAI, prompt engineering |
 | `vector-store-engineer` | Embeddings, semantic search | pgvector, Supabase |
 | `data-viz-engineer` | Diagrams, charts | Mermaid, D3.js |
-| `sr-cornell-validator` | PRD validation | SR-CORNELL gates |
+| `prd-spec-validator` | PRD validation | PRD-SPEC gates |
 | `cache-engineer` | Caching strategies | Redis, Upstash |
 | `documentation-engineer` | Docs, guides | MDX, OpenAPI |
 | `observability-engineer` | Monitoring, logging | Sentry, Pino |

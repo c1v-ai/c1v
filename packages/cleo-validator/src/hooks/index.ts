@@ -11,7 +11,6 @@
  */
 
 import { promises as fs } from 'node:fs';
-import { join } from 'node:path';
 import { ExitCode, type ExitCodeValue, getExitCodeName } from '../exit-codes';
 import { auditValidation, auditStateChange } from '../audit';
 import {
@@ -26,10 +25,9 @@ import {
 } from '../layers/runner';
 import {
   validateTaskTransition,
-  isValidTransition,
   TASK_TRANSITIONS,
 } from '../layers/state-machine';
-import type { ValidationContext, FileType, LayerName } from '../layers/types';
+import type { ValidationContext, LayerName } from '../layers/types';
 
 /**
  * Options for configuring validation hooks.

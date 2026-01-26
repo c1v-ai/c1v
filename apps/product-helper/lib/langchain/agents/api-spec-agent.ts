@@ -1,0 +1,459 @@
+/**
+ * API Specification Generator Agent (Phase 10.1)
+ *
+ * Purpose: Generate REST API specifications from use cases and data entities
+ * Pattern: Structured output with Zod schema validation
+ * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
+ *
+ * This agent uses GPT-4 with temperature=0 for deterministic generation.
+ * It analyzes use cases and data entities to produce:
+ * - RESTful endpoints covering all use cases
+ * - Request/response schemas based on data entities
+ * - Authentication configuration
+ * - Error handling patterns
+ */
+
+import { ChatOpenAI } from '@langchain/openai';
+import { z } from 'zod';
+import type {
+  APISpecification,
+  APISpecGenerationContext,
+} from '../../types/api-specification';
+
+// ============================================================
+// Zod Schemas for LLM Structured Output
+// ============================================================
+
+const parameterSchema = z.object({
+  name: z.string().describe('Parameter name (e.g., "id", "page")'),
+  in: z.enum(['path', 'query', 'header']).describe('Parameter location'),
+  required: z.boolean().describe('Whether the parameter is required'),
+  description: z.string().describe('Parameter description'),
+  type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object']).describe('Data type'),
+  format: z.string().optional().describe('Format hint (e.g., "uuid", "email", "date-time")'),
+  example: z.unknown().optional().describe('Example value'),
+});
+
+const jsonSchemaPropertySchema = z.object({
+  type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object', 'null']).describe('Property type'),
+  description: z.string().optional().describe('Property description'),
+  format: z.string().optional().describe('Format hint'),
+  example: z.unknown().optional().describe('Example value'),
+  enum: z.array(z.string()).optional().describe('Enum values'),
+  nullable: z.boolean().optional().describe('Whether the property can be null'),
+});
+
+const jsonSchemaSchema: z.ZodType<Record<string, unknown>> = z.object({
+  type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object', 'null']).describe('Schema type'),
+  properties: z.record(jsonSchemaPropertySchema).optional().describe('Object properties'),
+  required: z.array(z.string()).optional().describe('Required properties'),
+  items: z.lazy(() => jsonSchemaSchema).optional().describe('Array item schema'),
+  description: z.string().optional().describe('Schema description'),
+  example: z.unknown().optional().describe('Example value'),
+});
+
+const requestBodySchema = z.object({
+  contentType: z.string().default('application/json').describe('Content type'),
+  required: z.boolean().describe('Whether the body is required'),
+  description: z.string().optional().describe('Body description'),
+  schema: jsonSchemaSchema.describe('Request body JSON schema'),
+});
+
+const errorCodeSchema = z.object({
+  code: z.number().describe('HTTP status code'),
+  name: z.string().describe('Error name (e.g., "NotFound")'),
+  description: z.string().describe('When this error occurs'),
+});
+
+const endpointSchema = z.object({
+  path: z.string().describe('URL path (e.g., "/users/{id}")'),
+  method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']).describe('HTTP method'),
+  description: z.string().describe('Endpoint description'),
+  authentication: z.boolean().describe('Whether auth is required'),
+  operationId: z.string().describe('Operation ID for OpenAPI (e.g., "getUserById")'),
+  tags: z.array(z.string()).describe('Tags for grouping'),
+  pathParameters: z.array(parameterSchema).optional().describe('Path parameters'),
+  queryParameters: z.array(parameterSchema).optional().describe('Query parameters'),
+  requestBody: requestBodySchema.optional().describe('Request body'),
+  responseBody: jsonSchemaSchema.describe('Response body schema'),
+  errorCodes: z.array(errorCodeSchema).describe('Possible error codes'),
+  rateLimit: z.string().optional().describe('Rate limit (e.g., "100/minute")'),
+  sourceUseCases: z.array(z.string()).optional().describe('Source use case IDs'),
+});
+
+const authConfigSchema = z.object({
+  type: z.enum(['none', 'api_key', 'bearer', 'oauth2', 'basic', 'jwt']).describe('Auth type'),
+  description: z.string().describe('Auth description'),
+  headerName: z.string().optional().describe('Header name'),
+  tokenPrefix: z.string().optional().describe('Token prefix'),
+  notes: z.string().optional().describe('Additional notes'),
+});
+
+const responseFormatSchema = z.object({
+  wrapped: z.boolean().describe('Whether responses use an envelope'),
+  contentType: z.string().default('application/json').describe('Content type'),
+});
+
+const errorConfigSchema = z.object({
+  format: jsonSchemaSchema.describe('Error response format'),
+  commonErrors: z.array(errorCodeSchema).describe('Common error codes'),
+});
+
+const apiSpecificationSchema = z.object({
+  baseUrl: z.string().describe('Base URL (e.g., "/api/v1")'),
+  version: z.string().describe('API version (e.g., "1.0.0")'),
+  authentication: authConfigSchema.describe('Authentication config'),
+  endpoints: z.array(endpointSchema).describe('All endpoints'),
+  responseFormat: responseFormatSchema.describe('Response format config'),
+  errorHandling: errorConfigSchema.describe('Error handling config'),
+});
+
+// ============================================================
+// API Specification Prompt
+// ============================================================
+
+const API_SPEC_PROMPT = `You are an expert API architect generating REST API specifications from PRD data.
+
+## Project Context
+Project Name: {projectName}
+Vision: {projectVision}
+
+## Use Cases
+{useCasesText}
+
+## Data Entities
+{dataEntitiesText}
+
+## Tech Stack Context
+{techStackText}
+
+## Instructions
+
+Generate a comprehensive REST API specification following these principles:
+
+### REST Best Practices
+1. **Resource-based URLs**: Use nouns (e.g., /users, /orders), not verbs
+2. **HTTP Methods**:
+   - GET for retrieval (idempotent)
+   - POST for creation
+   - PUT for full replacement
+   - PATCH for partial updates
+   - DELETE for removal
+3. **Plural nouns**: Use /users not /user
+4. **Nested resources**: /users/{id}/orders for relationships
+5. **Query params**: For filtering, sorting, pagination
+
+### Coverage Requirements
+- Generate endpoints for EVERY use case
+- Include CRUD operations for each data entity
+- Add authentication endpoints if login/signup use cases exist
+- Include list endpoints with pagination for collections
+
+### Endpoint Design
+For each endpoint:
+- Use descriptive operationId (camelCase, e.g., "createUser", "getUserOrders")
+- Tag by resource type (e.g., "Users", "Orders")
+- Include all relevant path and query parameters
+- Define complete request/response schemas based on data entities
+- List appropriate error codes (400, 401, 403, 404, 409, 500)
+- Link to source use cases
+
+### Schema Design
+- Map data entity attributes to JSON schema properties
+- Use appropriate types: string (with format), number, integer, boolean, array, object
+- Mark required fields in request bodies
+- Include example values where helpful
+
+### Authentication
+- Infer auth type from use cases (JWT/Bearer is common for modern APIs)
+- Mark protected endpoints as requiring authentication
+- Public endpoints (signup, public listings) don't require auth
+
+### Error Handling
+- Use standard HTTP status codes
+- Provide consistent error response format
+- Include common errors: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Server Error
+
+Generate the complete API specification now.`;
+
+// ============================================================
+// Main Generation Function
+// ============================================================
+
+/**
+ * Generate API specification from use cases and data entities
+ *
+ * @param context - Project context with use cases and data entities
+ * @returns Complete API specification
+ *
+ * @example
+ * ```typescript
+ * const spec = await generateAPISpecification({
+ *   projectName: "E-Commerce Platform",
+ *   projectVision: "Modern online shopping experience",
+ *   useCases: [{ id: "UC1", name: "Place Order", ... }],
+ *   dataEntities: [{ name: "User", attributes: ["id", "email"], ... }],
+ * });
+ * ```
+ */
+export async function generateAPISpecification(
+  context: APISpecGenerationContext
+): Promise<APISpecification> {
+  try {
+    const model = new ChatOpenAI({
+      model: 'gpt-4o',
+      temperature: 0,
+    });
+
+    const structuredModel = model.withStructuredOutput(apiSpecificationSchema, {
+      name: 'generate_api_specification',
+    });
+
+    // Format use cases for prompt
+    const useCasesText = context.useCases
+      .map((uc, idx) => {
+        const preconditions = uc.preconditions?.length
+          ? `\n   Preconditions: ${uc.preconditions.join(', ')}`
+          : '';
+        const postconditions = uc.postconditions?.length
+          ? `\n   Postconditions: ${uc.postconditions.join(', ')}`
+          : '';
+        return `${idx + 1}. ${uc.id}: ${uc.name}\n   Actor: ${uc.actor}\n   Description: ${uc.description}${preconditions}${postconditions}`;
+      })
+      .join('\n\n');
+
+    // Format data entities for prompt
+    const dataEntitiesText = context.dataEntities
+      .map((entity, idx) => {
+        const attrs = entity.attributes.length > 0
+          ? `Attributes: ${entity.attributes.join(', ')}`
+          : 'Attributes: (none specified)';
+        const rels = entity.relationships.length > 0
+          ? `\n   Relationships: ${entity.relationships.join('; ')}`
+          : '';
+        return `${idx + 1}. ${entity.name}\n   ${attrs}${rels}`;
+      })
+      .join('\n\n');
+
+    // Format tech stack context
+    const techStackText = context.techStack
+      ? `Backend: ${context.techStack.backend || 'Not specified'}\nDatabase: ${context.techStack.database || 'Not specified'}\nAuth: ${context.techStack.auth || 'JWT/Bearer (inferred)'}`
+      : 'Not specified (use modern REST best practices with JWT authentication)';
+
+    const prompt = API_SPEC_PROMPT
+      .replace('{projectName}', context.projectName)
+      .replace('{projectVision}', context.projectVision)
+      .replace('{useCasesText}', useCasesText || '(No use cases provided)')
+      .replace('{dataEntitiesText}', dataEntitiesText || '(No data entities provided)')
+      .replace('{techStackText}', techStackText);
+
+    const result = await structuredModel.invoke(prompt);
+
+    // Cast through unknown to handle LLM output type flexibility
+    const baseSpec = result as unknown as APISpecification;
+
+    // Add metadata
+    const spec: APISpecification = {
+      ...baseSpec,
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        generatorVersion: '1.0.0',
+        endpointCount: baseSpec.endpoints.length,
+        useCasesCovered: context.useCases.map(uc => uc.id),
+        entitiesReferenced: context.dataEntities.map(e => e.name),
+      },
+    };
+
+    return spec;
+  } catch (error) {
+    console.error('API specification generation error:', error);
+
+    // Return minimal valid spec on failure
+    return getDefaultAPISpecification();
+  }
+}
+
+/**
+ * Get a default/empty API specification for error cases
+ */
+export function getDefaultAPISpecification(): APISpecification {
+  return {
+    baseUrl: '/api/v1',
+    version: '1.0.0',
+    authentication: {
+      type: 'bearer',
+      description: 'JWT Bearer token authentication',
+      headerName: 'Authorization',
+      tokenPrefix: 'Bearer',
+    },
+    endpoints: [],
+    responseFormat: {
+      wrapped: true,
+      contentType: 'application/json',
+    },
+    errorHandling: {
+      format: {
+        type: 'object',
+        properties: {
+          error: { type: 'string', description: 'Error code' },
+          message: { type: 'string', description: 'Human-readable message' },
+          details: { type: 'object', description: 'Additional error details', nullable: true },
+        },
+        required: ['error', 'message'],
+      },
+      commonErrors: [
+        { code: 400, name: 'BadRequest', description: 'Invalid request data' },
+        { code: 401, name: 'Unauthorized', description: 'Missing or invalid authentication' },
+        { code: 403, name: 'Forbidden', description: 'Insufficient permissions' },
+        { code: 404, name: 'NotFound', description: 'Resource not found' },
+        { code: 500, name: 'InternalError', description: 'Unexpected server error' },
+      ],
+    },
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      generatorVersion: '1.0.0',
+      endpointCount: 0,
+      useCasesCovered: [],
+      entitiesReferenced: [],
+    },
+  };
+}
+
+// ============================================================
+// Utility Functions
+// ============================================================
+
+/**
+ * Merge new API specification with existing data (incremental update)
+ *
+ * @param existing - Previously generated specification
+ * @param newSpec - Newly generated specification
+ * @returns Merged specification
+ */
+export function mergeAPISpecifications(
+  existing: APISpecification,
+  newSpec: APISpecification
+): APISpecification {
+  // Merge endpoints (newer endpoints override by operationId)
+  const endpointMap = new Map(existing.endpoints.map(e => [e.operationId, e]));
+  newSpec.endpoints.forEach(endpoint => {
+    endpointMap.set(endpoint.operationId, endpoint);
+  });
+
+  return {
+    ...newSpec,
+    endpoints: Array.from(endpointMap.values()),
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      generatorVersion: '1.0.0',
+      endpointCount: endpointMap.size,
+      useCasesCovered: [
+        ...new Set([
+          ...(existing.metadata?.useCasesCovered || []),
+          ...(newSpec.metadata?.useCasesCovered || []),
+        ]),
+      ],
+      entitiesReferenced: [
+        ...new Set([
+          ...(existing.metadata?.entitiesReferenced || []),
+          ...(newSpec.metadata?.entitiesReferenced || []),
+        ]),
+      ],
+    },
+  };
+}
+
+/**
+ * Get a summary of the API specification
+ */
+export function getAPISpecSummary(spec: APISpecification): string {
+  const endpointsByTag = new Map<string, number>();
+  spec.endpoints.forEach(ep => {
+    ep.tags.forEach(tag => {
+      endpointsByTag.set(tag, (endpointsByTag.get(tag) || 0) + 1);
+    });
+  });
+
+  const tagSummary = Array.from(endpointsByTag.entries())
+    .map(([tag, count]) => `  - ${tag}: ${count} endpoints`)
+    .join('\n');
+
+  const methodCounts = {
+    GET: spec.endpoints.filter(e => e.method === 'GET').length,
+    POST: spec.endpoints.filter(e => e.method === 'POST').length,
+    PUT: spec.endpoints.filter(e => e.method === 'PUT').length,
+    PATCH: spec.endpoints.filter(e => e.method === 'PATCH').length,
+    DELETE: spec.endpoints.filter(e => e.method === 'DELETE').length,
+  };
+
+  return [
+    `API Specification Summary`,
+    `Base URL: ${spec.baseUrl}`,
+    `Version: ${spec.version}`,
+    `Authentication: ${spec.authentication.type}`,
+    ``,
+    `Endpoints (${spec.endpoints.length} total):`,
+    `  GET: ${methodCounts.GET}, POST: ${methodCounts.POST}, PUT: ${methodCounts.PUT}, PATCH: ${methodCounts.PATCH}, DELETE: ${methodCounts.DELETE}`,
+    ``,
+    `By Tag:`,
+    tagSummary || '  (no tags)',
+    ``,
+    `Generated: ${spec.metadata?.generatedAt || 'unknown'}`,
+  ].join('\n');
+}
+
+/**
+ * Validate API specification structure
+ */
+export function validateAPISpecification(spec: APISpecification): {
+  valid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (!spec.baseUrl) {
+    errors.push('Missing baseUrl');
+  }
+
+  if (!spec.version) {
+    errors.push('Missing version');
+  }
+
+  if (!spec.authentication?.type) {
+    errors.push('Missing authentication configuration');
+  }
+
+  if (!spec.endpoints || spec.endpoints.length === 0) {
+    errors.push('No endpoints defined');
+  }
+
+  // Validate each endpoint
+  spec.endpoints.forEach((endpoint, idx) => {
+    if (!endpoint.path) {
+      errors.push(`Endpoint ${idx}: missing path`);
+    }
+    if (!endpoint.method) {
+      errors.push(`Endpoint ${idx}: missing method`);
+    }
+    if (!endpoint.operationId) {
+      errors.push(`Endpoint ${idx}: missing operationId`);
+    }
+    if (!endpoint.responseBody) {
+      errors.push(`Endpoint ${idx} (${endpoint.operationId}): missing responseBody`);
+    }
+
+    // Check for duplicate operationIds
+    const duplicates = spec.endpoints.filter(e => e.operationId === endpoint.operationId);
+    if (duplicates.length > 1) {
+      errors.push(`Duplicate operationId: ${endpoint.operationId}`);
+    }
+  });
+
+  return {
+    valid: errors.length === 0,
+    errors: [...new Set(errors)], // Remove duplicate errors
+  };
+}
+
+// Export schema for testing
+export { apiSpecificationSchema, endpointSchema };
