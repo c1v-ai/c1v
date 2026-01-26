@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from './markdown-renderer';
 import { DiagramPopup } from './diagram-popup';
 import { User, Bot } from 'lucide-react';
+import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
 
 /**
  * Chat Message Bubble Component
@@ -17,6 +18,7 @@ export interface ChatMessageBubbleProps {
   aiEmoji?: string;
   sources?: any[];
   isLoading?: boolean;
+  currentPhase?: ArtifactPhase;
 }
 
 export function ChatMessageBubble({
@@ -24,6 +26,7 @@ export function ChatMessageBubble({
   aiEmoji,
   sources,
   isLoading = false,
+  currentPhase,
 }: ChatMessageBubbleProps) {
   const [activeDiagram, setActiveDiagram] = useState<string | null>(null);
   const isUser = message.role === 'user';
@@ -78,6 +81,7 @@ export function ChatMessageBubble({
             <MarkdownRenderer
               content={message.content}
               onDiagramClick={(syntax) => setActiveDiagram(syntax)}
+              currentPhase={currentPhase}
             />
           )}
         </div>

@@ -63,6 +63,7 @@ export async function extractProjectData(
       projectName,
       projectVision,
       conversationHistory,
+      educationBlock: '',
     });
 
     // Invoke structured LLM for extraction
