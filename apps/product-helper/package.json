@@ -71,6 +71,7 @@
     "zod-to-json-schema": "^3.23.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@jest/globals": "^30.2.0",
     "@playwright/test": "^1.57.0",
     "@types/jest": "^30.0.0",
