@@ -175,8 +175,8 @@ If the message contains stop triggers along with other info, prioritize STOP_TRI
       if (actors?.length) {
         const existingActorNames = new Set(updatedData.actors.map(a => a.name.toLowerCase()));
         const newActors = actors
-          .filter(name => !existingActorNames.has(name.toLowerCase()))
-          .map(name => ({
+          .filter((name: string) => !existingActorNames.has(name.toLowerCase()))
+          .map((name: string) => ({
             name,
             role: 'To be determined',
             description: `Actor mentioned: ${name}`,
@@ -196,7 +196,7 @@ If the message contains stop triggers along with other info, prioritize STOP_TRI
           updatedData.systemBoundaries.external.map(s => s.toLowerCase())
         );
         const newExternal = externalSystems.filter(
-          s => !existingExternal.has(s.toLowerCase())
+          (s: string) => !existingExternal.has(s.toLowerCase())
         );
 
         if (newExternal.length > 0) {
@@ -216,7 +216,7 @@ If the message contains stop triggers along with other info, prioritize STOP_TRI
           updatedData.systemBoundaries.internal.map(s => s.toLowerCase())
         );
         const newInternal = scopeItems.filter(
-          s => !existingInternal.has(s.toLowerCase())
+          (s: string) => !existingInternal.has(s.toLowerCase())
         );
 
         if (newInternal.length > 0) {

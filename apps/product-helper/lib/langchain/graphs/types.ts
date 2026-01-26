@@ -102,6 +102,66 @@ export interface ArtifactReadiness {
   sysml_activity_diagram: boolean;
 }
 
+// ============================================================
+// Step Completion State Machine Types
+// ============================================================
+
+/**
+ * Per-step tracking of what's been covered in the intake conversation.
+ * This is the core state machine that prevents circular questioning.
+ */
+export interface StepStatus {
+  /** How many conversational turns have been spent on this step */
+  roundsAsked: number;
+  /** Specific topic strings that have been covered (granular dedup) */
+  coveredTopics: string[];
+  /** Whether the user has confirmed the guesses for this step */
+  confirmed: boolean;
+  /** Whether the user has approved artifact generation for this step */
+  generationApproved: boolean;
+}
+
+/**
+ * A single entry in the guess history log.
+ * Accumulated across turns so the LLM can see its own previous output.
+ */
+export interface GuessHistoryEntry {
+  /** Which KB step this entry belongs to */
+  step: KnowledgeBankStep;
+  /** Turn number when this was generated */
+  turn: number;
+  /** Summary of guesses made (item names + confident/uncertain) */
+  guessSummaries: string[];
+  /** Gap targets that were asked about */
+  gapTargets: string[];
+  /** Confidence at this point */
+  confidence: number;
+}
+
+/**
+ * Create default step completion status for all KB steps
+ */
+export function createDefaultStepCompletionStatus(): Record<KnowledgeBankStep, StepStatus> {
+  const steps: KnowledgeBankStep[] = [
+    'context-diagram',
+    'use-case-diagram',
+    'scope-tree',
+    'ucbd',
+    'functional-requirements',
+    'sysml-activity-diagram',
+  ];
+  const status: Partial<Record<KnowledgeBankStep, StepStatus>> = {};
+  for (const step of steps) {
+    status[step] = {
+      roundsAsked: 0,
+      coveredTopics: [],
+      confirmed: false,
+      generationApproved: false,
+    };
+  }
+  return status as Record<KnowledgeBankStep, StepStatus>;
+}
+
 /**
  * Minimum thresholds for artifact generation (from PRD-SPEC spec)
  */
@@ -311,6 +371,25 @@ export interface IntakeState {
    */
   approvalPending: boolean;
 
+  /**
+   * History of gap targets already asked about.
+   * Accumulated across turns to prevent re-asking the same topics.
+   * Each entry is a short gap descriptor like "actors", "external_systems", etc.
+   */
+  askedQuestions: string[];
+
+  /**
+   * Per-step completion tracking. Tracks rounds asked, covered topics,
+   * confirmation status, and generation approval for each KB step.
+   */
+  stepCompletionStatus: Record<KnowledgeBankStep, StepStatus>;
+
+  /**
+   * Accumulated log of guesses and gaps across all turns.
+   * Gives the LLM memory of its own previous output.
+   */
+  guessHistory: GuessHistoryEntry[];
+
   // ============================================================
   // Control Flags
   // ============================================================
@@ -412,6 +491,9 @@ export function createInitialState(
     kbStepConfidence: 0,
     kbStepData: {},
     approvalPending: false,
+    askedQuestions: [],
+    stepCompletionStatus: createDefaultStepCompletionStatus(),
+    guessHistory: [],
 
     // Control flags
     isComplete: false,

@@ -11,7 +11,7 @@
 
 import { extractionLLM } from '../../config';
 import { AIMessage } from '@langchain/core/messages';
-import { IntakeState, ArtifactPhase, getPhaseDisplayName, getNextPhase, phaseToKBStep } from '../types';
+import { IntakeState, ArtifactPhase, getPhaseDisplayName, getNextPhase, phaseToKBStep, StepStatus } from '../types';
 import { ExtractionResult } from '../../schemas';
 import { getNextKBStep } from '../../agents/intake/kb-question-generator';
 
@@ -193,6 +193,17 @@ Generate the ${displayName} now:`;
     const nextPhase = getNextPhase(currentPhase);
     const nextKBStep = getNextKBStep(state.currentKBStep);
 
+    // Mark current step as confirmed and generation-approved
+    const currentStepStatus = state.stepCompletionStatus?.[state.currentKBStep];
+    const stepCompletionUpdate = {
+      [state.currentKBStep]: {
+        confirmed: true,
+        generationApproved: true,
+        roundsAsked: currentStepStatus?.roundsAsked ?? 0,
+        coveredTopics: currentStepStatus?.coveredTopics ?? [],
+      },
+    } as IntakeState['stepCompletionStatus'];
+
     return {
       pendingArtifact: {
         type: currentPhase,
@@ -200,12 +211,18 @@ Generate the ${displayName} now:`;
       },
       messages: [aiMessage],
       generatedArtifacts: [currentPhase],
+      stepCompletionStatus: stepCompletionUpdate,
       // Advance phase and KB step
       ...(nextPhase ? { currentPhase: nextPhase } : {}),
       ...(nextKBStep ? {
         currentKBStep: nextKBStep,
         kbStepConfidence: 0,
-        kbStepData: {},
+        // Preserve previous step's history instead of wiping it.
+        // This lets the KB generator see what was already covered.
+        kbStepData: {
+          previousStep: state.currentKBStep,
+          previousConfidence: state.kbStepConfidence,
+        },
         approvalPending: false,
       } : {}),
     };

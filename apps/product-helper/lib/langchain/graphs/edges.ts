@@ -100,6 +100,11 @@ export function routeAfterAnalysis(state: IntakeState): AnalyzeRouteTarget {
     return 'check_prd_spec';
   }
 
+  // User confirmed while approval was pending — route to validation for generation
+  if (lastIntent === 'CONFIRM' && state.approvalPending) {
+    return 'check_prd_spec';
+  }
+
   // User provided info or confirmed something
   if (lastIntent === 'PROVIDE_INFO' || lastIntent === 'CONFIRM') {
     // If artifact for current phase is ready, go to validation
@@ -213,32 +218,38 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
     return 'generate_artifact';
   }
 
-  // User explicitly requested artifact
+  // User explicitly requested artifact or confirmed approval
   if (lastIntent === 'REQUEST_ARTIFACT') {
-    // Only generate if we have minimum data for it
-    if (artifactReadiness[currentPhase]) {
+    // Generate if artifact is ready OR if KB confidence is high enough
+    if (artifactReadiness[currentPhase] || state.kbStepConfidence >= 80) {
       return 'generate_artifact';
     }
     // Otherwise need more data
     return 'compute_next_question';
   }
 
+  // Approval was pending and KB confidence is sufficient — generate even if
+  // artifactReadiness (based on extracted data counts) hasn't caught up yet
+  if (state.approvalPending && state.kbStepConfidence >= 80) {
+    return 'generate_artifact';
+  }
+
+  // Guard: if current phase was already generated, skip to next question.
+  // This prevents re-entering generate_artifact for a completed phase.
+  if (generatedArtifacts.includes(currentPhase)) {
+    return 'compute_next_question';
+  }
+
   // Check if current artifact meets threshold
   if (artifactReadiness[currentPhase]) {
-    // Check if we haven't already generated this artifact
-    if (!generatedArtifacts.includes(currentPhase)) {
-      return 'generate_artifact';
-    }
+    return 'generate_artifact';
   }
 
   // Check validation score against phase-specific threshold
   if (validationResult) {
     const phaseThreshold = getPhaseThreshold(currentPhase);
     if (validationResult.score >= phaseThreshold) {
-      // Score is good enough, generate if not already done
-      if (!generatedArtifacts.includes(currentPhase)) {
-        return 'generate_artifact';
-      }
+      return 'generate_artifact';
     }
   }
 

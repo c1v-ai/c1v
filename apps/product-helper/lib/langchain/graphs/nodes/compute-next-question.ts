@@ -12,10 +12,11 @@
 
 import { createClaudeAgent } from '../../config';
 import { z } from 'zod';
-import { IntakeState, ArtifactPhase } from '../types';
+import { IntakeState, ArtifactPhase, GuessHistoryEntry } from '../types';
 import {
   generateKBDrivenResponse,
   calculateStepConfidence,
+  getNextKBStep,
 } from '../../agents/intake/kb-question-generator';
 
 // ============================================================
@@ -148,11 +149,58 @@ export async function computeNextQuestion(
       confidence,
     };
 
+    // Track gap targets so we don't re-ask the same topics
+    const newAskedTopics = kbResult.gaps.map(g => g.target);
+
+    // Build guess history entry for this turn
+    const historyEntry: GuessHistoryEntry = {
+      step: state.currentKBStep,
+      turn: state.turnCount,
+      guessSummaries: kbResult.guesses.map(
+        g => `${g.confident ? '✓' : '?'} ${g.item} (${g.category})`
+      ),
+      gapTargets: newAskedTopics,
+      confidence,
+    };
+
+    // Update step completion status
+    const currentStepStatus = state.stepCompletionStatus?.[state.currentKBStep];
+    const updatedStepStatus = {
+      [state.currentKBStep]: {
+        roundsAsked: (currentStepStatus?.roundsAsked ?? 0) + 1,
+        coveredTopics: newAskedTopics,
+        confirmed: currentStepStatus?.confirmed ?? false,
+        generationApproved: currentStepStatus?.generationApproved ?? false,
+      },
+    };
+
+    // Auto-advance: if this step has been asked 3+ rounds with no new gaps,
+    // OR deterministic confidence >= 90, advance to next KB step
+    const roundsOnStep = (currentStepStatus?.roundsAsked ?? 0) + 1;
+    const noNewGaps = kbResult.gaps.length === 0;
+    const shouldAutoAdvance =
+      (roundsOnStep >= 3 && noNewGaps) || deterministicConfidence >= 90;
+
+    let stepAdvance: Partial<IntakeState> = {};
+    if (shouldAutoAdvance && !kbResult.shouldProposeGeneration) {
+      // Force proposal when auto-advancing
+      const nextStep = getNextKBStep(state.currentKBStep);
+      if (nextStep) {
+        // If we have enough data, propose generation before advancing
+        stepAdvance = {
+          approvalPending: true,
+        };
+      }
+    }
+
     return {
       pendingQuestion: kbResult.formattedResponse,
       kbStepConfidence: confidence,
       kbStepData: updatedKBStepData,
-      approvalPending: kbResult.shouldProposeGeneration,
+      approvalPending: kbResult.shouldProposeGeneration || !!stepAdvance.approvalPending,
+      askedQuestions: newAskedTopics,
+      guessHistory: [historyEntry],
+      stepCompletionStatus: updatedStepStatus as IntakeState['stepCompletionStatus'],
     };
   } catch (error) {
     console.error('KB question generation error, falling back to legacy:', error);
