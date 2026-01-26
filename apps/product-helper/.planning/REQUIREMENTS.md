@@ -98,46 +98,46 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | TBD | Pending |
-| PIPE-02 | TBD | Pending |
-| PIPE-03 | TBD | Pending |
-| PIPE-04 | TBD | Pending |
-| PIPE-05 | TBD | Pending |
-| PIPE-06 | TBD | Pending |
-| PIPE-07 | TBD | Pending |
-| PIPE-08 | TBD | In Progress |
-| PIPE-09 | TBD | Pending |
-| PIPE-10 | TBD | Pending |
-| EXPL-01 | TBD | Pending |
-| EXPL-02 | TBD | Pending |
-| EXPL-03 | TBD | Pending |
-| EXPL-04 | TBD | Pending |
-| EXPL-05 | TBD | Pending |
-| EXPL-06 | TBD | Pending |
-| EXPL-07 | TBD | Pending |
-| EXPL-08 | TBD | Pending |
-| EXPL-09 | TBD | Pending |
-| EXPL-10 | TBD | Pending |
-| EXPL-11 | TBD | Pending |
-| EXPL-12 | TBD | Pending |
-| EXPL-13 | TBD | Pending |
-| EXPL-14 | TBD | Pending |
-| EXPL-15 | TBD | Pending |
-| CHAT-01 | TBD | Pending |
-| CHAT-02 | TBD | Pending |
-| CHAT-03 | TBD | Pending |
-| CHAT-04 | TBD | Pending |
-| ONBD-01 | TBD | Pending |
-| ONBD-02 | TBD | Pending |
-| ONBD-03 | TBD | Pending |
-| ONBD-04 | TBD | Pending |
-| ONBD-05 | TBD | Pending |
+| PIPE-01 | Phase 3: PRD Extraction Agents | Pending |
+| PIPE-02 | Phase 3: PRD Extraction Agents | Pending |
+| PIPE-03 | Phase 3: PRD Extraction Agents | Pending |
+| PIPE-04 | Phase 3: PRD Extraction Agents | Pending |
+| PIPE-05 | Phase 4: Pipeline Orchestration & Quality | Pending |
+| PIPE-06 | Phase 4: Pipeline Orchestration & Quality | Pending |
+| PIPE-07 | Phase 4: Pipeline Orchestration & Quality | Pending |
+| PIPE-08 | Phase 2: Quick Start Pipeline | In Progress |
+| PIPE-09 | Phase 2: Quick Start Pipeline | Pending |
+| PIPE-10 | Phase 2: Quick Start Pipeline | Pending |
+| EXPL-01 | Phase 5: Explorer Shell & Layout | Pending |
+| EXPL-02 | Phase 5: Explorer Shell & Layout | Pending |
+| EXPL-03 | Phase 6: Content Section Views | Pending |
+| EXPL-04 | Phase 6: Content Section Views | Pending |
+| EXPL-05 | Phase 6: Content Section Views | Pending |
+| EXPL-06 | Phase 6: Content Section Views | Pending |
+| EXPL-07 | Phase 6: Content Section Views | Pending |
+| EXPL-08 | Phase 7: Rich Data Views | Pending |
+| EXPL-09 | Phase 7: Rich Data Views | Pending |
+| EXPL-10 | Phase 7: Rich Data Views | Pending |
+| EXPL-11 | Phase 7: Rich Data Views | Pending |
+| EXPL-12 | Phase 7: Rich Data Views | Pending |
+| EXPL-13 | Phase 5: Explorer Shell & Layout | Pending |
+| EXPL-14 | Phase 5: Explorer Shell & Layout | Pending |
+| EXPL-15 | Phase 9: Inline Section Editing | Pending |
+| CHAT-01 | Phase 4: Pipeline Orchestration & Quality | Pending |
+| CHAT-02 | Phase 8: Chat Enhancements | Pending |
+| CHAT-03 | Phase 8: Chat Enhancements | Pending |
+| CHAT-04 | Phase 2: Quick Start Pipeline | Pending |
+| ONBD-01 | Phase 1: Onboarding & First Impressions | Pending |
+| ONBD-02 | Phase 1: Onboarding & First Impressions | Pending |
+| ONBD-03 | Phase 1: Onboarding & First Impressions | Pending |
+| ONBD-04 | Phase 1: Onboarding & First Impressions | Pending |
+| ONBD-05 | Phase 1: Onboarding & First Impressions | Pending |
 
 **Coverage:**
 - v1 requirements: 34 total
-- Mapped to phases: 0
-- Unmapped: 34 (awaiting roadmap creation)
+- Mapped to phases: 34
+- Unmapped: 0
 
 ---
 *Requirements defined: 2025-01-25*
-*Last updated: 2025-01-25 after initial definition*
+*Last updated: 2026-01-26 after roadmap creation*
