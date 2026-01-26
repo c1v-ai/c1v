@@ -58,6 +58,10 @@ interface ProjectChatContextValue {
   chatPanelCollapsed: boolean;
   toggleChatPanel: () => void;
 
+  // Generation progress
+  generationStartedAt: number | null;
+  postGenerationPhase: 'idle' | 'saving' | 'complete';
+
   // Whether this is a new project (no initial messages)
   isNewProject: boolean;
 }
@@ -112,6 +116,11 @@ export function ProjectChatProvider({
   const [chatPanelCollapsed, setChatPanelCollapsed] = useState(false);
   const [selectedDiagram, setSelectedDiagram] = useState<ParsedArtifact | null>(null);
 
+  // Generation progress tracking
+  const [generationStartedAt, setGenerationStartedAt] = useState<number | null>(null);
+  const [postGenerationPhase, setPostGenerationPhase] = useState<'idle' | 'saving' | 'complete'>('idle');
+  const prevIsLoading = useRef(false);
+
   // SWR for real-time updates of project data and artifacts
   const { data: projectResponse, mutate } = useSWR(
     `/api/projects/${projectId}`,
@@ -142,12 +151,19 @@ export function ProjectChatProvider({
     },
     onFinish: async (message) => {
       if (message.role === 'assistant') {
+        setPostGenerationPhase('saving');
         const result = await saveAssistantMessage(projectId, message.content);
         if (!result.success) {
           console.error('Failed to save assistant message:', result.error);
         }
         // Revalidate after save completes
         mutate();
+        setPostGenerationPhase('complete');
+        // Show "complete" briefly, then reset progress state
+        setTimeout(() => {
+          setPostGenerationPhase('idle');
+          setGenerationStartedAt(null);
+        }, 2500);
         // Revalidate again after server-side extraction likely finishes.
         // TODO: Replace with polling or server event when extraction
         // provides a completion signal.
@@ -202,6 +218,15 @@ export function ProjectChatProvider({
     }
   }, [initialMessages.length, projectVision, chat]);
 
+  // Track generation start (isLoading transitions from false → true)
+  useEffect(() => {
+    if (chat.isLoading && !prevIsLoading.current) {
+      setGenerationStartedAt(Date.now());
+      setPostGenerationPhase('idle');
+    }
+    prevIsLoading.current = chat.isLoading;
+  }, [chat.isLoading]);
+
   const toggleExplorer = useCallback(() => {
     setExplorerCollapsed((prev) => !prev);
   }, []);
@@ -229,6 +254,8 @@ export function ProjectChatProvider({
     toggleExplorer,
     chatPanelCollapsed,
     toggleChatPanel,
+    generationStartedAt,
+    postGenerationPhase,
     isNewProject: initialMessages.length === 0,
   };
 

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { ChatMessages, ChatLayout } from '@/components/chat/chat-window';
 import { ChatInput } from '@/components/chat/chat-input';
 import { useProjectChat } from './project-chat-provider';
+import { GenerationProgressCard } from './generation-progress-card';
 
 function ProjectEmptyState({ projectName }: { projectName: string }) {
   return (
@@ -133,6 +134,9 @@ export function ChatPanel({ className }: { className?: string }) {
           <PanelRightClose className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
         </button>
       </div>
+
+      {/* Generation progress card */}
+      <GenerationProgressCard />
 
       {/* Chat content */}
       <div className="flex-1 min-h-0 flex flex-col">

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ChatMessages, ChatLayout } from '@/components/chat/chat-window';
 import { ChatInput } from '@/components/chat/chat-input';
 import { useProjectChat } from './project-chat-provider';
+import { GenerationProgressCard } from './generation-progress-card';
 
 export function MobileChatSheet() {
   const [open, setOpen] = useState(false);
@@ -52,6 +53,9 @@ export function MobileChatSheet() {
             Chat - {projectName}
           </span>
         </div>
+
+        {/* Generation progress card */}
+        <GenerationProgressCard />
 
         {/* Chat content */}
         <div className="flex-1 min-h-0">
