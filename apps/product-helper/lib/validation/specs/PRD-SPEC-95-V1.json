@@ -1,5 +1,5 @@
 {
-    "ruleset_id": "SR-CORNELL-PRD-95-V1",
+    "ruleset_id": "PRD-SPEC-95-V1",
     "targets": [
       "context_diagram",
       "use_case_diagram",

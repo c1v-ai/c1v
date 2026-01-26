@@ -20,29 +20,37 @@ The SysML Activity Diagram:
 
 ## WHAT IS A SYSML ACTIVITY DIAGRAM?
 
-A visual representation of the UCBD flow using standard SysML (Systems Modeling Language) notation.
+A visual representation of the UCBD flow using standard SysML (Systems Modeling Language) notation. The ideas between a UCBD and a SysML Activity Diagram are very similar — most of the changes are largely superficial. But understanding the differences lets you either create one in SysML or interpret someone else's diagram.
 
-**Relationship to UCBD:**
-- Each UCBD row → becomes an "action" (rounded rectangle)
-- UCBD columns → become swimlanes
-- System actions → link to Requirements Table entries
-- Precondition → start state
-- Postcondition → end state
+**UCBD → SysML Terminology Mapping:**
+
+| UCBD Term | SysML Term |
+|-----------|------------|
+| Columns | **Activity Partitions** (aka swimlanes) |
+| Beginning conditions | **Precondition constraints** |
+| Ending conditions | **Postcondition constraints** |
+| Statements (rows) | **Opaque Actions** (rounded-corner boxes) |
+| Row-to-row flow | **Control Flow Arrows** |
+| Start/end of body | **Terminal Nodes** (● start, ◉ end) |
+
+**The critical difference:** In the UCBD spreadsheet form, system statements are written formally as SHALL statements. In a SysML Activity Diagram, **ALL statements are written informally** — including those in the System swimlane. The formality is achieved by pairing each system opaque action with a formal requirement in a **separate accompanying Requirements Table** (a SysML Requirements Diagram). This is mandatory — a SysML Activity Diagram used as a UCBD equivalent **must** have an accompanying Requirements Diagram.
+
+In SysML software tools, each opaque action in the system's activity partition can be officially **linked** to its corresponding entry in the Requirements Diagram, confirming the connection.
 
 ---
 
 ## KEY DIAGRAM ELEMENTS
 
-| Element | Shape | Purpose | Example |
-|---------|-------|---------|---------|
-| **Action** | Rounded rectangle | A step in the process | "Validate input" |
-| **Start** | Filled black circle | Beginning of flow | ● |
-| **End** | Circle with inner dot | End of flow | ◉ |
-| **Decision** | Diamond | Branch point (if/else) | ◇ |
-| **Fork** | Horizontal bar | Start parallel actions | ═══ |
-| **Join** | Horizontal bar | End parallel actions | ═══ |
-| **Swimlane** | Vertical partition | Actor responsibility | "User" / "System" |
-| **Flow Arrow** | Solid arrow | Sequence direction | → |
+| Element | SysML Term | Shape | Purpose | Example |
+|---------|------------|-------|---------|---------|
+| **Action** | Opaque Action | Rounded rectangle | A step in the process — text is **informal** | "Validate input" |
+| **Start** | Initial Node (Terminal) | Filled black circle | Beginning of flow | ● |
+| **End** | Final Node (Terminal) | Circle with inner dot | End of flow | ◉ |
+| **Decision** | Decision Node | Diamond | Branch point (if/else) | ◇ |
+| **Fork** | Fork Node | Horizontal bar | Start parallel actions | ═══ |
+| **Join** | Join Node | Horizontal bar | End parallel actions | ═══ |
+| **Swimlane** | Activity Partition | Vertical partition | Element responsibility | "child : Child" / "Toy… : System" |
+| **Flow Arrow** | Control Flow | Solid arrow | Sequence direction | → |
 
 ---
 
@@ -83,21 +91,25 @@ Postcondition: [from UCBD]
 
 ### Round 2: Convert Actions
 
-**Goal:** Transform UCBD rows into activity diagram actions
+**Goal:** Transform UCBD rows into activity diagram opaque actions
+
+**Key rule:** In SysML, ALL opaque actions are written **informally** — including system actions. The formal SHALL statements go in the separate Requirements Table.
 
 ```
-PH: Now let's convert each UCBD row into an action.
+PH: Now let's convert each UCBD row into an opaque action.
 
 UCBD Row: "User clicks checkout button"
-→ Action: Rounded rectangle with "Click checkout button"
-→ Swimlane: User
+→ Opaque Action: "Click checkout button"
+→ Activity Partition: User
 
 UCBD Row: "The System SHALL validate cart contents"
-→ Action: Rounded rectangle with "Validate cart [OR.5]"
-→ Swimlane: The System
-→ Links to requirement OR.5
+→ Opaque Action: "Validate cart contents"  (informal!)
+→ Activity Partition: The System
+→ Paired with formal requirement OR.5 in the Requirements Table
 
-Notice: System actions include the requirement ID in brackets.
+In the UCBD spreadsheet, system statements are formal SHALL statements.
+In SysML, they become informal opaque actions — the formality lives
+in the accompanying Requirements Table instead.
 ```
 
 ### Round 3: Identify Decision Points
@@ -136,38 +148,55 @@ These use FORK (split into parallel) and JOIN (merge back) bars.
 [User identifies parallel actions]
 ```
 
-### Round 5: Link to Requirements
+### Round 5: Create Accompanying Requirements Table (Required)
 
-**Goal:** Ensure every system action links to a requirement
+**Goal:** Pair every system opaque action with a formal requirement
+
+A SysML Activity Diagram used as a UCBD equivalent **must** have an accompanying Requirements Table. One formal requirement for each statement in the System activity partition.
 
 ```
-PH: Every system action should link to a requirement ID.
+PH: Now let's create the Requirements Table that accompanies
+your Activity Diagram.
 
-For each system action, which requirement does it fulfill?
+For each system opaque action, create a requirement box:
 
-Action: "Validate cart contents"
-Requirement: OR.5 "The System SHALL validate cart before checkout"
+  ┌──────────────────────────────────────┐
+  │ <<requirement>>                       │
+  │ Abstract Function Name                │
+  │                                       │
+  │ Text: "The System SHALL..."           │
+  │ Id: "OR.X"                            │
+  └──────────────────────────────────────┘
 
-Format in diagram: "Validate cart [OR.5]"
+Rules:
+  - One box per requirement
+  - All boxes should be the same width
+  - The table can be titled "Requirements Table"
+    or "Requirements Table: Originating Requirements"
+
+In SysML software, each opaque action in the Activity Diagram
+can be officially linked to its corresponding requirement box,
+confirming the connection.
 
 This creates TRACEABILITY — you can trace from diagram
 to requirement to use case to stakeholder need.
 ```
 
-### Round 6: Create Requirements Pairing Diagram
+### Round 6: Review Linkage
 
-**Goal:** Show the requirement details alongside actions
+**Goal:** Verify every system action has a paired requirement
 
 ```
-PH: Optionally, create a paired Requirements Table diagram.
+PH: Let's verify the pairing is complete.
 
-For each system action, show:
-- <<requirement>>
-- Abstract Function Name
-- Text: [The full SHALL statement]
-- Id: "[OR.X]"
+For each opaque action in the System partition:
+  ✓ Is there a matching requirement box in the Requirements Table?
+  ✓ Does the requirement use formal SHALL language?
+  ✓ Does the requirement have a unique ID?
+  ✓ Does the requirement have an abstract function name?
 
-This makes the diagram self-documenting.
+Every system opaque action should have exactly one
+corresponding requirement. No orphaned actions, no orphaned requirements.
 ```
 
 ---
@@ -215,22 +244,24 @@ This makes the diagram self-documenting.
 - Postcondition at bottom
 - Notes section if needed
 
-### Swimlanes
-- Vertical partitions
-- Primary actor on LEFT
-- The System in CENTER
-- Other actors on RIGHT
-- Clear labels at top of each lane
+### Activity Partitions (Swimlanes)
+- Vertical partitions — the SysML term is **activity partitions**
+- Primary actor/operator on LEFT
+- The System in CENTER — only one partition for your system
+- Other elements on RIGHT — add as many as needed
+- Labels at top of each partition, optionally in `instanceName : TypeName` format (e.g., `child : Child`, `Toy… : Toy Catapult System`)
+- Expand partition length as needed
 
-### Action Boxes
+### Opaque Action Boxes
 - **Rounded corners** (not square — this distinguishes from other diagram types)
-- Same width for all boxes
-- Height adjusts to fit text
-- Centered text
+- All boxes should be the **same width** but may be taller or shorter to fit text
+- **All text is informal** — including system actions (formal requirements go in the separate Requirements Table)
+- One opaque action per line — similar to one statement per row in the UCBD spreadsheet
 
 ### Requirement Links
-- System actions include requirement ID: `"Action name [OR.X]"`
-- Links provide traceability to Requirements Table
+- System opaque actions are paired with formal requirements in the accompanying Requirements Table
+- In SysML software, opaque actions can be officially linked to their requirement entries
+- The Activity Diagram + Requirements Table together represent the same information as a spreadsheet UCBD
 
 ### Control Flow
 
@@ -294,88 +325,144 @@ This makes the diagram self-documenting.
 
 ---
 
-## REQUIREMENTS PAIRING
+## SYSML REQUIREMENTS TABLE (Requirements Diagram)
 
-For each system action, create a detailed requirement box:
+The Requirements Table is a separate diagram that accompanies the Activity Diagram. It contains one box per formal requirement — each paired with a system opaque action from the Activity Diagram.
+
+### Requirement Box Format
 
 ```
 ┌─────────────────────────────────────────┐
 │ <<requirement>>                          │
-│ uc02_validate_cart                       │
+│ Abstract Function Name                   │
 │                                          │
-│ Text: The System SHALL validate cart     │
-│       contents before processing         │
-│       checkout                           │
-│                                          │
-│ Id: "OR.5"                               │
+│ Text: "The System SHALL..."              │
+│ Id: "OR.X"                               │
 └─────────────────────────────────────────┘
 ```
 
-This creates a self-documenting diagram where:
-- Visual flow is clear
-- Every system action traces to a formal requirement
-- Requirements are visible without looking up the table
+### Formatting Rules
+- One box per requirement
+- All boxes should be the same width
+- The `<<requirement>>` stereotype goes at the top
+- The abstract function name is the box title
+- `Text:` contains the formal SHALL statement (in quotes)
+- `Id:` contains the requirement ID (in quotes, e.g., `"OR.1"`)
+- The table title can include a subtitle like "Requirements Table: Originating Requirements"
+
+### Catapult Sample Requirements Table
+
+```
+Requirements Table
+
+┌──────────────────────────────────────────────────────────┐
+│ <<requirement>>                                           │
+│ Detect                                                    │
+│ Text: "The system shall detect receptacle is in proper    │
+│        position."                                         │
+│ Id: "OR.1"                                                │
+├──────────────────────────────────────────────────────────┤
+│ <<requirement>>                                           │
+│ Arm                                                       │
+│ Text: "The system shall secure its receptacle in          │
+│        position."                                         │
+│ Id: "OR.2"                                                │
+├──────────────────────────────────────────────────────────┤
+│ <<requirement>>                                           │
+│ Load                                                      │
+│ Text: "The system shall hold the projectile in its        │
+│        receptacle."                                       │
+│ Id: "OR.3"                                                │
+├──────────────────────────────────────────────────────────┤
+│ <<requirement>>                                           │
+│ Trigger                                                   │
+│ Text: "The system shall detect the command to release     │
+│        from child."                                       │
+│ Id: "OR.4"                                                │
+├──────────────────────────────────────────────────────────┤
+│ <<requirement>>                                           │
+│ Eject                                                     │
+│ Text: "The system shall eject the contents of its         │
+│        receptacle."                                       │
+│ Id: "OR.5"                                                │
+└──────────────────────────────────────────────────────────┘
+```
+
+This creates a self-documenting pair where:
+- The Activity Diagram shows the visual flow (informal actions)
+- The Requirements Table shows the formal requirements (SHALL statements)
+- Every system opaque action traces to a formal requirement
 
 ---
 
-## REAL EXAMPLE
+## REAL EXAMPLE: TOY CATAPULT (from course)
 
-### Checkout Use Case Activity Diagram
+### Activity Diagram
 
 ```
-act.CustomerCompletesCheckout
+Use Case: Child Uses Toy Catapult
 
-Precondition: User logged in, cart not empty
+Precondition: The toy catapult is unloaded and unarmed.
 
-┌──────────────┬────────────────────────┬──────────────┐
-│   Customer   │      The System        │  Payment API │
-├──────────────┼────────────────────────┼──────────────┤
-│      ●       │                        │              │
-│      ↓       │                        │              │
-│ ┌──────────┐ │                        │              │
-│ │  Click   │ │                        │              │
-│ │ checkout │ │                        │              │
-│ └────┬─────┘ │                        │              │
-│      └───────┼→┌──────────────────┐   │              │
-│              │ │ Validate cart    │   │              │
-│              │ │ [OR.5]           │   │              │
-│              │ └────────┬─────────┘   │              │
-│              │          ↓             │              │
-│              │        ◇ Cart          │              │
-│              │       valid?           │              │
-│              │      ╱     ╲           │              │
-│              │    Yes      No         │              │
-│              │     ↓        ↓         │              │
-│              │ ┌────────┐ ┌────────┐  │              │
-│              │ │Process │ │Display │  │              │
-│              │ │payment │ │error   │  │              │
-│              │ │[OR.6]  │ │[OR.7]  │  │              │
-│              │ └───┬────┘ └────────┘  │              │
-│              │     └──────────────────┼→┌──────────┐ │
-│              │                        │ │ Charge   │ │
-│              │                        │ │ card     │ │
-│              │                        │ └────┬─────┘ │
-│              │     ┌──────────────────┼←────┘       │
-│              │     ↓                  │              │
-│              │ ═════════ Fork         │              │
-│              │ ↓         ↓            │              │
-│              │┌────────┐┌──────────┐  │              │
-│              ││Send    ││Update    │  │              │
-│              ││confirm ││inventory │  │              │
-│              ││[OR.8]  ││[OR.9]    │  │              │
-│              │└───┬────┘└────┬─────┘  │              │
-│              │    ↓          ↓        │              │
-│              │ ═════════ Join         │              │
-│←─────────────┼─────┐                  │              │
-│ ┌──────────┐ │     │                  │              │
-│ │  View    │ │     │                  │              │
-│ │ confirm  │ │     │                  │              │
-│ └────┬─────┘ │     │                  │              │
-│      ◉       │                        │              │
-└──────────────┴────────────────────────┴──────────────┘
+┌──────────────────┬──────────────────────┬──────────────────┐
+│  child : Child   │ Toy… : Toy Catapult  │  other : Other   │
+│                  │       System         │                  │
+├──────────────────┼──────────────────────┼──────────────────┤
+│       ●          │                      │                  │
+│       ↓          │                      │                  │
+│ ┌──────────────┐ │                      │                  │
+│ │Child pushes  │ │                      │                  │
+│ │receptacle    │ │                      │                  │
+│ │into position │ │                      │                  │
+│ └──────┬───────┘ │                      │                  │
+│        └─────────┼→┌──────────────────┐ │                  │
+│                  │ │Detect receptacle │ │                  │
+│                  │ │in proper position│ │                  │
+│                  │ └────────┬─────────┘ │                  │
+│                  │          ↓           │                  │
+│                  │ ┌──────────────────┐ │                  │
+│                  │ │Secure the        │ │                  │
+│                  │ │receptacle in     │ │                  │
+│                  │ │position          │ │                  │
+│                  │ └────────┬─────────┘ │                  │
+│ ┌──────────────┐ │          │           │                  │
+│ │Child loads   │←┼──────────┘           │                  │
+│ │receptacle    │ │                      │                  │
+│ │with          │ │                      │ ┌──────────────┐ │
+│ │projectile   │ │                      │ │Projectile    │ │
+│ └──────┬───────┘ │                      │ │sits in the   │ │
+│        │         │                      │ │receptacle    │ │
+│        └─────────┼→┌──────────────────┐ │ └──────────────┘ │
+│                  │ │Hold the          │ │                  │
+│                  │ │projectile        │ │                  │
+│                  │ └────────┬─────────┘ │                  │
+│ ┌──────────────┐ │          │           │                  │
+│ │Child triggers│←┼──────────┘           │                  │
+│ │release       │ │                      │                  │
+│ └──────┬───────┘ │                      │                  │
+│        └─────────┼→┌──────────────────┐ │                  │
+│                  │ │Detect command to │ │                  │
+│                  │ │release from the  │ │                  │
+│                  │ │child             │ │                  │
+│                  │ └────────┬─────────┘ │                  │
+│                  │          ↓           │                  │
+│                  │ ┌──────────────────┐ │                  │
+│                  │ │Eject the contents│ │                  │
+│                  │ │of the receptacle │ │ ┌──────────────┐ │
+│                  │ └────────┬─────────┘ │ │Projectile    │ │
+│                  │          │           │ │flies through │ │
+│                  │          │           │ │the air       │ │
+│                  │          ◉           │ └──────────────┘ │
+└──────────────────┴──────────────────────┴──────────────────┘
 
-Postcondition: Order placed, confirmation sent
+Post-Condition: The toy catapult is unloaded and unarmed.
+
+Notes:
+1. Assume the projectile is another child-safe toy (not the family's
+   pet gerbil!)
 ```
+
+**Notice:** All actions in the System partition are written **informally** — no "shall" language. The formal requirements live in the paired Requirements Table above.
 
 ---
 
@@ -417,13 +504,17 @@ const sysmlThinking = [
 
 | Term | Definition |
 |------|------------|
-| **SysML** | Systems Modeling Language — an industry standard for system diagrams. |
-| **Activity Diagram** | Shows the flow of actions in a process, with decisions and parallel paths. |
-| **Swimlane** | A vertical partition showing which actor is responsible for each action. |
+| **SysML** | Systems Modeling Language — a common set of standards used by systems engineers worldwide. |
+| **Activity Diagram** | The SysML analogue of a UCBD — shows the flow of actions with decisions and parallel paths. |
+| **Activity Partition** | SysML term for swimlane — a vertical partition showing which element is responsible for each action. |
+| **Opaque Action** | A step in the activity diagram, written as informal text in a rounded-corner box. |
+| **Control Flow** | An arrow connecting opaque actions to show the sequence of the flow. |
+| **Terminal Node** | Start (●) and end (◉) markers at the beginning and end of the diagram body. |
 | **Fork** | Splits one flow into multiple parallel flows. |
 | **Join** | Merges parallel flows back together (waits for all to complete). |
-| **Decision Diamond** | A branch point where the flow takes different paths based on a condition. |
-| **Requirement Link [OR.X]** | Connects an action to its formal requirement in the Requirements Table. |
+| **Decision Node** | A diamond — branch point where the flow takes different paths based on a condition. |
+| **Requirements Diagram** | The accompanying Requirements Table — contains formal SHALL statements paired with system opaque actions. |
+| **<<requirement>>** | SysML stereotype marking a box as a formal requirement entry (with Text and Id fields). |
 
 ---
 
@@ -465,6 +556,24 @@ const validationErrors = {
     error: "Decision diamond has unlabeled exit paths",
     why: "Without labels, it's unclear which path to take.",
     fix: "Label each exit path (Yes/No, Valid/Invalid, etc.)."
+  },
+
+  missing_requirements_table: {
+    error: "Activity Diagram has no accompanying Requirements Table",
+    why: "A SysML Activity Diagram used as a UCBD must have a separate Requirements Diagram with formal SHALL statements.",
+    fix: "Create a Requirements Table with one <<requirement>> box per system opaque action."
+  },
+
+  formal_in_action: {
+    error: "Opaque action '{action}' uses formal SHALL language",
+    why: "In SysML, all opaque actions are written informally — formal requirements go in the separate Requirements Table.",
+    fix: "Rewrite as informal statement and ensure formal version exists in Requirements Table."
+  },
+
+  unlinked_action: {
+    error: "System opaque action '{action}' has no paired requirement in Requirements Table",
+    why: "Every system action needs a corresponding formal requirement.",
+    fix: "Add a <<requirement>> box with Text (SHALL statement) and Id (unique ID)."
   }
 };
 ```
@@ -498,6 +607,23 @@ Developers know WHAT to build.
 Testers know WHAT to verify.
 Stakeholders can see HOW their needs are addressed.
 ```
+
+---
+
+## PROCESS CHECKLIST
+
+| Step | Action | Complete When |
+|------|--------|---------------|
+| 1 | Set up diagram frame with use case name, precondition, postcondition | Frame with title and conditions exists |
+| 2 | Create activity partitions (swimlanes) matching UCBD columns | One partition per element, system in center |
+| 3 | Convert each UCBD row into an opaque action (informal text, rounded corners, same width) | One opaque action per UCBD statement |
+| 4 | Add control flow arrows connecting actions in chronological order | Flow reads top to bottom, one action per line |
+| 5 | Add terminal nodes (● start at top, ◉ end at bottom) | Start and end markers present |
+| 6 | Identify decision points and add decision nodes (◇) with labeled exit paths | All branches labeled, no dead ends |
+| 7 | Identify parallel actions and add fork/join bars | Fork exits = Join entries |
+| 8 | Add notes section below postcondition | Numbered notes from UCBD included |
+| 9 | Create accompanying Requirements Table — one <<requirement>> box per system opaque action | Every system action has a paired formal requirement |
+| 10 | Verify linkage — no orphaned actions, no orphaned requirements | 1:1 match between system actions and requirement boxes |
 
 ---
 

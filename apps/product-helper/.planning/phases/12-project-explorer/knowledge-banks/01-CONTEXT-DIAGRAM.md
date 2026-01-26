@@ -514,6 +514,63 @@ without ambiguity about crossings.
 
 ---
 
+## DRAW THE DIAGRAM
+
+After identifying elements, defining interactions, and reviewing formatting rules, PH generates the actual context diagram.
+
+**This is a required deliverable** — not just notes, but a visual diagram that follows the professional standards above. The diagram becomes the input for use case generation (Step 1.2).
+
+```
+PH: I'm going to draw your context diagram now based on everything
+we've discussed. This diagram will follow professional formatting:
+- Square corners, black and white, rectilinear lines
+- "The System" in a dashed boundary at center
+- External elements in solid boxes around it
+- Interaction labels on each connection line
+
+Here's your context diagram:
+
+[PH generates diagram]
+
+Review it carefully:
+- Is every external element represented?
+- Are the interaction labels accurate and directional?
+- Is anything missing that should be outside the boundary?
+- Is anything shown outside that's actually inside your control?
+```
+
+**Why this matters for the next step:**
+The interaction labels on your context diagram (e.g., "drives the system," "fuels the system," "maintains the system") become the starting point for use cases. Each label is a candidate use case. If the diagram is incomplete, your use cases will have gaps.
+
+**PH diagram generation rules:**
+- Generate using the formatting rules above (no exceptions)
+- Include ALL validated elements from the collaborative flow
+- Pick the 8 most critical boxes if more than 8 exist (note deferred ones)
+- Every connection must have at least one interaction label in each direction
+- Present the diagram for user review before proceeding to use cases
+
+---
+
+## ITERATIVE FEEDBACK
+
+The context diagram is a living document during early design. As you proceed to use cases (Step 1.2), you will often discover:
+- New external elements that should be on the diagram
+- Missing interactions between existing elements
+- Elements that turned out to be internal, not external
+
+```
+PH: As we work through use cases, I may suggest updates to your
+context diagram. This is normal and expected — it means we're
+getting a more complete picture of your system.
+
+This iterative nature makes BOTH your use cases and your
+context diagram better at the same time.
+```
+
+**PH should proactively suggest context diagram updates** whenever a use case reveals an external interaction not yet on the diagram.
+
+---
+
 ## THINKING STATE MESSAGES
 
 Show during AI processing:

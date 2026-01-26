@@ -40,7 +40,21 @@
       "Bash(ct update:*)",
       "Bash(ct complete:*)",
       "Bash(git -C /Users/davidancor/coding/c1v submodule status)",
-      "Bash(git -C /Users/davidancor/coding/c1v status:*)"
+      "Bash(git -C /Users/davidancor/coding/c1v status:*)",
+      "Skill(gsd:new-project)",
+      "Bash(ct phases:*)",
+      "Bash(ct find:*)",
+      "Bash(ct show:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(find:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx next:*)",
+      "Bash(while read f)",
+      "Bash(do node -e \"console.log\\(require\\(''$f''\\).version\\)\")",
+      "Bash(done)",
+      "Bash(readlink:*)",
+      "Bash(node node_modules/.bin/next:*)",
+      "Bash(node -e:*)"
     ]
   },
   "enabledPlugins": {

@@ -49,7 +49,7 @@ export const NODE_NAMES = {
   ANALYZE_RESPONSE: 'analyze_response',
   EXTRACT_DATA: 'extract_data',
   COMPUTE_NEXT_QUESTION: 'compute_next_question',
-  CHECK_SR_CORNELL: 'check_prd_spec',
+  CHECK_PRD_SPEC: 'check_prd_spec',
   GENERATE_ARTIFACT: 'generate_artifact',
   GENERATE_RESPONSE: 'generate_response',
 } as const;

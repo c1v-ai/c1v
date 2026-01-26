@@ -55,6 +55,10 @@ drizzle/*.sql
 .claude/
 .cleo/
 .planning/
+.serena/
+AGENTS.md
+GEMINI.md
+claudedocs/
 
 # Internal docs (not for public)
 UX-Comparison-Product-Helper-vs-Epic-Dev.md
