@@ -19,7 +19,17 @@ import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ZoomIn, ZoomOut, Maximize2, Download, AlertCircle } from 'lucide-react';
+import {
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Minimize2,
+  Download,
+  AlertCircle,
+  Copy,
+  Code,
+  RefreshCw,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
@@ -45,6 +55,8 @@ export interface DiagramViewerProps {
   description?: string;
   /** Optional CSS class name */
   className?: string;
+  /** Optional callback to regenerate the diagram */
+  onRegenerate?: () => void;
 }
 
 export function DiagramViewer({
@@ -53,12 +65,21 @@ export function DiagramViewer({
   title,
   description,
   className,
+  onRegenerate,
 }: DiagramViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState<number>(1);
   const [isRendering, setIsRendering] = useState<boolean>(true);
+  const [showCode, setShowCode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Pan state
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
 
   // Render diagram when syntax changes
   useEffect(() => {
@@ -86,9 +107,17 @@ export function DiagramViewer({
     }
 
     // Basic validation - check for common mermaid diagram declarations
-    const trimmedSyntax = cleanedSyntax.trim().toLowerCase();
+    // Skip init directives (%%{init: ...}%%) and comments (%% ...) before checking
+    const syntaxLines = cleanedSyntax.trim().split('\n');
+    const firstContentLine = syntaxLines
+      .find(line => {
+        const t = line.trim();
+        return t.length > 0 && !t.startsWith('%%');
+      })
+      ?.trim()
+      .toLowerCase() ?? '';
     const validStartPatterns = ['graph', 'flowchart', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'gantt', 'pie', 'journey'];
-    const hasValidStart = validStartPatterns.some(p => trimmedSyntax.startsWith(p));
+    const hasValidStart = validStartPatterns.some(p => firstContentLine.startsWith(p));
 
     if (!hasValidStart) {
       setIsRendering(false);
@@ -147,15 +176,15 @@ export function DiagramViewer({
     if (containerRef.current && svgContent) {
       containerRef.current.innerHTML = svgContent;
 
-      // Apply scale transform
+      // Apply scale + pan transform
       const svg = containerRef.current.querySelector('svg');
       if (svg) {
-        svg.style.transform = `scale(${scale})`;
+        svg.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`;
         svg.style.transformOrigin = 'top left';
-        svg.style.transition = 'transform 0.2s ease';
+        svg.style.transition = isPanningRef.current ? 'none' : 'transform 0.2s ease';
       }
     }
-  }, [svgContent, scale]);
+  }, [svgContent, scale, panOffset]);
 
   const handleZoomIn = () => {
     setScale((prev) => Math.min(prev + 0.2, 3));
@@ -167,6 +196,40 @@ export function DiagramViewer({
 
   const handleReset = () => {
     setScale(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
+
+  // Pan handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return; // left click only
+    isPanningRef.current = true;
+    panStartRef.current = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isPanningRef.current) return;
+    setPanOffset({
+      x: e.clientX - panStartRef.current.x,
+      y: e.clientY - panStartRef.current.y,
+    });
+  };
+
+  const handlePointerUp = () => {
+    isPanningRef.current = false;
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(syntax);
+      toast.success('Mermaid code copied to clipboard');
+    } catch {
+      toast.error('Failed to copy code');
+    }
+  };
+
+  const toggleFullscreen = () => {
+    setIsFullscreen((prev) => !prev);
   };
 
   const handleExport = async (format: 'png' | 'svg') => {
@@ -328,32 +391,52 @@ export function DiagramViewer({
           </div>
 
           {/* Toolbar */}
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleZoomOut}>
+          <div className="flex items-center gap-1 flex-wrap">
+            {/* Zoom controls */}
+            <Button variant="outline" size="sm" onClick={handleZoomOut} title="Zoom out">
               <ZoomOut className="h-4 w-4" />
             </Button>
             <span className="text-sm text-muted-foreground min-w-[3rem] text-center">
               {Math.round(scale * 100)}%
             </span>
-            <Button variant="outline" size="sm" onClick={handleZoomIn}>
+            <Button variant="outline" size="sm" onClick={handleZoomIn} title="Zoom in">
               <ZoomIn className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={handleReset}>
+            <Button variant="outline" size="sm" onClick={handleReset} title="Reset view">
               <Maximize2 className="h-4 w-4" />
             </Button>
+
+            <div className="w-px h-5 bg-border mx-1" />
+
+            {/* View controls */}
             <Button
-              variant="outline"
+              variant={showCode ? 'secondary' : 'outline'}
               size="sm"
-              onClick={() => handleExport('svg')}
+              onClick={() => setShowCode((prev) => !prev)}
+              title="Toggle code view"
             >
+              <Code className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleCopyCode} title="Copy Mermaid code">
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={toggleFullscreen} title="Toggle fullscreen">
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+            {onRegenerate && (
+              <Button variant="outline" size="sm" onClick={onRegenerate} title="Regenerate diagram">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
+
+            <div className="w-px h-5 bg-border mx-1" />
+
+            {/* Export controls */}
+            <Button variant="outline" size="sm" onClick={() => handleExport('svg')} title="Export SVG">
               <Download className="h-4 w-4 mr-1" />
               SVG
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleExport('png')}
-            >
+            <Button variant="outline" size="sm" onClick={() => handleExport('png')} title="Export PNG">
               <Download className="h-4 w-4 mr-1" />
               PNG
             </Button>
@@ -362,33 +445,202 @@ export function DiagramViewer({
       </CardHeader>
 
       <CardContent>
-        <div
-          className={cn(
-            'overflow-auto border rounded-lg p-6',
-            'bg-muted/30',
-            'min-h-[400px] relative'
-          )}
-        >
-          {/* Always render the container to avoid ref deadlock */}
+        <div className={showCode ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : ''}>
+          {/* Diagram pane */}
           <div
-            ref={containerRef}
+            ref={wrapperRef}
             className={cn(
-              'diagram-container flex items-center justify-center',
-              isRendering && 'invisible'
+              'overflow-hidden border rounded-lg p-6',
+              'bg-muted/30',
+              'min-h-[400px] relative',
+              'cursor-grab active:cursor-grabbing',
+              'select-none'
             )}
-          />
-          {/* Loading overlay */}
-          {isRendering && (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
-              <div className="text-center">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Rendering diagram...</p>
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            {/* Always render the container to avoid ref deadlock */}
+            <div
+              ref={containerRef}
+              className={cn(
+                'diagram-container flex items-center justify-center',
+                isRendering && 'invisible'
+              )}
+            />
+            {/* Loading overlay */}
+            {isRendering && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
+                <div className="text-center">
+                  <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Rendering diagram...</p>
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Code pane (D06) */}
+          {showCode && (
+            <div className="border rounded-lg overflow-hidden">
+              <div
+                className="px-3 py-2 text-xs font-semibold border-b"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderColor: 'var(--border)',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                Mermaid Source
+              </div>
+              <pre
+                className="p-4 text-xs overflow-auto max-h-[500px]"
+                style={{
+                  fontFamily: 'ui-monospace, monospace',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {syntax}
+              </pre>
             </div>
           )}
         </div>
       </CardContent>
+
+      {/* Fullscreen overlay (D09) */}
+      {isFullscreen && (
+        <FullscreenOverlay
+          title={title}
+          svgContent={svgContent}
+          scale={scale}
+          panOffset={panOffset}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onReset={handleReset}
+          onCopyCode={handleCopyCode}
+          onExportPng={() => handleExport('png')}
+          onClose={toggleFullscreen}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+        />
+      )}
     </Card>
+  );
+}
+
+/**
+ * Fullscreen Overlay Component
+ * Renders SVG diagram in a full-screen view with controls.
+ * Uses a ref callback to clone the rendered SVG from the main container.
+ */
+function FullscreenOverlay({
+  title,
+  svgContent,
+  scale,
+  panOffset,
+  onZoomIn,
+  onZoomOut,
+  onReset,
+  onCopyCode,
+  onExportPng,
+  onClose,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+}: {
+  title?: string;
+  svgContent: string;
+  scale: number;
+  panOffset: { x: number; y: number };
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onReset: () => void;
+  onCopyCode: () => void;
+  onExportPng: () => void;
+  onClose: () => void;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: () => void;
+}) {
+  const fullscreenRef = useRef<HTMLDivElement>(null);
+
+  // Clone SVG from the already-rendered mermaid output into the fullscreen container
+  useEffect(() => {
+    if (!fullscreenRef.current || !svgContent) return;
+    // Parse SVG using DOMParser (safe: content comes from mermaid.render, a trusted library)
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+    const svgEl = doc.querySelector('svg');
+    if (svgEl) {
+      fullscreenRef.current.replaceChildren(svgEl);
+      svgEl.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`;
+      svgEl.style.transformOrigin = 'center center';
+    }
+  }, [svgContent, scale, panOffset]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
+      <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div>
+          {title && (
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+              {title}
+            </h3>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" onClick={onZoomOut} title="Zoom out">
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground min-w-[3rem] text-center">
+            {Math.round(scale * 100)}%
+          </span>
+          <Button variant="outline" size="sm" onClick={onZoomIn} title="Zoom in">
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={onReset} title="Reset view">
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-5 bg-border mx-1" />
+          <Button variant="outline" size="sm" onClick={onCopyCode} title="Copy code">
+            <Copy className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={onExportPng} title="Export PNG">
+            <Download className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-5 bg-border mx-1" />
+          <Button variant="outline" size="sm" onClick={onClose} title="Exit fullscreen (Esc)">
+            <Minimize2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <div
+        className="flex-1 overflow-hidden cursor-grab active:cursor-grabbing select-none"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <div
+          ref={fullscreenRef}
+          className="diagram-container w-full h-full flex items-center justify-center p-6"
+        />
+      </div>
+    </div>
   );
 }
 

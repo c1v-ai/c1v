@@ -5,12 +5,12 @@
  * Pattern: Structured output with Zod schema validation
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
- * This agent uses GPT-4o with temperature=0.3 for consistent but slightly
- * creative infrastructure recommendations. It analyzes the project's tech stack,
+ * Uses Claude Sonnet via central config for consistent but slightly
+ * creative infrastructure recommendations. Analyzes the project's tech stack,
  * scale requirements, and compliance needs to recommend infrastructure configuration.
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { z } from 'zod';
 import { PromptTemplate } from '@langchain/core/prompts';
 import {
@@ -64,24 +64,12 @@ export interface ScaleRequirements {
 // ============================================================
 
 /**
- * Infrastructure LLM Configuration
- * - Model: GPT-4o for high-quality recommendations
- * - Temperature: 0.3 for consistent but slightly creative suggestions
- * - Max tokens: 4000 to handle comprehensive infrastructure output
- */
-const infrastructureLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0.3,
-  maxTokens: 4000,
-  openAIApiKey: process.env.OPENAI_API_KEY,
-});
-
-/**
  * Structured output LLM with Zod schema validation
- * Ensures output matches InfrastructureSpec type
+ * Uses Claude Sonnet via central config
+ * Temperature: 0.3 for consistent but slightly creative suggestions
  */
-const structuredInfrastructureLLM = infrastructureLLM.withStructuredOutput(infrastructureSpecSchema, {
-  name: 'recommend_infrastructure',
+const structuredInfrastructureLLM = createClaudeAgent(infrastructureSpecSchema, 'recommend_infrastructure', {
+  temperature: 0.3,
 });
 
 // ============================================================

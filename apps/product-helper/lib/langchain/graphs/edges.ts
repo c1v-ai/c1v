@@ -1,7 +1,6 @@
 import type {
   IntakeState,
   ArtifactPhase,
-  ARTIFACT_THRESHOLDS,
 } from './types';
 
 /**
@@ -95,7 +94,8 @@ export function routeAfterAnalysis(state: IntakeState): AnalyzeRouteTarget {
     return 'extract_data';
   }
 
-  // User requested specific artifact - check if we can generate
+  // User approved artifact generation (from KB approval flow)
+  // Go directly to validation which will route to generate_artifact
   if (lastIntent === 'REQUEST_ARTIFACT') {
     return 'check_prd_spec';
   }
@@ -275,6 +275,23 @@ export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
 
   // 95%+ validation achieved
   if (isComplete) {
+    return '__end__';
+  }
+
+  // All 6 core KB artifacts generated (context, use case, scope, ucbd, requirements, sysml)
+  // End the intake graph — tech generation is handled by separate API routes
+  const coreArtifacts = [
+    'context_diagram',
+    'use_case_diagram',
+    'scope_tree',
+    'ucbd',
+    'requirements_table',
+    'sysml_activity_diagram',
+  ];
+  const allCoreComplete = coreArtifacts.every(a =>
+    generatedArtifacts.includes(a as ArtifactPhase)
+  );
+  if (allCoreComplete) {
     return '__end__';
   }
 

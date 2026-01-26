@@ -4,10 +4,10 @@
  * Purpose: Transform use cases into user stories with acceptance criteria
  * Pattern: Structured output with Zod schema validation
  *
- * This agent uses GPT-4o with temperature=0.2 for consistent story generation.
+ * Uses Claude Sonnet via central config for consistent story generation.
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { z } from 'zod';
 
 // ============================================================
@@ -103,13 +103,8 @@ export async function generateUserStories(
       return [];
     }
 
-    const model = new ChatOpenAI({
-      model: 'gpt-4o',
+    const structuredModel = createClaudeAgent(userStoriesOutputSchema, 'generate_user_stories', {
       temperature: 0.2,
-    });
-
-    const structuredModel = model.withStructuredOutput(userStoriesOutputSchema, {
-      name: 'generate_user_stories',
     });
 
     const prompt = `You are an expert Agile product manager transforming use cases into well-structured user stories.

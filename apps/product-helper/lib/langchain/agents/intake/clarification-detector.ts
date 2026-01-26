@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import { ChatOpenAI } from '@langchain/openai';
+import { cheapLLM } from '../../config';
 import { type Question } from './question-bank';
 
 /**
@@ -86,18 +86,7 @@ const EXPECTED_INFO_PATTERNS: Record<string, RegExp[]> = {
  * Uses fast heuristics for obvious cases and LLM analysis for uncertain cases.
  */
 export class ClarificationDetector {
-  private llm: ChatOpenAI;
-
-  /**
-   * Create a new ClarificationDetector
-   */
-  constructor() {
-    this.llm = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo', // Fast and cheap for this task
-      temperature: 0,
-      maxTokens: 500,
-    });
-  }
+  private llm = cheapLLM;
 
   /**
    * Analyze a user's answer for vagueness

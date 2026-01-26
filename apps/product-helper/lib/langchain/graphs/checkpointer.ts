@@ -67,6 +67,12 @@ interface SerializedState {
     content: string;
   } | null;
 
+  // Knowledge bank tracking
+  currentKBStep?: string;
+  kbStepConfidence?: number;
+  kbStepData?: Record<string, unknown>;
+  approvalPending?: boolean;
+
   // Control flags
   isComplete: boolean;
   error: string | null;
@@ -131,6 +137,12 @@ export function serializeState(state: IntakeState): SerializedState {
     pendingQuestion: state.pendingQuestion,
     pendingArtifact: state.pendingArtifact,
 
+    // Knowledge bank tracking
+    currentKBStep: state.currentKBStep,
+    kbStepConfidence: state.kbStepConfidence,
+    kbStepData: state.kbStepData,
+    approvalPending: state.approvalPending,
+
     // Control flags
     isComplete: state.isComplete,
     error: state.error,
@@ -183,6 +195,10 @@ export function deserializeState(serialized: SerializedState): IntakeState {
     validationResult: serialized.validationResult,
     pendingQuestion: serialized.pendingQuestion,
     pendingArtifact: serialized.pendingArtifact,
+    currentKBStep: (serialized.currentKBStep ?? 'context-diagram') as IntakeState['currentKBStep'],
+    kbStepConfidence: serialized.kbStepConfidence ?? 0,
+    kbStepData: serialized.kbStepData ?? {},
+    approvalPending: serialized.approvalPending ?? false,
     isComplete: serialized.isComplete,
     error: serialized.error,
     turnCount: serialized.turnCount,

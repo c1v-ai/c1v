@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useState, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,20 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { createProject, updateProject } from '@/app/actions/projects';
-import { type Project } from '@/lib/db/schema';
+import {
+  type Project,
+  PROJECT_TYPES,
+  PROJECT_STAGES,
+  USER_ROLES,
+  BUDGET_RANGES,
+} from '@/lib/db/schema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ProjectFormProps {
   project?: Project;
@@ -21,6 +34,41 @@ type ActionState = {
   projectId?: number;
 };
 
+const PROJECT_TYPE_LABELS: Record<string, string> = {
+  saas: 'SaaS',
+  'mobile-app': 'Mobile App',
+  marketplace: 'Marketplace',
+  'api-service': 'API Service',
+  'e-commerce': 'E-Commerce',
+  'internal-tool': 'Internal Tool',
+  'open-source': 'Open Source',
+  other: 'Other',
+};
+
+const PROJECT_STAGE_LABELS: Record<string, string> = {
+  idea: 'Idea',
+  prototype: 'Prototype',
+  mvp: 'MVP',
+  growth: 'Growth',
+  mature: 'Mature',
+};
+
+const USER_ROLE_LABELS: Record<string, string> = {
+  founder: 'Founder',
+  'product-manager': 'Product Manager',
+  developer: 'Developer',
+  designer: 'Designer',
+  other: 'Other',
+};
+
+const BUDGET_LABELS: Record<string, string> = {
+  bootstrap: 'Bootstrap ($0-10K)',
+  seed: 'Seed ($10K-100K)',
+  'series-a': 'Series A ($100K-1M)',
+  enterprise: 'Enterprise ($1M+)',
+  undecided: 'Undecided',
+};
+
 export function ProjectForm({ project, mode }: ProjectFormProps) {
   const router = useRouter();
   const action = mode === 'create' ? createProject : updateProject;
@@ -28,6 +76,11 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
     action,
     {}
   );
+
+  const [projectType, setProjectType] = useState(project?.projectType || '');
+  const [projectStage, setProjectStage] = useState(project?.projectStage || '');
+  const [userRole, setUserRole] = useState(project?.userRole || '');
+  const [budget, setBudget] = useState(project?.budget || '');
 
   // Handle navigation after successful project creation
   useEffect(() => {
@@ -89,6 +142,93 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
             <p className="text-xs text-muted-foreground">
               Minimum 10 characters, maximum 5000 characters
             </p>
+          </div>
+
+          {/* Project Metadata */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="projectType">Project Type</Label>
+              <input type="hidden" name="projectType" value={projectType} />
+              <Select
+                value={projectType}
+                onValueChange={setProjectType}
+                disabled={isPending}
+              >
+                <SelectTrigger id="projectType" className="w-full">
+                  <SelectValue placeholder="Select type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROJECT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {PROJECT_TYPE_LABELS[type] || type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="projectStage">Project Stage</Label>
+              <input type="hidden" name="projectStage" value={projectStage} />
+              <Select
+                value={projectStage}
+                onValueChange={setProjectStage}
+                disabled={isPending}
+              >
+                <SelectTrigger id="projectStage" className="w-full">
+                  <SelectValue placeholder="Select stage..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROJECT_STAGES.map((stage) => (
+                    <SelectItem key={stage} value={stage}>
+                      {PROJECT_STAGE_LABELS[stage] || stage}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="userRole">Your Role</Label>
+              <input type="hidden" name="userRole" value={userRole} />
+              <Select
+                value={userRole}
+                onValueChange={setUserRole}
+                disabled={isPending}
+              >
+                <SelectTrigger id="userRole" className="w-full">
+                  <SelectValue placeholder="Select role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {USER_ROLES.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {USER_ROLE_LABELS[role] || role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="budget">Budget Range</Label>
+              <input type="hidden" name="budget" value={budget} />
+              <Select
+                value={budget}
+                onValueChange={setBudget}
+                disabled={isPending}
+              >
+                <SelectTrigger id="budget" className="w-full">
+                  <SelectValue placeholder="Select budget..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUDGET_RANGES.map((range) => (
+                    <SelectItem key={range} value={range}>
+                      {BUDGET_LABELS[range] || range}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {state?.error && (

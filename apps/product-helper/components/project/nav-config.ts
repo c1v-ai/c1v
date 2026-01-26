@@ -5,6 +5,7 @@ import {
   GitBranch,
   Settings,
   Plug,
+  Sparkles,
 } from 'lucide-react';
 import type { DiagramType } from '@/lib/db/type-guards';
 
@@ -20,6 +21,7 @@ export function getProjectNavItems(projectId: number): NavItem[] {
     { name: 'Overview', href: `/projects/${projectId}`, icon: LayoutDashboard, exact: true },
     { name: 'Data', href: `/projects/${projectId}/data`, icon: Database },
     { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch },
+    { name: 'Generate', href: `/projects/${projectId}/generate`, icon: Sparkles },
     { name: 'Connections', href: `/projects/${projectId}/connections`, icon: Plug },
     { name: 'Settings', href: `/projects/${projectId}/settings`, icon: Settings },
   ];

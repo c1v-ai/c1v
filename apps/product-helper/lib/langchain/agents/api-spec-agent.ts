@@ -5,15 +5,15 @@
  * Pattern: Structured output with Zod schema validation
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
- * This agent uses GPT-4 with temperature=0 for deterministic generation.
- * It analyzes use cases and data entities to produce:
+ * Uses Claude Sonnet via central config for deterministic generation.
+ * Analyzes use cases and data entities to produce:
  * - RESTful endpoints covering all use cases
  * - Request/response schemas based on data entities
  * - Authentication configuration
  * - Error handling patterns
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { z } from 'zod';
 import type {
   APISpecification,
@@ -200,13 +200,8 @@ export async function generateAPISpecification(
   context: APISpecGenerationContext
 ): Promise<APISpecification> {
   try {
-    const model = new ChatOpenAI({
-      model: 'gpt-4o',
-      temperature: 0,
-    });
-
-    const structuredModel = model.withStructuredOutput(apiSpecificationSchema, {
-      name: 'generate_api_specification',
+    const structuredModel = createClaudeAgent(apiSpecificationSchema, 'generate_api_specification', {
+      temperature: 0.2, // Claude performs better at 0.2 than 0
     });
 
     // Format use cases for prompt

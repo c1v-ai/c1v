@@ -305,6 +305,30 @@ export const intakeStateChannels: StateGraphChannels = {
   },
 
   // ============================================================
+  // Knowledge Bank Tracking (Replace)
+  // ============================================================
+
+  currentKBStep: {
+    reducer: replaceReducer as (existing: unknown, incoming: unknown) => unknown,
+    default: () => 'context-diagram',
+  },
+
+  kbStepConfidence: {
+    reducer: replaceReducer as (existing: unknown, incoming: unknown) => unknown,
+    default: () => 0,
+  },
+
+  kbStepData: {
+    reducer: replaceReducer as (existing: unknown, incoming: unknown) => unknown,
+    default: () => ({}) as Record<string, unknown>,
+  },
+
+  approvalPending: {
+    reducer: replaceReducer as (existing: unknown, incoming: unknown) => unknown,
+    default: () => false,
+  },
+
+  // ============================================================
   // Control Flags (Replace)
   // ============================================================
 

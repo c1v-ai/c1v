@@ -785,6 +785,37 @@ export type ApiKeyScope =
   | 'admin';
 
 // ============================================================
+// Section Review Workflow (Per-Section Approval)
+// ============================================================
+
+/**
+ * Review status for an individual PRD section.
+ * Transitions: draft -> awaiting-review -> approved
+ */
+export type SectionReviewStatus = 'draft' | 'awaiting-review' | 'approved';
+
+/**
+ * Keys identifying each reviewable PRD section.
+ */
+export type SectionKey =
+  | 'problem-statement'
+  | 'system-overview'
+  | 'architecture'
+  | 'tech-stack'
+  | 'user-stories'
+  | 'schema'
+  | 'api-spec'
+  | 'infrastructure'
+  | 'guidelines'
+  | 'nfr';
+
+/**
+ * Map of section keys to their current review status.
+ * Stored in project_data.review_status JSONB column.
+ */
+export type SectionStatuses = Partial<Record<SectionKey, SectionReviewStatus>>;
+
+// ============================================================
 // Utility Types
 // ============================================================
 

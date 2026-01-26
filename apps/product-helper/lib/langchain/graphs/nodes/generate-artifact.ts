@@ -9,10 +9,11 @@
  * @module graphs/nodes/generate-artifact
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { extractionLLM } from '../../config';
 import { AIMessage } from '@langchain/core/messages';
-import { IntakeState, ArtifactPhase, getPhaseDisplayName } from '../types';
+import { IntakeState, ArtifactPhase, getPhaseDisplayName, getNextPhase, phaseToKBStep } from '../types';
 import { ExtractionResult } from '../../schemas';
+import { getNextKBStep } from '../../agents/intake/kb-question-generator';
 
 // ============================================================
 // LLM Configuration
@@ -20,13 +21,9 @@ import { ExtractionResult } from '../../schemas';
 
 /**
  * LLM for artifact generation
- * Uses GPT-4o with low temperature for consistent diagram output
+ * Uses Claude Sonnet via central config (extractionLLM has temp 0.2 for consistent output)
  */
-const artifactLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0.3, // Low temperature for consistent diagrams
-  maxTokens: 2000,
-});
+const artifactLLM = extractionLLM;
 
 // ============================================================
 // Diagram Templates
@@ -192,6 +189,10 @@ Generate the ${displayName} now:`;
       `${extractionSummary}Here's your ${displayName}:\n\n${content}\n\nWould you like me to refine this, or shall we continue to the next artifact?`
     );
 
+    // Advance to the next KB step and phase after artifact generation
+    const nextPhase = getNextPhase(currentPhase);
+    const nextKBStep = getNextKBStep(state.currentKBStep);
+
     return {
       pendingArtifact: {
         type: currentPhase,
@@ -199,6 +200,14 @@ Generate the ${displayName} now:`;
       },
       messages: [aiMessage],
       generatedArtifacts: [currentPhase],
+      // Advance phase and KB step
+      ...(nextPhase ? { currentPhase: nextPhase } : {}),
+      ...(nextKBStep ? {
+        currentKBStep: nextKBStep,
+        kbStepConfidence: 0,
+        kbStepData: {},
+        approvalPending: false,
+      } : {}),
     };
   } catch (error) {
     console.error('Artifact generation error:', error);

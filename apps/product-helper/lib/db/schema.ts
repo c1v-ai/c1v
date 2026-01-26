@@ -142,10 +142,26 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 // PRD-Specific Tables
 // ============================================================
 
+export const PROJECT_TYPES = ['saas', 'mobile-app', 'marketplace', 'api-service', 'e-commerce', 'internal-tool', 'open-source', 'other'] as const;
+export type ProjectType = typeof PROJECT_TYPES[number];
+
+export const PROJECT_STAGES = ['idea', 'prototype', 'mvp', 'growth', 'mature'] as const;
+export type ProjectStage = typeof PROJECT_STAGES[number];
+
+export const USER_ROLES = ['founder', 'product-manager', 'developer', 'designer', 'other'] as const;
+export type UserRole = typeof USER_ROLES[number];
+
+export const BUDGET_RANGES = ['bootstrap', 'seed', 'series-a', 'enterprise', 'undecided'] as const;
+export type BudgetRange = typeof BUDGET_RANGES[number];
+
 export const projects = pgTable('projects', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   vision: text('vision').notNull(),
+  projectType: varchar('project_type', { length: 30 }),
+  projectStage: varchar('project_stage', { length: 30 }),
+  userRole: varchar('user_role', { length: 30 }),
+  budget: varchar('budget', { length: 30 }),
   status: varchar('status', { length: 20 }).notNull().default('intake'),
 
   // Validation tracking
@@ -182,6 +198,8 @@ export const projectData = pgTable('project_data', {
   useCases: jsonb('use_cases'),
   systemBoundaries: jsonb('system_boundaries'),
   dataEntities: jsonb('data_entities'),
+  problemStatement: jsonb('problem_statement'),
+  goalsMetrics: jsonb('goals_metrics'),
 
   // Phase 9 v2.0 fields
   databaseSchema: jsonb('database_schema'),
@@ -189,6 +207,10 @@ export const projectData = pgTable('project_data', {
   apiSpecification: jsonb('api_specification'),
   infrastructureSpec: jsonb('infrastructure_spec'),
   codingGuidelines: jsonb('coding_guidelines'),
+  nonFunctionalRequirements: jsonb('non_functional_requirements'),
+
+  // Review workflow state per section: { sectionKey: 'draft' | 'awaiting-review' | 'approved' }
+  reviewStatus: jsonb('review_status'),
 
   // Intake agent state (serialized IntakeState for LangGraph)
   intakeState: jsonb('intake_state'),

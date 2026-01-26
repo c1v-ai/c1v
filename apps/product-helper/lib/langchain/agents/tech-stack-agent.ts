@@ -5,12 +5,12 @@
  * Pattern: Structured output with Zod schema validation
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
- * This agent uses GPT-4o with temperature=0.3 for consistent but slightly
- * creative tech recommendations. It analyzes the project vision, use cases,
+ * Uses Claude Sonnet via central config for consistent but slightly
+ * creative tech recommendations. Analyzes project vision, use cases,
  * and data entities to recommend an appropriate tech stack.
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { z } from 'zod';
 import { PromptTemplate } from '@langchain/core/prompts';
 import {
@@ -42,24 +42,12 @@ export interface TechStackContext {
 // ============================================================
 
 /**
- * Tech Stack LLM Configuration
- * - Model: GPT-4o for high-quality recommendations
- * - Temperature: 0.3 for consistent but slightly creative suggestions
- * - Max tokens: 4000 to handle comprehensive tech stack output
- */
-const techStackLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0.3,
-  maxTokens: 4000,
-  openAIApiKey: process.env.OPENAI_API_KEY,
-});
-
-/**
  * Structured output LLM with Zod schema validation
- * Ensures output matches TechStackModel type
+ * Uses Claude Sonnet via central config
+ * Temperature: 0.3 for consistent but slightly creative suggestions
  */
-const structuredTechStackLLM = techStackLLM.withStructuredOutput(techStackModelSchema, {
-  name: 'recommend_tech_stack',
+const structuredTechStackLLM = createClaudeAgent(techStackModelSchema, 'recommend_tech_stack', {
+  temperature: 0.3,
 });
 
 // ============================================================

@@ -6,6 +6,7 @@ import { BuildingInput } from './building-input';
 import { QuickStartChips } from './quick-start-chips';
 import { ValuePropsGrid } from './value-props-grid';
 import { ScopeModeToggle, type ScopeMode } from './scope-mode-toggle';
+import { ProjectMetadataSelectors } from './project-metadata-selectors';
 import { createProject } from '@/app/actions/projects';
 
 type ActionState = {
@@ -22,6 +23,10 @@ export function WelcomeOnboarding({ sidebar }: WelcomeOnboardingProps) {
   const router = useRouter();
   const [scopeMode, setScopeMode] = useState<ScopeMode>('defined');
   const [inputValue, setInputValue] = useState('');
+  const [projectType, setProjectType] = useState('');
+  const [projectStage, setProjectStage] = useState('');
+  const [userRole, setUserRole] = useState('');
+  const [budget, setBudget] = useState('');
 
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     createProject,
@@ -59,6 +64,10 @@ export function WelcomeOnboarding({ sidebar }: WelcomeOnboardingProps) {
 
     formData.append('name', projectName);
     formData.append('vision', vision);
+    if (projectType) formData.append('projectType', projectType);
+    if (projectStage) formData.append('projectStage', projectStage);
+    if (userRole) formData.append('userRole', userRole);
+    if (budget) formData.append('budget', budget);
     formAction(formData);
   };
 
@@ -101,6 +110,21 @@ export function WelcomeOnboarding({ sidebar }: WelcomeOnboardingProps) {
             <ScopeModeToggle
               mode={scopeMode}
               onChange={setScopeMode}
+              disabled={isPending}
+            />
+          </div>
+
+          {/* Project Metadata Selectors */}
+          <div className="mb-6 max-w-xl mx-auto">
+            <ProjectMetadataSelectors
+              projectType={projectType}
+              projectStage={projectStage}
+              userRole={userRole}
+              budget={budget}
+              onProjectTypeChange={setProjectType}
+              onProjectStageChange={setProjectStage}
+              onUserRoleChange={setUserRole}
+              onBudgetChange={setBudget}
               disabled={isPending}
             />
           </div>

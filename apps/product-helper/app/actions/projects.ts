@@ -30,9 +30,17 @@ async function logActivity(
 }
 
 // Validation Schemas
+const projectMetadataFields = {
+  projectType: z.enum(['saas', 'mobile-app', 'marketplace', 'api-service', 'e-commerce', 'internal-tool', 'open-source', 'other']).optional(),
+  projectStage: z.enum(['idea', 'prototype', 'mvp', 'growth', 'mature']).optional(),
+  userRole: z.enum(['founder', 'product-manager', 'developer', 'designer', 'other']).optional(),
+  budget: z.enum(['bootstrap', 'seed', 'series-a', 'enterprise', 'undecided']).optional(),
+};
+
 const createProjectSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
   vision: z.string().min(10, 'Vision must be at least 10 characters').max(5000, 'Vision must be less than 5000 characters'),
+  ...projectMetadataFields,
 });
 
 const updateProjectSchema = z.object({
@@ -40,6 +48,7 @@ const updateProjectSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
   vision: z.string().min(10, 'Vision must be at least 10 characters').max(5000, 'Vision must be less than 5000 characters'),
   status: z.enum(['intake', 'in_progress', 'validation', 'completed', 'archived']).optional(),
+  ...projectMetadataFields,
 });
 
 const deleteProjectSchema = z.object({
@@ -68,6 +77,10 @@ export const createProject = validatedActionWithUser(
       const newProject: NewProject = {
         name: data.name,
         vision: data.vision,
+        projectType: data.projectType,
+        projectStage: data.projectStage,
+        userRole: data.userRole,
+        budget: data.budget,
         status: ProjectStatus.INTAKE,
         teamId: team.id,
         createdBy: user.id,
@@ -124,6 +137,10 @@ export const updateProject = validatedActionWithUser(
           name: data.name,
           vision: data.vision,
           status: data.status || existingProject.status,
+          projectType: data.projectType ?? existingProject.projectType,
+          projectStage: data.projectStage ?? existingProject.projectStage,
+          userRole: data.userRole ?? existingProject.userRole,
+          budget: data.budget ?? existingProject.budget,
           updatedAt: new Date(),
         })
         .where(eq(projects.id, data.id));

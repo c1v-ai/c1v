@@ -18,6 +18,7 @@ export const actorSchema = z.object({
   role: z.string().describe('Role or type of actor (e.g., "Primary User", "External System")'),
   description: z.string().describe('Detailed description of the actor and their purpose'),
   goals: z.array(z.string()).optional().describe('Optional list of actor goals'),
+  painPoints: z.array(z.string()).optional().describe('Pain points or frustrations this actor experiences'),
 });
 
 export type Actor = z.infer<typeof actorSchema>;
@@ -115,6 +116,8 @@ export type EnhancedUseCase = z.infer<typeof enhancedUseCaseSchema>;
 export const systemBoundariesSchema = z.object({
   internal: z.array(z.string()).describe('Components/features that are part of the system'),
   external: z.array(z.string()).describe('External systems, APIs, or services'),
+  inScope: z.array(z.string()).optional().describe('Deliverables explicitly in scope'),
+  outOfScope: z.array(z.string()).optional().describe('Deliverables explicitly out of scope'),
 });
 
 export type SystemBoundaries = z.infer<typeof systemBoundariesSchema>;
@@ -132,6 +135,73 @@ export const dataEntitySchema = z.object({
 export type DataEntity = z.infer<typeof dataEntitySchema>;
 
 // ============================================================
+// Goals & Metrics Schema
+// ============================================================
+
+/**
+ * Goal/Success Metric Schema
+ * Structured representation of a project goal with measurable success criteria
+ */
+export const goalMetricSchema = z.object({
+  goal: z.string().describe('The goal statement'),
+  metric: z.string().describe('How success will be measured'),
+  target: z.string().optional().describe('Target value or threshold for the metric'),
+});
+
+export type GoalMetric = z.infer<typeof goalMetricSchema>;
+
+// ============================================================
+// Problem Statement Schema
+// ============================================================
+
+/**
+ * Problem Statement Schema
+ * Extracted from conversation as a core PRD section
+ */
+export const problemStatementSchema = z.object({
+  summary: z.string().describe('Concise 1-2 sentence problem summary'),
+  context: z.string().describe('Background and context of the problem'),
+  impact: z.string().describe('Impact on the business or users if not solved'),
+  goals: z.array(z.string()).describe('Goals the solution should achieve'),
+});
+
+export type ProblemStatement = z.infer<typeof problemStatementSchema>;
+
+// ============================================================
+// Non-Functional Requirements Schema
+// ============================================================
+
+/**
+ * NFR Category
+ * Categories of non-functional requirements
+ */
+export const nfrCategorySchema = z.enum([
+  'performance',
+  'security',
+  'scalability',
+  'reliability',
+  'usability',
+  'maintainability',
+  'compliance',
+]);
+
+export type NfrCategory = z.infer<typeof nfrCategorySchema>;
+
+/**
+ * Non-Functional Requirement Schema
+ * Represents a single non-functional requirement with measurable criteria
+ */
+export const nonFunctionalRequirementSchema = z.object({
+  category: nfrCategorySchema.describe('Category of the non-functional requirement'),
+  requirement: z.string().describe('The requirement statement'),
+  metric: z.string().optional().describe('How this requirement will be measured'),
+  target: z.string().optional().describe('Target value or threshold'),
+  priority: z.enum(['critical', 'high', 'medium', 'low']).describe('Priority level'),
+});
+
+export type NonFunctionalRequirement = z.infer<typeof nonFunctionalRequirementSchema>;
+
+// ============================================================
 // Extraction Schema (Phase 10)
 // ============================================================
 
@@ -144,6 +214,9 @@ export const extractionSchema = z.object({
   useCases: z.array(useCaseSchema).describe('All use cases identified from the conversation'),
   systemBoundaries: systemBoundariesSchema.describe('System scope boundaries'),
   dataEntities: z.array(dataEntitySchema).describe('Core data objects in the system'),
+  problemStatement: problemStatementSchema.optional().describe('Problem statement extracted from conversation'),
+  goalsMetrics: z.array(goalMetricSchema).optional().describe('Goals with measurable success criteria'),
+  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema).optional().describe('Non-functional requirements extracted from conversation'),
 });
 
 export type ExtractionResult = z.infer<typeof extractionSchema>;

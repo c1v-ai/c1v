@@ -21,7 +21,7 @@ const menuItems = [
   { href: '/projects', icon: Home, label: 'Home' },
   { href: '/projects', icon: FolderOpen, label: 'Projects' },
   { href: '/chat', icon: MessageSquare, label: 'Chat' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
+  { href: '/dashboard', icon: Settings, label: 'Settings' },
 ]
 
 export function MobileMenu() {

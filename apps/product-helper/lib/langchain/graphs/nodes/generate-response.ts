@@ -3,15 +3,18 @@
  *
  * Purpose: Generate the streaming response to send back to user.
  * Creates contextual, conversational AI messages based on current state.
+ * Enhanced with knowledge bank education blocks for collaborative flow.
  *
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
  * @module graphs/nodes/generate-response
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { streamingLLM } from '../../config';
 import { AIMessage } from '@langchain/core/messages';
 import { IntakeState, getPhaseDisplayName } from '../types';
+import { buildPromptEducationBlock } from '@/lib/education/phase-mapping';
+import { knowledgeBank } from '@/lib/education/knowledge-bank';
 
 // ============================================================
 // LLM Configuration
@@ -19,40 +22,26 @@ import { IntakeState, getPhaseDisplayName } from '../types';
 
 /**
  * LLM for conversational responses
- * Uses GPT-4o with temperature 0.7 for natural conversation
- * Streaming enabled for real-time feedback
+ * Uses Claude Sonnet via central config with streaming enabled
  */
-const responseLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0.7, // Natural conversation
-  maxTokens: 500,
-  streaming: true,
-});
+const responseLLM = streamingLLM;
 
 // ============================================================
 // Main Node Function
 // ============================================================
 
 /**
- * Generate conversational response based on current state
+ * Generate conversational response based on current state.
  *
  * Response types:
- * 1. Ask pending question (if set by compute_next_question)
- * 2. Confirm assumption
+ * 1. KB-driven educated guesses (if pendingQuestion contains KB response)
+ * 2. Approval proposal (if approvalPending is true)
  * 3. Acknowledge info and ask follow-up
  * 4. Announce artifact generation
  * 5. Provide status update
  *
  * @param state - Current intake state
  * @returns Partial state with AI message added
- *
- * @example
- * // When pendingQuestion is set:
- * { messages: [AIMessage: "Who are the main users of Task Manager?"] }
- *
- * @example
- * // When artifact was generated:
- * { } // No additional message needed, artifact node added it
  */
 export async function generateResponse(
   state: IntakeState
@@ -64,7 +53,7 @@ export async function generateResponse(
     return {};
   }
 
-  // If we have a pending question, ask it
+  // If we have a pending question/response (from KB generator), use it directly
   if (pendingQuestion) {
     const aiMessage = new AIMessage(pendingQuestion);
     return {
@@ -101,14 +90,20 @@ export async function generateResponse(
 // ============================================================
 
 /**
- * Build prompt for response generation
- * Creates context-aware instructions for the LLM
- *
- * @param state - Current intake state
- * @returns Formatted prompt string
+ * Build prompt for response generation with KB education context.
  */
 function buildResponsePrompt(state: IntakeState): string {
-  const { projectName, completeness, currentPhase, lastIntent, extractedData, validationResult } = state;
+  const {
+    projectName,
+    completeness,
+    currentPhase,
+    lastIntent,
+    extractedData,
+    validationResult,
+    currentKBStep,
+    kbStepConfidence,
+    approvalPending,
+  } = state;
   const displayPhase = getPhaseDisplayName(currentPhase);
 
   // Build data summary
@@ -130,61 +125,78 @@ function buildResponsePrompt(state: IntakeState): string {
 ${validationResult.errors.length > 0 ? `- Errors: ${validationResult.errors.join(', ')}` : ''}`;
   }
 
-  return `You are a PRD assistant for "${projectName}".
+  // Build KB education context
+  const educationBlock = buildPromptEducationBlock(currentPhase);
+  const kbEntry = knowledgeBank[currentKBStep];
+
+  // Build approval context
+  let approvalContext = '';
+  if (approvalPending) {
+    approvalContext = `
+## IMPORTANT: Approval Pending
+You should propose generating the ${kbEntry.label} artifact.
+The confidence is at ${kbStepConfidence}%.
+Ask: "I have enough information to generate your ${kbEntry.label}. This will use AI tokens. Should I proceed?"
+`;
+  }
+
+  return `You are a PRD assistant for "${projectName}", following the Knowledge Bank methodology.
+You are currently on the "${kbEntry.label}" step.
 
 ## Current Status
 - Completeness: ${completeness}%
 - Current Phase: ${displayPhase}
+- KB Step: ${kbEntry.label}
+- KB Confidence: ${kbStepConfidence}%
 - Last User Intent: ${lastIntent}
 
 ## Data Collected
 ${dataSummary}
 ${validationContext}
 
+${educationBlock}
+${approvalContext}
+
 ## Response Guidelines
 1. Be brief (1-3 sentences max)
 2. Acknowledge what user provided if they gave info
-3. If close to artifact generation (completeness > 80%), mention it
-4. Don't ask multiple questions - the question node handles that
-5. Be encouraging but not overly positive
-6. Focus on progress and next steps
+3. Use the educated guess format: checkmark for confident, ? for uncertain
+4. If confidence > 80%, propose artifact generation
+5. Don't ask multiple questions - focus on the most critical gap
+6. Incorporate educational tips naturally (don't lecture)
+7. Be encouraging but not overly positive
+8. Focus on progress and next steps
 
 ## Response Tone
-- Conversational but professional
-- Action-oriented
-- Respectful of user's time
+- Collaborative: "Here's what I'm seeing..." not "Tell me about..."
+- Educational: Naturally weave in key terms and tips
+- Action-oriented: Move the conversation forward
 
 ## What to Include Based on Intent
-- PROVIDE_INFO: Acknowledge, summarize key points, show progress
-- CONFIRM: Thank them, note what was confirmed
-- DENY: Accept correction, ask clarifying question
-- ASK_QUESTION: Answer directly if you can, otherwise redirect
-- EDIT_DATA: Confirm the edit was understood
-- UNKNOWN: Ask for clarification gently
+- PROVIDE_INFO: Acknowledge, update guesses, show progress
+- CONFIRM: Thank them, note confirmed items, move to next gap or propose generation
+- DENY: Accept correction, adjust guesses, re-probe
+- ASK_QUESTION: Answer using educational context, then redirect to current step
+- EDIT_DATA: Confirm the edit, update relevant guesses
+- UNKNOWN: Gently guide back to the current KB step
 
 Generate a natural, brief response that moves the conversation forward:`;
 }
 
 /**
  * Generate a progress update message
- * Used when user asks about status or completeness
- *
- * @param state - Current intake state
- * @returns Progress update string
  */
 export function generateProgressUpdate(state: IntakeState): string {
-  const { completeness, currentPhase, extractedData, generatedArtifacts } = state;
+  const { completeness, currentPhase, extractedData, generatedArtifacts, currentKBStep, kbStepConfidence } = state;
   const displayPhase = getPhaseDisplayName(currentPhase);
+  const kbEntry = knowledgeBank[currentKBStep];
 
   const lines: string[] = [];
 
-  // Overall progress
   lines.push(`**Progress: ${completeness}%**`);
+  lines.push(`Working on: ${displayPhase} (${kbEntry.label})`);
+  lines.push(`Step confidence: ${kbStepConfidence}%`);
 
-  // Current phase
-  lines.push(`Working on: ${displayPhase}`);
-
-  // Data summary
   if (extractedData.actors.length > 0) {
     lines.push(`Actors identified: ${extractedData.actors.map(a => a.name).join(', ')}`);
   }
@@ -194,8 +206,6 @@ export function generateProgressUpdate(state: IntakeState): string {
   if (extractedData.systemBoundaries.external.length > 0) {
     lines.push(`External systems: ${extractedData.systemBoundaries.external.join(', ')}`);
   }
-
-  // Generated artifacts
   if (generatedArtifacts.length > 0) {
     lines.push(`Artifacts generated: ${generatedArtifacts.map(a => getPhaseDisplayName(a)).join(', ')}`);
   }
@@ -205,11 +215,6 @@ export function generateProgressUpdate(state: IntakeState): string {
 
 /**
  * Generate an acknowledgment message
- * Used when user provides information
- *
- * @param extractedInfo - Brief description of what was extracted
- * @param completeness - Current completeness percentage
- * @returns Acknowledgment string
  */
 export function generateAcknowledgment(extractedInfo: string, completeness: number): string {
   const messages = [
@@ -219,10 +224,8 @@ export function generateAcknowledgment(extractedInfo: string, completeness: numb
     `Understood. ${extractedInfo} added to the requirements.`,
   ];
 
-  // Pick a random message for variety
   const message = messages[Math.floor(Math.random() * messages.length)];
 
-  // Add progress if notable
   if (completeness >= 80) {
     return `${message} We're at ${completeness}% - almost ready to generate your next artifact!`;
   } else if (completeness >= 50) {
@@ -234,10 +237,6 @@ export function generateAcknowledgment(extractedInfo: string, completeness: numb
 
 /**
  * Generate a clarification request
- * Used when user input is unclear
- *
- * @param topic - What needs clarification
- * @returns Clarification request string
  */
 export function generateClarificationRequest(topic: string): string {
   return `I want to make sure I understand correctly about ${topic}. Could you clarify?`;

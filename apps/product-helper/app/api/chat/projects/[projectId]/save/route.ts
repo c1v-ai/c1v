@@ -167,6 +167,8 @@ export async function POST(
                 useCases: (existingData.useCases as any) || [],
                 systemBoundaries: (existingData.systemBoundaries as any) || { internal: [], external: [] },
                 dataEntities: (existingData.dataEntities as any) || [],
+                problemStatement: (existingData.problemStatement as any) || undefined,
+                nonFunctionalRequirements: (existingData.nonFunctionalRequirements as any) || undefined,
               },
               extraction
             )
@@ -185,6 +187,8 @@ export async function POST(
               useCases: mergedData.useCases as any,
               systemBoundaries: mergedData.systemBoundaries as any,
               dataEntities: mergedData.dataEntities as any,
+              problemStatement: mergedData.problemStatement as any,
+              nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
               completeness: newCompleteness,
               lastExtractedAt: new Date(),
               updatedAt: new Date(),
@@ -198,6 +202,8 @@ export async function POST(
             useCases: mergedData.useCases as any,
             systemBoundaries: mergedData.systemBoundaries as any,
             dataEntities: mergedData.dataEntities as any,
+            problemStatement: mergedData.problemStatement as any,
+            nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
             completeness: newCompleteness,
             lastExtractedAt: new Date(),
           });

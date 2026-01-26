@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronRight,
   CheckCircle2,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -118,6 +119,10 @@ function getStatusBadge(status: string) {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+function formatStoryId(id: number): string {
+  return `US-${String(id).padStart(3, '0')}`;
+}
+
 function StoryRow({ story }: { story: UserStoryData }) {
   const [expanded, setExpanded] = useState(false);
   const criteria = Array.isArray(story.acceptanceCriteria)
@@ -148,6 +153,12 @@ function StoryRow({ story }: { story: UserStoryData }) {
         }}
         aria-expanded={hasCriteria ? expanded : undefined}
       >
+        <td
+          className="py-3 px-4 text-xs font-mono hidden sm:table-cell"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {formatStoryId(story.id)}
+        </td>
         <td className="py-3 px-4">
           <div className="flex items-center gap-2">
             {hasCriteria ? (
@@ -185,7 +196,7 @@ function StoryRow({ story }: { story: UserStoryData }) {
       {expanded && hasCriteria && (
         <tr>
           <td
-            colSpan={5}
+            colSpan={6}
             className="px-4 pb-4 pt-1"
             style={{ backgroundColor: 'var(--bg-secondary)' }}
           >
@@ -243,6 +254,12 @@ function StoryGroup({
                 className="border-b"
                 style={{ borderColor: 'var(--border)' }}
               >
+                <th
+                  className="text-left py-2 px-4 font-semibold hidden sm:table-cell"
+                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+                >
+                  ID
+                </th>
                 <th
                   className="text-left py-2 px-4 font-semibold"
                   style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
@@ -355,6 +372,11 @@ export function UserStoriesSection({ project }: UserStoriesSectionProps) {
 
   const hasEpics = grouped.size > 1 || !grouped.has('Ungrouped');
 
+  const doneCount = useMemo(
+    () => stories.filter((s) => s.status === 'done' || s.status === 'completed').length,
+    [stories]
+  );
+
   return (
     <div className="space-y-6">
       {/* Section Header */}
@@ -367,9 +389,26 @@ export function UserStoriesSection({ project }: UserStoriesSectionProps) {
             User Stories
           </h2>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <span
+              className="font-medium"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {doneCount}/{stories.length}
+            </span>
+            {' '}completed &middot;{' '}
             {stories.length} {stories.length === 1 ? 'story' : 'stories'} generated from your requirements.
           </p>
         </div>
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+        >
+          <Link href={`/projects/${project.id}/chat`}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Story
+          </Link>
+        </Button>
       </div>
 
       {hasEpics ? (

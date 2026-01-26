@@ -9,7 +9,7 @@
  * @module graphs/nodes/analyze-response
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../../config';
 import { z } from 'zod';
 import {
   IntakeState,
@@ -61,14 +61,11 @@ type IntentAnalysis = z.infer<typeof intentAnalysisSchema>;
 
 /**
  * LLM for intent analysis
- * Uses GPT-4o with temperature 0 for consistent classification
+ * Uses Claude Sonnet via central config for consistent classification
  */
-const intentLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0,
+const intentLLM = createClaudeAgent(intentAnalysisSchema, 'analyze_intent', {
+  temperature: 0.2,
   maxTokens: 500,
-}).withStructuredOutput(intentAnalysisSchema, {
-  name: 'analyze_intent',
 });
 
 // ============================================================
@@ -106,6 +103,24 @@ export async function analyzeResponse(
   }
 
   const userText = getMessageContent(lastMessage);
+
+  // Fast path: If approval was pending and user confirms, route to artifact generation
+  if (state.approvalPending) {
+    const isConfirmation = /^(yes|yeah|sure|ok|okay|proceed|go ahead|do it|generate|let's go|yep|yup)\b/i.test(userText.trim());
+    if (isConfirmation) {
+      return {
+        lastIntent: 'REQUEST_ARTIFACT',
+        approvalPending: false,
+        turnCount: state.turnCount + 1,
+      };
+    }
+    // User declined or provided more info — clear approval and continue
+    return {
+      lastIntent: 'PROVIDE_INFO',
+      approvalPending: false,
+      turnCount: state.turnCount + 1,
+    };
+  }
 
   // Fast path: Check for stop triggers before LLM call
   const hasStopTrigger = containsStopTrigger(userText);

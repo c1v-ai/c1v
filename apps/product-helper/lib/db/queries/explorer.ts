@@ -16,6 +16,7 @@ export type ExplorerData = {
     validationScore: number | null;
   };
   completeness: number;
+  sectionStatuses: Record<string, string>;
   counts: {
     actors: number;
     useCases: number;
@@ -34,6 +35,9 @@ export type ExplorerData = {
     hasArchitecture: boolean;
     hasUserStories: boolean;
     hasDiagrams: boolean;
+    hasProblemStatement: boolean;
+    hasGoalsMetrics: boolean;
+    hasNfr: boolean;
   };
 };
 
@@ -68,6 +72,10 @@ export async function getExplorerData(
           apiSpecification: true,
           infrastructureSpec: true,
           codingGuidelines: true,
+          problemStatement: true,
+          goalsMetrics: true,
+          nonFunctionalRequirements: true,
+          reviewStatus: true,
           completeness: true,
         },
       }),
@@ -124,6 +132,7 @@ export async function getExplorerData(
       validationScore: projectResult.validationScore,
     },
     completeness: dataResult?.completeness ?? 0,
+    sectionStatuses: (dataResult?.reviewStatus as Record<string, string>) ?? {},
     counts: {
       actors: actorsArray.length,
       useCases: useCasesArray.length,
@@ -142,6 +151,9 @@ export async function getExplorerData(
       hasArchitecture,
       hasUserStories: (storyCountResult[0]?.value ?? 0) > 0,
       hasDiagrams: (artifactCountResult[0]?.value ?? 0) > 0,
+      hasProblemStatement: hasJsonbData(dataResult?.problemStatement),
+      hasGoalsMetrics: hasJsonbData(dataResult?.goalsMetrics),
+      hasNfr: hasJsonbData(dataResult?.nonFunctionalRequirements),
     },
   };
 }

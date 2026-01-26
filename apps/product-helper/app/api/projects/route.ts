@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { projects, type NewProject, ProjectStatus } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
+
+const createProjectSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
+  vision: z.string().min(10, 'Vision must be at least 10 characters').max(5000, 'Vision must be less than 5000 characters'),
+  projectType: z.enum(['saas', 'mobile-app', 'marketplace', 'api-service', 'e-commerce', 'internal-tool', 'open-source', 'other']).optional(),
+  projectStage: z.enum(['idea', 'prototype', 'mvp', 'growth', 'mature']).optional(),
+  userRole: z.enum(['founder', 'product-manager', 'developer', 'designer', 'other']).optional(),
+  budget: z.enum(['bootstrap', 'seed', 'series-a', 'enterprise', 'undecided']).optional(),
+});
 
 /**
  * GET /api/projects
@@ -74,41 +84,25 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, vision } = body;
+    const parsed = createProjectSchema.safeParse(body);
 
-    // Validation
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Name is required' },
+        { error: 'Validation failed', details: parsed.error.errors },
         { status: 400 }
       );
     }
 
-    if (!vision || typeof vision !== 'string' || vision.trim().length < 10) {
-      return NextResponse.json(
-        { error: 'Vision must be at least 10 characters' },
-        { status: 400 }
-      );
-    }
-
-    if (name.length > 255) {
-      return NextResponse.json(
-        { error: 'Name must be less than 255 characters' },
-        { status: 400 }
-      );
-    }
-
-    if (vision.length > 5000) {
-      return NextResponse.json(
-        { error: 'Vision must be less than 5000 characters' },
-        { status: 400 }
-      );
-    }
+    const { name, vision, projectType, projectStage, userRole, budget } = parsed.data;
 
     // Create project
     const newProject: NewProject = {
       name: name.trim(),
       vision: vision.trim(),
+      projectType,
+      projectStage,
+      userRole,
+      budget,
       status: ProjectStatus.INTAKE,
       teamId: team.id,
       createdBy: user.id,

@@ -101,8 +101,8 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return createCheckoutSession({ team: foundTeam, priceId });
   }
 
-  // Redirect to welcome page - WelcomeOnboarding handles new vs returning users
-  redirect('/welcome-test');
+  // Redirect returning users to their projects list
+  redirect('/projects');
 });
 
 const signUpSchema = z.object({

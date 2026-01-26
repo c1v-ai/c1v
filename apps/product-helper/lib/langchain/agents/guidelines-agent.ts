@@ -5,12 +5,12 @@
  * Pattern: Structured output with Zod schema validation
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
- * This agent uses GPT-4o with temperature=0.2 for consistent, opinionated
- * coding guidelines. It analyzes the project's tech stack and team context
+ * Uses Claude Sonnet via central config for consistent, opinionated
+ * coding guidelines. Analyzes the project's tech stack and team context
  * to generate appropriate conventions, patterns, and tooling configurations.
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { PromptTemplate } from '@langchain/core/prompts';
 import {
   codingGuidelinesSchema,
@@ -47,24 +47,13 @@ export interface GuidelinesContext {
 // ============================================================
 
 /**
- * Guidelines LLM Configuration
- * - Model: GPT-4o for high-quality, consistent guidelines
- * - Temperature: 0.2 for very consistent, opinionated output
- * - Max tokens: 5000 to handle comprehensive guidelines
+ * Structured output LLM with Zod schema validation
+ * Uses Claude Sonnet via central config
+ * Temperature: 0.2 for very consistent, opinionated output
  */
-const guidelinesLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
+const structuredGuidelinesLLM = createClaudeAgent(codingGuidelinesSchema, 'generate_coding_guidelines', {
   temperature: 0.2,
   maxTokens: 5000,
-  openAIApiKey: process.env.OPENAI_API_KEY,
-});
-
-/**
- * Structured output LLM with Zod schema validation
- * Ensures output matches CodingGuidelines type
- */
-const structuredGuidelinesLLM = guidelinesLLM.withStructuredOutput(codingGuidelinesSchema, {
-  name: 'generate_coding_guidelines',
 });
 
 // ============================================================

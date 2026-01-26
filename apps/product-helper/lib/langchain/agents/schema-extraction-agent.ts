@@ -4,15 +4,15 @@
  * Purpose: Convert dataEntities from PRD extraction into full DatabaseSchemaModel.
  * Pattern: Structured output with Zod schema validation.
  *
- * This agent uses GPT-4o with temperature=0 for deterministic extraction.
- * It analyzes data entities and their relationships to produce:
+ * Uses Claude Sonnet via central config for deterministic extraction.
+ * Analyzes data entities and their relationships to produce:
  * - Database entities with typed fields
  * - Foreign key relationships with proper referential actions
  * - Indexes for common query patterns
  * - PostgreSQL enums for status/type fields
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { z } from 'zod';
 import type {
   DatabaseSchemaModel,
@@ -137,13 +137,8 @@ export async function extractDatabaseSchema(
   context: SchemaExtractionContext
 ): Promise<DatabaseSchemaModel> {
   try {
-    const model = new ChatOpenAI({
-      model: 'gpt-4o',
-      temperature: 0,
-    });
-
-    const structuredModel = model.withStructuredOutput(databaseSchemaSchema, {
-      name: 'extract_database_schema',
+    const structuredModel = createClaudeAgent(databaseSchemaSchema, 'extract_database_schema', {
+      temperature: 0.2, // Claude performs better at 0.2 than 0
     });
 
     const dataEntitiesText = context.dataEntities

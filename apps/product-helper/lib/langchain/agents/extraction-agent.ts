@@ -5,36 +5,25 @@
  * Pattern: Structured output with Zod schema validation
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
- * This agent uses GPT-4 with temperature=0 for deterministic extraction.
- * It analyzes conversation history and extracts:
+ * Uses Claude Sonnet via central config for deterministic extraction.
+ * Analyzes conversation history and extracts:
  * - Actors (users, systems, external entities)
  * - Use cases (what users can do)
  * - System boundaries (internal vs external)
  * - Data entities (objects, attributes, relationships)
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import { createClaudeAgent } from '../config';
 import { extractionSchema, type ExtractionResult } from '../schemas';
 import { extractionPrompt } from '../prompts';
 
 /**
- * Extraction LLM Configuration
- * - Model: GPT-4 Turbo for high-quality extraction
- * - Temperature: 0 for deterministic results
- * - Max tokens: 3000 to handle large conversations
- */
-const extractionLLM = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0,
-  maxTokens: 3000,
-});
-
-/**
  * Structured extraction LLM with Zod schema validation
- * Ensures output matches ExtractionResult type
+ * Uses Claude Sonnet with temperature 0.2 for deterministic results
  */
-const structuredExtractionLLM = extractionLLM.withStructuredOutput(extractionSchema, {
-  name: 'extract_prd_data',
+const structuredExtractionLLM = createClaudeAgent(extractionSchema, 'extract_prd_data', {
+  temperature: 0.2,
+  maxTokens: 3000,
 });
 
 /**
@@ -90,10 +79,11 @@ export async function extractProjectData(
  * Calculate project completeness score (0-100) based on extracted data
  *
  * Scoring criteria:
- * - Actors: 25% (need at least 2)
- * - Use cases: 35% (need at least 3)
- * - System boundaries: 20% (both internal and external defined)
- * - Data entities: 20% (need at least 1)
+ * - Actors: 20% (2+ = 20, 1 = 10)
+ * - Use cases: 30% (5+ = 30, 3+ = 20, 1+ = 8)
+ * - System boundaries: 20% (both = 20, one = 10)
+ * - Data entities: 15% (3+ = 15, 2+ = 10, 1+ = 5)
+ * - Goals/Metrics: 15% (3+ = 15, 2+ = 10, 1+ = 5)
  *
  * @param extraction - Extraction result from extractProjectData
  * @returns Completeness score 0-100
@@ -101,22 +91,22 @@ export async function extractProjectData(
 export function calculateCompleteness(extraction: ExtractionResult): number {
   let score = 0;
 
-  // Actors: 25 points (max 2 needed)
+  // Actors: 20 points (max 2 needed)
   const actorCount = extraction.actors.length;
   if (actorCount >= 2) {
-    score += 25;
+    score += 20;
   } else if (actorCount === 1) {
-    score += 12;
+    score += 10;
   }
 
-  // Use cases: 35 points (max 5 needed)
+  // Use cases: 30 points (max 5 needed)
   const useCaseCount = extraction.useCases.length;
   if (useCaseCount >= 5) {
-    score += 35;
+    score += 30;
   } else if (useCaseCount >= 3) {
-    score += 25;
+    score += 20;
   } else if (useCaseCount >= 1) {
-    score += 10;
+    score += 8;
   }
 
   // System boundaries: 20 points
@@ -128,14 +118,24 @@ export function calculateCompleteness(extraction: ExtractionResult): number {
     score += 10;
   }
 
-  // Data entities: 20 points (max 3 needed)
+  // Data entities: 15 points (max 3 needed)
   const entityCount = extraction.dataEntities.length;
   if (entityCount >= 3) {
-    score += 20;
+    score += 15;
   } else if (entityCount >= 2) {
-    score += 13;
+    score += 10;
   } else if (entityCount >= 1) {
-    score += 7;
+    score += 5;
+  }
+
+  // Goals/Metrics: 15 points (max 3 needed)
+  const goalsCount = extraction.goalsMetrics?.length ?? 0;
+  if (goalsCount >= 3) {
+    score += 15;
+  } else if (goalsCount >= 2) {
+    score += 10;
+  } else if (goalsCount >= 1) {
+    score += 5;
   }
 
   return Math.min(score, 100);
@@ -186,13 +186,37 @@ export function mergeExtractionData(
     entityMap.set(entity.name, entity);
   });
 
+  // Merge problem statement (newer data takes priority)
+  const problemStatement = newData.problemStatement ?? existing.problemStatement;
+
+  // Merge goals/metrics (newer data takes priority)
+  const goalsMetrics = newData.goalsMetrics ?? existing.goalsMetrics;
+
+  // Merge non-functional requirements (newer data takes priority)
+  const nonFunctionalRequirements = newData.nonFunctionalRequirements ?? existing.nonFunctionalRequirements;
+
+  // Merge system boundaries scope fields
+  const inScopeSet = new Set([
+    ...(existing.systemBoundaries.inScope ?? []),
+    ...(newData.systemBoundaries.inScope ?? []),
+  ]);
+  const outOfScopeSet = new Set([
+    ...(existing.systemBoundaries.outOfScope ?? []),
+    ...(newData.systemBoundaries.outOfScope ?? []),
+  ]);
+
   return {
     actors: Array.from(actorMap.values()),
     useCases: Array.from(useCaseMap.values()),
     systemBoundaries: {
       internal: Array.from(internalSet),
       external: Array.from(externalSet),
+      inScope: Array.from(inScopeSet),
+      outOfScope: Array.from(outOfScopeSet),
     },
     dataEntities: Array.from(entityMap.values()),
+    problemStatement,
+    goalsMetrics,
+    nonFunctionalRequirements,
   };
 }

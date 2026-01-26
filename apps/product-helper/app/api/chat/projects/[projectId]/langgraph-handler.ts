@@ -369,6 +369,12 @@ async function updateProjectDataFromState(
       updateData.useCases = extractedData.useCases;
       updateData.systemBoundaries = extractedData.systemBoundaries;
       updateData.dataEntities = extractedData.dataEntities;
+      if (extractedData.problemStatement) {
+        updateData.problemStatement = extractedData.problemStatement;
+      }
+      if (extractedData.goalsMetrics) {
+        updateData.goalsMetrics = extractedData.goalsMetrics;
+      }
       updateData.lastExtractedAt = new Date();
     }
 

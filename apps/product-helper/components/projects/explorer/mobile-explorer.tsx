@@ -60,7 +60,7 @@ export function MobileExplorer({ projectId, data }: MobileExplorerProps) {
             <ExplorerTree projectId={projectId} data={data} filter={filter} />
           </div>
 
-          <ExplorerProgress completeness={data.completeness} />
+          <ExplorerProgress completeness={data.completeness} hasData={data.hasData} />
         </SheetContent>
       </Sheet>
     </>

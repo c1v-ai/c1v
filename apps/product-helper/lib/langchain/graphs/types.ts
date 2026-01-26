@@ -1,5 +1,6 @@
 import { BaseMessage } from '@langchain/core/messages';
 import { ExtractionResult } from '../schemas';
+import type { KnowledgeBankStep } from '@/lib/education/knowledge-bank';
 
 /**
  * LangGraph State Machine Types for Product-Helper Intake System
@@ -283,6 +284,34 @@ export interface IntakeState {
   pendingArtifact: PendingArtifact | null;
 
   // ============================================================
+  // Knowledge Bank Tracking
+  // ============================================================
+
+  /**
+   * Which knowledge bank step is currently active
+   * Follows sequence: context-diagram → use-case-diagram → scope-tree → ucbd → functional-requirements → sysml-activity-diagram
+   */
+  currentKBStep: KnowledgeBankStep;
+
+  /**
+   * Confidence score (0-100) for current KB step
+   * When >80%, LLM proposes artifact generation
+   */
+  kbStepConfidence: number;
+
+  /**
+   * Accumulated data for the current KB step
+   * Stores educated guesses, confirmed items, and gap analysis
+   */
+  kbStepData: Record<string, unknown>;
+
+  /**
+   * Whether we're waiting for user to approve a generation
+   * Set when confidence >80% and artifact not yet generated
+   */
+  approvalPending: boolean;
+
+  // ============================================================
   // Control Flags
   // ============================================================
 
@@ -351,6 +380,8 @@ export function createInitialState(
 
   const generatedArtifacts = existingData?.generatedArtifacts ?? [];
 
+  const currentPhase = determineCurrentPhase(generatedArtifacts);
+
   return {
     // Messages
     messages: existingData?.messages ?? [],
@@ -367,7 +398,7 @@ export function createInitialState(
     artifactReadiness: computeArtifactReadiness(extractedData),
 
     // Phase tracking
-    currentPhase: determineCurrentPhase(generatedArtifacts),
+    currentPhase,
     generatedArtifacts,
 
     // Per-turn analysis
@@ -375,6 +406,12 @@ export function createInitialState(
     validationResult: null,
     pendingQuestion: null,
     pendingArtifact: null,
+
+    // Knowledge bank tracking
+    currentKBStep: phaseToKBStep(currentPhase),
+    kbStepConfidence: 0,
+    kbStepData: {},
+    approvalPending: false,
 
     // Control flags
     isComplete: false,
@@ -558,6 +595,22 @@ export function calculateCompleteness(data: ExtractionResult): number {
   }
 
   return Math.min(score, 100);
+}
+
+/**
+ * Map an ArtifactPhase to its corresponding KnowledgeBankStep
+ */
+export function phaseToKBStep(phase: ArtifactPhase): KnowledgeBankStep {
+  const mapping: Record<ArtifactPhase, KnowledgeBankStep> = {
+    context_diagram: 'context-diagram',
+    use_case_diagram: 'use-case-diagram',
+    scope_tree: 'scope-tree',
+    ucbd: 'ucbd',
+    requirements_table: 'functional-requirements',
+    constants_table: 'functional-requirements',
+    sysml_activity_diagram: 'sysml-activity-diagram',
+  };
+  return mapping[phase];
 }
 
 /**

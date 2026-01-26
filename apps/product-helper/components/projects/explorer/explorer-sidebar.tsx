@@ -33,7 +33,7 @@ export function ExplorerSidebar({ projectId, data }: ExplorerSidebarProps) {
 
       <ExplorerTree projectId={projectId} data={data} filter={filter} />
 
-      <ExplorerProgress completeness={data.completeness} />
+      <ExplorerProgress completeness={data.completeness} hasData={data.hasData} />
     </aside>
   );
 }

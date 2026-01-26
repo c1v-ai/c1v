@@ -1,6 +1,6 @@
 'use client';
 
-import { type LucideIcon, ChevronRight } from 'lucide-react';
+import { type LucideIcon, ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +25,10 @@ export interface ExplorerNodeProps {
   count?: number;
   /** Whether this section has data (true = green dot, false = gray dot) */
   hasData?: boolean;
+  /** Per-section review status indicator */
+  reviewStatus?: 'draft' | 'awaiting-review' | 'approved';
+  /** Href for add button ('+' on group headers) */
+  addHref?: string;
 }
 
 export function ExplorerNode({
@@ -38,6 +42,8 @@ export function ExplorerNode({
   onToggle,
   count,
   hasData,
+  reviewStatus,
+  addHref,
 }: ExplorerNodeProps) {
   const paddingLeft = depth * 16 + 12;
 
@@ -97,6 +103,42 @@ export function ExplorerNode({
 
       {/* Label */}
       <span className="truncate flex-1">{label}</span>
+
+      {/* Add button for group headers */}
+      {addHref && (
+        <Link
+          href={addHref}
+          onClick={(e) => e.stopPropagation()}
+          className="w-5 h-5 rounded flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+            e.currentTarget.style.color = 'var(--accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '';
+            e.currentTarget.style.color = 'var(--text-muted)';
+          }}
+          aria-label={`Add to ${label}`}
+          title={`Add to ${label}`}
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </Link>
+      )}
+
+      {/* Review status indicator */}
+      {reviewStatus === 'awaiting-review' && (
+        <span
+          className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"
+          aria-label="Awaiting review"
+        />
+      )}
+      {reviewStatus === 'approved' && (
+        <span
+          className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"
+          aria-label="Approved"
+        />
+      )}
 
       {/* Count badge */}
       {typeof count === 'number' && count > 0 && (

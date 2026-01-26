@@ -9,14 +9,19 @@ import {
   Building2,
   Cpu,
   BookOpen,
+  Shield,
   Server,
   Database,
   Code2,
   Cloud,
+  ScrollText,
   GitBranch,
   Plug,
   MessageSquare,
   Settings,
+  AlertTriangle,
+  Target,
+  Sparkles,
 } from 'lucide-react';
 import { ExplorerNode } from './explorer-node';
 import type { ExplorerData } from '@/lib/db/queries/explorer';
@@ -28,6 +33,7 @@ interface TreeSection {
   href?: string;
   count?: number;
   hasData?: boolean;
+  reviewStatus?: 'draft' | 'awaiting-review' | 'approved';
   children?: TreeSection[];
 }
 
@@ -95,7 +101,17 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
   const basePath = `/projects/${projectId}`;
 
   const sections: TreeSection[] = useMemo(
-    () => [
+    () => {
+      // Helper to look up a section's review status from the explorer data
+      const reviewStatusOf = (sectionId: string): TreeSection['reviewStatus'] => {
+        const val = data.sectionStatuses?.[sectionId];
+        if (val === 'draft' || val === 'awaiting-review' || val === 'approved') {
+          return val;
+        }
+        return undefined;
+      };
+
+      return [
       {
         id: 'overview',
         label: 'Overview',
@@ -108,6 +124,22 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
         icon: FileText,
         children: [
           {
+            id: 'problem-statement',
+            label: 'Problem Statement',
+            icon: AlertTriangle,
+            href: `${basePath}/requirements/problem-statement`,
+            hasData: data.hasData.hasProblemStatement,
+            reviewStatus: reviewStatusOf('problem-statement'),
+          },
+          {
+            id: 'goals-metrics',
+            label: 'Goals & Metrics',
+            icon: Target,
+            href: `${basePath}/requirements/goals-metrics`,
+            hasData: data.hasData.hasGoalsMetrics,
+            reviewStatus: reviewStatusOf('goals-metrics'),
+          },
+          {
             id: 'system-overview',
             label: 'System Overview',
             icon: Globe,
@@ -115,6 +147,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             count:
               (data.counts.actors || 0) + (data.counts.useCases || 0),
             hasData: data.hasData.hasSystemOverview,
+            reviewStatus: reviewStatusOf('system-overview'),
           },
           {
             id: 'architecture',
@@ -123,6 +156,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             href: `${basePath}/requirements/architecture`,
             count: data.counts.entities || 0,
             hasData: data.hasData.hasArchitecture,
+            reviewStatus: reviewStatusOf('architecture'),
           },
           {
             id: 'tech-stack',
@@ -130,6 +164,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             icon: Cpu,
             href: `${basePath}/requirements/tech-stack`,
             hasData: data.hasData.hasTechStack,
+            reviewStatus: reviewStatusOf('tech-stack'),
           },
           {
             id: 'user-stories',
@@ -138,6 +173,15 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             href: `${basePath}/requirements/user-stories`,
             count: data.counts.stories || 0,
             hasData: data.hasData.hasUserStories,
+            reviewStatus: reviewStatusOf('user-stories'),
+          },
+          {
+            id: 'nfr',
+            label: 'Non-Functional Reqs',
+            icon: Shield,
+            href: `${basePath}/requirements/nfr`,
+            hasData: data.hasData.hasNfr,
+            reviewStatus: reviewStatusOf('nfr'),
           },
         ],
       },
@@ -152,6 +196,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             icon: Database,
             href: `${basePath}/backend/schema`,
             hasData: data.hasData.hasSchema,
+            reviewStatus: reviewStatusOf('schema'),
           },
           {
             id: 'api-spec',
@@ -159,6 +204,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             icon: Code2,
             href: `${basePath}/backend/api-spec`,
             hasData: data.hasData.hasApiSpec,
+            reviewStatus: reviewStatusOf('api-spec'),
           },
           {
             id: 'infrastructure',
@@ -166,8 +212,23 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             icon: Cloud,
             href: `${basePath}/backend/infrastructure`,
             hasData: data.hasData.hasInfrastructure,
+            reviewStatus: reviewStatusOf('infrastructure'),
+          },
+          {
+            id: 'guidelines',
+            label: 'Coding Guidelines',
+            icon: ScrollText,
+            href: `${basePath}/backend/guidelines`,
+            hasData: data.hasData.hasGuidelines,
+            reviewStatus: reviewStatusOf('guidelines'),
           },
         ],
+      },
+      {
+        id: 'generate',
+        label: 'Generate',
+        icon: Sparkles,
+        href: `${basePath}/generate`,
       },
       {
         id: 'diagrams',
@@ -196,7 +257,8 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
         icon: Settings,
         href: `${basePath}/settings`,
       },
-    ],
+    ];
+    },
     [basePath, data]
   );
 
@@ -248,6 +310,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
                 onToggle={() => toggleExpand(section.id)}
                 count={!hasChildren ? section.count : undefined}
                 hasData={!hasChildren ? section.hasData : undefined}
+                addHref={hasChildren ? `${basePath}/chat` : undefined}
               />
 
               {/* Children */}
@@ -267,6 +330,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
                         }
                         count={child.count}
                         hasData={child.hasData}
+                        reviewStatus={child.reviewStatus}
                       />
                     ))}
                 </div>

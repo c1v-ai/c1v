@@ -31,11 +31,14 @@ interface Actor {
   role: string;
   description: string;
   goals?: string[];
+  painPoints?: string[];
 }
 
 interface SystemBoundaries {
   internal: string[];
   external: string[];
+  inScope?: string[];
+  outOfScope?: string[];
 }
 
 interface DataEntity {
@@ -129,7 +132,28 @@ function ActorsTable({ actors }: { actors: Actor[] }) {
                     className="py-3 px-4 hidden md:table-cell"
                     style={{ color: 'var(--text-muted)' }}
                   >
-                    {actor.description}
+                    <div>{actor.description}</div>
+                    {actor.goals && actor.goals.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {actor.goals.map((g, gi) => (
+                          <Badge key={gi} variant="secondary" className="text-xs">
+                            {g}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    {actor.painPoints && actor.painPoints.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {actor.painPoints.map((p, pi) => (
+                          <Badge
+                            key={pi}
+                            className="text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                          >
+                            {p}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -144,8 +168,10 @@ function ActorsTable({ actors }: { actors: Actor[] }) {
 function SystemBoundariesDisplay({ boundaries }: { boundaries: SystemBoundaries }) {
   const hasInternal = boundaries.internal.length > 0;
   const hasExternal = boundaries.external.length > 0;
+  const hasInScope = (boundaries.inScope?.length ?? 0) > 0;
+  const hasOutOfScope = (boundaries.outOfScope?.length ?? 0) > 0;
 
-  if (!hasInternal && !hasExternal) return null;
+  if (!hasInternal && !hasExternal && !hasInScope && !hasOutOfScope) return null;
 
   return (
     <Card>
@@ -215,6 +241,60 @@ function SystemBoundariesDisplay({ boundaries }: { boundaries: SystemBoundaries 
             )}
           </div>
         </div>
+
+        {/* In-Scope / Out-of-Scope (B04) */}
+        {(hasInScope || hasOutOfScope) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div>
+              <h4
+                className="text-sm font-semibold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+              >
+                In Scope
+              </h4>
+              {hasInScope ? (
+                <div className="flex flex-wrap gap-2">
+                  {boundaries.inScope!.map((item, i) => (
+                    <Badge
+                      key={i}
+                      className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Not yet defined.
+                </p>
+              )}
+            </div>
+            <div>
+              <h4
+                className="text-sm font-semibold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+              >
+                Out of Scope
+              </h4>
+              {hasOutOfScope ? (
+                <div className="flex flex-wrap gap-2">
+                  {boundaries.outOfScope!.map((item, i) => (
+                    <Badge
+                      key={i}
+                      className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Not yet defined.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

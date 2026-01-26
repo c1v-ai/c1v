@@ -8,6 +8,7 @@ import type {
   ValidationResult,
   PendingArtifact,
 } from './types';
+import type { KnowledgeBankStep } from '@/lib/education/knowledge-bank';
 import type { ExtractionResult } from '../schemas';
 import {
   createDefaultExtractionResult,
@@ -213,6 +214,15 @@ const IntakeStateAnnotation = Annotation.Root({
   validationResult: Annotation<ValidationResult | null>,
   pendingQuestion: Annotation<string | null>,
   pendingArtifact: Annotation<PendingArtifact | null>,
+
+  // Knowledge bank tracking
+  currentKBStep: Annotation<KnowledgeBankStep>,
+  kbStepConfidence: Annotation<number>,
+  kbStepData: Annotation<Record<string, unknown>>({
+    reducer: (a, b) => b ?? a,
+    default: () => ({}),
+  }),
+  approvalPending: Annotation<boolean>,
 
   // Control flags
   isComplete: Annotation<boolean>,
