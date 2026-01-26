@@ -2,7 +2,7 @@
 
 ## Overview
 
-This specification defines the exact requirements for generating Context Diagrams in the C1V Product Helper application, based on the **Cornell CESYS521 Systems Engineering** methodology and **Schneider requirements engineering** principles.
+This specification defines the exact requirements for generating Context Diagrams in the C1V Product Helper application, based on the **systems engineering Systems Engineering** methodology and **Schneider requirements engineering** principles.
 
 A Context Diagram establishes the **system boundary** by showing what is inside the system versus what exists outside it. It is the first and most fundamental diagram in systems engineering, answering the question: "What does our system interact with?"
 
@@ -17,13 +17,13 @@ A Context Diagram establishes the **system boundary** by showing what is inside 
 3. **Requirements Traceability**: Every external element becomes a potential source of requirements
 4. **Risk Identification**: External dependencies represent integration points and risks
 
-### Key Principle (Cornell)
+### Key Principle (industry-standard)
 
 > "The context diagram is NOT a design diagram. It shows WHAT the system interacts with, not HOW it works internally."
 
 ---
 
-## Cornell CESYS521 Layout Requirements
+## systems engineering Layout Requirements
 
 ### 1. Central System Representation
 
@@ -85,9 +85,9 @@ A Context Diagram establishes the **system boundary** by showing what is inside 
 
 ## Element Classification Guide
 
-### External Element Categories (Cornell Examples)
+### External Element Categories (Standard Examples)
 
-Based on Cornell CESYS521 autonomous vehicle example:
+Based on systems engineering autonomous vehicle example:
 
 | Category | Examples | Typical Interactions |
 |----------|----------|---------------------|
@@ -113,7 +113,7 @@ Each decomposed element may have different interaction requirements.
 
 ## Mermaid.js Implementation
 
-Since Mermaid.js does not natively support all Cornell diagram features, we define approximations:
+Since Mermaid.js does not natively support all industry-standard diagram features, we define approximations:
 
 ### Layout Strategy
 
@@ -130,7 +130,7 @@ graph TB
 
 ### Mermaid Limitations and Workarounds
 
-| Cornell Requirement | Mermaid Limitation | Workaround |
+| Specification Requirement | Mermaid Limitation | Workaround |
 |---------------------|-------------------|------------|
 | Dashed boundary | Subgraph has no dash style | Use subgraph with descriptive styling via CSS |
 | Square corners only | Mermaid uses rounded by default | Use `["text"]` syntax for square nodes |
@@ -399,13 +399,13 @@ graph TB
 
 ```typescript
 /**
- * Generate a Cornell-compliant Context Diagram
+ * Generate a specification-compliant Context Diagram
  *
  * @param spec - Context diagram specification
  * @returns Object containing Mermaid syntax and validation results
  *
  * @example
- * const result = generateCornellContextDiagram({
+ * const result = generateindustry-standardContextDiagram({
  *   projectId: "my-project",
  *   elements: [...],
  * });
@@ -416,7 +416,7 @@ graph TB
  *   showErrors(result.validation.errors);
  * }
  */
-function generateCornellContextDiagram(spec: ContextDiagramSpec): {
+function generateindustry-standardContextDiagram(spec: ContextDiagramSpec): {
   mermaidSyntax: string;
   validation: {
     passed: boolean;
@@ -438,7 +438,7 @@ The existing `generateContextDiagram` function uses a simplified format:
 // Legacy format
 generateContextDiagram(
   systemName: string,
-  internal: string[],  // Not used in context diagrams per Cornell
+  internal: string[],  // Not used in context diagrams per industry-standard
   external: string[]
 )
 ```
@@ -448,7 +448,7 @@ generateContextDiagram(
 1. **Deprecate** the `internal` parameter (context diagrams show EXTERNAL only)
 2. **Transform** simple string arrays to `ContextDiagramElement[]`
 3. **Add** automatic interaction inference from element names
-4. **Validate** against Cornell requirements
+4. **Validate** against industry-standard requirements
 
 ```typescript
 // Legacy compatibility wrapper
@@ -461,7 +461,7 @@ function migrateLegacyContextData(
   // External strings become ContextDiagramElements with inferred interactions
   return {
     projectId: 'legacy',
-    systemLabel: 'THE SYSTEM', // Ignore systemName per Cornell
+    systemLabel: 'THE SYSTEM', // Ignore systemName per industry-standard
     elements: external.map((name, i) => ({
       id: `ext-${i}`,
       name: name,
@@ -478,7 +478,7 @@ function migrateLegacyContextData(
 
 ## References
 
-- **Cornell CESYS521**: Systems Engineering Context Diagram Lecture
+- **systems engineering**: Systems Engineering Context Diagram Lecture
 - **Schneider Requirements Engineering**: System Boundary Definition
 - **SysML Specification**: Block Definition Diagrams (related)
 - **IEEE 1233**: Guide for Developing System Requirements Specifications
@@ -489,7 +489,7 @@ function migrateLegacyContextData(
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | 2025-01-17 | Initial specification based on Cornell CESYS521 |
+| 1.0.0 | 2025-01-17 | Initial specification based on systems engineering |
 
 ---
 

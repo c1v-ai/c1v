@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the exact specification for generating Use Case Diagrams in the C1V Product Helper application, based on the Cornell CESYS521 course methodology and UML/SysML standards.
+This document defines the exact specification for generating Use Case Diagrams in the C1V Product Helper application, based on the systems engineering course methodology and UML/SysML standards.
 
 ---
 
@@ -175,9 +175,9 @@ TriggerEvent -.->|<<trigger>>| UseCase
 
 ---
 
-## Cornell Car System Example
+## industry-standard Car System Example
 
-Based on the CESYS521 course example:
+Based on the SE-COURSE course example:
 
 ### Actors:
 - **Driver** (Primary Actor - LEFT side)
@@ -527,4 +527,4 @@ If no actors or use cases are provided:
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0.0 | 2025-01-17 | C1V Team | Initial specification based on Cornell CESYS521 methodology |
+| 1.0.0 | 2025-01-17 | C1V Team | Initial specification based on systems engineering methodology |

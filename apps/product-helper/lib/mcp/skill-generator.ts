@@ -36,7 +36,7 @@ const TOOL_DESCRIPTIONS: ToolDescription[] = [
   { name: 'get_coding_guidelines', description: 'Generate coding guidelines based on tech stack and project type', category: 'generator' },
   { name: 'update_story_status', description: 'Update user story status (todo, in_progress, done, blocked)', category: 'generator' },
   // Unique tools
-  { name: 'get_validation_status', description: 'Get SR-CORNELL validation score and gate status', category: 'unique' },
+  { name: 'get_validation_status', description: 'Get PRD-SPEC validation score and gate status', category: 'unique' },
   { name: 'get_gsd_phases', description: 'Get GSD phase information for project planning', category: 'unique' },
   { name: 'get_cleo_tasks', description: 'Get CLEO task management integration data', category: 'unique' },
   { name: 'invoke_agent', description: 'Invoke a specialized agent for specific tasks', category: 'unique' },
@@ -202,7 +202,7 @@ export async function generateSkillMd(options: SkillGeneratorOptions): Promise<s
 
   sections.push('### Validation');
   sections.push('');
-  sections.push('Use `get_validation_status` to check SR-CORNELL compliance before major changes.');
+  sections.push('Use `get_validation_status` to check PRD-SPEC compliance before major changes.');
   sections.push('');
 
   // Footer

@@ -38,7 +38,9 @@
       "Bash(ct add:*)",
       "Bash(ct focus:*)",
       "Bash(ct update:*)",
-      "Bash(ct complete:*)"
+      "Bash(ct complete:*)",
+      "Bash(git -C /Users/davidancor/coding/c1v submodule status)",
+      "Bash(git -C /Users/davidancor/coding/c1v status:*)"
     ]
   },
   "enabledPlugins": {

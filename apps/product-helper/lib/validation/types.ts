@@ -1,6 +1,6 @@
 /**
- * SR-CORNELL Validation Types
- * Based on SR-CORNELL-PRD-95-V1 specification
+ * PRD-SPEC Validation Types
+ * Based on PRD-SPEC-PRD-95-V1 specification
  */
 
 /**

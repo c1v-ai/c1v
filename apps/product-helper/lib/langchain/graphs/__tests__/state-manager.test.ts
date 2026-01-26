@@ -571,7 +571,7 @@ describe('ARTIFACT_PHASE_SEQUENCE', () => {
     expect(ARTIFACT_PHASE_SEQUENCE[6]).toBe('sysml_activity_diagram');
   });
 
-  it('follows SR-CORNELL order', () => {
+  it('follows PRD-SPEC order', () => {
     expect(ARTIFACT_PHASE_SEQUENCE).toEqual([
       'context_diagram',
       'use_case_diagram',

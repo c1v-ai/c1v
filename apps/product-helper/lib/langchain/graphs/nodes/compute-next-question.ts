@@ -2,7 +2,7 @@
  * Compute Next Question Node
  *
  * Purpose: Generate the next question to ask the user based on data gaps.
- * Uses Cornell "Defining Scope" methodology for targeted questioning.
+ * Uses structured requirements methodology for targeted questioning.
  *
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
@@ -59,7 +59,7 @@ const questionLLM = new ChatOpenAI({
 
 /**
  * Data gaps and template questions by artifact phase
- * Based on Cornell "Defining Scope" methodology
+ * Based on structured requirements methodology
  */
 const PHASE_REQUIREMENTS: Record<ArtifactPhase, {
   required: string[];
@@ -200,7 +200,7 @@ Generate a single response that SUGGESTS AND CONFIRMS, not asks open-ended.
 
     let question = result.question;
 
-    // Add assumption if provided (Cornell methodology: infer then confirm)
+    // Add assumption if provided (structured methodology: infer then confirm)
     if (result.assumption) {
       question = `${result.assumption} ${question}`;
     }

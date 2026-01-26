@@ -11,7 +11,7 @@
 - LangGraph-based multi-node AI workflow for conversational PRD intake
 - Drizzle ORM with PostgreSQL for persistence
 - Custom JWT-based session authentication
-- SR-CORNELL validation methodology for PRD quality
+- PRD-SPEC validation methodology for PRD quality
 
 ## Layers
 
@@ -51,7 +51,7 @@
 - Used by: All server-side code
 
 **Validation Layer (lib/validation/):**
-- Purpose: SR-CORNELL 10 hard-gate validation engine
+- Purpose: PRD-SPEC 10 hard-gate validation engine
 - Location: `lib/validation/`
 - Contains: Validator, types, hard gate checks
 - Depends on: lib/db (for project data)
@@ -97,7 +97,7 @@
 
 1. Trigger via `/api/projects/[id]/validate`
 2. Load project with `projectData`, `artifacts`
-3. Execute 10 hard gates (HG1-HG10) from SR-CORNELL spec
+3. Execute 10 hard gates (HG1-HG10) from PRD-SPEC spec
 4. Aggregate scores, errors, warnings
 5. Return `ValidationResult` with 95% threshold check
 6. UI displays via `ValidationReport` component
@@ -121,7 +121,7 @@
 - Pattern: actors[], useCases[], systemBoundaries, dataEntities[]
 
 **ValidationResult:**
-- Purpose: SR-CORNELL validation output with scores and checks
+- Purpose: PRD-SPEC validation output with scores and checks
 - Examples: `lib/validation/types.ts`
 - Pattern: hardGates[], artifacts[], consistencyChecks[], errors[], warnings[]
 
@@ -174,7 +174,7 @@
 
 **Validation:**
 - Input: Zod schemas in actions and API routes
-- PRD: SR-CORNELL 10 hard-gate validation engine
+- PRD: PRD-SPEC 10 hard-gate validation engine
 - LangGraph: Intent analysis with structured output schemas
 
 **Authentication:**

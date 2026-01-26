@@ -67,10 +67,10 @@ export function ValidationReport({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
-                SR-CORNELL Validation
+                PRD-SPEC Validation
               </CardTitle>
               <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
-                Validate project against SR-CORNELL-PRD-95-V1 specification
+                Validate project against PRD-SPEC-PRD-95-V1 specification
               </CardDescription>
             </div>
             <Button
@@ -143,7 +143,7 @@ export function ValidationReport({
                 Hard Gates (10 Required)
               </CardTitle>
               <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
-                Mandatory validation checks from SR-CORNELL specification
+                Mandatory validation checks from PRD-SPEC specification
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -301,7 +301,7 @@ export function ValidationReport({
                 className="text-sm"
                 style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}
               >
-                Click "Run Validation" to validate this project against SR-CORNELL-PRD-95-V1
+                Click "Run Validation" to validate this project against PRD-SPEC-PRD-95-V1
               </p>
             </div>
           </CardContent>

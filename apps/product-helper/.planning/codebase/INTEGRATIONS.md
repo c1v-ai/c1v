@@ -135,7 +135,7 @@
 **Project Management:**
 - `POST /api/projects` - Create project
 - `GET/PATCH/DELETE /api/projects/[id]` - Project CRUD
-- `POST /api/projects/[id]/validate` - SR-CORNELL validation
+- `POST /api/projects/[id]/validate` - PRD-SPEC validation
 - `GET /api/projects/[id]/export` - Export project
 
 **Chat/AI:**

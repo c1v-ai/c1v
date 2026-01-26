@@ -2,13 +2,13 @@
 
 **Created:** 2026-01-25
 **Status:** Planning
-**Target:** Competitive parity with Epic.dev + differentiation through SR-CORNELL, GSD, and CLEO
+**Target:** Competitive parity with Epic.dev + differentiation through PRD-SPEC, GSD, and CLEO
 
 ---
 
 ## Executive Summary
 
-Product Helper v2.0 is a strategic upgrade to achieve competitive parity with Epic.dev while maintaining and emphasizing our unique advantages (SR-CORNELL validation, GSD workflow integration, CLEO task tracking).
+Product Helper v2.0 is a strategic upgrade to achieve competitive parity with Epic.dev while maintaining and emphasizing our unique advantages (PRD-SPEC validation, GSD workflow integration, CLEO task tracking).
 
 **Key Insight:** Epic.dev's killer feature is MCP integration that exports project architecture to Claude Code/Cursor/VS Code. This creates a direct bridge from PRD → coding. We must match this while emphasizing our quality validation approach.
 
@@ -35,7 +35,7 @@ Product Helper v2.0 is a strategic upgrade to achieve competitive parity with Ep
 
 | Feature | Product Helper | Epic.dev |
 |---------|----------------|----------|
-| **SR-CORNELL Validation** | 10 hard gates, quality scoring | None |
+| **PRD-SPEC Validation** | 10 hard gates, quality scoring | None |
 | **Completeness Tracking** | Real-time % score | Not visible |
 | **GSD Workflow** | Phase-based development | None |
 | **CLEO Task Tracking** | Stable IDs, audit trail | None |
@@ -345,7 +345,7 @@ interface CodingGuidelines {
 **Our Unique Tools (5 tools):**
 | Tool | Description | Advantage |
 |------|-------------|-----------|
-| `get_validation_status` | SR-CORNELL score + checks | Quality gate |
+| `get_validation_status` | PRD-SPEC score + checks | Quality gate |
 | `get_gsd_phases` | GSD workflow phases | Structured dev |
 | `get_cleo_tasks` | CLEO task list | Stable IDs |
 | `invoke_agent` | Trigger domain agent | 17 specialists |
@@ -401,7 +401,7 @@ Project Explorer
 ├── User Stories
 │   ├── Backlog
 │   └── In Progress
-├── Validation (SR-CORNELL)
+├── Validation (PRD-SPEC)
 ├── Coding Guidelines
 └── Connections (MCP)
 ```
@@ -464,7 +464,7 @@ Project Explorer
 **Effort:** Medium
 **Dependencies:** Phase 9-13
 
-### 14.1 SR-CORNELL Validation Updates
+### 14.1 PRD-SPEC Validation Updates
 
 - [ ] Add validation rules for new data types
 - [ ] Validate tech stack completeness

@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import {
-  generateCornellContextDiagram,
+  generateindustry-standardContextDiagram,
   generateContextDiagram,
   migrateLegacyContextData,
   generateUseCaseDiagram,
@@ -19,9 +19,9 @@ import {
 
 describe('Diagram Generators', () => {
   // ============================================================
-  // Cornell Context Diagram Tests
+  // industry-standard Context Diagram Tests
   // ============================================================
-  describe('generateCornellContextDiagram', () => {
+  describe('generateindustry-standardContextDiagram', () => {
     const createValidSpec = (): ContextDiagramSpec => ({
       projectId: 'test-project',
       elements: [
@@ -76,9 +76,9 @@ describe('Diagram Generators', () => {
       ],
     });
 
-    it('should generate valid Mermaid syntax for Cornell-compliant diagram', () => {
+    it('should generate valid Mermaid syntax for specification-compliant diagram', () => {
       const spec = createValidSpec();
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
 
       expect(result.mermaidSyntax).toContain('graph TB');
       expect(result.mermaidSyntax).toContain('THE SYSTEM');
@@ -88,7 +88,7 @@ describe('Diagram Generators', () => {
 
     it('should capitalize all element names', () => {
       const spec = createValidSpec();
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
 
       expect(result.mermaidSyntax).toContain('END USERS');
       expect(result.mermaidSyntax).toContain('PAYMENT GATEWAY');
@@ -97,7 +97,7 @@ describe('Diagram Generators', () => {
 
     it('should use B&W styling (no color fills)', () => {
       const spec = createValidSpec();
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
 
       expect(result.mermaidSyntax).toContain('fill:#ffffff');
       expect(result.mermaidSyntax).toContain('stroke:#000000');
@@ -107,7 +107,7 @@ describe('Diagram Generators', () => {
 
     it('should use dashed line for boundary', () => {
       const spec = createValidSpec();
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
 
       expect(result.mermaidSyntax).toContain('stroke-dasharray');
     });
@@ -123,7 +123,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.mermaidSyntax).toContain('-->|"provides input to"| System');
     });
 
@@ -138,7 +138,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.mermaidSyntax).toContain('System -->|"sends data to"|');
     });
 
@@ -153,7 +153,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       // Should have both directions
       expect(result.mermaidSyntax).toContain('-->|"sends"| System');
       expect(result.mermaidSyntax).toContain('System -->|"receives"|');
@@ -177,7 +177,7 @@ describe('Diagram Generators', () => {
         ],
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
       expect(result.validation.errors).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-002')])
@@ -195,7 +195,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
       expect(result.validation.errors).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-003')])
@@ -213,7 +213,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
       expect(result.validation.errors).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-004')])
@@ -231,7 +231,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
       expect(result.validation.errors).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-005')])
@@ -249,7 +249,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.passed).toBe(false);
       expect(result.validation.errors).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-006')])
@@ -267,7 +267,7 @@ describe('Diagram Generators', () => {
         })),
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.warnings).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-W01')])
       );
@@ -292,7 +292,7 @@ describe('Diagram Generators', () => {
         ],
       };
 
-      const result = generateCornellContextDiagram(spec);
+      const result = generateindustry-standardContextDiagram(spec);
       expect(result.validation.warnings).toEqual(
         expect.arrayContaining([expect.stringContaining('CTX-W04')])
       );
@@ -303,7 +303,7 @@ describe('Diagram Generators', () => {
   // Legacy Migration Tests
   // ============================================================
   describe('migrateLegacyContextData', () => {
-    it('should convert legacy format to Cornell spec', () => {
+    it('should convert legacy format to industry-standard spec', () => {
       const result = migrateLegacyContextData(
         'My System',
         ['Internal Component 1'],
@@ -356,7 +356,7 @@ describe('Diagram Generators', () => {
       expect(result).toContain('WARNING');
     });
 
-    it('should use Cornell generator when 8+ external elements', () => {
+    it('should use industry-standard generator when 8+ external elements', () => {
       const external = Array(10).fill(null).map((_, i) => `External ${i}`);
       const result = generateContextDiagram('My System', [], external);
 

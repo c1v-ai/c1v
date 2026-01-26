@@ -22,7 +22,7 @@
 - Files:
   - `lib/hooks/use-keyboard-shortcuts.ts:67` - Command palette not implemented
   - `lib/hooks/use-keyboard-shortcuts.ts:83` - New project dialog not implemented
-  - `lib/langchain/graphs/nodes/check-sr-cornell.ts:194` - Out-of-scope tracking incomplete
+  - `lib/langchain/graphs/nodes/check-prd-spec.ts:194` - Out-of-scope tracking incomplete
   - `app/(login)/actions.ts:467` - Invitation email not sent
 - Impact: User-facing features partially implemented. Keyboard shortcuts do nothing.
 - Fix approach: Implement each feature or remove dead code. Priority: invitation emails (blocks team invites).

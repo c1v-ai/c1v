@@ -17,7 +17,7 @@ AI-powered PRD (Product Requirements Document) generation SaaS. Transform produc
 
 - **Conversational Intake** - Chat with AI to define product vision, actors, use cases, and system boundaries
 - **Automatic Data Extraction** - LangGraph agents extract structured PRD data from conversations
-- **SR-CORNELL Validation** - Validate PRDs against 10 hard gates with 95% quality threshold
+- **PRD-SPEC Validation** - Validate PRDs against 10 hard gates with 95% quality threshold
 - **Diagram Generation** - Auto-generate Context, Use Case, and Class diagrams (Mermaid)
 - **Export Options** - Export diagrams as SVG/PNG
 - **Team Support** - Multi-user teams with role-based access
@@ -122,7 +122,7 @@ apps/product-helper/
 │   │   ├── prompts.ts         # Prompt templates
 │   │   └── schemas.ts         # Zod schemas for extraction
 │   ├── payments/              # Stripe integration
-│   └── validators/            # SR-CORNELL validation
+│   └── validators/            # PRD-SPEC validation
 └── public/                    # Static assets
 ```
 

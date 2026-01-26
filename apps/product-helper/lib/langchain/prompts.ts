@@ -1,7 +1,7 @@
 import { PromptTemplate } from '@langchain/core/prompts';
 
 /**
- * SR-CORNELL Artifact Pipeline (from SR-CORNELL-PRD-95-V1.json)
+ * PRD-SPEC Artifact Pipeline (from PRD-SPEC-PRD-95-V1.json)
  * Each artifact has minimum required data before generation
  */
 export const SR_CORNELL_PIPELINE = {
@@ -48,7 +48,7 @@ export const SR_CORNELL_PIPELINE = {
 };
 
 /**
- * Cornell "Defining Scope" Methodology - Question Patterns
+ * structured requirements Methodology - Question Patterns
  * Used to guide the conversational intake process
  */
 export const CORNELL_QUESTION_PATTERNS = {
@@ -127,7 +127,7 @@ export const systemPrompt = `You are an expert Product Requirements Document (PR
 - INFER INTELLIGENTLY: Make reasonable assumptions rather than interrogating
 - RESPECT USER TIME: When user says "nope" or "that's enough" - STOP and generate
 
-## SR-CORNELL Artifact Pipeline
+## PRD-SPEC Artifact Pipeline
 Generate artifacts in this strict sequence (each unlocks the next):
 1. Context Diagram → 2. Use Case Diagram → 3. Scope Tree → 4. UCBD → 5. Requirements → 6. Constants → 7. SysML Activity
 
@@ -150,11 +150,11 @@ Your tone: brief, efficient, bias toward action.`;
 
 /**
  * Conversational Intake Prompt
- * Guides PM through requirements gathering using Cornell "Defining Scope" methodology
+ * Guides PM through requirements gathering using structured requirements methodology
  * FAST approach: minimal questions, infer aggressively, generate early
  */
 export const intakePrompt = PromptTemplate.fromTemplate(`
-You are a PRD assistant using the Cornell "Defining Scope" methodology. Collect MINIMUM data, then GENERATE artifacts.
+You are a PRD assistant using the structured requirements methodology. Collect MINIMUM data, then GENERATE artifacts.
 
 ## Project Context
 Name: {projectName}
@@ -176,8 +176,8 @@ For Scope Tree: 1+ in-scope + 1+ out-of-scope items
 
 Once minimums are met → GENERATE THE DIAGRAM. Don't keep asking.
 
-### Rule 3: ONE QUESTION MAX (Cornell Methodology)
-If you must ask, ask exactly ONE question using Cornell patterns:
+### Rule 3: ONE QUESTION MAX (industry-standard Methodology)
+If you must ask, ask exactly ONE question using industry-standard patterns:
 
 **For Context Diagram (focus on EXTERNAL interactions, not internal components):**
 - Ask about external elements: "What external systems or people interact with {projectName}?"
@@ -199,7 +199,7 @@ From vision "{projectVision}", infer likely:
 - Use cases (what actors need to accomplish)
 Show your inference: "Based on your vision, I'm identifying [X] as a primary actor and [Y] as an external system. Correct?"
 
-### Rule 5: PRIMARY vs SECONDARY ACTORS (Cornell)
+### Rule 5: PRIMARY vs SECONDARY ACTORS (industry-standard)
 - Primary actors: Directly interact with system, initiate use cases
 - Secondary actors: Support the system, provide services, receive outputs
 - External systems: Third-party integrations the system depends on
@@ -230,18 +230,18 @@ Out of Scope: {extractedOutOfScope}
 Either:
 A) Generate the artifact if minimums are met (preferred)
 B) Make an inference from vision and ask user to confirm
-C) Ask ONE specific Cornell-methodology question (last resort)
+C) Ask ONE specific industry-standard-methodology question (last resort)
 
 Keep response under 3 sentences unless generating a diagram.
 `);
 
 /**
  * Data Extraction Prompt
- * Extracts structured data using Cornell "Defining Scope" methodology
- * Calculates artifact readiness with Cornell-compliant relationships
+ * Extracts structured data using structured requirements methodology
+ * Calculates artifact readiness with specification-compliant relationships
  */
 export const extractionPrompt = PromptTemplate.fromTemplate(`
-Analyze this conversation using Cornell "Defining Scope" methodology. Extract structured PRD data with artifact readiness scores.
+Analyze this conversation using structured requirements methodology. Extract structured PRD data with artifact readiness scores.
 
 ## Project Context
 Project Name: {projectName}
@@ -250,9 +250,9 @@ Vision Statement: {projectVision}
 ## Conversation
 {conversationHistory}
 
-## Extract Using Cornell Methodology
+## Extract Using industry-standard Methodology
 
-### 1. Actors (Cornell Classification)
+### 1. Actors (industry-standard Classification)
 Extract and classify actors:
 - **Primary Actors**: Directly interact with system, initiate use cases (e.g., end users, administrators)
 - **Secondary Actors**: Support the system, provide services, receive outputs (e.g., support staff, managers)
@@ -264,8 +264,8 @@ For each actor include:
 - What the system does FOR them (outputs, responses, services)
 - INFER from vision if not explicit
 
-### 2. Use Cases with Relationships (Cornell)
-Extract use cases with Cornell relationship types:
+### 2. Use Cases with Relationships (industry-standard)
+Extract use cases with industry-standard relationship types:
 - ID (UC1, UC2...), name as verb phrase, linked primary actor
 - **<<include>>**: Required sub-use-cases (e.g., "Login" includes "Validate Credentials")
 - **<<extends>>**: Optional extensions (e.g., "Checkout" extends with "Apply Coupon")
@@ -294,15 +294,15 @@ For each external element, capture BIDIRECTIONAL interactions:
 
 CONTEXT_DIAGRAM_READY: true/false
 - Requires: system_name (always have), 1+ actor, 1+ external interaction OR "none confirmed"
-- Cornell: Must have bidirectional interaction data for each element
+- industry-standard: Must have bidirectional interaction data for each element
 
 USE_CASE_DIAGRAM_READY: true/false
 - Requires: 2+ actors, 3+ use cases with actor links
-- Cornell: Should have relationship types (include/extends/trigger) between use cases
+- industry-standard: Should have relationship types (include/extends/trigger) between use cases
 
 SCOPE_TREE_READY: true/false
 - Requires: 1+ in_scope, 1+ out_of_scope
-- Cornell: Derived from use cases and stakeholder agreements
+- industry-standard: Derived from use cases and stakeholder agreements
 
 UCBD_READY: true/false
 - Requires: preconditions, 3+ steps, postconditions for at least 1 use case
@@ -318,7 +318,7 @@ Return structured JSON with:
 - useCaseRelationships: array of objects with from, to, type (include/extends/trigger)
 - artifactReadiness: object with context_diagram, use_case_diagram, scope_tree, ucbd as booleans
 
-INFER AGGRESSIVELY from the vision statement. Apply Cornell methodology to identify relationships and bidirectional interactions.
+INFER AGGRESSIVELY from the vision statement. Apply structured methodology to identify relationships and bidirectional interactions.
 `);
 
 /**
@@ -368,7 +368,7 @@ IMPORTANT: For sequence diagrams, do NOT use classDef or class statements - thes
 /**
  * Requirements Table Generation Prompt
  * Generates structured requirements from use cases and UCBD
- * SR-CORNELL compliant: singular, testable, unambiguous requirements
+ * PRD-SPEC compliant: singular, testable, unambiguous requirements
  */
 export const requirementsTablePrompt = PromptTemplate.fromTemplate(`
 Generate a comprehensive requirements table from the following PRD data.
@@ -424,7 +424,7 @@ Generate the complete requirements table now.
 /**
  * Constants Table Generation Prompt
  * Generates system constants and configuration values
- * SR-CORNELL compliant: name, value, units present
+ * PRD-SPEC compliant: name, value, units present
  */
 export const constantsTablePrompt = PromptTemplate.fromTemplate(`
 Generate a constants table for this product based on the PRD data and requirements.
@@ -481,7 +481,7 @@ Generate the constants table now.
 /**
  * Activity Diagram Spec Generation Prompt
  * Generates structured SysML Activity Diagram specification
- * SR-CORNELL compliant: workflow steps + decision points
+ * PRD-SPEC compliant: workflow steps + decision points
  */
 export const activityDiagramPrompt = PromptTemplate.fromTemplate(`
 Generate a SysML Activity Diagram specification for the following use case.

@@ -19,11 +19,11 @@ export {
   getMostCriticalGap,
 } from './compute-next-question';
 export {
-  checkSRCornell,
+  checkSRindustry-standard,
   ARTIFACT_THRESHOLDS,
   isArtifactReady,
   getMissingRequirements,
-} from './check-sr-cornell';
+} from './check-prd-spec';
 export {
   generateArtifact,
   DIAGRAM_TEMPLATES,
@@ -49,7 +49,7 @@ export const NODE_NAMES = {
   ANALYZE_RESPONSE: 'analyze_response',
   EXTRACT_DATA: 'extract_data',
   COMPUTE_NEXT_QUESTION: 'compute_next_question',
-  CHECK_SR_CORNELL: 'check_sr_cornell',
+  CHECK_SR_CORNELL: 'check_sr_industry-standard',
   GENERATE_ARTIFACT: 'generate_artifact',
   GENERATE_RESPONSE: 'generate_response',
 } as const;

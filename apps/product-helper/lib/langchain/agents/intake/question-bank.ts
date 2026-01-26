@@ -3,7 +3,7 @@
  *
  * Defines the structure for intake questions used in the conversational
  * requirements gathering process. Questions are organized by phase and
- * tied to SR-CORNELL hard gates for validation.
+ * tied to PRD-SPEC hard gates for validation.
  *
  * @module intake/question-bank
  * @team AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
@@ -53,10 +53,10 @@ export const QuestionSchema = z.object({
   basePriority: z.number().min(1).max(10),
 
   /**
-   * SR-CORNELL hard gate this question addresses
+   * PRD-SPEC hard gate this question addresses
    * Used to boost priority when gate is not yet passed
    */
-  srCornellGate: z.string().optional(),
+  prdSpecGate: z.string().optional(),
 
   /**
    * Question IDs that must be answered before this one

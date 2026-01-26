@@ -41,7 +41,7 @@ function LandingPage() {
               >
                 Product Helper transforms your product ideas into engineering-quality
                 PRD documents through conversational AI. Define requirements, generate
-                diagrams, and validate against SR-CORNELL standards.
+                diagrams, and validate against PRD-SPEC standards.
               </p>
               <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0 flex gap-4">
                 <Button
@@ -112,7 +112,7 @@ function LandingPage() {
                     </div>
                     <div>
                       <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                        SR-CORNELL Validation
+                        PRD-SPEC Validation
                       </p>
                       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                         95% quality threshold enforcement

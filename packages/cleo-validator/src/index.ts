@@ -151,7 +151,7 @@ export {
   withMutationValidation,
   validateFileExists,
   createValidationCheckpoint,
-  ValidationError,
+  ValidationError as HookValidationError,
   type ValidationHookOptions,
   type HookValidationResult,
   type HookProjectValidationResult,

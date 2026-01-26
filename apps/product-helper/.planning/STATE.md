@@ -385,7 +385,7 @@ Per the plan in `~/.claude/plans/kind-enchanting-lightning.md`:
 ├── 🔧 Technical Specs
 ├── 📐 Architecture
 ├── 📝 User Stories
-├── ✅ Validation (SR-CORNELL)
+├── ✅ Validation (PRD-SPEC)
 ├── 📖 Coding Guidelines
 └── 🔗 Connections (MCP)
 ```
@@ -415,7 +415,7 @@ Per the plan in `~/.claude/plans/kind-enchanting-lightning.md`:
 | #8 | Technical Specifications sections | Pending |
 | #9 | Architecture section | Pending |
 | #10 | User Stories section | Pending |
-| #11 | Validation section (SR-CORNELL) | Pending |
+| #11 | Validation section (PRD-SPEC) | Pending |
 | #12 | Coding Guidelines section | Pending |
 | #13 | Connections section (MCP) | Pending |
 

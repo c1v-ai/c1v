@@ -8,7 +8,7 @@ import type { ProjectValidationData } from '@/lib/validation/types';
 
 /**
  * POST /api/projects/[id]/validate
- * Run SR-CORNELL validation on a project
+ * Run PRD-SPEC validation on a project
  *
  * This endpoint:
  * 1. Loads project with all related data

@@ -24,7 +24,7 @@ const VALUE_PROPS: ValueProp[] = [
   },
   {
     icon: <Lightbulb className="h-5 w-5" />,
-    title: 'SR-CORNELL Validation',
+    title: 'PRD-SPEC Validation',
     description: 'Engineering-validated requirements using proven methodology',
     color: '#F59E0B', // amber
   },

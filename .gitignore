@@ -50,3 +50,13 @@ drizzle/*.sql
 *.swo
 *~
 .cursor
+
+# Claude/CLEO/Agent state (local only)
+.claude/
+.cleo/
+.planning/
+
+# Internal docs (not for public)
+UX-Comparison-Product-Helper-vs-Epic-Dev.md
+CURRENT-STATUS.md
+CURRENT-STATE.md

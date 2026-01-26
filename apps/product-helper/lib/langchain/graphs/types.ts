@@ -15,7 +15,7 @@ import { ExtractionResult } from '../schemas';
 // ============================================================
 
 /**
- * Artifact types in SR-CORNELL pipeline order
+ * Artifact types in PRD-SPEC pipeline order
  * Each artifact must be generated before proceeding to the next
  */
 export type ArtifactPhase =
@@ -88,7 +88,7 @@ export const STOP_TRIGGER_KEYWORDS: string[] = [
 // ============================================================
 
 /**
- * Artifact readiness status for each SR-CORNELL artifact
+ * Artifact readiness status for each PRD-SPEC artifact
  * Indicates whether sufficient data has been collected to generate each artifact
  */
 export interface ArtifactReadiness {
@@ -102,7 +102,7 @@ export interface ArtifactReadiness {
 }
 
 /**
- * Minimum thresholds for artifact generation (from SR-CORNELL spec)
+ * Minimum thresholds for artifact generation (from PRD-SPEC spec)
  */
 export const ARTIFACT_THRESHOLDS: Record<ArtifactPhase, {
   minimumScore: number;
@@ -143,7 +143,7 @@ export const ARTIFACT_THRESHOLDS: Record<ArtifactPhase, {
 // ============================================================
 
 /**
- * Validation result from SR-CORNELL check
+ * Validation result from PRD-SPEC check
  * Returned by the validation node
  */
 export interface ValidationResult {
@@ -249,7 +249,7 @@ export interface IntakeState {
 
   /**
    * Current artifact being gathered data for
-   * Follows SR-CORNELL sequence
+   * Follows PRD-SPEC sequence
    */
   currentPhase: ArtifactPhase;
 
@@ -268,7 +268,7 @@ export interface IntakeState {
   lastIntent: UserIntent;
 
   /**
-   * Latest validation result from SR-CORNELL check
+   * Latest validation result from PRD-SPEC check
    */
   validationResult: ValidationResult | null;
 
@@ -452,7 +452,7 @@ export function computeArtifactReadiness(data: ExtractionResult): ArtifactReadin
 
 /**
  * Determine current phase based on generated artifacts
- * Returns the next artifact in the SR-CORNELL sequence that hasn't been generated
+ * Returns the next artifact in the PRD-SPEC sequence that hasn't been generated
  *
  * @param generated - Array of already generated artifact phases
  * @returns The next artifact phase to work on

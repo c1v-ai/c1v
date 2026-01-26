@@ -109,7 +109,7 @@ For each plan, determine the appropriate specialized agent using routing rules f
    | `llm` | `llm-workflow-engineer` |
    | `vector` | `vector-store-engineer` |
    | `diagrams` | `data-viz-engineer` |
-   | `validation` | `sr-cornell-validator` |
+   | `validation` | `prd-spec-validator` |
    | `cache` | `cache-engineer` |
    | `docs` | `documentation-engineer` |
    | `monitoring` | `observability-engineer` |

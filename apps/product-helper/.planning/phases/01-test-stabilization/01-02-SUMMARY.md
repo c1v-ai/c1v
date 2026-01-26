@@ -2,7 +2,7 @@
 phase: 01-test-stabilization
 plan: 02
 subsystem: testing
-tags: [jest, priority-scorer, question-scoring, sr-cornell]
+tags: [jest, priority-scorer, question-scoring, prd-spec]
 
 # Dependency graph
 requires:
@@ -69,7 +69,7 @@ Each task was committed atomically:
 ## Decisions Made
 
 1. **Changed test expectation from >= 12 to >= 11**
-   - Rationale: Q_EXTERNAL_SYSTEMS with base(9) + SR-CORNELL(3) - out-of-order(1) = 11
+   - Rationale: Q_EXTERNAL_SYSTEMS with base(9) + PRD-SPEC(3) - out-of-order(1) = 11
    - The out-of-order penalty applied because context_diagram wasn't in phaseOrder
 
 2. **Added context_diagram to phaseOrder as first element**
