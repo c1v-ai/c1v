@@ -159,6 +159,220 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 ---
 
+## Phase 16: Chat/LLM Quality Improvements
+
+**Goal:** Fix critical chat/LLM issues, optimize costs, clean up dead code, improve chat UX
+
+**Dependencies:** None (can start immediately, cleanup work)
+
+**Requirements:** LLM-01 through LLM-20
+
+**Plans:** 7 plans in 3 waves
+
+Plans:
+- [ ] 16-01-PLAN.md — Security & DX quick fixes (G1, G2, F2, F3)
+- [ ] 16-02-PLAN.md — Prompt caching and Haiku for classification (A4, A5)
+- [ ] 16-03-PLAN.md — Dead code and OpenAI cleanup (D1, D2, D4)
+- [ ] 16-04-PLAN.md — Clean prompts.ts and activate tooltips (D3, C3)
+- [ ] 16-05-PLAN.md — Mermaid validation before save (B4)
+- [ ] 16-06-PLAN.md — Incremental extraction (B2)
+- [ ] 16-07-PLAN.md — Extract on every message (B1)
+
+**Deferred to separate phase:** A2 (structured streaming), C1 (pgvector RAG), E1 (graphs/ reorg), H1-H5 (over-engineering)
+
+---
+
+### Priority Stack (Revised 2026-01-31)
+
+| # | Item | Effort | Category | Files |
+|---|------|--------|----------|-------|
+| 1 | **A4: Prompt caching** | Low | Cost | `config.ts` - add `cacheControl` to all 5 LLM instances |
+| 2 | **A5: Haiku for classification** | Low | Cost | `config.ts` - point `cheapLLM` to Haiku, use for analyze-response |
+| 3 | **DELETE: clarification-detector.ts** | Trivial | Debt | Dead code, never called, flawed keyword heuristics |
+| 4 | **D1: OpenAI cleanup** | Low | Debt | Delete `test/route.ts`, remove `@langchain/openai` from package.json |
+| 5 | **C3: Tooltip terms activation** | Low | KB | `knowledge-bank.ts:729-738` - dead code, wire to `buildResponsePrompt()` |
+| 6 | **B4: Mermaid validation** | Low | Extraction | Add `mermaid.parse()` before saving in `langgraph-handler.ts` |
+| 7 | **Clean prompts.ts** | Low | Debt | Delete 8 dead exports (82% unused), move `extractionPrompt` inline |
+| 8 | **Delete legacy /api/chat/route.ts** | Low | Debt | Outdated route superseded by `/api/chat/projects/[projectId]/` |
+| 9 | **B2: Incremental extraction** | Medium | Extraction | Add `lastExtractedMessageIndex`, don't re-process full history |
+| 10 | **B1: Extract more frequently** | Medium | Extraction | Remove modulo-5 gate at `conversations.ts:94-102` (AFTER B2) |
+| 11 | **A3+C4: Combined warm-start** | Medium | UX | Use KB content for first message, inject vision analysis |
+| 12 | **B3: Extraction feedback** | Medium | Extraction | Expose deltas from `hasNewData()` in `extract-data.ts` |
+| 13 | **A2: Structured metadata streaming** | High | UX | Change `streamMode: 'text'` → `'stream-data'` (full pipeline rework) |
+| 14 | **C1: pgvector RAG** | High | KB | Consider conditional KB injection first as intermediate step |
+| 15 | **Reorganize graphs/** | Medium | Architecture | Split `types.ts` (720 lines) into `config/` and `state/` modules |
+
+---
+
+### Category A: Chat Experience
+
+**A1: KB Question Generator Bypass** — Test current quality first; may not need fixing. The `pendingQuestion` short-circuit at `generate-response.ts:56-63` skips response LLM but question is already crafted by KB generator (an LLM call). Adding second LLM pass adds latency for marginal improvement.
+
+**A2: Structured Metadata Streaming** — `streamMode: 'text'` confirmed at `project-chat-provider.tsx:145`. Most architecturally significant item. Migration to `streamMode: 'stream-data'` requires reworking entire streaming pipeline from `langgraph-handler.ts` through `route.ts` to frontend. High effort.
+
+**A3: Warm-Start First Message** — Auto-send at `project-chat-provider.tsx:186-219` fires vision text cold. Consider better system prompt vs. extra LLM call.
+
+**A4: Prompt Caching** — No `cacheControl` on any of 5 LLM instances in `config.ts`. **Highest-ROI change**. Single-line change per instance with immediate cost savings.
+
+**A5: Model Routing to Haiku** — All 5 instances use Sonnet. `cheapLLM` exists but also uses Sonnet (misnamed). Point to Haiku for classification tasks. 60-70% cost savings on those nodes.
+
+---
+
+### Category B: Extraction Enhancements
+
+**B1: Extract Every Message** — Modulo-5 gate at `conversations.ts:94-102` confirmed. BUT extracting 5x more often without B2 increases costs significantly. **B2 must come first.**
+
+**B2: Incremental Extraction** — `extractProjectData()` re-processes full conversation each time. Add `lastExtractedMessageIndex` to only extract new messages. **Prerequisite for B1.**
+
+**B3: Extraction Feedback Loop** — Note: Doc incorrectly references "PriorityScorer" — doesn't exist. Actual code uses `calculateStepConfidence()` in `compute-next-question.ts`. Fix: expose deltas from `hasNewData()` in `extract-data.ts`.
+
+**B4: Mermaid Validation** — `saveMermaidDiagrams()` runs `cleanSequenceDiagramSyntax()` but no semantic validation. Add `mermaid.parse()` call before saving. Low effort, high value.
+
+---
+
+### Category C: Knowledge Bank Integration
+
+**C1: pgvector RAG** — No pgvector/embedding exists. Current token overhead ~1,080 tokens/turn across 3 injection points. RAG adds latency for marginal relevance improvement. **Intermediate step:** conditional KB injection based on current step.
+
+**C2: Validation Error Pattern Matching** — Validation errors injected via `buildPromptEducationBlock()`. Don't add regex matching to `analyze-response.ts` (slows it down). Let `generate-response.ts` handle this — it already receives validation errors.
+
+**C3: Tooltip Terms Activation** — `findTooltipByTerm()` at `knowledge-bank.ts:729-738` is **dead code** (zero callers). Frontend `markdown-renderer.tsx` already supports tooltips. Add tooltip terms to `buildResponsePrompt()`. Low effort/high value.
+
+**C4: Phase-Aware Welcome Messages** — Overlaps with A3. Combine into single warm-start item.
+
+---
+
+### Category D: Dead Code Cleanup
+
+**D1: OpenAI Files** — `app/api/chat/test/route.ts` and `lib/mcp/tools/unique/ask-question.ts` import ChatOpenAI. Test endpoint likely dead code — verify before migrating, may just delete.
+
+**D2: clarification-detector.ts** — **DEAD CODE**. Exported but never instantiated. Even if used, fundamentally flawed:
+- Arbitrary 15-char threshold flags "Admin, User" as vague
+- Keyword regex can't handle "finance team, CEO, auditors"
+- 0.9 confidence short-circuit means LLM fallback never runs
+- **Recommendation: DELETE**
+
+**D3: prompts.ts** — 9 of 11 exports are dead (82%). Only `extractionPrompt` used (by `extraction-agent.ts`). Duplicates constants in `graphs/types.ts`. Move `extractionPrompt` inline, delete file.
+
+**D4: Legacy /api/chat/route.ts** — Comment says "Phase 8 will add project context" — that phase passed. Real chat is `/api/chat/projects/[projectId]/route.ts`. Delete or redirect.
+
+---
+
+### Category E: Architecture Improvements
+
+**E1: Reorganize graphs/** — `types.ts` (720 lines) mixes 4 concerns: types, constants, factory functions, helpers. Split into:
+```
+graphs/
+├── config/           # phases.ts, thresholds.ts, triggers.ts
+├── state/            # types.ts (pure), factory.ts, computed.ts, channels.ts
+├── nodes/            # UNCHANGED
+├── edges.ts          # UNCHANGED
+├── checkpointer.ts   # UNCHANGED
+└── intake-graph.ts   # UNCHANGED
+```
+
+---
+
+### Category F: Security Hardening
+
+**F1: API Key Rotation** — CRITICAL. Live production secrets in `.env.local`:
+- `STRIPE_SECRET_KEY` (sk_live_...) — Can charge cards, access customer data
+- `STRIPE_WEBHOOK_SECRET` (whsec_...) — Can forge webhook events
+- `ANTHROPIC_API_KEY` (sk-ant-...) — Can run up bill
+- `OPENAI_API_KEY` (sk-proj-...) — Can run up bill
+- `LANGCHAIN_API_KEY` (lsv2_pt_...) — Can access traces
+- `RESEND_API_KEY` (re_...) — Can send emails as you
+
+**Rotation Steps:**
+1. Stripe: https://dashboard.stripe.com/apikeys → Roll key (24hr grace period)
+2. Anthropic: https://console.anthropic.com/settings/keys → Create new, delete old
+3. OpenAI: https://platform.openai.com/api-keys → Create new, delete old
+4. LangSmith: https://smith.langchain.com/settings → Create new, delete old
+5. Resend: https://resend.com/api-keys → Create new, delete old
+6. Update Vercel env vars + redeploy
+7. Update `.env.local`
+
+**F2: Stripe Checkout Bypass** — HIGH. `checkout/route.ts` - `client_reference_id` not validated against session user. Attacker can create checkout for another user's account.
+
+**F3: Team API Auth Leak** — HIGH. `/api/team/route.ts` returns `null` instead of 401 when unauthenticated. Should return proper 401 Unauthorized.
+
+**F4: Unvalidated Message Objects** — MEDIUM. Chat route accepts any message shape without validation. Add Zod schema for message input.
+
+**F5: Error Stack Traces Leaked** — MEDIUM. Multiple endpoints return `error.message` which may include stack traces in production. Strip in production.
+
+**F6: API Key in Response Body** — MEDIUM. `/api/projects/[id]/keys/route.ts` returns full API key in JSON. Should only show on creation, then mask.
+
+**F7: No DB Transaction on Subscription** — MEDIUM. `queries.ts` subscription updates have race conditions. Wrap in transaction.
+
+---
+
+### Category G: Environment & DX
+
+**G1: README OpenAI → Anthropic** — P0. README says OpenAI, code uses Anthropic. Devs waste 30min getting wrong API key.
+
+**G2: Missing .nvmrc** — P0. Create `.nvmrc` with `20.9.0` to prevent Node version drift.
+
+**G3: docker-compose.local.yml** — P1. Add app-specific compose with Postgres + Redis for local dev.
+
+**G4: Minimal Setup Path** — P1. Document 3-env-var path for chat-only testing (skip Stripe).
+
+**G5: --skip-stripe Flag** — P2. Add to `db:setup` script for devs who just want to test chat.
+
+**G6: Document Test Credentials** — P2. `test@test.com / admin123` only in `seed.ts`, not documented.
+
+---
+
+### Category H: Over-Engineering to Address
+
+**H1: v2-types.ts + v2-validators.ts Duplication** — 1,529 lines. TypeScript interfaces AND Zod schemas for same data. Pick one source of truth.
+
+**H2: graphs/checkpointer.ts Dead Code** — 579 lines. Thread IDs, metadata, migration functions all unused.
+
+**H3: graphs/channels.ts Generic Reducers** — 520 lines. Trivial reducers like `replaceReducer(a, b) => b ?? a`.
+
+**H4: graphs/edges.ts Dead Code** — 429 lines. `needsErrorRecovery()` is just `state.error !== null`.
+
+**H5: type-guards.ts Parallel Validation** — 219 lines. Duplicates `validator.ts`.
+
+**Root Cause:** LangGraph infrastructure (~2,250 lines) for what's essentially: User message → Extract data → Complete? Generate : Ask next question.
+
+---
+
+### Key Corrections from Analysis
+
+1. **B3 references "PriorityScorer"** — doesn't exist. Actual code uses KB-driven confidence with `calculateStepConfidence()`.
+2. **B1 without B2 is counterproductive** — Extracting 5x more often while still sending full history increases costs.
+3. **A3 and C4 overlap** — both address first-message quality. Combined.
+4. **A4 should be #1** — lower effort than D1 and higher impact.
+5. **cheapLLM exists** in `config.ts` but points to Sonnet. A5 can reuse it.
+6. **Security issues live OUTSIDE LangChain code** — F1-F7 can be done before/during refactor.
+7. **Over-engineering (H1-H5) IS the refactor** — Don't fix these separately, they'll be replaced.
+
+---
+
+### Execution Order Recommendation
+
+**DO NOW (before LangChain refactor):**
+- F1: API Key Rotation (1hr, zero code changes)
+- F2: Stripe checkout validation (30min, outside refactor scope)
+- F3: Team API 401 fix (15min, outside refactor scope)
+- G1: README fix (30min)
+- G2: .nvmrc (1min)
+
+**DO DURING/AFTER REFACTOR:**
+- A1-A5: Chat experience (depends on new architecture)
+- B1-B4: Extraction (depends on new pipeline)
+- C1-C3: Knowledge bank (depends on new prompts)
+- D1-D4: Dead code (some will be deleted by refactor anyway)
+- E1: Architecture reorg (part of refactor)
+- H1-H5: Over-engineering (IS the refactor)
+
+**DO AFTER REFACTOR:**
+- F4-F7: Remaining security items
+- G3-G6: DX improvements
+
+---
+
 ## Progress
 
 | Phase | Name | Requirements | Status |
@@ -172,6 +386,7 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
+| 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | **7 plans** |
 
 ---
 
@@ -248,3 +463,4 @@ Phase 4: Orchestration ----+                                    |
 
 *Roadmap created: 2026-01-26*
 *Derived from 34 requirements across 4 categories*
+*Phase 16 plans created: 2026-01-31*
