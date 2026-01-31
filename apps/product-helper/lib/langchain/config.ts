@@ -5,6 +5,7 @@ import type { z } from 'zod';
 export const CLAUDE_MODELS = {
   OPUS: 'claude-opus-4-5-20251101',      // Most capable, highest cost
   SONNET: 'claude-sonnet-4-5-20250514',  // Balanced (recommended)
+  HAIKU: 'claude-3-5-haiku-20241022',    // Fast, cost-effective for classification
 } as const;
 
 // Default model for agents
@@ -64,11 +65,11 @@ export const structuredLLM = new ChatAnthropic({
 
 /**
  * Cost-effective LLM for simple tasks
- * Use for validation, simple Q&A, etc.
- * Note: Using Sonnet for all tasks as Claude doesn't have a cheaper tier like GPT-3.5
+ * Uses Claude 3.5 Haiku for 60-70% cost savings on classification,
+ * validation, simple Q&A, and response analysis tasks.
  */
 export const cheapLLM = new ChatAnthropic({
-  modelName: DEFAULT_MODEL,
+  modelName: CLAUDE_MODELS.HAIKU,
   temperature: 0.7,
   maxTokens: 1000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
