@@ -9,9 +9,9 @@
 ## Current Position
 
 **Milestone:** V2 -- Epic.dev Feature Parity
-**Planning System:** CLEO (GSD roadmap retained for reference only)
-**Last Completed:** All v2 waves (0-3) + independent tasks + P0 security fixes
-**Status:** ✅ V2 DEPLOYED (commit 71923e8, deploying to Vercel)
+**Planning System:** GSD (Phase 16 active)
+**Last Completed:** 16-01-PLAN.md (Security and DX Quick Fixes)
+**Status:** ✅ V2 DEPLOYED | **Active Phase:** Phase 16 (Chat/LLM Quality Improvements)
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -22,6 +22,13 @@ Wave 3: ✓ Complete (T042, T045; T044/T046 deferred to v3)
 Independent: ✓ Complete (T023, T033, T048, T056, T060)
 Testing: ✓ Complete (T061-T068)
 ```
+
+### Roadmap Evolution
+- **Phase 16 added (2026-01-31):** Chat/LLM Quality Improvements
+  - Categories: A (Chat UX), B (Extraction), C (Knowledge Bank), D (Dead Code), E (Architecture), F (Security), G (Environment/DX), H (Over-Engineering)
+  - 40+ items identified from comprehensive code review
+  - Execution split: Security items (F1-F3, G1-G2) NOW, rest during/after LangChain refactor
+- **16-01 completed (2026-01-31):** Security and DX Quick Fixes (F2, F3, G1, G2)
 
 ---
 
@@ -728,9 +735,9 @@ Deferred from v2:
 
 **Last session:** 2026-01-31
 **Active branch:** `main`
-**Last commit:** `71923e8` - feat(product-helper): complete V2 with security hardening and chat refactor
+**Last commit:** `0bf2d0e` - fix(16-01): add .nvmrc and fix security vulnerabilities
 **Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
-**Deployment:** Vercel build in progress (auto-triggered by GitHub push)
+**Deployment:** Pending push to trigger Vercel build
 
 ### Completed This Session (2026-01-31)
 
@@ -741,6 +748,11 @@ Deferred from v2:
    - LLM timeout: 30s on all 5 ChatAnthropic instances
 3. ✅ **Committed and pushed** to `main` (71923e8)
 4. ✅ **Vercel deployment triggered** via GitHub integration
+5. ✅ **Phase 16-01 Completed:**
+   - README updated: OpenAI -> Anthropic Claude (G1)
+   - .nvmrc created: Node 20.9.0 (G2)
+   - Team API: returns 401 for unauthenticated users (F3)
+   - Stripe checkout: validates client_reference_id (F2)
 
 ### Files Changed
 
