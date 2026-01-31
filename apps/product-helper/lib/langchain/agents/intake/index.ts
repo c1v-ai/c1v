@@ -5,7 +5,6 @@
  * - Question bank schema and pre-defined questions
  * - State management for tracking conversation progress
  * - Priority scoring for optimal question selection
- * - Clarification detection for vague answers
  * - Completion detection for knowing when to stop
  *
  * @module intake
@@ -59,13 +58,6 @@ export {
   PriorityScorer,
   type ScoredQuestion,
 } from './priority-scorer';
-
-// Clarification Detector
-export {
-  ClarificationDetector,
-  ClarificationAnalysisSchema,
-  type ClarificationAnalysis,
-} from './clarification-detector';
 
 // Completion Detector
 export {

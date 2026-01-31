@@ -10,7 +10,7 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD (Phase 16 active)
-**Last Completed:** 16-02-PLAN.md (Cost Optimization - Prompt Caching and Haiku)
+**Last Completed:** 16-05-PLAN.md (Mermaid Validation Before Save)
 **Status:** ✅ V2 DEPLOYED | **Active Phase:** Phase 16 (Chat/LLM Quality Improvements)
 
 ```
@@ -30,6 +30,9 @@ Testing: ✓ Complete (T061-T068)
   - Execution split: Security items (F1-F3, G1-G2) NOW, rest during/after LangChain refactor
 - **16-01 completed (2026-01-31):** Security and DX Quick Fixes (F2, F3, G1, G2)
 - **16-02 completed (2026-01-31):** Cost Optimization - Prompt Caching and Haiku (A4, A5)
+- **16-03 completed (2026-01-31):** LangChain Refactor - Consolidated Agents
+- **16-04 completed (2026-01-31):** Dead Code Cleanup and Tooltip Activation (D3, C3)
+- **16-05 completed (2026-01-31):** Mermaid Validation Before Save (B4)
 
 ---
 
