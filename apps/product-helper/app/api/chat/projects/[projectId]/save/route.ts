@@ -1,16 +1,18 @@
 /**
  * Chat Message Save & Extraction Trigger API
  *
- * Purpose: Save assistant responses and trigger data extraction every N messages
+ * Purpose: Save assistant responses and trigger data extraction on every message
  * Pattern: Backend Architect - API endpoint with business logic separation
  * Team: Platform Engineering (Agent 1.1: Backend Architect)
  *
  * Flow:
  * 1. Save assistant message to database
- * 2. Check if messageCount % 5 === 0
- * 3. If yes, trigger extraction agent
- * 4. Update projectData with extracted information
- * 5. Recalculate completeness score
+ * 2. Trigger extraction agent (incremental - only processes new messages)
+ * 3. Update projectData with extracted information
+ * 4. Recalculate completeness score
+ *
+ * Note: Extraction runs on every message since 16-06 (incremental extraction)
+ * prevents cost explosion by only processing delta messages.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -129,102 +131,84 @@ export async function POST(
 
     const messageCount = Number(messageCountResult[0]?.count || 0);
 
-    // 9. Check if we should trigger extraction (every 5 messages)
-    const EXTRACTION_INTERVAL = 5;
-    const shouldExtract = messageCount % EXTRACTION_INTERVAL === 0;
-
+    // 9. Run incremental extraction on every message
+    // Note: Modulo-5 gate removed (16-07). Incremental extraction (16-06) ensures
+    // only NEW messages are processed, preventing cost explosion.
     let extractedData = false;
     let newCompleteness = project.projectData?.completeness || 0;
 
-    if (shouldExtract) {
-      try {
-        // 10. Get last extracted index for incremental extraction
-        const lastIndex = project.projectData?.lastExtractedMessageIndex || 0;
+    try {
+      // 10. Get last extracted index for incremental extraction
+      const lastIndex = project.projectData?.lastExtractedMessageIndex || 0;
 
-        // 11. Load ALL conversation history (ordered by creation time)
-        const allHistory = await db.query.conversations.findMany({
-          where: eq(conversations.projectId, projectId),
-          orderBy: [asc(conversations.createdAt)],
+      // 11. Load ALL conversation history (ordered by creation time)
+      const allHistory = await db.query.conversations.findMany({
+        where: eq(conversations.projectId, projectId),
+        orderBy: [asc(conversations.createdAt)],
+      });
+
+      // 12. Calculate which messages are new vs context
+      // Keep last 5 messages before lastIndex as context
+      const contextStart = Math.max(0, lastIndex - 5);
+      const contextMessages = allHistory.slice(contextStart, lastIndex);
+      const newMessages = allHistory.slice(lastIndex);
+
+      // 13. Skip extraction if no new messages
+      if (newMessages.length === 0) {
+        console.log(`[Extraction] No new messages to extract for project ${projectId}`);
+        return NextResponse.json({
+          message: 'Message saved successfully',
+          messageCount,
+          extracted: false,
+          completeness: project.projectData?.completeness || 0,
         });
+      }
 
-        // 12. Calculate which messages are new vs context
-        // Keep last 5 messages before lastIndex as context
-        const contextStart = Math.max(0, lastIndex - 5);
-        const contextMessages = allHistory.slice(contextStart, lastIndex);
-        const newMessages = allHistory.slice(lastIndex);
+      // 14. Format conversation text with context and new messages marked
+      const conversationText = [
+        ...(contextMessages.length > 0 ? [
+          '## Prior Context (for reference only):',
+          ...contextMessages.map((msg) => `${msg.role}: ${msg.content}`),
+          '',
+        ] : []),
+        '## New Messages (extract from these):',
+        ...newMessages.map((msg) => `${msg.role}: ${msg.content}`),
+      ].join('\n');
 
-        // 13. Skip extraction if no new messages
-        if (newMessages.length === 0) {
-          console.log(`[Extraction] No new messages to extract for project ${projectId}`);
-          return NextResponse.json({
-            message: 'Message saved successfully',
-            messageCount,
-            extracted: false,
-            completeness: project.projectData?.completeness || 0,
-          });
-        }
+      // 15. Run extraction agent (incremental - every message)
+      console.log(`[Extraction] Running incremental extraction for project ${projectId} (message ${messageCount}, index ${lastIndex} to ${allHistory.length})`);
 
-        // 14. Format conversation text with context and new messages marked
-        const conversationText = [
-          ...(contextMessages.length > 0 ? [
-            '## Prior Context (for reference only):',
-            ...contextMessages.map((msg) => `${msg.role}: ${msg.content}`),
-            '',
-          ] : []),
-          '## New Messages (extract from these):',
-          ...newMessages.map((msg) => `${msg.role}: ${msg.content}`),
-        ].join('\n');
+      const extraction = await extractProjectData(
+        conversationText,
+        project.name,
+        project.vision
+      );
 
-        // 15. Run extraction agent
-        console.log(`[Extraction] Processing ${newMessages.length} new messages (index ${lastIndex} to ${allHistory.length}) for project ${projectId}`);
+      // 16. Merge with existing data if available
+      const existingData = project.projectData;
+      const mergedData = existingData
+        ? mergeExtractionData(
+            {
+              actors: (existingData.actors as any) || [],
+              useCases: (existingData.useCases as any) || [],
+              systemBoundaries: (existingData.systemBoundaries as any) || { internal: [], external: [] },
+              dataEntities: (existingData.dataEntities as any) || [],
+              problemStatement: (existingData.problemStatement as any) || undefined,
+              nonFunctionalRequirements: (existingData.nonFunctionalRequirements as any) || undefined,
+            },
+            extraction
+          )
+        : extraction;
 
-        const extraction = await extractProjectData(
-          conversationText,
-          project.name,
-          project.vision
-        );
+      // 17. Calculate new completeness score
+      newCompleteness = calculateCompleteness(mergedData);
 
-        // 16. Merge with existing data if available
-        const existingData = project.projectData;
-        const mergedData = existingData
-          ? mergeExtractionData(
-              {
-                actors: (existingData.actors as any) || [],
-                useCases: (existingData.useCases as any) || [],
-                systemBoundaries: (existingData.systemBoundaries as any) || { internal: [], external: [] },
-                dataEntities: (existingData.dataEntities as any) || [],
-                problemStatement: (existingData.problemStatement as any) || undefined,
-                nonFunctionalRequirements: (existingData.nonFunctionalRequirements as any) || undefined,
-              },
-              extraction
-            )
-          : extraction;
-
-        // 17. Calculate new completeness score
-        newCompleteness = calculateCompleteness(mergedData);
-
-        // 18. Update projectData table (upsert) with lastExtractedMessageIndex
-        if (existingData) {
-          // Update existing
-          await db
-            .update(projectData)
-            .set({
-              actors: mergedData.actors as any,
-              useCases: mergedData.useCases as any,
-              systemBoundaries: mergedData.systemBoundaries as any,
-              dataEntities: mergedData.dataEntities as any,
-              problemStatement: mergedData.problemStatement as any,
-              nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
-              completeness: newCompleteness,
-              lastExtractedAt: new Date(),
-              lastExtractedMessageIndex: allHistory.length,
-              updatedAt: new Date(),
-            })
-            .where(eq(projectData.projectId, projectId));
-        } else {
-          // Insert new
-          await db.insert(projectData).values({
-            projectId,
+      // 18. Update projectData table (upsert) with lastExtractedMessageIndex
+      if (existingData) {
+        // Update existing
+        await db
+          .update(projectData)
+          .set({
             actors: mergedData.actors as any,
             useCases: mergedData.useCases as any,
             systemBoundaries: mergedData.systemBoundaries as any,
@@ -234,17 +218,32 @@ export async function POST(
             completeness: newCompleteness,
             lastExtractedAt: new Date(),
             lastExtractedMessageIndex: allHistory.length,
-          });
-        }
-
-        extractedData = true;
-
-        console.log(`[Extraction] Complete for project ${projectId}: ${newCompleteness}% completeness`);
-      } catch (extractionError) {
-        console.error('[Extraction] Error:', extractionError);
-        // Don't fail the entire request if extraction fails
-        // Just log and continue
+            updatedAt: new Date(),
+          })
+          .where(eq(projectData.projectId, projectId));
+      } else {
+        // Insert new
+        await db.insert(projectData).values({
+          projectId,
+          actors: mergedData.actors as any,
+          useCases: mergedData.useCases as any,
+          systemBoundaries: mergedData.systemBoundaries as any,
+          dataEntities: mergedData.dataEntities as any,
+          problemStatement: mergedData.problemStatement as any,
+          nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
+          completeness: newCompleteness,
+          lastExtractedAt: new Date(),
+          lastExtractedMessageIndex: allHistory.length,
+        });
       }
+
+      extractedData = true;
+
+      console.log(`[Extraction] Complete for project ${projectId}: ${newCompleteness}% completeness`);
+    } catch (extractionError) {
+      console.error('[Extraction] Error:', extractionError);
+      // Don't fail the entire request if extraction fails
+      // Just log and continue
     }
 
     // 19. Return success response
