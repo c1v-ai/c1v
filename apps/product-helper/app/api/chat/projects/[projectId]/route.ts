@@ -5,8 +5,9 @@ import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
 import { PRD_SPEC_PIPELINE } from '@/lib/langchain/prompts';
 import { db } from '@/lib/db/drizzle';
-import { projects, conversations, type NewConversation } from '@/lib/db/schema';
+import { projects, conversations, artifacts, type NewConversation, type NewArtifact } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
+import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
 import {
   processWithLangGraph,
   streamWithLangGraph,
@@ -15,6 +16,7 @@ import {
 } from './langgraph-handler';
 import { buildPromptEducationBlock } from '@/lib/education/phase-mapping';
 import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
+import { checkRateLimit } from '@/lib/mcp/rate-limit';
 
 /**
  * Project Chat API Endpoint
@@ -75,6 +77,28 @@ export async function POST(
         {
           status: 404,
           headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Rate limit check: 20 requests per minute per user
+    const rateLimitKey = `chat-user-${user.id}`;
+    const { allowed, remaining, resetAt } = checkRateLimit(rateLimitKey, 20, 60000);
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limited',
+          message: 'Too many requests. Please wait a moment before sending another message.',
+          resetAt
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': '20',
+            'X-RateLimit-Remaining': String(remaining),
+            'X-RateLimit-Reset': String(resetAt),
+          }
         }
       );
     }
@@ -308,14 +332,50 @@ Keep response under 3 sentences unless generating a diagram.`;
 
     await db.insert(conversations).values(newUserMessage);
 
-    // Stream the response with the formatted prompt
+    // Stream the response, accumulating chunks to save after completion
     const stream = await chain.stream(promptText);
+    let fullResponse = '';
 
-    // Note: We'll save the AI response in a separate mechanism
-    // For now, the client will need to make a follow-up request to save it
-    // Or we implement a callback in the streaming response
+    const transformStream = new TransformStream<string, string>({
+      transform(chunk, controller) {
+        fullResponse += chunk;
+        controller.enqueue(chunk);
+      },
+      async flush() {
+        // Save accumulated AI response after stream completes
+        if (fullResponse) {
+          try {
+            await db.insert(conversations).values({
+              projectId,
+              role: 'assistant',
+              content: fullResponse,
+              tokens: estimateTokenCount(fullResponse),
+            });
 
-    return new StreamingTextResponse(stream);
+            // Extract and save mermaid diagrams
+            const mermaidBlocks = extractMermaidBlocks(fullResponse);
+            for (const mermaidSyntax of mermaidBlocks) {
+              const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
+              const diagramType = detectDiagramType(cleanedSyntax);
+              const newArtifact: NewArtifact = {
+                projectId,
+                type: diagramType,
+                content: { mermaid: cleanedSyntax },
+                status: 'draft',
+              };
+              await db.insert(artifacts).values(newArtifact);
+            }
+          } catch (saveError) {
+            console.error('[Legacy Chat] Error saving response:', saveError);
+          }
+        }
+      },
+    });
+
+    // Pipe the LangChain stream through our transform
+    const readableStream = stream.pipeThrough(transformStream);
+
+    return new StreamingTextResponse(readableStream);
   } catch (error) {
     console.error('Project chat API error:', error);
 
@@ -429,6 +489,31 @@ export async function GET(
  */
 function estimateTokenCount(text: string): number {
   return Math.ceil(text.length / 4);
+}
+
+/**
+ * Extract mermaid code blocks from content
+ */
+function extractMermaidBlocks(content: string): string[] {
+  const mermaidRegex = /```mermaid\n([\s\S]*?)```/g;
+  const blocks: string[] = [];
+  let match;
+  while ((match = mermaidRegex.exec(content)) !== null) {
+    blocks.push(match[1].trim());
+  }
+  return blocks;
+}
+
+/**
+ * Detect diagram type from mermaid syntax
+ */
+function detectDiagramType(syntax: string): string {
+  const firstLine = syntax.trim().split('\n')[0].toLowerCase();
+  if (firstLine.includes('classdiagram')) return 'class_diagram';
+  if (firstLine.includes('sequencediagram')) return 'sequence_diagram';
+  if (firstLine.includes('graph lr') || firstLine.includes('usecase')) return 'use_case_diagram';
+  if (firstLine.includes('flowchart') || firstLine.includes('statediagram')) return 'activity_diagram';
+  return 'context_diagram';
 }
 
 /**

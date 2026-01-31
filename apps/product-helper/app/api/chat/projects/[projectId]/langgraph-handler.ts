@@ -15,8 +15,9 @@
 
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
 import { db } from '@/lib/db/drizzle';
-import { conversations, projectData } from '@/lib/db/schema';
+import { conversations, projectData, artifacts, type NewArtifact } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
 import {
   getIntakeGraph,
   createInitialState,
@@ -149,6 +150,9 @@ export async function processWithLangGraph(
       tokens: estimateTokenCount(response),
     });
 
+    // 6b. Extract and save any mermaid diagrams
+    await saveMermaidDiagrams(projectId, response);
+
     // 7. Save checkpoint
     await saveCheckpoint(projectId, result);
 
@@ -279,6 +283,9 @@ export async function streamWithLangGraph(
             content: fullResponse,
             tokens: estimateTokenCount(fullResponse),
           });
+
+          // Extract and save any mermaid diagrams
+          await saveMermaidDiagrams(projectId, fullResponse);
         }
 
         // Save checkpoint with accumulated state
@@ -314,6 +321,57 @@ export async function streamWithLangGraph(
 // ============================================================
 // Helper Functions
 // ============================================================
+
+/**
+ * Extract mermaid code blocks from content
+ */
+function extractMermaidBlocks(content: string): string[] {
+  const mermaidRegex = /```mermaid\n([\s\S]*?)```/g;
+  const blocks: string[] = [];
+  let match;
+  while ((match = mermaidRegex.exec(content)) !== null) {
+    blocks.push(match[1].trim());
+  }
+  return blocks;
+}
+
+/**
+ * Detect diagram type from mermaid syntax
+ */
+function detectDiagramType(syntax: string): string {
+  const firstLine = syntax.trim().split('\n')[0].toLowerCase();
+  if (firstLine.includes('classdiagram')) return 'class_diagram';
+  if (firstLine.includes('sequencediagram')) return 'sequence_diagram';
+  if (firstLine.includes('graph lr') || firstLine.includes('usecase')) return 'use_case_diagram';
+  if (firstLine.includes('flowchart') || firstLine.includes('statediagram')) return 'activity_diagram';
+  return 'context_diagram';
+}
+
+/**
+ * Extract and save mermaid diagrams from AI response content
+ */
+async function saveMermaidDiagrams(projectId: number, content: string): Promise<void> {
+  try {
+    const mermaidBlocks = extractMermaidBlocks(content);
+    if (mermaidBlocks.length > 0) {
+      console.log(`[LangGraph Diagrams] Found ${mermaidBlocks.length} mermaid diagram(s)`);
+      for (const mermaidSyntax of mermaidBlocks) {
+        const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
+        const diagramType = detectDiagramType(cleanedSyntax);
+        const newArtifact: NewArtifact = {
+          projectId,
+          type: diagramType,
+          content: { mermaid: cleanedSyntax },
+          status: 'draft',
+        };
+        await db.insert(artifacts).values(newArtifact);
+        console.log(`[LangGraph Diagrams] Saved ${diagramType} diagram to artifacts`);
+      }
+    }
+  } catch (error) {
+    console.error('[LangGraph Diagrams] Error saving diagrams:', error);
+  }
+}
 
 /**
  * Parse existing project data into ExtractionResult format
