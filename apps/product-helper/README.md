@@ -7,7 +7,7 @@ AI-powered PRD (Product Requirements Document) generation SaaS. Transform produc
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript 5.8
 - **Database:** PostgreSQL with Drizzle ORM
-- **AI/LLM:** LangChain.js, LangGraph, OpenAI GPT-4
+- **AI/LLM:** LangChain.js, LangGraph, Anthropic Claude Sonnet 4.5
 - **Payments:** Stripe (subscriptions, checkout)
 - **UI:** shadcn/ui, Tailwind CSS 4.1
 - **Auth:** JWT-based with bcryptjs
@@ -31,7 +31,7 @@ AI-powered PRD (Product Requirements Document) generation SaaS. Transform produc
 - PNPM 9.x
 - PostgreSQL database
 - Stripe account (for payments)
-- OpenAI API key
+- Anthropic API key
 
 ### Environment Setup
 
@@ -46,7 +46,7 @@ POSTGRES_URL=postgresql://...
 AUTH_SECRET=your-secret-key-min-32-chars
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
 BASE_URL=http://localhost:3000
 ```
 
@@ -136,7 +136,7 @@ See `.env.example` for all available variables:
 | `AUTH_SECRET` | Yes | JWT signing secret (min 32 chars) |
 | `STRIPE_SECRET_KEY` | Yes | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Yes | Stripe webhook signing secret |
-| `OPENAI_API_KEY` | Yes | OpenAI API key for GPT-4 |
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for Claude |
 | `BASE_URL` | Yes | Application base URL |
 | `LANGCHAIN_API_KEY` | No | LangSmith API key (observability) |
 | `LANGCHAIN_PROJECT` | No | LangSmith project name |
