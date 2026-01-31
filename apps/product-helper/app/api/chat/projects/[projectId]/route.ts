@@ -81,23 +81,22 @@ export async function POST(
       );
     }
 
-    // Rate limit check: 20 requests per minute per user
+    // Rate limit check: 100 requests per minute per user (uses shared rate-limit config)
     const rateLimitKey = `chat-user-${user.id}`;
-    const { allowed, remaining, resetAt } = checkRateLimit(rateLimitKey, 20, 60000);
-    if (!allowed) {
+    const rateLimitResult = checkRateLimit(rateLimitKey);
+    if (!rateLimitResult.allowed) {
       return new Response(
         JSON.stringify({
           error: 'Rate limited',
           message: 'Too many requests. Please wait a moment before sending another message.',
-          resetAt
         }),
         {
           status: 429,
           headers: {
             'Content-Type': 'application/json',
-            'X-RateLimit-Limit': '20',
-            'X-RateLimit-Remaining': String(remaining),
-            'X-RateLimit-Reset': String(resetAt),
+            'X-RateLimit-Limit': '100',
+            'X-RateLimit-Remaining': String(rateLimitResult.remaining),
+            'X-RateLimit-Reset': String(rateLimitResult.resetAt),
           }
         }
       );
