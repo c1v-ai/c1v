@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -33,16 +33,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
-
-// Initialize Mermaid
-if (typeof window !== 'undefined') {
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'default',
-    securityLevel: 'loose',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  });
-}
+import { renderDiagramSvg, type DiagramTheme } from '@/lib/diagrams/beautiful-mermaid';
 
 export interface DiagramViewerProps {
   /** Mermaid syntax string */
@@ -75,6 +66,10 @@ export function DiagramViewer({
   const [isRendering, setIsRendering] = useState<boolean>(true);
   const [showCode, setShowCode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Theme support for beautiful-mermaid
+  const { resolvedTheme } = useTheme();
+  const diagramTheme: DiagramTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
   // Pan state
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -133,9 +128,6 @@ export function DiagramViewer({
         setIsRendering(true);
         setError(null);
 
-        // Generate unique ID for this diagram
-        const id = `diagram-${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
         // Set a hard timeout that will cancel and show error
         timeoutId = setTimeout(() => {
           if (!isCancelled) {
@@ -145,8 +137,8 @@ export function DiagramViewer({
           }
         }, 15000); // 15 second timeout
 
-        // Render the diagram (mermaid.render validates internally)
-        const { svg } = await mermaid.render(id, cleanedSyntax);
+        // Render the diagram using beautiful-mermaid with theme support
+        const svg = await renderDiagramSvg(cleanedSyntax, diagramTheme);
 
         clearTimeout(timeoutId);
         if (!isCancelled) {
@@ -156,7 +148,7 @@ export function DiagramViewer({
       } catch (err) {
         clearTimeout(timeoutId);
         if (!isCancelled) {
-          console.error('Mermaid rendering error:', err);
+          console.error('Beautiful Mermaid rendering error:', err);
           setError(err instanceof Error ? err.message : 'Failed to render diagram');
           setIsRendering(false);
         }
@@ -169,7 +161,7 @@ export function DiagramViewer({
       isCancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [syntax, type]); // Note: cleanedSyntax is computed inside, so we use original syntax in deps
+  }, [syntax, type, diagramTheme]); // Re-render when theme changes
 
   // Update container with SVG
   useEffect(() => {
