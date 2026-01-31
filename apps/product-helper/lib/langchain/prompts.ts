@@ -48,74 +48,6 @@ export const PRD_SPEC_PIPELINE = {
 };
 
 /**
- * structured requirements Methodology - Question Patterns
- * Used to guide the conversational intake process
- */
-export const INTAKE_QUESTION_PATTERNS = {
-  // Context Diagram Data Collection
-  context_diagram: {
-    // Focus on things the system must INTERACT with (not internal components)
-    external_elements: [
-      'What external systems, services, or entities does {system} need to interact with?',
-      'What people, organizations, or systems will use or be affected by {system}?',
-      'Are there any third-party services, APIs, or integrations {system} must work with?'
-    ],
-    // For each external element, ask HOW it interacts (bidirectional)
-    interaction_direction: [
-      'For {element}, what does it do TO your system?',
-      'For {element}, what does your system do TO/FOR it?'
-    ],
-    // Probe for different TYPES within categories
-    type_variants: [
-      'Are there different types of {element} that need to be handled differently?',
-      'Do any {element} have special requirements or constraints?'
-    ],
-    // Look for constraints between external elements
-    constraints: [
-      'What constraints exist between {elementA} and {elementB}?',
-      'Does {elementA} affect how your system interacts with {elementB}?'
-    ]
-  },
-  // Use Case Analysis Process
-  use_case_diagram: {
-    // Start with scenarios from stakeholder interviews
-    actor_goals: [
-      'What are the main tasks or goals {actor} needs to accomplish?',
-      'What does {actor} expect to be able to do with the system?'
-    ],
-    // Look for include relationships (required sub-use-cases)
-    include_relationships: [
-      'Does {useCase} require any other actions to happen first?',
-      'What must be completed before {useCase} can occur?'
-    ],
-    // Look for extends relationships (optional extensions)
-    extends_relationships: [
-      'Are there optional extensions or variations of {useCase}?',
-      'Are there special cases or exceptions for {useCase}?'
-    ],
-    // Look for trigger relationships (automatic consequences)
-    trigger_relationships: [
-      'Does completing {useCase} automatically trigger another action?',
-      'What happens after {useCase} is completed?'
-    ],
-    // Identify primary vs secondary actors
-    actor_classification: [
-      'Who is the primary user initiating {useCase}?',
-      'Are there other actors involved in {useCase} but not initiating it?'
-    ]
-  }
-};
-
-/**
- * Stop Triggers - When user says these, STOP asking and START generating
- */
-export const STOP_TRIGGERS = [
-  'nope', 'no', 'none', 'nothing', 'that\'s enough', 'that\'s it',
-  'done', 'move on', 'let\'s see', 'let\'s see it', 'generate',
-  'show me', 'that\'s all', 'no more', 'enough'
-];
-
-/**
  * System Prompt
  * Base instructions for the AI assistant across all interactions
  */
@@ -129,7 +61,7 @@ export const systemPrompt = `You are an expert Product Requirements Document (PR
 
 ## PRD-SPEC Artifact Pipeline
 Generate artifacts in this strict sequence (each unlocks the next):
-1. Context Diagram → 2. Use Case Diagram → 3. Scope Tree → 4. UCBD → 5. Requirements → 6. Constants → 7. SysML Activity
+1. Context Diagram -> 2. Use Case Diagram -> 3. Scope Tree -> 4. UCBD -> 5. Requirements -> 6. Constants -> 7. SysML Activity
 
 ## Artifact Minimum Thresholds (generate when met)
 - Context Diagram: system name + 1 actor + 1 external interaction
@@ -142,100 +74,11 @@ Generate artifacts in this strict sequence (each unlocks the next):
 
 ## Stop Triggers (STOP asking, START generating)
 When user says any of: "nope", "no", "that's enough", "that's it", "done", "move on", "let's see it"
-→ STOP asking questions immediately
-→ Infer any missing pieces from context
-→ Generate the current artifact
+-> STOP asking questions immediately
+-> Infer any missing pieces from context
+-> Generate the current artifact
 
 Your tone: brief, efficient, bias toward action.`;
-
-/**
- * Conversational Intake Prompt
- * Guides PM through requirements gathering using structured requirements methodology
- * FAST approach: minimal questions, infer aggressively, generate early
- */
-export const intakePrompt = PromptTemplate.fromTemplate(`
-You are a PRD assistant using the structured requirements methodology. Collect MINIMUM data, then GENERATE artifacts.
-
-## Project Context
-Name: {projectName}
-Vision: {projectVision}
-Completeness: {completeness}%
-Current Artifact: {currentArtifact}
-
-## CRITICAL RULES
-
-### Rule 1: STOP TRIGGERS
-If user says ANY of: "nope", "no", "none", "nothing", "that's enough", "that's it", "done", "move on", "let's see", "generate", "show me"
-→ DO NOT ask another question
-→ Say "Got it, generating your [artifact]..." and produce the Mermaid diagram
-
-### Rule 2: GENERATE WHEN READY
-For Context Diagram: system name + 1 actor + 1 external interaction (or "none confirmed")
-For Use Case Diagram: 2+ actors + 3+ use cases with actor links
-For Scope Tree: 1+ in-scope + 1+ out-of-scope items
-
-Once minimums are met → GENERATE THE DIAGRAM. Don't keep asking.
-
-### Rule 3: ONE QUESTION MAX (industry-standard Methodology)
-If you must ask, ask exactly ONE question using industry-standard patterns:
-
-**For Context Diagram (focus on EXTERNAL interactions, not internal components):**
-- Ask about external elements: "What external systems or people interact with {projectName}?"
-- For each element, ask BIDIRECTIONAL interaction: "What does [element] do TO your system? What does your system do FOR [element]?"
-- Probe for type variants: "Are there different types of [element] that need different handling?"
-- Look for constraints: "Does [elementA] affect how the system interacts with [elementB]?"
-
-**For Use Case Diagram (start from actor goals, find relationships):**
-- Ask actor goals: "What are the main tasks [actor] needs to accomplish?"
-- Find <<include>> relationships: "Does [useCase] require another action to happen first?"
-- Find <<extends>> relationships: "Are there optional variations or special cases for [useCase]?"
-- Find <<trigger>> relationships: "Does completing [useCase] automatically start another action?"
-- Classify actors: "Who initiates [useCase]? Who else is involved but not initiating?"
-
-### Rule 4: INFER > INTERROGATE
-From vision "{projectVision}", infer likely:
-- Actors (people, organizations, systems that interact)
-- External systems (third-party services, APIs, integrations)
-- Use cases (what actors need to accomplish)
-Show your inference: "Based on your vision, I'm identifying [X] as a primary actor and [Y] as an external system. Correct?"
-
-### Rule 5: PRIMARY vs SECONDARY ACTORS (industry-standard)
-- Primary actors: Directly interact with system, initiate use cases
-- Secondary actors: Support the system, provide services, receive outputs
-- External systems: Third-party integrations the system depends on
-
-## Artifact Pipeline (strict order)
-1. Context Diagram ← YOU ARE HERE if completeness < 30%
-2. Use Case Diagram ← after context diagram done (need relationships: include/extends/trigger)
-3. Scope Tree ← after use cases defined
-4. UCBD ← after scope defined
-5. Requirements ← after UCBD done
-6. Constants ← after requirements
-7. SysML Activity ← final artifact
-
-## Current Data Extracted
-Actors: {extractedActors}
-Use Cases: {extractedUseCases}
-External Systems: {extractedExternalSystems}
-In Scope: {extractedInScope}
-Out of Scope: {extractedOutOfScope}
-
-## Conversation History
-{history}
-
-## User's Message
-{input}
-
-{educationBlock}
-
-## Your Response
-Either:
-A) Generate the artifact if minimums are met (preferred)
-B) Make an inference from vision and ask user to confirm
-C) Ask ONE specific industry-standard-methodology question (last resort)
-
-Keep response under 3 sentences unless generating a diagram.
-`);
 
 /**
  * Data Extraction Prompt
@@ -282,7 +125,7 @@ For each external element, capture BIDIRECTIONAL interactions:
 - What it does TO the system (data/requests sent to system)
 - What the system does TO/FOR it (data/responses sent from system)
 - Any constraints between external elements
-- If user says "none" or "nope" → mark as "None (confirmed)"
+- If user says "none" or "nope" -> mark as "None (confirmed)"
 
 ### 4. Scope (for Scope Tree)
 - **In Scope**: Features explicitly included, deliverables
@@ -301,7 +144,7 @@ Every project exists to solve a problem. Extract the core problem being addresse
 - **impact**: Business or user consequences if the problem is NOT solved (lost revenue, user churn, compliance risk, operational inefficiency)
 - **goals**: Array of 3-5 measurable success criteria that define what "solved" looks like (e.g., "Reduce onboarding time from 30 minutes to under 5 minutes")
 
-IMPORTANT: INFER the problem statement from the project vision and conversation even if not explicitly stated. Every project has a problem — extract it. Use the vision statement, actor goals, and use cases as signals to reconstruct the underlying problem.
+IMPORTANT: INFER the problem statement from the project vision and conversation even if not explicitly stated. Every project has a problem -- extract it. Use the vision statement, actor goals, and use cases as signals to reconstruct the underlying problem.
 
 ### 7. Goals & Success Metrics
 Extract 3-5 project-level goals with measurable success criteria. Each goal should define what success looks like in quantifiable terms.
@@ -333,7 +176,7 @@ For each NFR, capture:
 
 Guidelines:
 - INFER reasonable NFRs from the project type, tech stack, user base, and vision statement even if not explicitly stated in the conversation
-- Every project has implicit NFRs — extract them. A web app implies page load requirements; a multi-user system implies concurrency requirements; handling user data implies security requirements.
+- Every project has implicit NFRs -- extract them. A web app implies page load requirements; a multi-user system implies concurrency requirements; handling user data implies security requirements.
 - Cover at least 3 different categories to ensure breadth
 - Each requirement must be specific and measurable, not vague (e.g., "fast" is bad; "response time under 200ms" is good)
 
@@ -380,235 +223,4 @@ Return structured JSON with:
 {educationBlock}
 
 INFER AGGRESSIVELY from the vision statement. Apply structured methodology to identify relationships and bidirectional interactions.
-`);
-
-/**
- * Validation Guidance Prompt
- * Provides suggestions to improve validation score
- */
-export const validationGuidancePrompt = PromptTemplate.fromTemplate(`
-Review this PRD data and validation results, then provide specific suggestions to reach 95%+ score.
-
-## Current Validation Score: {score}%
-
-## Failed Gates
-{failedGates}
-
-## Current Data
-{currentData}
-
-## Instructions
-For each failed gate, provide:
-1. **What's missing**: Specific information needed
-2. **Suggested questions**: 1-2 questions to ask the user to gather this information
-3. **Priority**: Critical vs Important vs Nice-to-have
-
-Be concise and actionable. Focus on what will have the biggest impact on the validation score.
-`);
-
-/**
- * Diagram Generation Prompt
- * Generates Mermaid syntax from structured data
- */
-export const diagramPrompt = PromptTemplate.fromTemplate(`
-Generate a {diagramType} diagram in Mermaid syntax from this PRD data.
-
-## Data
-{prdData}
-
-## Requirements for {diagramType}
-{requirements}
-
-## Output
-Return ONLY the Mermaid syntax, no explanations or markdown code fences.
-Start with the diagram type declaration (e.g., "graph TD" or "sequenceDiagram").
-Use clear, descriptive labels.
-IMPORTANT: For sequence diagrams, do NOT use classDef or class statements - these are not supported. For other diagram types (graph/flowchart), you may use classDef for styling.
-`);
-
-/**
- * Requirements Table Generation Prompt
- * Generates structured requirements from use cases and UCBD
- * PRD-SPEC compliant: singular, testable, unambiguous requirements
- */
-export const requirementsTablePrompt = PromptTemplate.fromTemplate(`
-Generate a comprehensive requirements table from the following PRD data.
-
-## Project Context
-Project: {projectName}
-Vision: {projectVision}
-
-## Use Cases
-{useCases}
-
-## UCBD Steps (if available)
-{ucbdSteps}
-
-## Instructions
-Generate requirements following these rules:
-1. **Derivation**: Each requirement must trace to a UCBD step or use case
-2. **Language**: Use "The system SHALL..." format (mandatory "shall" language)
-3. **Singularity**: Each requirement must specify ONE capability only
-4. **Testability**: Each requirement must be verifiable through testing
-5. **Unambiguous**: Use precise, clear language with no room for interpretation
-6. **Completeness**: Cover all functional and non-functional aspects
-
-## Requirement Categories
-- **Functional**: What the system does (user actions, workflows)
-- **Performance**: Speed, throughput, response times
-- **Security**: Authentication, authorization, data protection
-- **Usability**: User experience, accessibility
-- **Reliability**: Uptime, error handling, recovery
-
-## Output Format
-Generate requirements as a structured list with:
-- ID (REQ-001, REQ-002, etc.)
-- Name (short abstract name)
-- Description (full "shall" statement)
-- Source (trace to UC ID or UCBD step)
-- Priority (Critical/High/Medium/Low)
-- Testability (how to verify)
-- Category (Functional/Performance/Security/Usability/Reliability)
-
-Example:
-ID: REQ-001
-Name: User Login Authentication
-Description: The system SHALL authenticate users via email and password before granting access to protected resources.
-Source: UC1 - User Login
-Priority: Critical
-Testability: Test with valid/invalid credentials, verify access control
-Category: Security
-
-Generate the complete requirements table now.
-`);
-
-/**
- * Constants Table Generation Prompt
- * Generates system constants and configuration values
- * PRD-SPEC compliant: name, value, units present
- */
-export const constantsTablePrompt = PromptTemplate.fromTemplate(`
-Generate a constants table for this product based on the PRD data and requirements.
-
-## Project Context
-Project: {projectName}
-Vision: {projectVision}
-
-## Requirements
-{requirements}
-
-## Use Cases
-{useCases}
-
-## Instructions
-Identify and define system constants including:
-1. **Performance Limits**: Timeouts, max concurrent users, rate limits
-2. **Security Parameters**: Session duration, max login attempts, token expiry
-3. **Business Logic**: Minimum/maximum values for business rules
-4. **UI/UX**: Page sizes, default values, display limits
-5. **Integration**: API rate limits, retry counts, timeouts
-
-## Output Format
-For each constant, provide:
-- Name (UPPER_SNAKE_CASE)
-- Value (actual value or reasonable default)
-- Units (if applicable: seconds, MB, requests/min, etc.)
-- Description (purpose and usage)
-- Category (Performance/Security/Business Logic/UI-UX/Integration)
-
-Example:
-Name: MAX_LOGIN_ATTEMPTS
-Value: 5
-Units: attempts
-Description: Maximum number of failed login attempts before account lockout
-Category: Security
-
-Name: SESSION_TIMEOUT
-Value: 3600
-Units: seconds
-Description: User session expires after this duration of inactivity
-Category: Security
-
-Name: API_RATE_LIMIT
-Value: 100
-Units: requests/minute
-Description: Maximum API requests allowed per user per minute
-Category: Performance
-
-Only include constants that are actually relevant to the requirements. Do not invent unnecessary constants.
-Generate the constants table now.
-`);
-
-/**
- * Activity Diagram Spec Generation Prompt
- * Generates structured SysML Activity Diagram specification
- * PRD-SPEC compliant: workflow steps + decision points
- */
-export const activityDiagramPrompt = PromptTemplate.fromTemplate(`
-Generate a SysML Activity Diagram specification for the following use case.
-
-## Use Case
-ID: {useCaseId}
-Name: {useCaseName}
-Description: {useCaseDescription}
-Actor: {actor}
-
-## UCBD Steps (if available)
-{ucbdSteps}
-
-## Instructions
-Create a structured activity diagram that shows:
-1. **Workflow Steps**: All actions from start to end
-2. **Decision Points**: Conditional branches and choices
-3. **Actors**: Who performs each step (use swimlanes if multiple actors)
-4. **Flow**: Sequential, parallel, and conditional transitions
-
-## Step Types
-- **start**: Single starting point
-- **end**: Termination point(s)
-- **action**: Regular activity step
-- **decision**: Conditional branch (diamond shape)
-- **merge**: Converging branches
-- **fork**: Parallel split
-- **join**: Parallel merge
-
-## Output Format
-Generate a structured specification with:
-- Steps (id, type, label, actor, transitions)
-- Decision conditions for each branch
-- Swimlanes (if multiple actors involved)
-- Preconditions and postconditions for key steps
-
-Example:
-Step 1:
-  ID: STEP-1
-  Type: start
-  Label: User initiates login
-  Actor: User
-  Transitions: [STEP-2]
-
-Step 2:
-  ID: STEP-2
-  Type: action
-  Label: Enter credentials
-  Actor: User
-  Transitions: [STEP-3]
-
-Step 3:
-  ID: STEP-3
-  Type: action
-  Label: Validate credentials
-  Actor: System
-  Transitions: [STEP-4]
-
-Step 4:
-  ID: STEP-4
-  Type: decision
-  Label: Credentials valid?
-  Actor: System
-  Transitions:
-    - Target: STEP-5, Condition: "Valid", Label: "Yes"
-    - Target: STEP-6, Condition: "Invalid", Label: "No"
-
-Generate the complete activity diagram specification now.
 `);
