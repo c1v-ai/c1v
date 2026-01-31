@@ -10,7 +10,7 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD (Phase 16 active)
-**Last Completed:** 16-01-PLAN.md (Security and DX Quick Fixes)
+**Last Completed:** 16-02-PLAN.md (Cost Optimization - Prompt Caching and Haiku)
 **Status:** ✅ V2 DEPLOYED | **Active Phase:** Phase 16 (Chat/LLM Quality Improvements)
 
 ```
@@ -29,6 +29,7 @@ Testing: ✓ Complete (T061-T068)
   - 40+ items identified from comprehensive code review
   - Execution split: Security items (F1-F3, G1-G2) NOW, rest during/after LangChain refactor
 - **16-01 completed (2026-01-31):** Security and DX Quick Fixes (F2, F3, G1, G2)
+- **16-02 completed (2026-01-31):** Cost Optimization - Prompt Caching and Haiku (A4, A5)
 
 ---
 
@@ -735,7 +736,7 @@ Deferred from v2:
 
 **Last session:** 2026-01-31
 **Active branch:** `main`
-**Last commit:** `0bf2d0e` - fix(16-01): add .nvmrc and fix security vulnerabilities
+**Last commit:** `4f8edf6` - feat(16-02): point cheapLLM to Haiku for classification (A5)
 **Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
 **Deployment:** Pending push to trigger Vercel build
 
@@ -753,6 +754,9 @@ Deferred from v2:
    - .nvmrc created: Node 20.9.0 (G2)
    - Team API: returns 401 for unauthenticated users (F3)
    - Stripe checkout: validates client_reference_id (F2)
+6. ✅ **Phase 16-02 Completed:**
+   - Prompt caching: `cacheControl: true` on all 5 LLM instances (A4)
+   - Haiku for classification: cheapLLM uses claude-3-5-haiku (A5)
 
 ### Files Changed
 
@@ -762,7 +766,7 @@ D app/(dashboard)/projects/[id]/chat/layout.tsx         # Old chat layout
 D components/chat/artifacts-sidebar.tsx                 # Old artifacts sidebar
 M app/api/chat/projects/[projectId]/route.ts           # +rate limiting
 M app/api/mcp/[projectId]/route.ts                     # CORS fix
-M lib/langchain/config.ts                              # +timeout on all LLMs
+M lib/langchain/config.ts                              # +timeout, +cacheControl, +Haiku
 ```
 
 ### Resume Action (Next Session)
@@ -807,6 +811,7 @@ M lib/langchain/config.ts                              # +timeout on all LLMs
 - Playwright E2E test suite (T062-T068)
 - **NEW:** 3-column layout with persistent chat panel
 - **NEW:** P0 security fixes (CORS, rate limit, timeout)
+- **NEW:** Cost optimizations (prompt caching, Haiku for classification)
 
 ---
 

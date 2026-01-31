@@ -715,6 +715,11 @@ export function getTooltipTerms(step: KnowledgeBankStep): TooltipTerm[] {
   return knowledgeBank[step].tooltipTerms;
 }
 
+/** Alias for getTooltipTerms - for consistency with generate-response.ts usage. */
+export function getTooltipTermsForStep(step: KnowledgeBankStep): TooltipTerm[] {
+  return knowledgeBank[step].tooltipTerms;
+}
+
 /** Get validation errors for a given step. */
 export function getValidationErrors(
   step: KnowledgeBankStep,
