@@ -138,19 +138,45 @@ export async function POST(
 
     if (shouldExtract) {
       try {
-        // 10. Load conversation history for extraction
-        const history = await db.query.conversations.findMany({
+        // 10. Get last extracted index for incremental extraction
+        const lastIndex = project.projectData?.lastExtractedMessageIndex || 0;
+
+        // 11. Load ALL conversation history (ordered by creation time)
+        const allHistory = await db.query.conversations.findMany({
           where: eq(conversations.projectId, projectId),
           orderBy: [asc(conversations.createdAt)],
         });
 
-        // 11. Format conversation history
-        const conversationText = history
-          .map((msg) => `${msg.role}: ${msg.content}`)
-          .join('\n');
+        // 12. Calculate which messages are new vs context
+        // Keep last 5 messages before lastIndex as context
+        const contextStart = Math.max(0, lastIndex - 5);
+        const contextMessages = allHistory.slice(contextStart, lastIndex);
+        const newMessages = allHistory.slice(lastIndex);
 
-        // 12. Run extraction agent
-        console.log(`[Extraction] Triggering for project ${projectId} (${messageCount} messages)`);
+        // 13. Skip extraction if no new messages
+        if (newMessages.length === 0) {
+          console.log(`[Extraction] No new messages to extract for project ${projectId}`);
+          return NextResponse.json({
+            message: 'Message saved successfully',
+            messageCount,
+            extracted: false,
+            completeness: project.projectData?.completeness || 0,
+          });
+        }
+
+        // 14. Format conversation text with context and new messages marked
+        const conversationText = [
+          ...(contextMessages.length > 0 ? [
+            '## Prior Context (for reference only):',
+            ...contextMessages.map((msg) => `${msg.role}: ${msg.content}`),
+            '',
+          ] : []),
+          '## New Messages (extract from these):',
+          ...newMessages.map((msg) => `${msg.role}: ${msg.content}`),
+        ].join('\n');
+
+        // 15. Run extraction agent
+        console.log(`[Extraction] Processing ${newMessages.length} new messages (index ${lastIndex} to ${allHistory.length}) for project ${projectId}`);
 
         const extraction = await extractProjectData(
           conversationText,
@@ -158,7 +184,7 @@ export async function POST(
           project.vision
         );
 
-        // 13. Merge with existing data if available
+        // 16. Merge with existing data if available
         const existingData = project.projectData;
         const mergedData = existingData
           ? mergeExtractionData(
@@ -174,10 +200,10 @@ export async function POST(
             )
           : extraction;
 
-        // 14. Calculate new completeness score
+        // 17. Calculate new completeness score
         newCompleteness = calculateCompleteness(mergedData);
 
-        // 15. Update projectData table (upsert)
+        // 18. Update projectData table (upsert) with lastExtractedMessageIndex
         if (existingData) {
           // Update existing
           await db
@@ -191,6 +217,7 @@ export async function POST(
               nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
               completeness: newCompleteness,
               lastExtractedAt: new Date(),
+              lastExtractedMessageIndex: allHistory.length,
               updatedAt: new Date(),
             })
             .where(eq(projectData.projectId, projectId));
@@ -206,6 +233,7 @@ export async function POST(
             nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
             completeness: newCompleteness,
             lastExtractedAt: new Date(),
+            lastExtractedMessageIndex: allHistory.length,
           });
         }
 
@@ -219,7 +247,7 @@ export async function POST(
       }
     }
 
-    // 16. Return success response
+    // 19. Return success response
     return NextResponse.json({
       message: 'Message saved successfully',
       messageCount,
