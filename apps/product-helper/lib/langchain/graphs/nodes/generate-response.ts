@@ -14,7 +14,7 @@ import { streamingLLM } from '../../config';
 import { AIMessage } from '@langchain/core/messages';
 import { IntakeState, getPhaseDisplayName } from '../types';
 import { buildPromptEducationBlock } from '@/lib/education/phase-mapping';
-import { knowledgeBank } from '@/lib/education/knowledge-bank';
+import { knowledgeBank, getTooltipTermsForStep } from '@/lib/education/knowledge-bank';
 
 // ============================================================
 // LLM Configuration
@@ -129,6 +129,15 @@ ${validationResult.errors.length > 0 ? `- Errors: ${validationResult.errors.join
   const educationBlock = buildPromptEducationBlock(currentPhase);
   const kbEntry = knowledgeBank[currentKBStep];
 
+  // Build tooltip terms block for current step
+  const tooltipTerms = getTooltipTermsForStep(currentKBStep);
+  const tooltipBlock = tooltipTerms.length > 0
+    ? `
+## Key Terms
+When mentioning these terms, you may explain them briefly:
+${tooltipTerms.map(t => `- **${t.term}**: ${t.definition}`).join('\n')}`
+    : '';
+
   // Build approval context
   let approvalContext = '';
   if (approvalPending) {
@@ -155,6 +164,7 @@ ${dataSummary}
 ${validationContext}
 
 ${educationBlock}
+${tooltipBlock}
 ${approvalContext}
 
 ## Response Guidelines
