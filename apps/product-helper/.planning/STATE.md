@@ -10,7 +10,7 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD (Phase 16 active)
-**Last Completed:** 16-05-PLAN.md (Mermaid Validation Before Save)
+**Last Completed:** 16-06-PLAN.md (Incremental Extraction with Message Index)
 **Status:** ✅ V2 DEPLOYED | **Active Phase:** Phase 16 (Chat/LLM Quality Improvements)
 
 ```
@@ -33,6 +33,7 @@ Testing: ✓ Complete (T061-T068)
 - **16-03 completed (2026-01-31):** Dead Code and OpenAI Cleanup (D1, D2, D4)
 - **16-04 completed (2026-01-31):** Dead Code Cleanup and Tooltip Activation (D3, C3)
 - **16-05 completed (2026-01-31):** Mermaid Validation Before Save (B4)
+- **16-06 completed (2026-01-31):** Incremental Extraction with Message Index (B2)
 
 ---
 
