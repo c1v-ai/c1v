@@ -30,7 +30,7 @@ Testing: ✓ Complete (T061-T068)
   - Execution split: Security items (F1-F3, G1-G2) NOW, rest during/after LangChain refactor
 - **16-01 completed (2026-01-31):** Security and DX Quick Fixes (F2, F3, G1, G2)
 - **16-02 completed (2026-01-31):** Cost Optimization - Prompt Caching and Haiku (A4, A5)
-- **16-03 completed (2026-01-31):** LangChain Refactor - Consolidated Agents
+- **16-03 completed (2026-01-31):** Dead Code and OpenAI Cleanup (D1, D2, D4)
 - **16-04 completed (2026-01-31):** Dead Code Cleanup and Tooltip Activation (D3, C3)
 - **16-05 completed (2026-01-31):** Mermaid Validation Before Save (B4)
 
@@ -739,7 +739,7 @@ Deferred from v2:
 
 **Last session:** 2026-01-31
 **Active branch:** `main`
-**Last commit:** `4f8edf6` - feat(16-02): point cheapLLM to Haiku for classification (A5)
+**Last commit:** `ef84d05` - chore(16-03): delete legacy /api/chat route (D4)
 **Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
 **Deployment:** Pending push to trigger Vercel build
 
@@ -760,6 +760,12 @@ Deferred from v2:
 6. ✅ **Phase 16-02 Completed:**
    - Prompt caching: `cacheControl: true` on all 5 LLM instances (A4)
    - Haiku for classification: cheapLLM uses claude-3-5-haiku (A5)
+7. ✅ **Phase 16-03 Completed:**
+   - Deleted clarification-detector.ts (dead code, exported but never used)
+   - Deleted app/api/chat/test/route.ts (OpenAI test route)
+   - Deleted app/api/chat/route.ts (legacy, superseded by project-specific route)
+   - Migrated ask-question.ts from OpenAI to Anthropic (cheapLLM/Haiku)
+   - Removed @langchain/openai from package.json (no more OpenAI dependency)
 
 ### Files Changed
 
@@ -770,6 +776,11 @@ D components/chat/artifacts-sidebar.tsx                 # Old artifacts sidebar
 M app/api/chat/projects/[projectId]/route.ts           # +rate limiting
 M app/api/mcp/[projectId]/route.ts                     # CORS fix
 M lib/langchain/config.ts                              # +timeout, +cacheControl, +Haiku
+D lib/langchain/agents/intake/clarification-detector.ts  # Dead code removed (16-03)
+D app/api/chat/test/route.ts                             # OpenAI test route removed (16-03)
+D app/api/chat/route.ts                                  # Legacy chat route removed (16-03)
+M lib/mcp/tools/unique/ask-question.ts                   # OpenAI -> Anthropic (16-03)
+M package.json                                           # Removed @langchain/openai (16-03)
 ```
 
 ### Resume Action (Next Session)

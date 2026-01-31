@@ -218,6 +218,7 @@ export const projectData = pgTable('project_data', {
   // Metadata
   completeness: integer('completeness').default(0), // 0-100
   lastExtractedAt: timestamp('last_extracted_at'),
+  lastExtractedMessageIndex: integer('last_extracted_message_index').default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
