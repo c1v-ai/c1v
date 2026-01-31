@@ -17,6 +17,7 @@ import {
   generateClassDiagram,
   generateSystemArchitectureDiagram,
 } from '@/lib/diagrams/generators';
+import { renderDiagramAscii } from '@/lib/diagrams/beautiful-mermaid';
 import type { Actor, UseCase, DataEntity, SystemBoundaries } from '@/lib/langchain/schemas';
 import type { TechStackModel, APISpecification, InfrastructureSpec } from '@/lib/db/schema/v2-types';
 
@@ -29,7 +30,7 @@ type DiagramType =
 
 interface GetDiagramsArgs {
   type?: DiagramType;
-  format?: 'mermaid' | 'json';
+  format?: 'mermaid' | 'json' | 'ascii';
   [key: string]: unknown;
 }
 
@@ -64,9 +65,11 @@ const definition: ToolDefinition = {
       },
       format: {
         type: 'string',
-        enum: ['mermaid', 'json'],
+        enum: ['mermaid', 'json', 'ascii'],
         description:
-          'Output format. Options: mermaid (default, raw Mermaid syntax), json (structured with metadata)',
+          'Output format. Options: mermaid (default, raw Mermaid syntax), ' +
+          'json (structured with metadata), ' +
+          'ascii (text-based diagram for terminal/CLI display)',
       },
     },
   },
@@ -294,6 +297,46 @@ const handler: ToolHandler<GetDiagramsArgs> = async (args, context) => {
   }
 
   // Format output
+
+  // ASCII format: render as text-based diagram for terminal/CLI
+  if (format === 'ascii' && diagrams.length === 1) {
+    const diagram = diagrams[0];
+    if (!diagram.available) {
+      return createTextResult(
+        `Cannot generate ${diagram.title}: missing ${diagram.missingData?.join(', ')}`,
+        true
+      );
+    }
+
+    try {
+      const ascii = renderDiagramAscii(diagram.mermaid);
+      return createTextResult(
+        `${diagram.title}\n${'='.repeat(diagram.title.length)}\n\n${ascii}`
+      );
+    } catch (err) {
+      return createTextResult(
+        `Failed to render ASCII diagram: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        true
+      );
+    }
+  }
+
+  // ASCII format for 'all' type: render each diagram
+  if (format === 'ascii') {
+    const asciiDiagrams = diagrams
+      .filter((d) => d.available)
+      .map((d) => {
+        try {
+          const ascii = renderDiagramAscii(d.mermaid);
+          return `${d.title}\n${'='.repeat(d.title.length)}\n\n${ascii}`;
+        } catch {
+          return `${d.title}: [Render failed]`;
+        }
+      });
+
+    return createTextResult(asciiDiagrams.join('\n\n' + '-'.repeat(60) + '\n\n'));
+  }
+
   if (format === 'mermaid' && diagrams.length === 1) {
     // Return just the Mermaid syntax for single diagram requests
     const diagram = diagrams[0];
