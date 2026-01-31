@@ -14,10 +14,14 @@
  */
 
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import mermaid from 'mermaid';
 import { db } from '@/lib/db/drizzle';
 import { conversations, projectData, artifacts, type NewArtifact } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
+
+// Initialize mermaid for server-side validation (parsing only, no rendering)
+mermaid.initialize({ startOnLoad: false });
 import {
   getIntakeGraph,
   createInitialState,
@@ -349,6 +353,7 @@ function detectDiagramType(syntax: string): string {
 
 /**
  * Extract and save mermaid diagrams from AI response content
+ * Validates syntax with mermaid.parse() before saving to database
  */
 async function saveMermaidDiagrams(projectId: number, content: string): Promise<void> {
   try {
@@ -357,6 +362,16 @@ async function saveMermaidDiagrams(projectId: number, content: string): Promise<
       console.log(`[LangGraph Diagrams] Found ${mermaidBlocks.length} mermaid diagram(s)`);
       for (const mermaidSyntax of mermaidBlocks) {
         const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
+
+        // Validate Mermaid syntax before saving
+        try {
+          await mermaid.parse(cleanedSyntax);
+        } catch (parseError) {
+          console.error(`[LangGraph Diagrams] Invalid Mermaid syntax, skipping:`, parseError);
+          console.error(`[LangGraph Diagrams] Problematic diagram:\n${cleanedSyntax.substring(0, 200)}...`);
+          continue; // Skip invalid diagrams
+        }
+
         const diagramType = detectDiagramType(cleanedSyntax);
         const newArtifact: NewArtifact = {
           projectId,
