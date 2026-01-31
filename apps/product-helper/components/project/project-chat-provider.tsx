@@ -13,7 +13,6 @@ import {
 import { useChat, type Message } from 'ai/react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-import { saveAssistantMessage } from '@/app/actions/conversations';
 import {
   parseProjectData,
   parseArtifacts,
@@ -149,14 +148,11 @@ export function ProjectChatProvider({
         description: error.message,
       });
     },
-    onFinish: async (message) => {
+    onFinish: (message) => {
       if (message.role === 'assistant') {
+        // Message is already saved by the backend (langgraph-handler or route.ts).
+        // We only handle UI state transitions and data revalidation here.
         setPostGenerationPhase('saving');
-        const result = await saveAssistantMessage(projectId, message.content);
-        if (!result.success) {
-          console.error('Failed to save assistant message:', result.error);
-        }
-        // Revalidate after save completes
         mutate();
         setPostGenerationPhase('complete');
         // Show "complete" briefly, then reset progress state
@@ -165,8 +161,6 @@ export function ProjectChatProvider({
           setGenerationStartedAt(null);
         }, 2500);
         // Revalidate again after server-side extraction likely finishes.
-        // TODO: Replace with polling or server event when extraction
-        // provides a completion signal.
         setTimeout(() => mutate(), 5000);
       }
     },

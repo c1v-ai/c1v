@@ -19,6 +19,7 @@ export const llm = new ChatAnthropic({
   temperature: 0.7,
   maxTokens: 2000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 /**
@@ -31,6 +32,7 @@ export const streamingLLM = new ChatAnthropic({
   maxTokens: 2000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   streaming: true,
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 /**
@@ -42,6 +44,7 @@ export const extractionLLM = new ChatAnthropic({
   temperature: 0.2,
   maxTokens: 4000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 /**
@@ -52,6 +55,7 @@ export const structuredLLM = new ChatAnthropic({
   temperature: 0.2,
   maxTokens: 4000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 /**
@@ -64,6 +68,7 @@ export const cheapLLM = new ChatAnthropic({
   temperature: 0.7,
   maxTokens: 1000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 /**
