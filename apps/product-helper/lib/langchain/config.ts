@@ -21,6 +21,8 @@ export const llm = new ChatAnthropic({
   maxTokens: 2000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
+  cacheControl: true, // Enable prompt caching for cost savings
 });
 
 /**
@@ -34,6 +36,8 @@ export const streamingLLM = new ChatAnthropic({
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   streaming: true,
   clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
+  cacheControl: true, // Enable prompt caching for cost savings
 });
 
 /**
@@ -46,6 +50,8 @@ export const extractionLLM = new ChatAnthropic({
   maxTokens: 4000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
+  cacheControl: true, // Enable prompt caching for cost savings
 });
 
 /**
@@ -57,6 +63,8 @@ export const structuredLLM = new ChatAnthropic({
   maxTokens: 4000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
+  cacheControl: true, // Enable prompt caching for cost savings
 });
 
 /**
@@ -70,6 +78,8 @@ export const cheapLLM = new ChatAnthropic({
   maxTokens: 1000,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
+  cacheControl: true, // Enable prompt caching for cost savings
 });
 
 /**

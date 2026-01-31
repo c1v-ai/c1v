@@ -10,7 +10,7 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD (Phase 16 active)
-**Last Completed:** 16-06-PLAN.md (Incremental Extraction with Message Index)
+**Last Completed:** 16-07-PLAN.md (Remove Modulo-5 Extraction Gate)
 **Status:** ✅ V2 DEPLOYED | **Active Phase:** Phase 16 (Chat/LLM Quality Improvements)
 
 ```
@@ -34,6 +34,7 @@ Testing: ✓ Complete (T061-T068)
 - **16-04 completed (2026-01-31):** Dead Code Cleanup and Tooltip Activation (D3, C3)
 - **16-05 completed (2026-01-31):** Mermaid Validation Before Save (B4)
 - **16-06 completed (2026-01-31):** Incremental Extraction with Message Index (B2)
+- **16-07 completed (2026-01-31):** Remove Modulo-5 Extraction Gate (B1)
 
 ---
 
@@ -740,7 +741,7 @@ Deferred from v2:
 
 **Last session:** 2026-01-31
 **Active branch:** `main`
-**Last commit:** `ef84d05` - chore(16-03): delete legacy /api/chat route (D4)
+**Last commit:** `3c73bca` - feat(16-07): remove modulo-5 extraction gate (B1)
 **Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
 **Deployment:** Pending push to trigger Vercel build
 
