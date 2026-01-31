@@ -27,62 +27,71 @@ AI-powered PRD (Product Requirements Document) generation SaaS. Transform produc
 
 ### Prerequisites
 
-- Node.js >= 20.9.0
+- Node.js >= 20.9.0 (see `.nvmrc`)
 - PNPM 9.x
-- PostgreSQL database
+- Docker Desktop (for Supabase local)
 - Stripe account (for payments)
 - Anthropic API key
 
-### Environment Setup
+### Quick Start (Local Development)
 
-1. Copy the environment template:
-```bash
-cp .env.example .env
-```
+1. **Copy environment template and add your API keys:**
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local with your ANTHROPIC_API_KEY and STRIPE keys
+   ```
 
-2. Configure required variables in `.env`:
-```
-POSTGRES_URL=postgresql://...
-AUTH_SECRET=your-secret-key-min-32-chars
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-ANTHROPIC_API_KEY=sk-ant-...
-BASE_URL=http://localhost:3000
-```
+2. **Install dependencies:**
+   ```bash
+   pnpm install
+   ```
 
-### Database Setup
+3. **Start local Postgres via Supabase:**
+   ```bash
+   pnpm db:start
+   # First run downloads images (~2-3 min)
+   ```
+   This starts:
+   - **Postgres** at `localhost:54322`
+   - **Supabase Studio** at [http://localhost:54323](http://localhost:54323)
+   - **Email testing** at [http://localhost:54324](http://localhost:54324)
 
-```bash
-# Generate migrations
-pnpm db:generate
+4. **Run database migrations (one-time):**
+   ```bash
+   pnpm db:generate
+   pnpm db:migrate
+   pnpm db:seed  # Creates test@test.com / admin123
+   ```
 
-# Run migrations
-pnpm db:migrate
+5. **Start dev server:**
+   ```bash
+   pnpm dev
+   ```
+   Visit [http://localhost:3000](http://localhost:3000)
 
-# Seed with test data (optional)
-pnpm db:seed
-```
+6. **Stop local database when done:**
+   ```bash
+   pnpm db:stop
+   ```
 
-Default test user:
+### Test Credentials
+
+After running `pnpm db:seed`:
 - Email: `test@test.com`
 - Password: `admin123`
-
-### Running Development Server
-
-```bash
-# From monorepo root
-pnpm dev --filter product-helper
-
-# Or from this directory
-pnpm dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000)
 
 ### Stripe Webhooks (Local)
 
 ```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+### Legacy Environment Setup
+
+For production or non-Supabase setups, use `.env.example`:
+```bash
+cp .env.example .env
+# Configure POSTGRES_URL to your external database
 ```
 
 ## Project Structure
