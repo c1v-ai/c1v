@@ -159,24 +159,26 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 ---
 
-## Phase 16: Chat/LLM Quality Improvements
+## Phase 16: Chat/LLM Quality Improvements ✓
 
 **Goal:** Fix critical chat/LLM issues, optimize costs, clean up dead code, improve chat UX
+
+**Status:** Complete (2026-01-31)
 
 **Dependencies:** None (can start immediately, cleanup work)
 
 **Requirements:** LLM-01 through LLM-20
 
-**Plans:** 7 plans in 3 waves
+**Plans:** 7 plans in 3 waves — all complete
 
 Plans:
-- [ ] 16-01-PLAN.md — Security & DX quick fixes (G1, G2, F2, F3)
-- [ ] 16-02-PLAN.md — Prompt caching and Haiku for classification (A4, A5)
-- [ ] 16-03-PLAN.md — Dead code and OpenAI cleanup (D1, D2, D4)
-- [ ] 16-04-PLAN.md — Clean prompts.ts and activate tooltips (D3, C3)
-- [ ] 16-05-PLAN.md — Mermaid validation before save (B4)
-- [ ] 16-06-PLAN.md — Incremental extraction (B2)
-- [ ] 16-07-PLAN.md — Extract on every message (B1)
+- [x] 16-01-PLAN.md — Security & DX quick fixes (G1, G2, F2, F3)
+- [x] 16-02-PLAN.md — Prompt caching and Haiku for classification (A4, A5)
+- [x] 16-03-PLAN.md — Dead code and OpenAI cleanup (D1, D2, D4)
+- [x] 16-04-PLAN.md — Clean prompts.ts and activate tooltips (D3, C3)
+- [x] 16-05-PLAN.md — Mermaid validation before save (B4)
+- [x] 16-06-PLAN.md — Incremental extraction (B2)
+- [x] 16-07-PLAN.md — Extract on every message (B1)
 
 **Deferred to separate phase:** A2 (structured streaming), C1 (pgvector RAG), E1 (graphs/ reorg), H1-H5 (over-engineering)
 
@@ -386,7 +388,31 @@ graphs/
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
-| 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | **7 plans** |
+| 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
+| 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | Pending |
+
+---
+
+## Phase 17: Infrastructure & Diagrams
+
+**Goal:** Local QA environment with Docker, better diagram rendering with Beautiful Mermaid, clean up stale tasks
+
+**Dependencies:** None (can start immediately)
+
+**Requirements:** INFRA-01, INFRA-02, INFRA-03
+
+**Plans:** 3 plans in 1 wave
+
+Plans:
+- [ ] 17-01-PLAN.md — Supabase CLI local dev setup (G3)
+- [ ] 17-02-PLAN.md — Beautiful Mermaid integration with ASCII output
+- [ ] 17-03-PLAN.md — CLEO task cleanup (T080, T084-T087)
+
+**Success Criteria:**
+1. Docker compose enables local development with isolated Postgres/Redis (not shared production DB)
+2. Beautiful Mermaid replaces standard mermaid.js for professional diagram styling
+3. MCP tools can output ASCII diagrams for terminal/CLI usage
+4. Stale CLEO tasks marked complete or updated with clear status
 
 ---
 
@@ -463,4 +489,4 @@ Phase 4: Orchestration ----+                                    |
 
 *Roadmap created: 2026-01-26*
 *Derived from 34 requirements across 4 categories*
-*Phase 16 plans created: 2026-01-31*
+*Phase 17 plans created: 2026-01-31*
