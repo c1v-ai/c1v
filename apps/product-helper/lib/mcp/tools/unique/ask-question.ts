@@ -1,7 +1,7 @@
 /**
  * ask_project_question MCP Tool
  *
- * RAG-powered Q&A about the project using OpenAI.
+ * RAG-powered Q&A about the project using Anthropic Claude.
  * Answers questions using project data as context.
  */
 
@@ -11,7 +11,7 @@ import { createJsonResult, createTextResult } from '@/lib/mcp/types';
 import { db } from '@/lib/db/drizzle';
 import { projects } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { ChatOpenAI } from '@langchain/openai';
+import { cheapLLM } from '@/lib/langchain/config';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 
 type QuestionScope = 'all' | 'requirements' | 'technical' | 'architecture';
@@ -178,25 +178,7 @@ const handler: ToolHandler<AskQuestionArgs> = async (args, context) => {
     scope
   );
 
-  // Check if OpenAI is available
-  if (!process.env.OPENAI_API_KEY) {
-    return createJsonResult({
-      question,
-      answer:
-        'OpenAI integration is not configured. To use AI-powered Q&A, set the OPENAI_API_KEY environment variable.',
-      sources: ['Project Data'],
-      confidence: 0,
-      scope,
-      fallback: true,
-    });
-  }
-
   try {
-    const llm = new ChatOpenAI({
-      modelName: 'gpt-4-turbo-preview',
-      temperature: 0.3,
-    });
-
     const systemPrompt = `You are a helpful assistant that answers questions about a software project.
 You have access to the following project information:
 
@@ -205,7 +187,7 @@ ${projectContext}
 Answer the user's question based on this information. Be specific and cite relevant details.
 If you don't have enough information, say so.`;
 
-    const response = await llm.invoke([
+    const response = await cheapLLM.invoke([
       new SystemMessage(systemPrompt),
       new HumanMessage(question),
     ]);
