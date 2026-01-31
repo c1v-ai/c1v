@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { users, teams, teamMembers } from '@/lib/db/schema';
 import { setSession } from '@/lib/auth/session';
+import { getUser } from '@/lib/db/queries';
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/payments/stripe';
 import Stripe from 'stripe';
@@ -49,15 +50,21 @@ export async function GET(request: NextRequest) {
       throw new Error('No product ID found for this subscription.');
     }
 
-    const userId = session.client_reference_id;
-    if (!userId) {
+    const clientReferenceId = session.client_reference_id;
+    if (!clientReferenceId) {
       throw new Error("No user ID found in session's client_reference_id.");
+    }
+
+    // Security: Verify the authenticated user matches the checkout session owner
+    const currentUser = await getUser();
+    if (!currentUser || currentUser.id !== Number(clientReferenceId)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const user = await db
       .select()
       .from(users)
-      .where(eq(users.id, Number(userId)))
+      .where(eq(users.id, Number(clientReferenceId)))
       .limit(1);
 
     if (user.length === 0) {
