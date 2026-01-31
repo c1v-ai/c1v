@@ -3,7 +3,6 @@ import { StreamingTextResponse } from 'ai';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
-import { PRD_SPEC_PIPELINE } from '@/lib/langchain/prompts';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, artifacts, type NewConversation, type NewArtifact } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
