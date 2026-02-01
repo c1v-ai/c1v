@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -38,37 +38,8 @@ const updateSectionStatusSchema = z.object({
  *
  * @returns {{ sectionStatuses: SectionStatuses }}
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -97,14 +68,8 @@ export async function GET(
       (data?.reviewStatus as SectionStatuses) ?? {};
 
     return NextResponse.json({ sectionStatuses });
-  } catch (error) {
-    console.error('Error fetching section statuses:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * PUT /api/projects/[id]/sections/status
@@ -113,37 +78,8 @@ export async function GET(
  * @body {{ section: SectionKey, status: SectionReviewStatus }}
  * @returns {{ success: true, sectionStatuses: SectionStatuses }}
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const PUT = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -161,7 +97,7 @@ export async function PUT(
     }
 
     // Validate request body
-    const body = await request.json();
+    const body = await req.json();
     const parsed = updateSectionStatusSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -215,11 +151,5 @@ export async function PUT(
       success: true,
       sectionStatuses: updatedStatuses,
     });
-  } catch (error) {
-    console.error('Error updating section status:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);

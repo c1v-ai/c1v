@@ -5,8 +5,8 @@
  * POST - Create a new key (returns full key ONCE)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -16,27 +16,8 @@ import {
   getProjectApiKeys,
 } from '@/lib/mcp/auth';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-    if (isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 });
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project belongs to team
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
@@ -63,33 +44,11 @@ export async function GET(
         isActive: !key.revokedAt && (!key.expiresAt || key.expiresAt > new Date()),
       })),
     });
-  } catch (error) {
-    console.error('Error fetching API keys:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+);
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-    if (isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 });
-    }
-
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project belongs to team
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
@@ -100,7 +59,7 @@ export async function POST(
     }
 
     // Parse request body
-    const body = await request.json();
+    const body = await req.json();
     const { name, scopes, expiresAt } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -134,8 +93,5 @@ export async function POST(
       scopes: record.scopes,
       message: 'Save this key now - it will not be shown again',
     });
-  } catch (error) {
-    console.error('Error creating API key:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+);

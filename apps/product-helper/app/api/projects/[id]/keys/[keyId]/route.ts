@@ -4,36 +4,15 @@
  * DELETE - Revoke a key (soft delete)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, apiKeys } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { revokeApiKey } from '@/lib/mcp/auth';
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; keyId: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id, keyId } = await params;
-    const projectId = parseInt(id, 10);
-    const keyIdNum = parseInt(keyId, 10);
-
-    if (isNaN(projectId) || isNaN(keyIdNum)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
-    }
-
+export const DELETE = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project belongs to team
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
@@ -41,6 +20,17 @@ export async function DELETE(
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    // Extract keyId from URL path
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const keyIdIndex = pathParts.indexOf('keys') + 1;
+    const keyIdStr = pathParts[keyIdIndex];
+    const keyIdNum = parseInt(keyIdStr, 10);
+
+    if (isNaN(keyIdNum)) {
+      return NextResponse.json({ error: 'Invalid key ID' }, { status: 400 });
     }
 
     // Verify key exists and belongs to project
@@ -67,8 +57,5 @@ export async function DELETE(
       keyId: keyIdNum,
       revokedAt: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Error revoking API key:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+);
