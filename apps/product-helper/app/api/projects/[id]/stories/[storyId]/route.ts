@@ -1,45 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, userStories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 /**
+ * Helper to extract storyId from URL path
+ */
+function extractStoryId(url: string): number | null {
+  const parsedUrl = new URL(url);
+  const pathParts = parsedUrl.pathname.split('/');
+  const storiesIndex = pathParts.indexOf('stories');
+  if (storiesIndex === -1 || storiesIndex + 1 >= pathParts.length) {
+    return null;
+  }
+  const storyIdStr = pathParts[storiesIndex + 1];
+  const storyIdNum = parseInt(storyIdStr, 10);
+  return isNaN(storyIdNum) ? null : storyIdNum;
+}
+
+/**
  * GET /api/projects/[id]/stories/[storyId]
  * Get a single user story
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; storyId: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id, storyId } = await params;
-    const projectId = parseInt(id, 10);
-    const storyIdNum = parseInt(storyId, 10);
-
-    if (isNaN(projectId) || isNaN(storyIdNum)) {
-      return NextResponse.json(
-        { error: 'Invalid ID' },
-        { status: 400 }
-      );
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -52,6 +37,15 @@ export async function GET(
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
+      );
+    }
+
+    // Extract storyId from URL
+    const storyIdNum = extractStoryId(req.url);
+    if (storyIdNum === null) {
+      return NextResponse.json(
+        { error: 'Invalid story ID' },
+        { status: 400 }
       );
     }
 
@@ -71,51 +65,15 @@ export async function GET(
     }
 
     return NextResponse.json(story);
-  } catch (error) {
-    console.error('Error fetching story:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * PUT /api/projects/[id]/stories/[storyId]
  * Update a user story
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; storyId: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id, storyId } = await params;
-    const projectId = parseInt(id, 10);
-    const storyIdNum = parseInt(storyId, 10);
-
-    if (isNaN(projectId) || isNaN(storyIdNum)) {
-      return NextResponse.json(
-        { error: 'Invalid ID' },
-        { status: 400 }
-      );
-    }
-
+export const PUT = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -128,6 +86,15 @@ export async function PUT(
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
+      );
+    }
+
+    // Extract storyId from URL
+    const storyIdNum = extractStoryId(req.url);
+    if (storyIdNum === null) {
+      return NextResponse.json(
+        { error: 'Invalid story ID' },
+        { status: 400 }
       );
     }
 
@@ -146,7 +113,7 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const {
       title,
       description,
@@ -213,51 +180,15 @@ export async function PUT(
       .returning();
 
     return NextResponse.json(updatedStory);
-  } catch (error) {
-    console.error('Error updating story:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * DELETE /api/projects/[id]/stories/[storyId]
  * Delete a user story
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; storyId: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id, storyId } = await params;
-    const projectId = parseInt(id, 10);
-    const storyIdNum = parseInt(storyId, 10);
-
-    if (isNaN(projectId) || isNaN(storyIdNum)) {
-      return NextResponse.json(
-        { error: 'Invalid ID' },
-        { status: 400 }
-      );
-    }
-
+export const DELETE = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -270,6 +201,15 @@ export async function DELETE(
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
+      );
+    }
+
+    // Extract storyId from URL
+    const storyIdNum = extractStoryId(req.url);
+    if (storyIdNum === null) {
+      return NextResponse.json(
+        { error: 'Invalid story ID' },
+        { status: 400 }
       );
     }
 
@@ -293,11 +233,5 @@ export async function DELETE(
       .where(eq(userStories.id, storyIdNum));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting story:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -11,27 +11,8 @@ type ReviewStatus = (typeof VALID_STATUSES)[number];
  * GET /api/projects/[id]/review-status
  * Get the review status map for a project
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-    if (isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 });
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
     });
@@ -48,11 +29,8 @@ export async function GET(
       projectId,
       reviewStatus: (data?.reviewStatus as Record<string, string>) ?? {},
     });
-  } catch (error) {
-    console.error('Error fetching review status:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+);
 
 /**
  * PATCH /api/projects/[id]/review-status
@@ -64,27 +42,8 @@ export async function GET(
  *   status: 'draft' | 'awaiting-review' | 'approved'
  * }
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-    if (isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 });
-    }
-
+export const PATCH = withProjectAuth(
+  async (req, { team, projectId }) => {
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
     });
@@ -92,7 +51,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const { sectionKey, status } = body as { sectionKey: string; status: string };
 
     if (!sectionKey || typeof sectionKey !== 'string') {
@@ -133,8 +92,5 @@ export async function PATCH(
       status,
       reviewStatus: updatedStatuses,
     });
-  } catch (error) {
-    console.error('Error updating review status:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+);
