@@ -10,7 +10,7 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 15-04 (Constants Extraction & TODO Cleanup)
+**Last Completed:** Phase 15-06 (withProjectAuth Middleware Adoption)
 **Next Phase:** Phase 18 (TBD)
 **Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE
 
@@ -58,6 +58,19 @@ Testing: ✓ Complete (T061-T068)
   - Extracted 7 constant groups: TIME, LLM_DEFAULTS, RATE_LIMIT, etc.
   - Tracked 3 TODOs with CLEO tasks (T088-T090)
   - Updated 3 files to use constants instead of magic numbers
+- **15-05 completed (2026-02-01):** Any Type Elimination in Chat API Routes
+  - Eliminated 22 `any` types from save/route.ts (18) and route.ts (4)
+  - Used indexed types: `ExtractionResult['actors']` pattern
+  - Used double-cast pattern: `unknown -> Drizzle type` for JSONB
+  - Added generic parseJsonField<T> function
+  - Closes Gap 1 from 15-VERIFICATION.md
+- **15-06 completed (2026-02-01):** withProjectAuth Middleware Adoption
+  - Refactored 11 routes to use withProjectAuth middleware
+  - 16 of 17 project routes now use middleware (94% adoption)
+  - projects/route.ts correctly excluded (collection operations)
+  - ~600 lines of duplicated auth boilerplate removed
+  - Nested params (keyId, storyId) extracted from URL path
+  - Closes Gap 2 from 15-VERIFICATION.md
 
 ---
 
@@ -776,11 +789,11 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `aae2d3f` - refactor(15-04): update files to use centralized constants
+**Last commit:** `3d2f55c` - fix(15-05): replace ': any' with proper generics in route.ts helpers
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 15-04 Constants Extraction & TODO Cleanup
+**Last plan:** Phase 15-05 Any Type Elimination in Chat API Routes
 
 ### Phase 17 UAT Results (2026-02-01)
 
