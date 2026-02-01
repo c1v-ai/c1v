@@ -159,6 +159,34 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 ---
 
+## Phase 15: Code Cleanup & Technical Debt
+
+**Goal:** Eliminate duplicate code, fix security vulnerabilities, improve type safety, and create reusable patterns
+
+**Status:** Wave 1 Complete (Paused) - Waves 2-4 pending
+
+**Dependencies:** None (maintenance work)
+
+**Requirements:** DEBT-01 through DEBT-10
+
+**Plans:** 3 plans in 3 waves
+
+Plans:
+- [x] 15-01 — Quick Wins (duplicate hook, rate limit fix, middleware fix) - DONE via Phase 16
+- [ ] 15-02-PLAN.md — Security & Type Safety (env validation, any types, SQL injection)
+- [ ] 15-03-PLAN.md — API Auth Middleware (withProjectAuth HOF, refactor 5 routes)
+- [ ] 15-04-PLAN.md — Constants & TODOs (magic numbers, TODO tracking)
+
+**Success Criteria:**
+1. Environment variables validated at startup with clear error messages
+2. No `any` types in API routes
+3. SQL queries use parameterized statements
+4. Shared auth middleware reduces route boilerplate by ~60%
+5. Magic numbers extracted to constants module
+6. TODOs tracked as CLEO tasks or resolved
+
+---
+
 ## Phase 16: Chat/LLM Quality Improvements ✓
 
 **Goal:** Fix critical chat/LLM issues, optimize costs, clean up dead code, improve chat UX
@@ -379,7 +407,7 @@ graphs/
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | Pending |
+| 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | ✓ Complete |
 | 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
 | 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | Pending |
 | 4 | Pipeline Orchestration & Quality | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Pending |
@@ -388,6 +416,7 @@ graphs/
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
+| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | Wave 1 Complete |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 
@@ -490,3 +519,4 @@ Phase 4: Orchestration ----+                                    |
 *Roadmap created: 2026-01-26*
 *Derived from 34 requirements across 4 categories*
 *Phase 17 plans created: 2026-01-31*
+*Phase 15 plans created: 2026-02-01*
