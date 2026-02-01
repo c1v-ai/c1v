@@ -136,12 +136,15 @@ function validateExtractionQuality(
 /**
  * Calculate project completeness score (0-100) based on extracted data
  *
- * Scoring criteria:
- * - Actors: 20% (2+ = 20, 1 = 10)
- * - Use cases: 30% (5+ = 30, 3+ = 20, 1+ = 8)
- * - System boundaries: 20% (both = 20, one = 10)
- * - Data entities: 15% (3+ = 15, 2+ = 10, 1+ = 5)
+ * Scoring criteria (total 100 points):
+ * - Actors: 15% (2+ = 15, 1 = 8)
+ * - Actor depth (goals/painPoints): 5% (50%+ actors have both = 5, some = 3)
+ * - Use cases: 20% (5+ = 20, 3+ = 14, 1+ = 6)
+ * - System boundaries: 15% (both = 15, one = 8)
+ * - Data entities: 10% (3+ = 10, 2+ = 7, 1+ = 4)
+ * - Problem statement: 10% (all fields = 10, summary only = 5)
  * - Goals/Metrics: 15% (3+ = 15, 2+ = 10, 1+ = 5)
+ * - Non-functional requirements: 10% (3+ categories = 10, 2+ = 6, 1+ = 3)
  *
  * @param extraction - Extraction result from extractProjectData
  * @returns Completeness score 0-100
@@ -149,44 +152,68 @@ function validateExtractionQuality(
 export function calculateCompleteness(extraction: ExtractionResult): number {
   let score = 0;
 
-  // Actors: 20 points (max 2 needed)
+  // Actors: 15 points
   const actorCount = extraction.actors.length;
   if (actorCount >= 2) {
-    score += 20;
+    score += 15;
   } else if (actorCount === 1) {
-    score += 10;
-  }
-
-  // Use cases: 30 points (max 5 needed)
-  const useCaseCount = extraction.useCases.length;
-  if (useCaseCount >= 5) {
-    score += 30;
-  } else if (useCaseCount >= 3) {
-    score += 20;
-  } else if (useCaseCount >= 1) {
     score += 8;
   }
 
-  // System boundaries: 20 points
+  // Actor depth (goals/painPoints): 5 points
+  if (actorCount > 0) {
+    const actorsWithDepth = extraction.actors.filter(
+      a => (a.goals && a.goals.length > 0) && (a.painPoints && a.painPoints.length > 0)
+    );
+    const depthRatio = actorsWithDepth.length / actorCount;
+    if (depthRatio >= 0.5) {
+      score += 5;
+    } else if (depthRatio > 0) {
+      score += 3;
+    }
+  }
+
+  // Use cases: 20 points
+  const useCaseCount = extraction.useCases.length;
+  if (useCaseCount >= 5) {
+    score += 20;
+  } else if (useCaseCount >= 3) {
+    score += 14;
+  } else if (useCaseCount >= 1) {
+    score += 6;
+  }
+
+  // System boundaries: 15 points
   const hasInternal = extraction.systemBoundaries.internal.length > 0;
   const hasExternal = extraction.systemBoundaries.external.length > 0;
   if (hasInternal && hasExternal) {
-    score += 20;
+    score += 15;
   } else if (hasInternal || hasExternal) {
-    score += 10;
+    score += 8;
   }
 
-  // Data entities: 15 points (max 3 needed)
+  // Data entities: 10 points
   const entityCount = extraction.dataEntities.length;
   if (entityCount >= 3) {
-    score += 15;
-  } else if (entityCount >= 2) {
     score += 10;
+  } else if (entityCount >= 2) {
+    score += 7;
   } else if (entityCount >= 1) {
-    score += 5;
+    score += 4;
   }
 
-  // Goals/Metrics: 15 points (max 3 needed)
+  // Problem statement: 10 points
+  const ps = extraction.problemStatement;
+  if (ps) {
+    const hasFullStatement = ps.summary && ps.context && ps.impact && (ps.goals?.length ?? 0) >= 2;
+    if (hasFullStatement) {
+      score += 10;
+    } else if (ps.summary) {
+      score += 5;
+    }
+  }
+
+  // Goals/Metrics: 15 points
   const goalsCount = extraction.goalsMetrics?.length ?? 0;
   if (goalsCount >= 3) {
     score += 15;
@@ -194,6 +221,19 @@ export function calculateCompleteness(extraction: ExtractionResult): number {
     score += 10;
   } else if (goalsCount >= 1) {
     score += 5;
+  }
+
+  // Non-functional requirements: 10 points (by category diversity)
+  const nfrCount = extraction.nonFunctionalRequirements?.length ?? 0;
+  if (nfrCount > 0) {
+    const categories = new Set(extraction.nonFunctionalRequirements!.map(n => n.category));
+    if (categories.size >= 3) {
+      score += 10;
+    } else if (categories.size >= 2) {
+      score += 6;
+    } else {
+      score += 3;
+    }
   }
 
   return Math.min(score, 100);
