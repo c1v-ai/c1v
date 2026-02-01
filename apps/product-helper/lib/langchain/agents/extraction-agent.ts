@@ -47,11 +47,15 @@ export async function extractProjectData(
   projectVision: string
 ): Promise<ExtractionResult> {
   try {
+    // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
+    // This is needed because conversation history may contain JSON-like content with { and }
+    const escapeBraces = (str: string) => str.replace(/\{/g, '{{').replace(/\}/g, '}}');
+
     // Format prompt with conversation context
     const promptText = await extractionPrompt.format({
-      projectName,
-      projectVision,
-      conversationHistory,
+      projectName: escapeBraces(projectName),
+      projectVision: escapeBraces(projectVision),
+      conversationHistory: escapeBraces(conversationHistory),
       educationBlock: '',
     });
 
