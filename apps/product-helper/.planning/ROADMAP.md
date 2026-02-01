@@ -163,19 +163,21 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 **Goal:** Eliminate duplicate code, fix security vulnerabilities, improve type safety, and create reusable patterns
 
-**Status:** Wave 1 Complete (Paused) - Waves 2-4 pending
+**Status:** Wave 1 Complete (Paused) - Gap closure plans added
 
 **Dependencies:** None (maintenance work)
 
 **Requirements:** DEBT-01 through DEBT-10
 
-**Plans:** 3 plans in 3 waves
+**Plans:** 6 plans in 3 waves
 
 Plans:
 - [x] 15-01 — Quick Wins (duplicate hook, rate limit fix, middleware fix) - DONE via Phase 16
 - [x] 15-02 — Security & Type Safety (env validation, any types, SQL injection) - DONE 2026-02-01
 - [x] 15-03 — API Auth Middleware (withProjectAuth HOF, refactor 5 routes) - DONE 2026-02-01
-- [ ] 15-04-PLAN.md — Constants & TODOs (magic numbers, TODO tracking)
+- [x] 15-04 — Constants & TODOs (magic numbers, TODO tracking) - DONE 2026-02-01
+- [ ] 15-05 — Fix any types in chat routes (gap closure)
+- [ ] 15-06 — Complete auth middleware adoption (gap closure)
 
 **Success Criteria:**
 1. Environment variables validated at startup with clear error messages
@@ -416,7 +418,7 @@ graphs/
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
-| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | 3/4 plans complete |
+| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | 4/6 plans complete (gap closure pending) |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 
@@ -520,3 +522,4 @@ Phase 4: Orchestration ----+                                    |
 *Derived from 34 requirements across 4 categories*
 *Phase 17 plans created: 2026-01-31*
 *Phase 15 plans created: 2026-02-01*
+*Phase 15 gap closure plans added: 2026-02-01*
