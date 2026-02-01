@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
+import { TIME_CONSTANTS } from '@/lib/constants';
 
 const protectedPrefixes = ['/dashboard', '/projects', '/welcome-test', '/account'];
 
@@ -36,7 +37,7 @@ export async function middleware(request: NextRequest) {
 
       // Only refresh session on GET to avoid mutation side effects
       if (request.method === 'GET') {
-        const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const expiresInOneDay = new Date(Date.now() + TIME_CONSTANTS.ONE_DAY_MS);
 
         res.cookies.set({
           name: 'session',

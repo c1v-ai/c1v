@@ -3,6 +3,8 @@
  * 100 requests per minute per key prefix.
  */
 
+import { TIME_CONSTANTS, RATE_LIMIT_DEFAULTS } from '@/lib/constants';
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -10,9 +12,9 @@ interface RateLimitEntry {
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-// Configuration
-export const WINDOW_MS = 60 * 1000; // 1 minute
-export const MAX_REQUESTS = 100;
+// Configuration - exported for backward compatibility
+export const WINDOW_MS = TIME_CONSTANTS.RATE_LIMIT_WINDOW_MS;
+export const MAX_REQUESTS = RATE_LIMIT_DEFAULTS.MCP_REQUESTS_PER_MINUTE;
 
 // Clean up expired entries every 5 minutes
 if (typeof setInterval !== 'undefined') {
@@ -23,7 +25,7 @@ if (typeof setInterval !== 'undefined') {
         rateLimitStore.delete(key);
       }
     }
-  }, 5 * 60 * 1000);
+  }, TIME_CONSTANTS.CLEANUP_INTERVAL_MS);
 }
 
 export interface RateLimitResult {
