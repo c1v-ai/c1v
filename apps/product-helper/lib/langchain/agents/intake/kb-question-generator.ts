@@ -268,6 +268,10 @@ export async function generateKBDrivenResponse(
   const rules = INFERENCE_RULES[kbStep];
   const thresholds = CONFIDENCE_THRESHOLDS[kbStep];
 
+  // [KB_DEBUG] Entry point logging
+  console.log(`[KB_DEBUG] generateKBDrivenResponse called for step: ${kbStep}`);
+  console.log(`[KB_DEBUG] State has ${state.messages?.length ?? 0} messages, completeness: ${state.completeness}`);
+
   // Build the education block for this phase
   const educationBlock = buildPromptEducationBlock(state.currentPhase);
 
@@ -311,6 +315,9 @@ ${recentHistory.map(h => `Turn ${h.turn} (confidence: ${h.confidence}%):
     : '';
 
   try {
+    // [KB_DEBUG] Before LLM call
+    console.log(`[KB_DEBUG] Calling LLM with KB step: ${kbStep}`);
+
     const analysis = await kbAnalysisLLM.invoke(`
 You are a systems engineering expert guiding a user through PRD creation.
 You are currently on the "${kbEntry.label}" step of the knowledge bank.
@@ -366,6 +373,10 @@ ${kbContext}
 - If you have enough data to generate the artifact, set confidence >= 80 even if some data is imperfect.
 `);
 
+    // [KB_DEBUG] After LLM response
+    console.log(`[KB_DEBUG] LLM response received, parsing structured output...`);
+    console.log(`[KB_DEBUG] Analysis parsed successfully, confidence: ${analysis.confidence}`);
+
     // Build gap questions with educational context
     const gaps: GapQuestion[] = analysis.gapQuestions.map(
       (gq: { question: string; target: string }) => ({
@@ -409,7 +420,10 @@ ${kbContext}
       formattedResponse,
     };
   } catch (error) {
-    console.error(`KB analysis error for step ${kbStep}:`, error);
+    // [KB_DEBUG] Enhanced error logging
+    console.error(`[KB_DEBUG] LLM call FAILED for step ${kbStep}:`, error instanceof Error ? error.message : error);
+    console.error(`[KB_DEBUG] Full error:`, error);
+    console.log(`[KB_DEBUG] Falling back to buildFallbackResult()`);
 
     // Fallback: return a basic gap-focused result
     return buildFallbackResult(kbStep, kbEntry.label, state);
@@ -735,6 +749,10 @@ function buildFallbackResult(
   stepLabel: string,
   state: IntakeState
 ): KBAnalysisResult {
+  // [KB_DEBUG] Fallback logging - THIS IS THE REPEATING MESSAGE SOURCE
+  console.log(`[KB_DEBUG] buildFallbackResult called - THIS IS THE REPEATING MESSAGE SOURCE`);
+  console.log(`[KB_DEBUG] Step: ${kbStep}, Label: ${stepLabel}`);
+
   const entry = knowledgeBank[kbStep];
   const confidence = calculateStepConfidence(kbStep, state.extractedData);
 
