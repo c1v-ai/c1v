@@ -95,6 +95,13 @@ Updated `lib/langchain/schemas.ts` from ~440 to ~917 lines to match Epic.dev out
   - Goals/metrics: Marked as (REQUIRED - minimum 3), added dimension coverage
   - All sections now have "Do NOT return empty" enforcement
   - 3 atomic commits for each task
+- **03-02 completed (2026-02-01):** NFR Project-Type Inference (PIPE-04)
+  - NFRs: Marked as (REQUIRED - minimum 3 categories)
+  - Added PROJECT-TYPE INFERENCE RULES for 6 project types
+  - SaaS, E-commerce, Mobile, Data Platform, API Platform, Multi-user
+  - Added MANDATORY EXTRACTION RULES section at prompt end
+  - Covers: problemStatement, actor goals/painPoints, goalsMetrics, NFRs
+  - Security and Performance always required as baseline
 
 ---
 

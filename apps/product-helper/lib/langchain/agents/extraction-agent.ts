@@ -58,6 +58,9 @@ export async function extractProjectData(
     // Invoke structured LLM for extraction
     const result = await structuredExtractionLLM.invoke(promptText);
 
+    // Validate and log quality issues
+    validateExtractionQuality(result, projectName);
+
     return result;
   } catch (error) {
     console.error('Extraction error:', error);
@@ -72,6 +75,61 @@ export async function extractProjectData(
       },
       dataEntities: [],
     };
+  }
+}
+
+/**
+ * Validate extraction quality and log issues for monitoring
+ * Does not fail extraction - just logs for observability
+ *
+ * @param result - Extraction result to validate
+ * @param projectName - Project name for log context
+ */
+function validateExtractionQuality(
+  result: ExtractionResult,
+  projectName: string
+): void {
+  const issues: string[] = [];
+
+  // Check problem statement
+  if (!result.problemStatement?.summary || result.problemStatement.summary.length < 20) {
+    issues.push('problemStatement.summary missing or too short');
+  }
+  if (!result.problemStatement?.goals || result.problemStatement.goals.length < 2) {
+    issues.push('problemStatement.goals missing or insufficient (need 2+)');
+  }
+
+  // Check actor goals/painPoints
+  const actorsWithGoals = result.actors.filter(a => a.goals && a.goals.length > 0);
+  if (result.actors.length > 0 && actorsWithGoals.length === 0) {
+    issues.push('No actors have goals populated');
+  }
+  const actorsWithPainPoints = result.actors.filter(a => a.painPoints && a.painPoints.length > 0);
+  if (result.actors.length > 0 && actorsWithPainPoints.length === 0) {
+    issues.push('No actors have painPoints populated');
+  }
+
+  // Check goals/metrics
+  if (!result.goalsMetrics || result.goalsMetrics.length < 3) {
+    issues.push(`goalsMetrics has ${result.goalsMetrics?.length ?? 0} items (need 3+)`);
+  }
+
+  // Check NFRs
+  if (!result.nonFunctionalRequirements || result.nonFunctionalRequirements.length < 3) {
+    issues.push(`nonFunctionalRequirements has ${result.nonFunctionalRequirements?.length ?? 0} items (need 3+)`);
+  } else {
+    // Check category diversity
+    const categories = new Set(result.nonFunctionalRequirements.map(n => n.category));
+    if (categories.size < 3) {
+      issues.push(`NFRs only cover ${categories.size} categories (need 3+)`);
+    }
+  }
+
+  // Log issues if any
+  if (issues.length > 0) {
+    console.warn(`[Extraction Quality] Project "${projectName}" has ${issues.length} issues:`, issues);
+  } else {
+    console.log(`[Extraction Quality] Project "${projectName}" passed all quality checks`);
   }
 }
 
