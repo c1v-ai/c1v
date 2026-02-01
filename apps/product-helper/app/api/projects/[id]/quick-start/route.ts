@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -42,40 +42,9 @@ const quickStartInputSchema = z.object({
  * - Error:    data: {"step":"db-schema","status":"error","message":"Schema generation failed..."}
  * - Complete: data: {"step":"complete","status":"complete","prdUrl":"/projects/123","completeness":85,"stats":{...}}
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    // 1. Authenticate
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    // 2. Parse and validate project ID
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // 3. Verify project exists and belongs to team
+export const POST = withProjectAuth(
+  async (req, { user, team, projectId }) => {
+    // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
         eq(projects.id, projectId),
@@ -90,8 +59,17 @@ export async function POST(
       );
     }
 
-    // 4. Validate input
-    const body = await request.json();
+    // Validate input
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+
     const parseResult = quickStartInputSchema.safeParse(body);
 
     if (!parseResult.success) {
@@ -109,7 +87,7 @@ export async function POST(
 
     const { userInput } = parseResult.data;
 
-    // 5. Create SSE stream
+    // Create SSE stream
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
@@ -174,27 +152,13 @@ export async function POST(
       },
     });
 
-    // 6. Return SSE response
-    return new Response(stream, {
+    // Return SSE response
+    return new NextResponse(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
       },
     });
-  } catch (error) {
-    // Handle errors that occur before stream creation
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      );
-    }
-
-    console.error('Quick Start route error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
