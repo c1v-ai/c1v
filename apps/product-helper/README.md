@@ -58,10 +58,14 @@ AI-powered PRD (Product Requirements Document) generation SaaS. Transform produc
 
 4. **Run database migrations (one-time):**
    ```bash
-   pnpm db:generate
-   pnpm db:migrate
-   pnpm db:seed  # Creates test@test.com / admin123
+   # Apply all migrations to local Supabase
+   pnpm db:migrate:sql
+
+   # Seed test user (test@test.com / admin123)
+   pnpm db:seed
    ```
+
+   > **Note:** If `db:migrate:sql` fails, ensure POSTGRES_URL is set in `.env.local` to `postgresql://postgres:postgres@localhost:54322/postgres`
 
 5. **Start dev server:**
    ```bash
