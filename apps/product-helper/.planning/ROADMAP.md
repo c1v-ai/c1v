@@ -49,7 +49,7 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 ---
 
-## Phase 3: PRD Extraction Agents
+## Phase 3: PRD Extraction Agents ✓
 
 **Goal:** Pipeline produces Epic-quality PRD sections that were previously missing from output
 
@@ -57,18 +57,25 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 **Requirements:** PIPE-01, PIPE-02, PIPE-03, PIPE-04
 
-**Plans:** 3 plans in 2 waves
+**Status:** Complete (2026-02-01). All 3 plans executed across 2 waves.
+
+**Plans:** 3 plans in 2 waves — all complete
 
 Plans:
-- [ ] 03-01-PLAN.md — Enhance extraction prompt for actors and problem statement (PIPE-01, PIPE-02, PIPE-03)
-- [ ] 03-02-PLAN.md — Enhance NFR extraction with project-type inference (PIPE-04)
-- [ ] 03-03-PLAN.md — Add extraction quality validation and update completeness scoring
+- [x] 03-01-PLAN.md — Enhance extraction prompt for actors and problem statement (PIPE-01, PIPE-02, PIPE-03)
+- [x] 03-02-PLAN.md — Enhance NFR extraction with project-type inference (PIPE-04)
+- [x] 03-03-PLAN.md — Add extraction quality validation and update completeness scoring
+
+**Post-Phase Work (Schema Propagation):**
+- Update generator agents to output new schema formats (tech-stack, database-schema)
+- Update UI components to display new fields
+- Full impact map: `.planning/SCHEMA-UPDATE-IMPACT.md`
 
 **Success Criteria:**
-1. Generated PRD contains a structured problem/opportunity statement section extracted from conversation
-2. Generated PRD contains full personas with names, goals, pain points, and behaviors (not just actor names)
-3. Generated PRD contains a goals and success metrics table with measurable outcomes
-4. Generated PRD contains non-functional requirements (performance, security, scalability) as a distinct section
+1. ✓ Generated PRD contains a structured problem/opportunity statement section extracted from conversation
+2. ✓ Generated PRD contains full personas with names, goals, pain points, and behaviors (not just actor names)
+3. ✓ Generated PRD contains a goals and success metrics table with measurable outcomes
+4. ✓ Generated PRD contains non-functional requirements (performance, security, scalability) as a distinct section
 
 ---
 
@@ -418,7 +425,7 @@ graphs/
 |-------|------|--------------|--------|
 | 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | ✓ Complete |
 | 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
-| 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | Planned |
+| 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | ✓ Complete |
 | 4 | Pipeline Orchestration & Quality | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Pending |
 | 5 | Explorer Shell & Layout | EXPL-01, EXPL-02, EXPL-13, EXPL-14 | Pending |
 | 6 | Content Section Views | EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07 | Pending |
@@ -428,6 +435,30 @@ graphs/
 | 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | ✓ Complete |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
+| 18 | Chat Flow Debug | CHAT-FIX-01 | Pending |
+
+---
+
+## Phase 18: Chat Flow Debug
+
+**Goal:** Fix chat loop issue where conversation repeats the same question, and ensure extraction runs after messages
+
+**Dependencies:** None (blocker fix, urgent)
+
+**Requirements:** CHAT-FIX-01
+
+**Context:** During Phase 3 UAT, discovered chat is stuck in a loop repeating "I'm working on the Context Diagram step. Can you tell me more about what elements should be in the Context Diagram?" No extraction data exists in any project (all actors/use_cases arrays are empty).
+
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 18-01-PLAN.md — Add diagnostic logging to identify root cause
+- [ ] 18-02-PLAN.md — Fix fallback loop and verify extraction runs
+
+**Success Criteria:**
+1. Chat conversation progresses through multiple exchanges without repeating
+2. Extraction runs after messages and populates project_data
+3. Phase 3 extraction prompts can be tested in practice
 
 ---
 
@@ -531,3 +562,4 @@ Phase 4: Orchestration ----+                                    |
 *Phase 15 plans created: 2026-02-01*
 *Phase 15 gap closure plans added: 2026-02-01*
 *Phase 3 plans created: 2026-02-01*
+*Phase 18 plans created: 2026-02-01*
