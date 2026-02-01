@@ -10,9 +10,9 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 15-03 (API Auth Middleware Refactoring)
-**Next Phase:** Phase 15-04 or Phase 18 (TBD)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | Phase 15: 3/4 plans done
+**Last Completed:** Phase 15-04 (Constants Extraction & TODO Cleanup)
+**Next Phase:** Phase 18 (TBD)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -53,6 +53,11 @@ Testing: ✓ Complete (T061-T068)
   - Created wrapper module with SVG and ASCII rendering functions
   - Updated DiagramViewer with theme-aware rendering (github-light/github-dark)
   - Added ASCII format option to MCP get_diagrams tool for CLI usage
+- **15-04 completed (2026-02-01):** Constants Extraction & TODO Cleanup
+  - Created centralized constants module (`lib/constants/index.ts`)
+  - Extracted 7 constant groups: TIME, LLM_DEFAULTS, RATE_LIMIT, etc.
+  - Tracked 3 TODOs with CLEO tasks (T088-T090)
+  - Updated 3 files to use constants instead of magic numbers
 
 ---
 
@@ -771,11 +776,11 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `a151ff1` - refactor(15-03): migrate 5 routes to withProjectAuth middleware
+**Last commit:** `aae2d3f` - refactor(15-04): update files to use centralized constants
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 15-03 API Auth Middleware Refactoring
+**Last plan:** Phase 15-04 Constants Extraction & TODO Cleanup
 
 ### Phase 17 UAT Results (2026-02-01)
 
@@ -859,7 +864,7 @@ M package.json                                           # Removed @langchain/op
 | 9 | Data Model Depth | v2.0 | Complete |
 | 10 | Generators & Agents | v2.0 | Complete |
 | 11 | MCP Server (17 tools) | v2.0 | Complete |
-| 15 | Code Cleanup & Claude Migration | v2.0 | 3/4 plans complete |
+| 15 | Code Cleanup & Claude Migration | v2.0 | Complete (4/4 plans) |
 | 12 | Educational Content (knowledge banks) | v2.0 | All 6 KBs enriched |
 | — | **V2 Deploy + Security Hardening** | v2.0 | ✅ Complete (2026-01-31) |
 
@@ -880,6 +885,7 @@ M package.json                                           # Removed @langchain/op
 - **NEW:** ASCII diagram output for MCP tools (CLI/terminal usage)
 - **NEW:** Supabase local development environment
 - **NEW:** withProjectAuth middleware for API routes (35% code reduction)
+- **NEW:** Centralized constants module (`lib/constants/index.ts`)
 
 ---
 
@@ -889,6 +895,8 @@ M package.json                                           # Removed @langchain/op
 |----------|-----------|
 | withProjectAuth HOF for API auth | Eliminates ~35% of duplicated auth boilerplate, type-safe via overloads |
 | Support both 'id' and 'projectId' params | Different routes use different naming conventions |
+| Centralized constants module | Single source of truth for config values improves maintainability |
+| CLEO tasks for deferred TODOs | Proper tech debt tracking instead of orphan comments |
 
 ---
 

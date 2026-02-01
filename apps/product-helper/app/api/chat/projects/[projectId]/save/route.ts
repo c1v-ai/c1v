@@ -21,6 +21,7 @@ import { db } from '@/lib/db/drizzle';
 import { projects, conversations, projectData, type NewConversation } from '@/lib/db/schema';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { extractProjectData, calculateCompleteness, mergeExtractionData } from '@/lib/langchain/agents/extraction-agent';
+import type { ExtractionResult } from '@/lib/langchain/schemas';
 import { z } from 'zod';
 
 // Using Node.js runtime because this route uses Drizzle ORM with database operations
@@ -189,12 +190,12 @@ export async function POST(
       const mergedData = existingData
         ? mergeExtractionData(
             {
-              actors: (existingData.actors as any) || [],
-              useCases: (existingData.useCases as any) || [],
-              systemBoundaries: (existingData.systemBoundaries as any) || { internal: [], external: [] },
-              dataEntities: (existingData.dataEntities as any) || [],
-              problemStatement: (existingData.problemStatement as any) || undefined,
-              nonFunctionalRequirements: (existingData.nonFunctionalRequirements as any) || undefined,
+              actors: (existingData.actors as ExtractionResult['actors']) || [],
+              useCases: (existingData.useCases as ExtractionResult['useCases']) || [],
+              systemBoundaries: (existingData.systemBoundaries as ExtractionResult['systemBoundaries']) || { internal: [], external: [] },
+              dataEntities: (existingData.dataEntities as ExtractionResult['dataEntities']) || [],
+              problemStatement: (existingData.problemStatement as ExtractionResult['problemStatement']) || undefined,
+              nonFunctionalRequirements: (existingData.nonFunctionalRequirements as ExtractionResult['nonFunctionalRequirements']) || undefined,
             },
             extraction
           )
@@ -206,15 +207,17 @@ export async function POST(
       // 18. Update projectData table (upsert) with lastExtractedMessageIndex
       if (existingData) {
         // Update existing
+        // Note: Double-cast (unknown -> DB type) is necessary because ExtractionResult types
+        // and Drizzle JSONB types aren't directly compatible, but they're structurally equivalent
         await db
           .update(projectData)
           .set({
-            actors: mergedData.actors as any,
-            useCases: mergedData.useCases as any,
-            systemBoundaries: mergedData.systemBoundaries as any,
-            dataEntities: mergedData.dataEntities as any,
-            problemStatement: mergedData.problemStatement as any,
-            nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
+            actors: mergedData.actors as unknown as typeof projectData.$inferInsert['actors'],
+            useCases: mergedData.useCases as unknown as typeof projectData.$inferInsert['useCases'],
+            systemBoundaries: mergedData.systemBoundaries as unknown as typeof projectData.$inferInsert['systemBoundaries'],
+            dataEntities: mergedData.dataEntities as unknown as typeof projectData.$inferInsert['dataEntities'],
+            problemStatement: mergedData.problemStatement as unknown as typeof projectData.$inferInsert['problemStatement'],
+            nonFunctionalRequirements: mergedData.nonFunctionalRequirements as unknown as typeof projectData.$inferInsert['nonFunctionalRequirements'],
             completeness: newCompleteness,
             lastExtractedAt: new Date(),
             lastExtractedMessageIndex: allHistory.length,
@@ -225,12 +228,12 @@ export async function POST(
         // Insert new
         await db.insert(projectData).values({
           projectId,
-          actors: mergedData.actors as any,
-          useCases: mergedData.useCases as any,
-          systemBoundaries: mergedData.systemBoundaries as any,
-          dataEntities: mergedData.dataEntities as any,
-          problemStatement: mergedData.problemStatement as any,
-          nonFunctionalRequirements: mergedData.nonFunctionalRequirements as any,
+          actors: mergedData.actors as unknown as typeof projectData.$inferInsert['actors'],
+          useCases: mergedData.useCases as unknown as typeof projectData.$inferInsert['useCases'],
+          systemBoundaries: mergedData.systemBoundaries as unknown as typeof projectData.$inferInsert['systemBoundaries'],
+          dataEntities: mergedData.dataEntities as unknown as typeof projectData.$inferInsert['dataEntities'],
+          problemStatement: mergedData.problemStatement as unknown as typeof projectData.$inferInsert['problemStatement'],
+          nonFunctionalRequirements: mergedData.nonFunctionalRequirements as unknown as typeof projectData.$inferInsert['nonFunctionalRequirements'],
           completeness: newCompleteness,
           lastExtractedAt: new Date(),
           lastExtractedMessageIndex: allHistory.length,
