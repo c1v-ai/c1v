@@ -120,30 +120,71 @@ Example output:
 
 CRITICAL: Do NOT return empty array. Every project has goals - extract at least 3.
 
-### 8. Non-Functional Requirements
-Extract non-functional requirements (NFRs) across these categories: performance, security, scalability, reliability, usability, maintainability, compliance.
+### 8. Non-Functional Requirements (REQUIRED - minimum 3 categories)
+Extract non-functional requirements across: performance, security, scalability, reliability, usability, maintainability, compliance.
 
-For each NFR, capture:
-- **category**: One of performance, security, scalability, reliability, usability, maintainability, compliance
-- **requirement**: Clear statement of what the system must achieve (e.g., "Page load time under 3 seconds")
-- **metric**: How to measure compliance (e.g., "Time to First Contentful Paint")
-- **target**: Specific threshold or benchmark (e.g., "<3s")
+For each NFR:
+- **category**: One of the 7 categories above
+- **requirement**: Specific statement (e.g., "Page load time under 3 seconds")
+- **metric**: How to measure (e.g., "Time to First Contentful Paint")
+- **target**: Specific value (e.g., "<3s")
 - **priority**: critical, high, medium, or low
 
-Guidelines:
-- INFER reasonable NFRs from the project type, tech stack, user base, and vision statement even if not explicitly stated in the conversation
-- Every project has implicit NFRs -- extract them. A web app implies page load requirements; a multi-user system implies concurrency requirements; handling user data implies security requirements.
-- Cover at least 3 different categories to ensure breadth
-- Each requirement must be specific and measurable, not vague (e.g., "fast" is bad; "response time under 200ms" is good)
+PROJECT-TYPE INFERENCE RULES:
+Users rarely state NFRs explicitly. INFER them based on project type:
 
-Examples:
-- Performance: requirement: "Page load time under 3 seconds" -> metric: "Time to First Contentful Paint" -> target: "<3s" -> priority: high
-- Security: requirement: "All API endpoints require authentication" -> metric: "Unauthorized access rate" -> target: "0%" -> priority: critical
-- Scalability: requirement: "Support 10,000 concurrent users" -> metric: "Concurrent active sessions" -> target: "10,000+" -> priority: high
-- Reliability: requirement: "System uptime of 99.9%" -> metric: "Monthly uptime percentage" -> target: ">=99.9%" -> priority: critical
-- Usability: requirement: "Core workflows completable in under 3 clicks" -> metric: "Average clicks to task completion" -> target: "<=3" -> priority: medium
-- Maintainability: requirement: "Test coverage above 80%" -> metric: "Line coverage percentage" -> target: ">=80%" -> priority: medium
-- Compliance: requirement: "GDPR-compliant data handling" -> metric: "Data processing audit pass rate" -> target: "100%" -> priority: critical
+**SaaS / Web Application:**
+- Performance: "API response time under 200ms for 95th percentile"
+- Security: "All user data encrypted at rest (AES-256) and in transit (TLS 1.3)"
+- Scalability: "Support 10,000 concurrent users without degradation"
+- Reliability: "99.9% uptime (8.76 hours max downtime per year)"
+
+**E-commerce / Marketplace:**
+- Performance: "Checkout flow completes in under 3 seconds"
+- Security: "PCI-DSS compliant payment processing"
+- Reliability: "Zero data loss during payment transactions"
+- Usability: "Mobile-first design with touch-optimized controls"
+
+**Mobile Application:**
+- Performance: "App launch time under 2 seconds"
+- Usability: "Offline mode for core features"
+- Reliability: "Graceful degradation on poor network"
+- Security: "Biometric authentication option"
+
+**Data Platform / Analytics:**
+- Performance: "Query response under 5 seconds for datasets up to 1TB"
+- Scalability: "Handle 100GB daily data ingestion"
+- Security: "Role-based access control with audit logging"
+- Compliance: "Data retention policies per regulatory requirements"
+
+**API / Integration Platform:**
+- Performance: "99th percentile latency under 100ms"
+- Scalability: "Rate limiting at 1000 requests/minute per client"
+- Security: "API key rotation and OAuth 2.0 support"
+- Reliability: "Automatic failover with zero-downtime deployments"
+
+**Multi-user / Team System:**
+- Security: "Tenant data isolation in multi-tenant architecture"
+- Usability: "Admin can manage team permissions without engineering"
+- Compliance: "GDPR-compliant data export and deletion"
+
+REQUIRED COVERAGE:
+- MUST extract at least 3 NFRs from at least 3 different categories
+- ALWAYS include Security (every app handles user data)
+- ALWAYS include Performance (every app needs response time expectations)
+- Include Compliance if: healthcare (HIPAA), finance (SOC2), EU users (GDPR), payments (PCI-DSS)
+
+Example output for a "SaaS project management tool":
+[
+  { "category": "performance", "requirement": "Page load time under 3 seconds", "metric": "Time to First Contentful Paint", "target": "<3s", "priority": "high" },
+  { "category": "security", "requirement": "All API endpoints require authentication", "metric": "Unauthorized access attempts blocked", "target": "100%", "priority": "critical" },
+  { "category": "scalability", "requirement": "Support 10,000 concurrent users", "metric": "Concurrent active sessions without degradation", "target": "10,000", "priority": "high" },
+  { "category": "reliability", "requirement": "System uptime of 99.9%", "metric": "Monthly uptime percentage", "target": ">=99.9%", "priority": "critical" },
+  { "category": "usability", "requirement": "Core workflows completable in under 3 clicks", "metric": "Average clicks to task completion", "target": "<=3", "priority": "medium" },
+  { "category": "compliance", "requirement": "GDPR-compliant data handling", "metric": "Data subject requests fulfilled within 30 days", "target": "100%", "priority": "high" }
+]
+
+CRITICAL: Do NOT return empty array. Every project has implicit NFRs - extract at least 3 from at least 3 categories.
 
 ## Calculate Artifact Readiness
 
@@ -178,5 +219,19 @@ Return structured JSON with:
 
 {educationBlock}
 
-INFER AGGRESSIVELY from the vision statement. Apply structured methodology to identify relationships and bidirectional interactions.
+## MANDATORY EXTRACTION RULES
+
+1. **Problem Statement**: REQUIRED. Infer from vision/actors/use cases if not stated.
+2. **Actor Goals & PainPoints**: REQUIRED for every actor. Infer from problem context.
+3. **Goals & Metrics**: REQUIRED minimum 3. Cover user experience, business value, technical performance.
+4. **Non-Functional Requirements**: REQUIRED minimum 3 categories. Infer from project type.
+
+INFERENCE STRATEGY:
+- Vision statement is the primary inference source
+- Actor goals derive from use cases they perform
+- Pain points derive from what the system solves
+- Project-level goals derive from problem statement impact
+- NFRs derive from project type and user expectations
+
+Do NOT return empty or null for ANY of these four sections. Every project has problems, goals, and quality requirements - extract or infer them.
 `);
