@@ -1,0 +1,1 @@
+ALTER TABLE "project_data" ADD COLUMN "goals_metrics" jsonb;

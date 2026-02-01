@@ -9,10 +9,10 @@ Requirements for V2 release. Each maps to roadmap phases.
 
 ### Pipeline Training
 
-- [ ] **PIPE-01**: System extracts problem/opportunity statement from conversation into structured PRD section
-- [ ] **PIPE-02**: System extracts full personas with goals, pain points, and behaviors (upgrade from actor extraction)
-- [ ] **PIPE-03**: System extracts measurable goals and success metrics as structured table
-- [ ] **PIPE-04**: System extracts non-functional requirements (performance, security, scalability)
+- [x] **PIPE-01**: System extracts problem/opportunity statement from conversation into structured PRD section
+- [x] **PIPE-02**: System extracts full personas with goals, pain points, and behaviors (upgrade from actor extraction)
+- [x] **PIPE-03**: System extracts measurable goals and success metrics as structured table
+- [x] **PIPE-04**: System extracts non-functional requirements (performance, security, scalability)
 - [ ] **PIPE-05**: System enforces staged approval gates (PRD -> Tech -> Implementation -> Stories)
 - [ ] **PIPE-06**: System outputs dual-format artifacts (.md + machine-parseable: .mmd, .schema.json, .openapi.json)
 - [ ] **PIPE-07**: Knowledge graphs improved for scope definition and requirements training
@@ -47,11 +47,11 @@ Requirements for V2 release. Each maps to roadmap phases.
 
 ### Onboarding
 
-- [ ] **ONBD-01**: User provides project type during setup (SaaS, mobile, marketplace, etc.)
-- [ ] **ONBD-02**: User provides project stage during setup (idea, prototype, MVP, growth)
-- [ ] **ONBD-03**: User provides budget range during setup
-- [ ] **ONBD-04**: User provides their role during setup (founder, PM, developer, designer)
-- [ ] **ONBD-05**: Post-login redirect correctly goes to /projects instead of Team Settings
+- [x] **ONBD-01**: User provides project type during setup (SaaS, mobile, marketplace, etc.)
+- [x] **ONBD-02**: User provides project stage during setup (idea, prototype, MVP, growth)
+- [x] **ONBD-03**: User provides budget range during setup
+- [x] **ONBD-04**: User provides their role during setup (founder, PM, developer, designer)
+- [x] **ONBD-05**: Post-login redirect correctly goes to /projects instead of Team Settings
 
 ## v2 Requirements
 
@@ -98,10 +98,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | Phase 3: PRD Extraction Agents | Pending |
-| PIPE-02 | Phase 3: PRD Extraction Agents | Pending |
-| PIPE-03 | Phase 3: PRD Extraction Agents | Pending |
-| PIPE-04 | Phase 3: PRD Extraction Agents | Pending |
+| PIPE-01 | Phase 3: PRD Extraction Agents | Complete |
+| PIPE-02 | Phase 3: PRD Extraction Agents | Complete |
+| PIPE-03 | Phase 3: PRD Extraction Agents | Complete |
+| PIPE-04 | Phase 3: PRD Extraction Agents | Complete |
 | PIPE-05 | Phase 4: Pipeline Orchestration & Quality | Pending |
 | PIPE-06 | Phase 4: Pipeline Orchestration & Quality | Pending |
 | PIPE-07 | Phase 4: Pipeline Orchestration & Quality | Pending |
@@ -127,11 +127,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHAT-02 | Phase 8: Chat Enhancements | Pending |
 | CHAT-03 | Phase 8: Chat Enhancements | Pending |
 | CHAT-04 | Phase 2: Quick Start Pipeline | Complete |
-| ONBD-01 | Phase 1: Onboarding & First Impressions | Pending |
-| ONBD-02 | Phase 1: Onboarding & First Impressions | Pending |
-| ONBD-03 | Phase 1: Onboarding & First Impressions | Pending |
-| ONBD-04 | Phase 1: Onboarding & First Impressions | Pending |
-| ONBD-05 | Phase 1: Onboarding & First Impressions | Pending |
+| ONBD-01 | Phase 1: Onboarding & First Impressions | Complete |
+| ONBD-02 | Phase 1: Onboarding & First Impressions | Complete |
+| ONBD-03 | Phase 1: Onboarding & First Impressions | Complete |
+| ONBD-04 | Phase 1: Onboarding & First Impressions | Complete |
+| ONBD-05 | Phase 1: Onboarding & First Impressions | Complete |
 
 **Coverage:**
 - v1 requirements: 34 total

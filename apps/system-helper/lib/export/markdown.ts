@@ -1,0 +1,367 @@
+/**
+ * Markdown Export Utility (Phase 12)
+ *
+ * Purpose: Generate a complete PRD document in Markdown format
+ * Pattern: Pure function that transforms project data to Markdown
+ * Team: Frontend (Agent 2.3: Data Visualization Engineer)
+ *
+ * Features:
+ * - Full PRD document with all sections
+ * - Embedded Mermaid diagrams
+ * - Actors and Use Cases tables
+ * - System boundaries and data entities
+ * - Validation status/score
+ */
+
+import {
+  generateContextDiagram,
+  generateUseCaseDiagram,
+  generateClassDiagram,
+} from '@/lib/diagrams/generators';
+import type {
+  Project,
+  ProjectData,
+  Actor,
+  UseCase,
+  SystemBoundaries,
+  DataEntity,
+} from '@/lib/db/schema';
+
+/**
+ * Project with related data for export
+ */
+export interface ProjectExportData {
+  project: Project;
+  projectData?: ProjectData | null;
+}
+
+/**
+ * Generate a complete PRD document in Markdown format
+ *
+ * @param data - Project and related data
+ * @returns Markdown string
+ */
+export function generateMarkdownExport(data: ProjectExportData): string {
+  const { project, projectData } = data;
+
+  // Parse JSON fields from projectData
+  const actors = parseJsonField<Actor[]>(projectData?.actors) || [];
+  const useCases = parseJsonField<UseCase[]>(projectData?.useCases) || [];
+  const systemBoundaries = parseJsonField<SystemBoundaries>(projectData?.systemBoundaries);
+  const dataEntities = parseJsonField<DataEntity[]>(projectData?.dataEntities) || [];
+
+  const sections: string[] = [];
+
+  // Title and metadata
+  sections.push(`# ${project.name}`);
+  sections.push('');
+  sections.push(`**Product Requirements Document**`);
+  sections.push('');
+  sections.push(`Generated: ${new Date().toISOString().split('T')[0]}`);
+  sections.push('');
+  sections.push('---');
+  sections.push('');
+
+  // Table of Contents
+  sections.push('## Table of Contents');
+  sections.push('');
+  sections.push('1. [Vision](#vision)');
+  sections.push('2. [Validation Status](#validation-status)');
+  sections.push('3. [Actors](#actors)');
+  sections.push('4. [Use Cases](#use-cases)');
+  sections.push('5. [System Boundaries](#system-boundaries)');
+  sections.push('6. [Data Entities](#data-entities)');
+  sections.push('7. [Diagrams](#diagrams)');
+  sections.push('');
+  sections.push('---');
+  sections.push('');
+
+  // Vision Section
+  sections.push('## Vision');
+  sections.push('');
+  sections.push(project.vision);
+  sections.push('');
+
+  // Validation Status Section
+  sections.push('## Validation Status');
+  sections.push('');
+  sections.push(generateValidationSection(project));
+  sections.push('');
+
+  // Actors Section
+  sections.push('## Actors');
+  sections.push('');
+  if (actors.length > 0) {
+    sections.push(generateActorsTable(actors));
+  } else {
+    sections.push('*No actors defined yet.*');
+  }
+  sections.push('');
+
+  // Use Cases Section
+  sections.push('## Use Cases');
+  sections.push('');
+  if (useCases.length > 0) {
+    sections.push(generateUseCasesTable(useCases));
+  } else {
+    sections.push('*No use cases defined yet.*');
+  }
+  sections.push('');
+
+  // System Boundaries Section
+  sections.push('## System Boundaries');
+  sections.push('');
+  if (systemBoundaries) {
+    sections.push(generateSystemBoundariesSection(systemBoundaries));
+  } else {
+    sections.push('*System boundaries not defined yet.*');
+  }
+  sections.push('');
+
+  // Data Entities Section
+  sections.push('## Data Entities');
+  sections.push('');
+  if (dataEntities.length > 0) {
+    sections.push(generateDataEntitiesSection(dataEntities));
+  } else {
+    sections.push('*No data entities defined yet.*');
+  }
+  sections.push('');
+
+  // Diagrams Section
+  sections.push('## Diagrams');
+  sections.push('');
+
+  // Context Diagram
+  sections.push('### Context Diagram');
+  sections.push('');
+  sections.push('Shows what is inside vs outside the system boundary.');
+  sections.push('');
+  const contextDiagram = generateContextDiagram(
+    project.name,
+    systemBoundaries?.internal || [],
+    systemBoundaries?.external || []
+  );
+  sections.push('```mermaid');
+  sections.push(contextDiagram);
+  sections.push('```');
+  sections.push('');
+
+  // Use Case Diagram
+  sections.push('### Use Case Diagram');
+  sections.push('');
+  sections.push('Shows actors and their associated use cases.');
+  sections.push('');
+  const useCaseDiagram = generateUseCaseDiagram(actors, useCases);
+  sections.push('```mermaid');
+  sections.push(useCaseDiagram);
+  sections.push('```');
+  sections.push('');
+
+  // Class Diagram
+  sections.push('### Data Model (Class Diagram)');
+  sections.push('');
+  sections.push('Shows data entities with their attributes and relationships.');
+  sections.push('');
+  const classDiagram = generateClassDiagram(dataEntities);
+  sections.push('```mermaid');
+  sections.push(classDiagram);
+  sections.push('```');
+  sections.push('');
+
+  // Footer
+  sections.push('---');
+  sections.push('');
+  sections.push(`*Document generated by Product Helper on ${new Date().toISOString()}*`);
+  sections.push('');
+
+  return sections.join('\n');
+}
+
+/**
+ * Generate validation status section
+ */
+function generateValidationSection(project: Project): string {
+  const score = project.validationScore ?? 0;
+  const passed = project.validationPassed ?? 0;
+  const failed = project.validationFailed ?? 0;
+  const total = passed + failed;
+
+  const lines: string[] = [];
+
+  // Score badge
+  let scoreBadge: string;
+  if (score >= 80) {
+    scoreBadge = 'Excellent';
+  } else if (score >= 60) {
+    scoreBadge = 'Good';
+  } else if (score >= 40) {
+    scoreBadge = 'Needs Work';
+  } else {
+    scoreBadge = 'Incomplete';
+  }
+
+  lines.push(`| Metric | Value |`);
+  lines.push(`|--------|-------|`);
+  lines.push(`| **Score** | ${score}/100 (${scoreBadge}) |`);
+  lines.push(`| **Status** | ${project.status} |`);
+  lines.push(`| **Checks Passed** | ${passed}/${total} |`);
+  lines.push(`| **Checks Failed** | ${failed}/${total} |`);
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate actors table in Markdown format
+ */
+function generateActorsTable(actors: Actor[]): string {
+  const lines: string[] = [];
+
+  lines.push('| Actor | Role | Description | Goals |');
+  lines.push('|-------|------|-------------|-------|');
+
+  for (const actor of actors) {
+    const goals = actor.goals?.join(', ') || '-';
+    const description = escapeMarkdownTableCell(actor.description);
+    lines.push(`| ${actor.name} | ${actor.role} | ${description} | ${goals} |`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate use cases table in Markdown format
+ */
+function generateUseCasesTable(useCases: UseCase[]): string {
+  const lines: string[] = [];
+
+  lines.push('| ID | Name | Actor | Description | Preconditions | Postconditions |');
+  lines.push('|----|------|-------|-------------|---------------|----------------|');
+
+  for (const useCase of useCases) {
+    const description = escapeMarkdownTableCell(useCase.description);
+    const preconditions = useCase.preconditions?.join('; ') || '-';
+    const postconditions = useCase.postconditions?.join('; ') || '-';
+    lines.push(
+      `| ${useCase.id} | ${useCase.name} | ${useCase.actor} | ${description} | ${preconditions} | ${postconditions} |`
+    );
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate system boundaries section
+ */
+function generateSystemBoundariesSection(boundaries: SystemBoundaries): string {
+  const lines: string[] = [];
+
+  lines.push('### Internal Components');
+  lines.push('');
+  if (boundaries.internal.length > 0) {
+    for (const item of boundaries.internal) {
+      lines.push(`- ${item}`);
+    }
+  } else {
+    lines.push('*None defined*');
+  }
+  lines.push('');
+
+  lines.push('### External Systems');
+  lines.push('');
+  if (boundaries.external.length > 0) {
+    for (const item of boundaries.external) {
+      lines.push(`- ${item}`);
+    }
+  } else {
+    lines.push('*None defined*');
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate data entities section
+ */
+function generateDataEntitiesSection(entities: DataEntity[]): string {
+  const lines: string[] = [];
+
+  for (const entity of entities) {
+    lines.push(`### ${entity.name}`);
+    lines.push('');
+
+    lines.push('**Attributes:**');
+    lines.push('');
+    if (entity.attributes.length > 0) {
+      for (const attr of entity.attributes) {
+        lines.push(`- \`${attr}\``);
+      }
+    } else {
+      lines.push('- *None defined*');
+    }
+    lines.push('');
+
+    lines.push('**Relationships:**');
+    lines.push('');
+    if (entity.relationships.length > 0) {
+      for (const rel of entity.relationships) {
+        lines.push(`- ${rel}`);
+      }
+    } else {
+      lines.push('- *None defined*');
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Parse JSON field from database
+ * Handles both string and object types
+ */
+function parseJsonField<T>(field: unknown): T | null {
+  if (field === null || field === undefined) {
+    return null;
+  }
+
+  // If it's already an object (parsed by Drizzle), return it
+  if (typeof field === 'object') {
+    return field as T;
+  }
+
+  // If it's a string, try to parse it
+  if (typeof field === 'string') {
+    try {
+      return JSON.parse(field) as T;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Escape special characters for Markdown table cells
+ */
+function escapeMarkdownTableCell(text: string): string {
+  return text
+    .replace(/\|/g, '\\|')
+    .replace(/\n/g, ' ')
+    .replace(/\r/g, '');
+}
+
+/**
+ * Generate filename for export
+ */
+export function generateExportFilename(projectName: string): string {
+  const sanitized = projectName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  const date = new Date().toISOString().split('T')[0];
+
+  return `${sanitized}-prd-${date}.md`;
+}

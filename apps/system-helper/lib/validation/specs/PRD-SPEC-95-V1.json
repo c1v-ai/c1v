@@ -1,0 +1,66 @@
+{
+    "ruleset_id": "PRD-SPEC-95-V1",
+    "targets": [
+      "context_diagram",
+      "use_case_diagram",
+      "scope_tree",
+      "ucbd",
+      "requirements_table",
+      "constants_table",
+      "sysml_activity_diagram"
+    ],
+    "hard_gates": [
+      "system_boundary_defined",
+      "primary_actors_defined",
+      "roles_permissions_defined",
+      "external_entities_defined",
+      "use_case_list_5_to_15_defined",
+      "each_use_case_has_trigger_and_outcome",
+      "success_criteria_measurable_or_tbd_with_owner_date",
+      "constraints_business_and_technical_present",
+      "core_data_objects_defined",
+      "at_least_one_source_reference_present"
+    ],
+    "artifact_minimums": {
+      "context_diagram": [
+        "external_entity_has_at_least_one_labeled_interaction",
+        "single_system_boundary"
+      ],
+      "use_case_diagram": [
+        "each_use_case_linked_to_actor",
+        "use_cases_named_as_verb_phrases"
+      ],
+      "scope_tree": [
+        "in_scope_defined",
+        "out_of_scope_defined",
+        "two_level_decomposition"
+      ],
+      "ucbd": [
+        "preconditions_present",
+        "ending_conditions_present",
+        "actors_present",
+        "external_elements_present"
+      ],
+      "requirements_table": [
+        "requirements_derived_from_ucbd_system_shalls",
+        "each_requirement_testable_singular_unambiguous",
+        "id_and_abstract_name_present"
+      ],
+      "constants_table": [
+        "if_constants_used_then_name_value_units_present"
+      ],
+      "sysml_activity_diagram": [
+        "workflow_steps_exist",
+        "decision_points_identified_or_inferred"
+      ]
+    },
+    "consistency_checks": [
+      "system_name_consistent_across_artifacts",
+      "no_new_actors_in_ucbd_without_definition",
+      "context_entities_align_with_uc_actors_or_marked_external_system",
+      "scope_in_out_not_contradicted_by_use_cases",
+      "requirements_trace_to_ucbd_steps"
+    ],
+    "threshold": 0.95
+  }
+  

@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1726443359662,
+      "tag": "0000_soft_the_anarchist",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768198880555,
+      "tag": "0001_white_thunderbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768511757701,
+      "tag": "0002_green_bucky",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768708211300,
+      "tag": "0003_gorgeous_lila_cheney",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769457284365,
+      "tag": "0004_elite_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769457788949,
+      "tag": "0005_curved_ma_gnuci",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1769460534493,
+      "tag": "0006_military_george_stacy",
+      "breakpoints": true
+    }
+  ]
+}
