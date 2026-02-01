@@ -75,16 +75,20 @@ export async function POST(
     }
 
     // Transform project data into validation format
+    // Using proper types from ProjectValidationData interface
     const validationData: ProjectValidationData = {
       id: project.id,
       name: project.name,
       vision: project.vision,
       status: project.status,
-      actors: project.projectData?.actors as any,
-      useCases: project.projectData?.useCases as any,
-      systemBoundaries: project.projectData?.systemBoundaries as any,
-      dataEntities: project.projectData?.dataEntities as any,
-      artifacts: project.artifacts as any,
+      actors: (project.projectData?.actors ?? []) as ProjectValidationData['actors'],
+      useCases: (project.projectData?.useCases ?? []) as ProjectValidationData['useCases'],
+      systemBoundaries: (project.projectData?.systemBoundaries ?? {
+        internal: [],
+        external: [],
+      }) as ProjectValidationData['systemBoundaries'],
+      dataEntities: (project.projectData?.dataEntities ?? []) as ProjectValidationData['dataEntities'],
+      artifacts: (project.artifacts ?? []) as ProjectValidationData['artifacts'],
       completeness: project.projectData?.completeness || 0,
       validationScore: project.validationScore || 0,
     };
