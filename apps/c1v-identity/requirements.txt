@@ -1,7 +1,14 @@
-fastapi
+fastapi>=0.109.0
 uvicorn[standard]
-pydantic>=2
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
 orjson
+sqlalchemy>=2.0.0
+asyncpg
+psycopg2-binary
+cryptography>=42.0.0
+python-jose[cryptography]>=3.3.0
+c1v-id>=0.1.0
 pandas
 numpy
 scikit-learn
