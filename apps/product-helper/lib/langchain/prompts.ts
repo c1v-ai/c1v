@@ -89,23 +89,36 @@ Example output:
 
 CRITICAL: Do NOT return empty or null for problemStatement. Every project has a problem - extract or infer it.
 
-### 7. Goals & Success Metrics
-Extract 3-5 project-level goals with measurable success criteria. Each goal should define what success looks like in quantifiable terms.
+### 7. Goals & Success Metrics (REQUIRED - minimum 3)
+Extract 3-5 project-level goals with measurable success criteria. MUST return at least 3 goals.
 
-For each goal include:
-- **goal**: A clear statement of what the project aims to achieve (e.g., "Reduce user onboarding time")
-- **metric**: How success will be measured (e.g., "Average time to complete onboarding flow")
-- **target**: Optional specific threshold or benchmark (e.g., "Under 5 minutes")
+For each goal:
+- **goal**: Clear outcome statement (e.g., "Reduce user onboarding time")
+- **metric**: How success is measured (e.g., "Average time to complete onboarding flow")
+- **target**: Specific threshold (e.g., "Under 5 minutes") - include when inferable
 
-Guidelines:
-- INFER goals from the vision statement, problem statement, actor goals, and use cases if not explicitly stated
-- Goals should be SMART: Specific, Measurable, Achievable, Relevant, Time-bound where possible
-- Cover different dimensions: user experience, business value, technical performance, adoption
-- Each goal must have a corresponding metric; target is optional but preferred
-- Examples:
-  - Goal: "Increase user self-service resolution" -> Metric: "Percentage of support tickets resolved without agent" -> Target: "70% self-service rate"
-  - Goal: "Improve data accuracy" -> Metric: "Error rate in submitted forms" -> Target: "Below 2%"
-  - Goal: "Accelerate time to market" -> Metric: "Average feature delivery cycle" -> Target: "2-week sprints"
+INFERENCE SOURCES (use ALL of these):
+1. Vision statement: "Modern invoicing SaaS" -> Goal: "Automate invoice generation"
+2. Problem statement: "Manual process takes hours" -> Goal: "Reduce processing time by 80%"
+3. Actor goals: "Manager wants visibility" -> Goal: "Real-time dashboard for team status"
+4. Use cases: "User can export reports" -> Goal: "Enable self-service reporting"
+5. Project type: SaaS implies "Achieve 99.9% uptime", E-commerce implies "Increase conversion rate"
+
+REQUIRED COVERAGE - extract goals across these dimensions:
+- User Experience (speed, ease of use, satisfaction)
+- Business Value (revenue, cost savings, efficiency)
+- Technical Performance (speed, reliability, scalability)
+- Adoption (user growth, engagement, retention)
+
+Example output:
+[
+  { "goal": "Reduce invoice creation time", "metric": "Average time per invoice", "target": "Under 2 minutes" },
+  { "goal": "Improve payment collection rate", "metric": "Percentage of invoices paid within 30 days", "target": "85%" },
+  { "goal": "Increase user adoption", "metric": "Monthly active users", "target": "500 within 6 months" },
+  { "goal": "Achieve platform reliability", "metric": "Monthly uptime percentage", "target": "99.9%" }
+]
+
+CRITICAL: Do NOT return empty array. Every project has goals - extract at least 3.
 
 ### 8. Non-Functional Requirements
 Extract non-functional requirements (NFRs) across these categories: performance, security, scalability, reliability, usability, maintainability, compliance.
