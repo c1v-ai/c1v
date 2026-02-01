@@ -15,6 +15,7 @@ import {
 } from './langgraph-handler';
 import { buildPromptEducationBlock } from '@/lib/education/phase-mapping';
 import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
+import type { SystemBoundaries, Actor, UseCase, DataEntity } from '@/lib/langchain/schemas';
 import { checkRateLimit } from '@/lib/mcp/rate-limit';
 
 /**
@@ -233,7 +234,7 @@ export async function POST(
     const extractedExternalSystems = formatExtractedList(projectData?.systemBoundaries, 'external');
     const extractedInScope = formatExtractedList(projectData?.systemBoundaries, 'internal');
     const extractedOutOfScope = projectData?.systemBoundaries
-      ? (parseJsonField(projectData.systemBoundaries)?.outOfScope || []).join(', ') || 'None yet'
+      ? (parseJsonField<SystemBoundaries>(projectData.systemBoundaries)?.outOfScope || []).join(', ') || 'None yet'
       : 'None yet';
 
     // Determine current artifact based on completeness
@@ -516,36 +517,50 @@ function detectDiagramType(syntax: string): string {
 
 /**
  * Parse JSON field that might be string or already parsed
+ * Generic version with type parameter for type-safe access
  */
-function parseJsonField(field: any): any {
+function parseJsonField<T>(field: unknown): T | null {
   if (!field) return null;
   if (typeof field === 'string') {
     try {
-      return JSON.parse(field);
+      return JSON.parse(field) as T;
     } catch {
       return null;
     }
   }
-  return field;
+  return field as T;
 }
 
 /**
- * Format extracted list for prompt display
+ * Type for items that can be extracted and formatted
+ * Covers Actor, UseCase, DataEntity, and string arrays
  */
-function formatExtractedList(field: any, subfield?: string): string {
-  const parsed = parseJsonField(field);
-  if (!parsed) return 'None yet';
+type ExtractableItem = Actor | UseCase | DataEntity | { name?: string };
 
+/**
+ * Format extracted list for prompt display
+ * Handles both SystemBoundaries subfields (string arrays) and entity arrays
+ */
+function formatExtractedList(
+  field: unknown,
+  subfield?: keyof SystemBoundaries
+): string {
+  // Handle SystemBoundaries subfield access (internal, external, inScope, outOfScope)
   if (subfield) {
+    const parsed = parseJsonField<SystemBoundaries>(field);
+    if (!parsed) return 'None yet';
     const data = parsed[subfield];
     if (!data || !Array.isArray(data) || data.length === 0) return 'None yet';
-    return data.map((item: any) => typeof item === 'string' ? item : item.name || JSON.stringify(item)).join(', ');
+    // SystemBoundaries fields are string arrays, can join directly
+    return data.join(', ');
   }
 
-  if (Array.isArray(parsed)) {
-    if (parsed.length === 0) return 'None yet';
-    return parsed.map((item: any) => typeof item === 'string' ? item : item.name || JSON.stringify(item)).join(', ');
-  }
+  // Handle entity arrays (actors, useCases, dataEntities)
+  const parsed = parseJsonField<ExtractableItem[]>(field);
+  if (!parsed) return 'None yet';
+  if (!Array.isArray(parsed) || parsed.length === 0) return 'None yet';
 
-  return 'None yet';
+  return parsed
+    .map((item) => typeof item === 'string' ? item : item.name || JSON.stringify(item))
+    .join(', ');
 }
