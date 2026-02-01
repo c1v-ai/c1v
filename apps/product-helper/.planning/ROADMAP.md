@@ -174,7 +174,7 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 Plans:
 - [x] 15-01 — Quick Wins (duplicate hook, rate limit fix, middleware fix) - DONE via Phase 16
 - [x] 15-02 — Security & Type Safety (env validation, any types, SQL injection) - DONE 2026-02-01
-- [ ] 15-03-PLAN.md — API Auth Middleware (withProjectAuth HOF, refactor 5 routes)
+- [x] 15-03 — API Auth Middleware (withProjectAuth HOF, refactor 5 routes) - DONE 2026-02-01
 - [ ] 15-04-PLAN.md — Constants & TODOs (magic numbers, TODO tracking)
 
 **Success Criteria:**
@@ -416,7 +416,7 @@ graphs/
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
-| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | Wave 1 Complete |
+| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | 3/4 plans complete |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 
