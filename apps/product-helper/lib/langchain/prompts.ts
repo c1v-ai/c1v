@@ -27,9 +27,17 @@ For each actor include:
 - Name, role, type (Primary / Secondary / External System)
 - What they do TO the system (inputs, requests, triggers)
 - What the system does FOR them (outputs, responses, services)
-- **goals**: 2-3 specific goals this actor wants to achieve when using the system (e.g., "Complete checkout in under 2 minutes", "View real-time order status"). INFER from use cases and vision if not explicitly stated.
-- **painPoints**: 1-3 current frustrations or problems this actor faces that the system aims to solve (e.g., "Manual data entry is slow and error-prone", "No visibility into order progress"). INFER from the problem context and vision statement.
+- **goals**: MUST include 2-3 specific goals this actor wants to achieve. Always infer from use cases, vision statement, and problem context - even if not explicitly stated. Every actor has goals.
+  Examples: "Complete checkout in under 2 minutes", "Track order status in real-time", "Manage team permissions without IT support"
+- **painPoints**: MUST include 1-3 current frustrations or problems. Always infer from the problem context - every actor using a new system has pain points with the current state.
+  Examples: "Manual data entry is slow and error-prone", "No visibility into order progress", "Cannot access reports on mobile"
 - INFER from vision if not explicit
+
+CRITICAL: Every actor MUST have at least 2 goals and 1 painPoint populated. If the user hasn't stated them explicitly, INFER them from:
+- The vision statement (what problem does this solve for them?)
+- The use cases (what are they trying to accomplish?)
+- The project type (what are typical goals for this type of user?)
+Do NOT leave goals or painPoints empty.
 
 ### 2. Use Cases with Relationships (industry-standard)
 Extract use cases with industry-standard relationship types:
