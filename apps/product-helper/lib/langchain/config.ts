@@ -1,5 +1,6 @@
 import { ChatAnthropic } from '@langchain/anthropic';
 import type { z } from 'zod';
+import { LLM_DEFAULTS } from '@/lib/constants';
 
 // Model options
 export const CLAUDE_MODELS = {
@@ -17,10 +18,10 @@ const DEFAULT_MODEL = CLAUDE_MODELS.SONNET;
  */
 export const llm = new ChatAnthropic({
   modelName: DEFAULT_MODEL,
-  temperature: 0.7,
-  maxTokens: 2000,
+  temperature: LLM_DEFAULTS.TEMPERATURE_CHAT,
+  maxTokens: LLM_DEFAULTS.MAX_TOKENS_CHAT,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  clientOptions: { timeout: LLM_DEFAULTS.TIMEOUT_MS },
   // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
   cacheControl: true, // Enable prompt caching for cost savings
 });
@@ -31,11 +32,11 @@ export const llm = new ChatAnthropic({
  */
 export const streamingLLM = new ChatAnthropic({
   modelName: DEFAULT_MODEL,
-  temperature: 0.7,
-  maxTokens: 2000,
+  temperature: LLM_DEFAULTS.TEMPERATURE_CHAT,
+  maxTokens: LLM_DEFAULTS.MAX_TOKENS_CHAT,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   streaming: true,
-  clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  clientOptions: { timeout: LLM_DEFAULTS.TIMEOUT_MS },
   // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
   cacheControl: true, // Enable prompt caching for cost savings
 });
@@ -46,10 +47,10 @@ export const streamingLLM = new ChatAnthropic({
  */
 export const extractionLLM = new ChatAnthropic({
   modelName: DEFAULT_MODEL,
-  temperature: 0.2,
-  maxTokens: 4000,
+  temperature: LLM_DEFAULTS.TEMPERATURE_STRUCTURED,
+  maxTokens: LLM_DEFAULTS.MAX_TOKENS_EXTRACTION,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  clientOptions: { timeout: LLM_DEFAULTS.TIMEOUT_MS },
   // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
   cacheControl: true, // Enable prompt caching for cost savings
 });
@@ -59,10 +60,10 @@ export const extractionLLM = new ChatAnthropic({
  */
 export const structuredLLM = new ChatAnthropic({
   modelName: DEFAULT_MODEL,
-  temperature: 0.2,
-  maxTokens: 4000,
+  temperature: LLM_DEFAULTS.TEMPERATURE_STRUCTURED,
+  maxTokens: LLM_DEFAULTS.MAX_TOKENS_EXTRACTION,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  clientOptions: { timeout: LLM_DEFAULTS.TIMEOUT_MS },
   // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
   cacheControl: true, // Enable prompt caching for cost savings
 });
@@ -74,10 +75,10 @@ export const structuredLLM = new ChatAnthropic({
  */
 export const cheapLLM = new ChatAnthropic({
   modelName: CLAUDE_MODELS.HAIKU,
-  temperature: 0.7,
-  maxTokens: 1000,
+  temperature: LLM_DEFAULTS.TEMPERATURE_CHAT,
+  maxTokens: LLM_DEFAULTS.MAX_TOKENS_CHEAP,
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  clientOptions: { timeout: 30000 }, // 30 second timeout to prevent hanging requests
+  clientOptions: { timeout: LLM_DEFAULTS.TIMEOUT_MS },
   // @ts-expect-error - cacheControl is a valid Anthropic option but not in LangChain types yet
   cacheControl: true, // Enable prompt caching for cost savings
 });
