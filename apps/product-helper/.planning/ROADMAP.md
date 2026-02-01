@@ -389,7 +389,7 @@ graphs/
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
-| 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | Pending |
+| 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 
 ---
 
@@ -404,9 +404,9 @@ graphs/
 **Plans:** 3 plans in 1 wave
 
 Plans:
-- [ ] 17-01-PLAN.md — Supabase CLI local dev setup (G3)
-- [ ] 17-02-PLAN.md — Beautiful Mermaid integration with ASCII output
-- [ ] 17-03-PLAN.md — CLEO task cleanup (T080, T084-T087)
+- [x] 17-01-PLAN.md — Supabase CLI local dev setup (G3)
+- [x] 17-02-PLAN.md — Beautiful Mermaid integration with ASCII output
+- [x] 17-03-PLAN.md — CLEO task cleanup (T080, T084-T087)
 
 **Success Criteria:**
 1. Docker compose enables local development with isolated Postgres/Redis (not shared production DB)

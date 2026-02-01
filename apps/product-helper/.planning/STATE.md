@@ -9,9 +9,10 @@
 ## Current Position
 
 **Milestone:** V2 -- Epic.dev Feature Parity
-**Planning System:** GSD (Phase 16 active)
-**Last Completed:** 16-07-PLAN.md (Remove Modulo-5 Extraction Gate)
-**Status:** ✅ V2 DEPLOYED | **Active Phase:** Phase 16 (Chat/LLM Quality Improvements)
+**Planning System:** GSD
+**Last Completed:** Phase 17-02 (Beautiful Mermaid Integration)
+**Next Phase:** Phase 18 (TBD)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -35,6 +36,23 @@ Testing: ✓ Complete (T061-T068)
 - **16-05 completed (2026-01-31):** Mermaid Validation Before Save (B4)
 - **16-06 completed (2026-01-31):** Incremental Extraction with Message Index (B2)
 - **16-07 completed (2026-01-31):** Remove Modulo-5 Extraction Gate (B1)
+- **Phase 17 added (2026-01-31):** Infrastructure & Diagrams
+  - Docker compose for local QA (isolated from production DB)
+  - Beautiful Mermaid for professional diagram rendering
+  - CLEO task cleanup (stale tasks from Phase 16)
+- **17-03 completed (2026-01-31):** CLEO Task Cleanup
+  - Closed T084 (legacy chat route removal - done in 16-03)
+  - Documented T085/T086 as unblocked actionable tasks
+  - Updated T080 progress (4/6 children done)
+  - Enhanced T087 description with specific QA improvements
+- **17-01 completed (2026-01-31):** Supabase Local Development Setup
+  - Initialized Supabase project with `supabase init`
+  - Local PostgreSQL, Auth, and Studio available via `supabase start`
+- **17-02 completed (2026-01-31):** Beautiful Mermaid Integration
+  - Installed beautiful-mermaid@0.1.3 for professional diagram styling
+  - Created wrapper module with SVG and ASCII rendering functions
+  - Updated DiagramViewer with theme-aware rendering (github-light/github-dark)
+  - Added ASCII format option to MCP get_diagrams tool for CLI usage
 
 ---
 
@@ -104,20 +122,32 @@ All v2 migrations applied directly via Supabase MCP (drizzle-kit migrate has a p
 - ~6,500 lines duplicate code (~15-20%) — refactoring paused (Phase 15)
 - ~~2 remaining security items~~ ✅ FIXED - P0 security fixes applied (CORS, rate limit, timeout)
 - Live Stripe keys in `.env.local` (should be test keys)
-- Shared production DB for local dev (should be separate)
+- ~~Shared production DB for local dev~~ ✅ FIXED - Supabase CLI provides isolated local DB at localhost:54322
 
 ---
 
 ## SDLC & Environment Issues (Action Required)
 
+**Tracking:** T087 (QA Testing Process Improvements)
+
 | Issue | Severity | Fix |
 |-------|----------|-----|
 | **Live Stripe keys in dev** | High | Switch to `sk_test_` keys in `.env.local` |
-| **Shared production DB** | High | Create separate Supabase project for dev |
+| ~~**Shared production DB**~~ | ~~High~~ | ✅ FIXED: `pnpm db:start` (Supabase local at 54322) |
 | **Wrong BASE_URL** | Medium | Set to `http://localhost:3000` in `.env.local` |
 | **No CI pipeline** | Medium | Add GitHub Actions: build + test on PRs |
 | **No branch protection** | Low | Require PRs, prevent direct pushes to main |
 | **drizzle-kit migrate broken** | Medium | Fix `api_keys` conflict or reset migration journal |
+| **No pre-push verification** | Medium | Add `pnpm tsc && pnpm build` before push |
+| **Migration tracking gap** | Medium | Document migration status per environment |
+
+### Phase 16 Lessons Learned (2026-01-31)
+
+| Issue | Root Cause | Prevention |
+|-------|------------|------------|
+| TypeScript build error on Vercel | `timeout` placed outside `clientOptions` | Pre-push build check |
+| DB column missing in production | Migration not applied to Supabase | Migration tracking protocol |
+| 14 unpushed commits | Work accumulated locally | Push after each plan completion |
 
 ---
 
@@ -741,9 +771,11 @@ Deferred from v2:
 
 **Last session:** 2026-01-31
 **Active branch:** `main`
-**Last commit:** `3c73bca` - feat(16-07): remove modulo-5 extraction gate (B1)
+**Last commit:** `041d90e` - chore(17-01): add npm scripts for Supabase local dev workflow
 **Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
+**Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
+**Last plan:** Phase 17-01 Supabase Local Development Setup
 
 ### Completed This Session (2026-01-31)
 
@@ -825,9 +857,12 @@ M package.json                                           # Removed @langchain/op
 - 6 knowledge bank files (all enriched with systems engineering course material)
 - Education UI scaffolding (ThinkingState, TooltipTerm components)
 - Playwright E2E test suite (T062-T068)
-- **NEW:** 3-column layout with persistent chat panel
-- **NEW:** P0 security fixes (CORS, rate limit, timeout)
-- **NEW:** Cost optimizations (prompt caching, Haiku for classification)
+- 3-column layout with persistent chat panel
+- P0 security fixes (CORS, rate limit, timeout)
+- Cost optimizations (prompt caching, Haiku for classification)
+- **NEW:** Beautiful Mermaid for professional diagram styling (light/dark themes)
+- **NEW:** ASCII diagram output for MCP tools (CLI/terminal usage)
+- **NEW:** Supabase local development environment
 
 ---
 
