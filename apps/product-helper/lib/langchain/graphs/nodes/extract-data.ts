@@ -55,17 +55,29 @@ import { formatMessagesAsText } from '../utils';
 export async function extractData(
   state: IntakeState
 ): Promise<Partial<IntakeState>> {
+  // [EXTRACT_DEBUG] Entry point logging
+  console.log(`[EXTRACT_DEBUG] extractData node called`);
+  console.log(`[EXTRACT_DEBUG] Messages: ${state.messages?.length ?? 0}, Current data - actors: ${state.extractedData?.actors?.length ?? 0}, useCases: ${state.extractedData?.useCases?.length ?? 0}`);
+
   try {
     // Format conversation for extraction
     const conversationText = formatMessagesAsText(state.messages);
 
+    // [EXTRACT_DEBUG] Conversation text length
+    console.log(`[EXTRACT_DEBUG] Conversation text length: ${conversationText.length} chars`);
+
     // Skip extraction if no messages
     if (!conversationText.trim()) {
+      // [EXTRACT_DEBUG] Skipping extraction
+      console.log(`[EXTRACT_DEBUG] Skipping extraction - no conversation text`);
       return {
         completeness: calculateCompleteness(state.extractedData),
         artifactReadiness: computeArtifactReadiness(state.extractedData),
       };
     }
+
+    // [EXTRACT_DEBUG] Before extraction call
+    console.log(`[EXTRACT_DEBUG] Calling extractProjectData for project: ${state.projectName}`);
 
     // Run extraction using the existing extraction agent
     const newExtraction = await extractProjectData(
@@ -74,14 +86,23 @@ export async function extractData(
       state.projectVision
     );
 
+    // [EXTRACT_DEBUG] After extraction
+    console.log(`[EXTRACT_DEBUG] Extraction returned - actors: ${newExtraction.actors?.length ?? 0}, useCases: ${newExtraction.useCases?.length ?? 0}`);
+
     // Merge with existing data (incremental)
     const mergedData = mergeExtractionData(state.extractedData, newExtraction);
 
     // Calculate completeness using the types module function
     const completeness = calculateCompleteness(mergedData);
 
+    // [EXTRACT_DEBUG] After merge
+    console.log(`[EXTRACT_DEBUG] After merge - actors: ${mergedData.actors?.length ?? 0}, useCases: ${mergedData.useCases?.length ?? 0}, completeness: ${completeness}`);
+
     // Compute artifact readiness using the types module function
     const artifactReadiness = computeArtifactReadiness(mergedData);
+
+    // [EXTRACT_DEBUG] Function exit
+    console.log(`[EXTRACT_DEBUG] Returning state update with completeness: ${completeness}`);
 
     return {
       extractedData: mergedData,
@@ -89,6 +110,8 @@ export async function extractData(
       artifactReadiness,
     };
   } catch (error) {
+    // [EXTRACT_DEBUG] Error logging
+    console.error(`[EXTRACT_DEBUG] Extraction FAILED:`, error instanceof Error ? error.message : error);
     console.error('Data extraction error:', error);
 
     // Return error state without crashing the graph
