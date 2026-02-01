@@ -825,12 +825,12 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `0db26e1` - debug(18-01): add STATE_DEBUG logging to langgraph-handler
+**Last commit:** `3796d6e` - fix(18-02): buildFallbackResult tracks rounds and varies responses
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 18-01 Diagnostic Logging
-**Active work:** Phase 18 - Chat flow debugging
+**Last plan:** Phase 18-02 Fallback Loop Fix
+**Active work:** Phase 18 - Chat flow debugging (manual UAT pending)
 
 ### Uncommitted Changes
 ```
@@ -932,16 +932,33 @@ M package.json                                           # Removed @langchain/op
 
 **Summary:** `.planning/phases/18-chat-flow-debug/18-01-SUMMARY.md`
 
+### Phase 18-02 Completed (2026-02-01)
+
+**Fallback Loop Fix:**
+- `buildFallbackResult()` now tracks rounds via `stepCompletionStatus.roundsAsked`
+- 4 varied response messages prevent identical repetition
+- `shouldProposeGeneration` triggers after 4 rounds OR 60% confidence
+- Commit: `3796d6e`
+
+**Files Changed:**
+- `lib/langchain/agents/intake/kb-question-generator.ts` (+55/-18 lines)
+
+**Summary:** `.planning/phases/18-chat-flow-debug/18-02-SUMMARY.md`
+
+**Manual UAT Pending:** Test with authenticated browser session to verify fix works in practice.
+
 ### Resume Action (Next Session)
 
-**Priority 1: Run Chat and Review Logs (Phase 18)**
-1. Start dev server: `pnpm dev`
-2. Open a project chat, send a message
-3. Check console for `[KB_DEBUG]`, `[EXTRACT_DEBUG]`, `[STATE_DEBUG]` logs
-4. Identify root cause from log patterns:
-   - If `[KB_DEBUG] LLM call FAILED` appears: investigate LLM error
-   - If `[KB_DEBUG] buildFallbackResult called`: investigate why LLM path fails
-   - If `[STATE_DEBUG] isLangGraphEnabled: false`: set `USE_LANGGRAPH=true`
+**Priority 1: Manual UAT for Phase 18-02 Fix**
+1. Start dev server: `pnpm dev` (port 3001)
+2. Sign in at http://localhost:3001
+3. Open or create a project, go to chat
+4. Send 5+ messages and observe:
+   - Console logs should show `[KB_DEBUG] buildFallbackResult called - round N`
+   - Round number should increment (1, 2, 3, 4...)
+   - Response messages should vary (not identical)
+   - After round 4, should offer to generate draft
+5. If fix works, Phase 18 can be closed; if not, check `[KB_DEBUG]` logs for why LLM path fails
 
 **Priority 2: Fix TypeScript Errors (unblocks build)**
 1. Fix `lib/diagrams/__tests__/generators.test.ts` — update test data to use new TechStackModel shape
