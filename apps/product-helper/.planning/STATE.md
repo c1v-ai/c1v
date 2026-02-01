@@ -10,9 +10,9 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 17-02 (Beautiful Mermaid Integration)
-**Next Phase:** Phase 18 (TBD)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE
+**Last Completed:** Phase 15-02 (Security & Type Safety Fixes)
+**Next Phase:** Phase 15-03 (API Auth Middleware) or Phase 18 (TBD)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | Phase 15: 2/4 plans done
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -769,13 +769,29 @@ Deferred from v2:
 
 ## Session Continuity
 
-**Last session:** 2026-01-31
+**Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `041d90e` - chore(17-01): add npm scripts for Supabase local dev workflow
-**Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
+**Last commit:** `e8531bc` - docs(15-02): document SQL template safety in delete account action
+**Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 17-01 Supabase Local Development Setup
+**Last plan:** Phase 15-02 Security & Type Safety Fixes
+
+### Phase 17 UAT Results (2026-02-01)
+
+**Status:** 4/6 tests passed, 2 skipped (no test data)
+
+**Issues Fixed During UAT:**
+1. Cookie `secure: true` breaks localhost → fixed to check NODE_ENV
+2. Migrations not applied → added `db:migrate:sql` script
+3. Missing `last_extracted_message_index` column → manually added
+4. Test user needs team → documented in setup process
+
+**Files Changed:**
+- `lib/auth/session.ts` - secure flag respects NODE_ENV
+- `middleware.ts` - secure flag respects NODE_ENV
+- `package.json` - added db:migrate:sql script
+- `README.md` - updated local setup instructions
 
 ### Completed This Session (2026-01-31)
 
