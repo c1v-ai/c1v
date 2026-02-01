@@ -10,10 +10,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 03-02 (NFR Project-Type Inference)
-**Active Work:** Phase 3 (PRD Extraction Agents)
-**Next Plan:** Phase 03-03 (if exists) or Phase 3 verification
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | 🔄 PHASE 3 IN PROGRESS
+**Last Completed:** Phase 3 (PRD Extraction Agents) - 2026-02-01
+**Active Work:** Phase 18 (Chat Flow Debug) - blocker from Phase 3 UAT
+**Next Phase:** Phase 4 (Pipeline Orchestration & Quality) - after Phase 18
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | 🔴 CHAT BLOCKER
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -102,6 +102,11 @@ Updated `lib/langchain/schemas.ts` from ~440 to ~917 lines to match Epic.dev out
   - Added MANDATORY EXTRACTION RULES section at prompt end
   - Covers: problemStatement, actor goals/painPoints, goalsMetrics, NFRs
   - Security and Performance always required as baseline
+- **03-03 completed (2026-02-01):** Extraction Quality Validation
+  - Added validateExtractionQuality() logging for observability
+  - Updated completeness scoring: Actors 15%, Actor depth 5%, Use cases 20%, Boundaries 15%, Entities 10%, Problem statement 10%, Goals 15%, NFRs 10%
+  - Created 13 unit tests for calculateCompleteness and mergeExtractionData
+  - PIPE-01 through PIPE-04 all implemented
 
 ---
 
@@ -820,12 +825,12 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `08c3da8` - feat(prompts): strengthen goals/metrics extraction with minimum 3
+**Last commit:** `0db26e1` - debug(18-01): add STATE_DEBUG logging to langgraph-handler
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 03-01 Aggressive PRD Field Extraction
-**Active work:** Phase 03-02 (Schema Validation)
+**Last plan:** Phase 18-01 Diagnostic Logging
+**Active work:** Phase 18 - Chat flow debugging
 
 ### Uncommitted Changes
 ```
@@ -893,18 +898,50 @@ M lib/mcp/tools/unique/ask-question.ts                   # OpenAI -> Anthropic (
 M package.json                                           # Removed @langchain/openai (16-03)
 ```
 
-### Phase 03-01 Completed (2026-02-01)
+### Phase 3 Completed (2026-02-01)
 
-1. **Task 1:** Actor goals/painPoints mandatory extraction (`3e54248`)
-2. **Task 2:** Problem statement mandatory extraction (`c4e2bd5`)
-3. **Task 3:** Goals/metrics minimum 3 requirement (`08c3da8`)
+**03-01:** Aggressive PRD Field Extraction
+- Actor goals/painPoints mandatory extraction (`3e54248`)
+- Problem statement mandatory extraction (`c4e2bd5`)
+- Goals/metrics minimum 3 requirement (`08c3da8`)
 
-**Summary:** `.planning/phases/03-prd-extraction-agents/03-01-SUMMARY.md`
+**03-02:** NFR Project-Type Inference
+- PROJECT-TYPE INFERENCE RULES for 6 project types (`91a73f3`)
+
+**03-03:** Extraction Quality Validation
+- validateExtractionQuality() logging (`fe45e62`)
+- Updated completeness scoring (`dc8eb66`)
+- Unit tests for extraction agent (`ea63920`)
+
+**Summaries:**
+- `.planning/phases/03-prd-extraction-agents/03-01-SUMMARY.md`
+- `.planning/phases/03-prd-extraction-agents/03-02-SUMMARY.md`
+- `.planning/phases/03-prd-extraction-agents/03-03-SUMMARY.md`
+
+### Phase 18-01 Completed (2026-02-01)
+
+**Diagnostic Logging for Chat Flow Debug:**
+- KB question generator: 10 `[KB_DEBUG]` statements (`51f97f9`)
+- Extraction node: 10 `[EXTRACT_DEBUG]` statements (`26ab0b8`)
+- LangGraph handler: 14 `[STATE_DEBUG]` statements (`0db26e1`)
+
+**Files Changed:**
+- `lib/langchain/agents/intake/kb-question-generator.ts`
+- `lib/langchain/graphs/nodes/extract-data.ts`
+- `app/api/chat/projects/[projectId]/langgraph-handler.ts`
+
+**Summary:** `.planning/phases/18-chat-flow-debug/18-01-SUMMARY.md`
 
 ### Resume Action (Next Session)
 
-**Priority 1: Execute Phase 03-02**
-1. Schema validation and tighter field descriptions
+**Priority 1: Run Chat and Review Logs (Phase 18)**
+1. Start dev server: `pnpm dev`
+2. Open a project chat, send a message
+3. Check console for `[KB_DEBUG]`, `[EXTRACT_DEBUG]`, `[STATE_DEBUG]` logs
+4. Identify root cause from log patterns:
+   - If `[KB_DEBUG] LLM call FAILED` appears: investigate LLM error
+   - If `[KB_DEBUG] buildFallbackResult called`: investigate why LLM path fails
+   - If `[STATE_DEBUG] isLangGraphEnabled: false`: set `USE_LANGGRAPH=true`
 
 **Priority 2: Fix TypeScript Errors (unblocks build)**
 1. Fix `lib/diagrams/__tests__/generators.test.ts` — update test data to use new TechStackModel shape
@@ -913,7 +950,6 @@ M package.json                                           # Removed @langchain/op
 **Priority 3: Commit Schema Update**
 1. Stage `lib/langchain/schemas.ts`
 2. Commit: `feat(schemas): align with Epic.dev output format`
-1. `/gsd:execute-phase 3` — runs 3 plans to update extraction prompts
 
 **Priority 4: Schema Propagation (post-Phase 3)**
 1. Update `lib/db/schema/v2-types.ts` — align TechStackModel
@@ -973,7 +1009,9 @@ M package.json                                           # Removed @langchain/op
 | Support both 'id' and 'projectId' params | Different routes use different naming conventions |
 | Centralized constants module | Single source of truth for config values improves maintainability |
 | CLEO tasks for deferred TODOs | Proper tech debt tracking instead of orphan comments |
+| Completeness scoring redistribution | New fields (PS, NFRs, actor depth) must be reflected in completeness calculation |
+| Quality validation as logging (not blocking) | Observability without breaking existing extractions |
 
 ---
 
-*State updated: 2026-02-01 (Epic.dev schema alignment in progress)*
+*State updated: 2026-02-01 (Phase 18-01 complete - diagnostic logging added)*
