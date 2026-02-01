@@ -38,7 +38,17 @@
       "Bash(npm test:*)",
       "Bash(npm run build:*)",
       "Bash(git -C /Users/davidancor/Documents/MDR/c1v diff --name-only HEAD)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "mcp__plugin_serena_serena__list_dir",
+      "mcp__plugin_serena_serena__find_file",
+      "mcp__plugin_serena_serena__read_file",
+      "Bash(ct update:*)",
+      "Bash(ct add:*)",
+      "Bash(ct list:*)",
+      "Bash(ct focus set:*)",
+      "Bash(curl:*)",
+      "Bash(pip3 show:*)",
+      "WebSearch"
     ]
   },
   "enabledPlugins": {

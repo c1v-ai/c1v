@@ -54,7 +54,22 @@
       "Bash(done)",
       "Bash(readlink:*)",
       "Bash(node node_modules/.bin/next:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(ct phase:*)",
+      "Bash(xargs:*)",
+      "Bash(npx jest:*)",
+      "Bash(ct:*)",
+      "Bash(ct help:*)",
+      "Bash(git diff:*)",
+      "Bash(pnpm -v:*)",
+      "Skill(gsd:execute-phase)",
+      "mcp__plugin_serena_serena__list_dir",
+      "mcp__plugin_serena_serena__activate_project",
+      "mcp__plugin_serena_serena__read_file",
+      "Skill(gsd:plan-phase)",
+      "Bash(PGPASSWORD=postgres psql:*)",
+      "Bash(supabase status:*)",
+      "Bash(lsof:*)"
     ]
   },
   "enabledPlugins": {

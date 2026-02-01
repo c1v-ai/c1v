@@ -3,22 +3,38 @@ import { z } from 'zod';
 /**
  * Zod Schemas for LangChain Structured Outputs
  * Used for data extraction and PRD artifact generation
+ *
+ * Updated to match Epic.dev output format (2026-02-01)
  */
 
 // ============================================================
-// Core PRD Entity Schemas
+// Core PRD Entity Schemas (Epic.dev Parity)
 // ============================================================
 
 /**
- * Actor Schema
+ * Technical Proficiency Level
+ * Matches Epic.dev persona technical proficiency options
+ */
+export const technicalProficiencySchema = z.enum(['low', 'medium', 'high']);
+export type TechnicalProficiency = z.infer<typeof technicalProficiencySchema>;
+
+/**
+ * Actor/Persona Schema (Epic.dev: "Target Users")
  * Represents users, systems, or external entities that interact with the product
+ * Enhanced to match Epic.dev persona format with demographics, tech proficiency, usage context
+ *
+ * Epic.dev parity: goals, painPoints, demographics, technicalProficiency, usageContext
+ * should all be populated for complete personas. The extraction prompt enforces this.
  */
 export const actorSchema = z.object({
-  name: z.string().describe('Name of the actor (e.g., "Customer", "Admin", "Payment Gateway")'),
-  role: z.string().describe('Role or type of actor (e.g., "Primary User", "External System")'),
-  description: z.string().describe('Detailed description of the actor and their purpose'),
-  goals: z.array(z.string()).optional().describe('Optional list of actor goals'),
-  painPoints: z.array(z.string()).optional().describe('Pain points or frustrations this actor experiences'),
+  name: z.string().describe('Persona name with descriptor (e.g., "Sarah, The Health Conscious Professional")'),
+  role: z.string().describe('Role or job title (e.g., "Marketing Manager", "Software Developer")'),
+  description: z.string().describe('Detailed description of the persona and their context'),
+  demographics: z.string().optional().describe('Age, background, profession details (e.g., "35 years old, works in tech startup")'),
+  goals: z.array(z.string()).optional().describe('What this persona wants to achieve (2-5 specific goals)'),
+  painPoints: z.array(z.string()).optional().describe('Current frustrations and problems (2-5 pain points)'),
+  technicalProficiency: technicalProficiencySchema.optional().describe('Technical skill level: low, medium, or high'),
+  usageContext: z.string().optional().describe('When/where/how they use the product (e.g., "Uses app during commute and lunch breaks")'),
 });
 
 export type Actor = z.infer<typeof actorSchema>;
@@ -122,9 +138,145 @@ export const systemBoundariesSchema = z.object({
 
 export type SystemBoundaries = z.infer<typeof systemBoundariesSchema>;
 
+// ============================================================
+// Database Schema (Epic.dev Parity) - MAJOR UPGRADE
+// ============================================================
+
 /**
- * Data Entity Schema
- * Represents core data objects in the system
+ * Database Field Type
+ * Matches PostgreSQL/common database types
+ */
+export const dbFieldTypeSchema = z.enum([
+  'uuid',
+  'varchar',
+  'text',
+  'integer',
+  'bigint',
+  'smallint',
+  'boolean',
+  'timestamp',
+  'timestamptz',
+  'date',
+  'time',
+  'jsonb',
+  'json',
+  'decimal',
+  'float',
+  'double',
+  'enum',
+  'array',
+]);
+export type DbFieldType = z.infer<typeof dbFieldTypeSchema>;
+
+/**
+ * Database Field Constraint
+ */
+export const dbConstraintSchema = z.enum([
+  'PK',        // Primary Key
+  'FK',        // Foreign Key
+  'UNIQUE',    // Unique constraint
+  'NOT NULL',  // Not null constraint
+  'CHECK',     // Check constraint
+  'DEFAULT',   // Has default value
+  'INDEX',     // Indexed field
+]);
+export type DbConstraint = z.infer<typeof dbConstraintSchema>;
+
+/**
+ * Database Field Schema (Epic.dev: full field definitions)
+ * Represents a single field/column in a database entity
+ */
+export const databaseFieldSchema = z.object({
+  name: z.string().describe('Field name (e.g., "id", "email", "created_at")'),
+  type: dbFieldTypeSchema.describe('Data type (uuid, varchar, integer, etc.)'),
+  typeParams: z.string().optional().describe('Type parameters (e.g., "(255)" for varchar, "(10,2)" for decimal)'),
+  nullable: z.boolean().describe('Whether the field can be null'),
+  defaultValue: z.string().optional().describe('Default value if any (e.g., "now()", "true", "\'active\'")'),
+  constraints: z.array(dbConstraintSchema).describe('Constraints on this field (PK, FK, UNIQUE, etc.)'),
+  foreignKey: z.object({
+    table: z.string().describe('Referenced table name'),
+    column: z.string().describe('Referenced column name'),
+    onDelete: z.enum(['CASCADE', 'SET NULL', 'RESTRICT', 'NO ACTION']).optional(),
+  }).optional().describe('Foreign key reference if this is an FK'),
+  description: z.string().describe('Purpose and usage of this field'),
+});
+
+export type DatabaseField = z.infer<typeof databaseFieldSchema>;
+
+/**
+ * Database Relationship Type
+ */
+export const dbRelationshipTypeSchema = z.enum(['1:1', '1:N', 'N:1', 'N:M']);
+export type DbRelationshipType = z.infer<typeof dbRelationshipTypeSchema>;
+
+/**
+ * Database Relationship Schema
+ * Represents a relationship between two entities
+ */
+export const databaseRelationshipSchema = z.object({
+  type: dbRelationshipTypeSchema.describe('Relationship cardinality (1:1, 1:N, N:1, N:M)'),
+  targetEntity: z.string().describe('Name of the related entity'),
+  foreignKey: z.string().describe('Foreign key field name'),
+  inverseField: z.string().optional().describe('Field name on the target entity for bidirectional relationships'),
+  onDelete: z.enum(['CASCADE', 'SET NULL', 'RESTRICT', 'NO ACTION']).optional().describe('Delete behavior'),
+  description: z.string().optional().describe('Description of the relationship'),
+});
+
+export type DatabaseRelationship = z.infer<typeof databaseRelationshipSchema>;
+
+/**
+ * Database Index Type
+ */
+export const dbIndexTypeSchema = z.enum(['btree', 'hash', 'gin', 'gist', 'unique', 'partial']);
+export type DbIndexType = z.infer<typeof dbIndexTypeSchema>;
+
+/**
+ * Database Index Schema
+ * Represents an index on a database entity
+ */
+export const databaseIndexSchema = z.object({
+  name: z.string().optional().describe('Index name (auto-generated if not specified)'),
+  columns: z.array(z.string()).describe('Columns included in the index'),
+  type: dbIndexTypeSchema.describe('Index type (btree, gin, unique, etc.)'),
+  condition: z.string().optional().describe('Partial index condition (e.g., "WHERE is_active = true")'),
+});
+
+export type DatabaseIndex = z.infer<typeof databaseIndexSchema>;
+
+/**
+ * Database Entity Schema (Epic.dev: "Backend" section)
+ * Represents a complete database table with all fields, relationships, and indexes
+ * REPLACES the simple dataEntitySchema for generation output
+ */
+export const databaseEntitySchema = z.object({
+  name: z.string().describe('Table name in snake_case (e.g., "app_users", "meal_plans")'),
+  description: z.string().describe('Purpose and usage of this entity'),
+  fields: z.array(databaseFieldSchema).describe('All fields/columns in this entity'),
+  relationships: z.array(databaseRelationshipSchema).optional().describe('Relationships to other entities'),
+  indexes: z.array(databaseIndexSchema).optional().describe('Indexes for query optimization'),
+});
+
+export type DatabaseEntity = z.infer<typeof databaseEntitySchema>;
+
+/**
+ * Complete Database Schema (Epic.dev: "Backend" → full schema view)
+ * Collection of all database entities
+ */
+export const databaseSchemaSchema = z.object({
+  entities: z.array(databaseEntitySchema).describe('All database entities/tables'),
+  metadata: z.object({
+    totalEntities: z.number(),
+    totalFields: z.number(),
+    generatedAt: z.string(),
+  }).optional(),
+});
+
+export type DatabaseSchema = z.infer<typeof databaseSchemaSchema>;
+
+/**
+ * Simple Data Entity Schema (for extraction - lightweight)
+ * Used during conversation extraction before full schema generation
+ * Keep for backward compatibility with extraction phase
  */
 export const dataEntitySchema = z.object({
   name: z.string().describe('Name of the data entity (e.g., "User", "Order", "Product")'),
@@ -135,34 +287,310 @@ export const dataEntitySchema = z.object({
 export type DataEntity = z.infer<typeof dataEntitySchema>;
 
 // ============================================================
-// Goals & Metrics Schema
+// Tech Stack Schema (Epic.dev Parity) - NEW
 // ============================================================
 
 /**
- * Goal/Success Metric Schema
+ * Tech Stack Category
+ * Matches Epic.dev tech stack categories
+ */
+export const techStackCategoryTypeSchema = z.enum([
+  'backend',
+  'frontend',
+  'database',
+  'infrastructure',
+  'cicd',
+  'thirdParty',
+  'devTools',
+  'testing',
+  'monitoring',
+  'security',
+]);
+export type TechStackCategoryType = z.infer<typeof techStackCategoryTypeSchema>;
+
+/**
+ * Tech Stack Alternative
+ * Represents an alternative technology that was considered
+ */
+export const techStackAlternativeSchema = z.object({
+  name: z.string().describe('Alternative technology name'),
+  reason: z.string().optional().describe('Why this was not chosen as the primary'),
+});
+
+export type TechStackAlternative = z.infer<typeof techStackAlternativeSchema>;
+
+/**
+ * Tech Stack Item Schema (Epic.dev: individual technology choice)
+ * Represents a single technology in the stack
+ */
+export const techStackItemSchema = z.object({
+  name: z.string().describe('Technology name (e.g., "TypeScript", "PostgreSQL", "React Native")'),
+  version: z.string().optional().describe('Version or version range (e.g., "9.x", "18.2.0+", "N/A")'),
+  role: z.string().describe('Role in the stack (e.g., "Language", "Framework", "ORM", "Cache")'),
+  description: z.string().describe('What this technology provides and why it was chosen'),
+  rationale: z.string().optional().describe('Detailed reasoning for this choice'),
+  alternatives: z.array(techStackAlternativeSchema).optional().describe('Alternative technologies considered'),
+  website: z.string().optional().describe('Official website URL'),
+});
+
+export type TechStackItem = z.infer<typeof techStackItemSchema>;
+
+/**
+ * Tech Stack Category Schema
+ * Groups related technologies together
+ */
+export const techStackCategorySchema = z.object({
+  name: techStackCategoryTypeSchema.describe('Category name (backend, frontend, database, etc.)'),
+  displayName: z.string().optional().describe('Human-readable category name'),
+  items: z.array(techStackItemSchema).describe('Technologies in this category'),
+});
+
+export type TechStackCategory = z.infer<typeof techStackCategorySchema>;
+
+/**
+ * Risk and Mitigation Schema
+ * Represents a potential risk with the tech stack and how to address it
+ */
+export const riskMitigationSchema = z.object({
+  risk: z.string().describe('Description of the potential risk'),
+  impact: z.enum(['high', 'medium', 'low']).describe('Impact level if risk materializes'),
+  mitigation: z.string().describe('Strategy to mitigate or address this risk'),
+});
+
+export type RiskMitigation = z.infer<typeof riskMitigationSchema>;
+
+/**
+ * Complete Tech Stack Schema (Epic.dev: "Tech Stack" page)
+ * Full technology stack with categories, justification, and risk analysis
+ */
+export const techStackSchema = z.object({
+  categories: z.array(techStackCategorySchema).describe('Technology categories with their items'),
+  justification: z.string().optional().describe('Overall architecture justification explaining the tech choices'),
+  risksAndMitigations: z.array(riskMitigationSchema).optional().describe('Identified risks and mitigation strategies'),
+  metadata: z.object({
+    projectType: z.string().optional(),
+    targetScale: z.string().optional(),
+    generatedAt: z.string(),
+  }).optional(),
+});
+
+export type TechStack = z.infer<typeof techStackSchema>;
+
+// ============================================================
+// User Stories Schema (Epic.dev Parity) - NEW
+// ============================================================
+
+/**
+ * User Story Priority (Epic.dev format)
+ * Includes 'critical' level from Epic.dev
+ */
+export const userStoryPrioritySchema = z.enum(['critical', 'high', 'medium', 'low']);
+export type UserStoryPriority = z.infer<typeof userStoryPrioritySchema>;
+
+/**
+ * User Story Status
+ */
+export const userStoryStatusSchema = z.enum(['todo', 'in-progress', 'done', 'blocked']);
+export type UserStoryStatus = z.infer<typeof userStoryStatusSchema>;
+
+/**
+ * User Story Schema (Epic.dev: "User Stories" page)
+ * Represents a single user story with epic grouping
+ */
+export const userStorySchema = z.object({
+  id: z.string().describe('Unique identifier (e.g., "US-001", "US-002")'),
+  title: z.string().describe('Story title as user action (e.g., "User Registration and Basic Profile Creation")'),
+  epic: z.string().describe('Epic/feature group this story belongs to'),
+  description: z.string().optional().describe('Detailed description of the story'),
+  status: userStoryStatusSchema.describe('Current status (todo, in-progress, done, blocked)'),
+  priority: userStoryPrioritySchema.describe('Priority level (critical, high, medium, low)'),
+  estimate: z.string().optional().describe('Time estimate (e.g., "2 days", "4 hours")'),
+  acceptanceCriteria: z.array(z.string()).optional().describe('Testable acceptance criteria'),
+  assignee: z.string().optional().describe('Assigned team member'),
+});
+
+export type UserStory = z.infer<typeof userStorySchema>;
+
+/**
+ * Epic Schema
+ * Groups related user stories together
+ */
+export const epicSchema = z.object({
+  name: z.string().describe('Epic name (e.g., "User Account & Profile Management")'),
+  description: z.string().optional().describe('Description of this epic'),
+  stories: z.array(userStorySchema).describe('User stories in this epic'),
+  progress: z.object({
+    completed: z.number(),
+    total: z.number(),
+  }).optional().describe('Progress tracking (completed/total)'),
+});
+
+export type Epic = z.infer<typeof epicSchema>;
+
+/**
+ * User Stories Summary Schema
+ * Complete user stories view with all epics
+ */
+export const userStoriesSummarySchema = z.object({
+  totalEstimate: z.string().optional().describe('Total time estimate (e.g., "~30.5 days")'),
+  epics: z.array(epicSchema).describe('All epics with their stories'),
+  metadata: z.object({
+    totalStories: z.number(),
+    completedStories: z.number(),
+    generatedAt: z.string(),
+  }).optional(),
+});
+
+export type UserStoriesSummary = z.infer<typeof userStoriesSummarySchema>;
+
+// ============================================================
+// Architecture Diagram Schema (Epic.dev Parity) - NEW
+// ============================================================
+
+/**
+ * Architecture Component Type
+ */
+export const architectureComponentTypeSchema = z.enum([
+  'ui',
+  'gateway',
+  'service',
+  'database',
+  'cache',
+  'queue',
+  'external',
+  'storage',
+]);
+export type ArchitectureComponentType = z.infer<typeof architectureComponentTypeSchema>;
+
+/**
+ * Architecture Component Schema
+ * Represents a component in the system architecture
+ */
+export const architectureComponentSchema = z.object({
+  id: z.string().describe('Unique identifier for the component'),
+  name: z.string().describe('Component name (e.g., "API Gateway", "User Service")'),
+  type: architectureComponentTypeSchema.describe('Type of component'),
+  layer: z.string().optional().describe('Architecture layer (e.g., "Backend Services", "Databases")'),
+  description: z.string().optional().describe('What this component does'),
+});
+
+export type ArchitectureComponent = z.infer<typeof architectureComponentSchema>;
+
+/**
+ * Architecture Connection Schema
+ * Represents a connection between two components
+ */
+export const architectureConnectionSchema = z.object({
+  from: z.string().describe('Source component ID'),
+  to: z.string().describe('Target component ID'),
+  label: z.string().optional().describe('Connection label (e.g., "Requests data", "Sends notifications")'),
+  protocol: z.string().optional().describe('Protocol used (e.g., "REST", "gRPC", "WebSocket")'),
+  bidirectional: z.boolean().optional().describe('Whether the connection is bidirectional'),
+});
+
+export type ArchitectureConnection = z.infer<typeof architectureConnectionSchema>;
+
+/**
+ * Architecture Diagram Schema (Epic.dev: "Architecture Diagram" page)
+ * Complete system architecture representation
+ */
+export const architectureDiagramSchema = z.object({
+  name: z.string().describe('Diagram name'),
+  description: z.string().optional().describe('Description of the architecture'),
+  components: z.array(architectureComponentSchema).describe('All components in the system'),
+  connections: z.array(architectureConnectionSchema).describe('Connections between components'),
+  layers: z.array(z.object({
+    name: z.string(),
+    componentIds: z.array(z.string()),
+  })).optional().describe('Logical groupings of components'),
+});
+
+export type ArchitectureDiagram = z.infer<typeof architectureDiagramSchema>;
+
+// ============================================================
+// System Overview Schema (Epic.dev Parity) - NEW
+// ============================================================
+
+/**
+ * External Integration Schema
+ * Represents an external service integration
+ */
+export const externalIntegrationSchema = z.object({
+  name: z.string().describe('Service name (e.g., "Stripe", "SendGrid")'),
+  purpose: z.string().describe('What this integration is used for'),
+  protocol: z.string().optional().describe('Integration protocol (e.g., "REST API", "Webhook")'),
+  category: z.string().optional().describe('Category (e.g., "Payment", "Email", "Analytics")'),
+});
+
+export type ExternalIntegration = z.infer<typeof externalIntegrationSchema>;
+
+/**
+ * System Overview Schema (Epic.dev: "System Overview" page)
+ * High-level system documentation
+ */
+export const systemOverviewSchema = z.object({
+  introduction: z.object({
+    purpose: z.string().describe('Purpose of this document'),
+    targetAudience: z.string().describe('Who this document is for'),
+  }),
+  systemOverview: z.object({
+    name: z.string().describe('System name'),
+    highLevelArchitecture: z.string().describe('Prose description of the architecture'),
+    coreFunctionality: z.array(z.string()).describe('Core features as bullet points'),
+    keyTechnologies: z.string().describe('Summary of key technologies used'),
+    coreDataEntities: z.array(z.string()).describe('Main data entities in the system'),
+  }),
+  userInteraction: z.object({
+    workflow: z.object({
+      onboarding: z.string().describe('User onboarding process'),
+      dailyInteraction: z.string().describe('Typical daily usage patterns'),
+    }),
+    externalIntegrations: z.array(externalIntegrationSchema).describe('Third-party integrations'),
+  }),
+  nonFunctionalConsiderations: z.object({
+    securityAndPrivacy: z.string().describe('Security and privacy approach'),
+    scalabilityAndPerformance: z.string().describe('Scalability and performance strategy'),
+  }),
+});
+
+export type SystemOverview = z.infer<typeof systemOverviewSchema>;
+
+// ============================================================
+// Goals & Metrics Schema (Epic.dev Parity) - UPDATED
+// ============================================================
+
+/**
+ * Goal/Success Metric Schema (Epic.dev: "Goals & Success Metrics" section)
  * Structured representation of a project goal with measurable success criteria
+ * Updated to include baseline and timeframe from Epic.dev
+ *
+ * Epic.dev parity: target, baseline, timeframe should all be populated.
  */
 export const goalMetricSchema = z.object({
-  goal: z.string().describe('The goal statement'),
-  metric: z.string().describe('How success will be measured'),
-  target: z.string().optional().describe('Target value or threshold for the metric'),
+  goal: z.string().describe('The goal/metric name (e.g., "Healthy Daily User MAUs")'),
+  metric: z.string().describe('How success will be measured (measurement method)'),
+  target: z.string().optional().describe('Target value or threshold (e.g., "10,000 users", "99.9%")'),
+  baseline: z.string().optional().describe('Current baseline before solution (e.g., "N/A", "500 users", "TBD")'),
+  timeframe: z.string().optional().describe('When to achieve this (e.g., "End of Q2", "Within 6 months")'),
 });
 
 export type GoalMetric = z.infer<typeof goalMetricSchema>;
 
 // ============================================================
-// Problem Statement Schema
+// Problem Statement Schema (Epic.dev Parity) - UPDATED
 // ============================================================
 
 /**
- * Problem Statement Schema
+ * Problem Statement Schema (Epic.dev: "Problem Statement" section)
  * Extracted from conversation as a core PRD section
+ * Updated to include targetAudience and longer description support
  */
 export const problemStatementSchema = z.object({
-  summary: z.string().describe('Concise 1-2 sentence problem summary'),
-  context: z.string().describe('Background and context of the problem'),
+  summary: z.string().describe('Detailed problem description (can be multiple paragraphs explaining the core problem)'),
+  targetAudience: z.string().optional().describe('Who has this problem - specific user groups affected'),
+  context: z.string().describe('Background and market context of the problem'),
   impact: z.string().describe('Impact on the business or users if not solved'),
-  goals: z.array(z.string()).describe('Goals the solution should achieve'),
+  goals: z.array(z.string()).describe('High-level goals the solution should achieve'),
 });
 
 export type ProblemStatement = z.infer<typeof problemStatementSchema>;
@@ -202,24 +630,57 @@ export const nonFunctionalRequirementSchema = z.object({
 export type NonFunctionalRequirement = z.infer<typeof nonFunctionalRequirementSchema>;
 
 // ============================================================
-// Extraction Schema (Phase 10)
+// Extraction Schema (Phase 10) - UPDATED
 // ============================================================
 
 /**
  * Complete Extraction Schema
  * Used by the data extraction agent to extract all PRD data from conversations
+ * Updated with Epic.dev parity fields
  */
 export const extractionSchema = z.object({
-  actors: z.array(actorSchema).describe('All actors mentioned in the conversation'),
+  // Core PRD sections
+  actors: z.array(actorSchema).describe('All actors/personas mentioned in the conversation'),
   useCases: z.array(useCaseSchema).describe('All use cases identified from the conversation'),
   systemBoundaries: systemBoundariesSchema.describe('System scope boundaries'),
-  dataEntities: z.array(dataEntitySchema).describe('Core data objects in the system'),
-  problemStatement: problemStatementSchema.optional().describe('Problem statement extracted from conversation'),
-  goalsMetrics: z.array(goalMetricSchema).optional().describe('Goals with measurable success criteria'),
-  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema).optional().describe('Non-functional requirements extracted from conversation'),
+  dataEntities: z.array(dataEntitySchema).describe('Core data objects in the system (lightweight for extraction)'),
+
+  // Epic.dev parity sections
+  problemStatement: problemStatementSchema.optional().describe('Problem statement with target audience'),
+  goalsMetrics: z.array(goalMetricSchema).optional().describe('Goals with measurable success criteria and baselines'),
+  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema).optional().describe('Non-functional requirements'),
 });
 
 export type ExtractionResult = z.infer<typeof extractionSchema>;
+
+// ============================================================
+// Generator Output Schemas (Epic.dev Parity)
+// ============================================================
+
+/**
+ * Complete PRD Generation Output
+ * Full output matching Epic.dev's PRD structure
+ */
+export const prdGenerationOutputSchema = z.object({
+  problemStatement: problemStatementSchema,
+  targetUsers: z.array(actorSchema).describe('Personas/actors'),
+  goalsAndMetrics: z.array(goalMetricSchema),
+  scope: systemBoundariesSchema,
+  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema),
+});
+
+export type PrdGenerationOutput = z.infer<typeof prdGenerationOutputSchema>;
+
+/**
+ * Complete Backend Generation Output
+ * Full output matching Epic.dev's Backend section
+ */
+export const backendGenerationOutputSchema = z.object({
+  databaseSchema: databaseSchemaSchema,
+  techStack: techStackSchema,
+});
+
+export type BackendGenerationOutput = z.infer<typeof backendGenerationOutputSchema>;
 
 // ============================================================
 // PRD Artifact Schemas (PRD-SPEC Compliance)
@@ -436,4 +897,25 @@ export function isConstantsTableRow(obj: unknown): obj is ConstantsTableRow {
  */
 export function isActivityDiagramSpec(obj: unknown): obj is ActivityDiagramSpec {
   return activityDiagramSpecSchema.safeParse(obj).success;
+}
+
+/**
+ * Type guard to check if an object is a valid DatabaseEntity
+ */
+export function isDatabaseEntity(obj: unknown): obj is DatabaseEntity {
+  return databaseEntitySchema.safeParse(obj).success;
+}
+
+/**
+ * Type guard to check if an object is a valid TechStack
+ */
+export function isTechStack(obj: unknown): obj is TechStack {
+  return techStackSchema.safeParse(obj).success;
+}
+
+/**
+ * Type guard to check if an object is a valid UserStory
+ */
+export function isUserStory(obj: unknown): obj is UserStory {
+  return userStorySchema.safeParse(obj).success;
 }
