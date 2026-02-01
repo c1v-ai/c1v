@@ -749,24 +749,60 @@ function buildFallbackResult(
   stepLabel: string,
   state: IntakeState
 ): KBAnalysisResult {
-  // [KB_DEBUG] Fallback logging - THIS IS THE REPEATING MESSAGE SOURCE
-  console.log(`[KB_DEBUG] buildFallbackResult called - THIS IS THE REPEATING MESSAGE SOURCE`);
-  console.log(`[KB_DEBUG] Step: ${kbStep}, Label: ${stepLabel}`);
-
   const entry = knowledgeBank[kbStep];
   const confidence = calculateStepConfidence(kbStep, state.extractedData);
 
-  const fallbackQuestion: GapQuestion = {
-    question: `Can you tell me more about what elements should be in the ${stepLabel}?`,
-    target: kbStep,
-    educationalContext: entry.thinkingMessages[0]?.tip ?? '',
-  };
+  // Track fallback rounds to prevent infinite loops
+  const currentStatus = state.stepCompletionStatus?.[kbStep];
+  const fallbackRound = (currentStatus?.roundsAsked ?? 0) + 1;
+
+  // [KB_DEBUG] Fallback logging with round tracking
+  console.log(`[KB_DEBUG] buildFallbackResult called - round ${fallbackRound} for step ${kbStep}`);
+  console.log(`[KB_DEBUG] Step: ${kbStep}, Label: ${stepLabel}, Confidence: ${confidence}`);
+
+  // Vary fallback message based on round to prevent exact repetition
+  let fallbackQuestion: GapQuestion;
+  let formattedResponse: string;
+
+  if (fallbackRound === 1) {
+    fallbackQuestion = {
+      question: `Can you tell me more about what elements should be in the ${stepLabel}?`,
+      target: kbStep,
+      educationalContext: entry.thinkingMessages[0]?.tip ?? '',
+    };
+    formattedResponse = `I'm working on the **${stepLabel}** step. ${fallbackQuestion.question}`;
+  } else if (fallbackRound === 2) {
+    fallbackQuestion = {
+      question: `What are the main users or systems that will interact with your product? This helps me build the ${stepLabel}.`,
+      target: `${kbStep}-users`,
+      educationalContext: entry.thinkingMessages[0]?.tip ?? '',
+    };
+    formattedResponse = `Let me try a different angle for the **${stepLabel}**. ${fallbackQuestion.question}`;
+  } else if (fallbackRound === 3) {
+    fallbackQuestion = {
+      question: `Who is the primary user of your system, and what is the main thing they want to accomplish?`,
+      target: `${kbStep}-primary-user`,
+      educationalContext: entry.thinkingMessages[0]?.tip ?? '',
+    };
+    formattedResponse = `For the **${stepLabel}**, let's focus on the basics. ${fallbackQuestion.question}`;
+  } else {
+    // After 3+ fallback rounds, suggest moving forward with what we have
+    fallbackQuestion = {
+      question: `Would you like me to generate a draft ${stepLabel} with what we have so far? I can refine it based on your feedback.`,
+      target: `${kbStep}-generate`,
+      educationalContext: entry.thinkingMessages[0]?.tip ?? '',
+    };
+    formattedResponse = `I have some information now for the **${stepLabel}**. ${fallbackQuestion.question}`;
+  }
+
+  // Suggest generation after 4 fallbacks OR if we already have decent confidence
+  const shouldProposeGeneration = fallbackRound >= 4 || confidence >= 60;
 
   return {
     guesses: [],
     gaps: [fallbackQuestion],
     confidence,
-    shouldProposeGeneration: false,
-    formattedResponse: `I'm working on the **${stepLabel}** step. ${fallbackQuestion.question}`,
+    shouldProposeGeneration,
+    formattedResponse,
   };
 }
