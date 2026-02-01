@@ -329,12 +329,16 @@ export const deleteAccount = validatedActionWithUser(
       ActivityType.DELETE_ACCOUNT
     );
 
-    // Soft delete
+    // Soft delete - using Drizzle's sql template for SQL functions
+    // Note: These sql`` templates are SAFE because:
+    // 1. No user input is interpolated
+    // 2. 'email' and 'id' reference table columns, not JavaScript variables
+    // 3. The WHERE clause uses parameterized eq(users.id, user.id)
     await db
       .update(users)
       .set({
         deletedAt: sql`CURRENT_TIMESTAMP`,
-        email: sql`CONCAT(email, '-', id, '-deleted')` // Ensure email uniqueness
+        email: sql`CONCAT(email, '-', id, '-deleted')`
       })
       .where(eq(users.id, user.id));
 
