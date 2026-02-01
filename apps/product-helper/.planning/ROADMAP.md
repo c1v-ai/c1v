@@ -57,6 +57,13 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 **Requirements:** PIPE-01, PIPE-02, PIPE-03, PIPE-04
 
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 03-01-PLAN.md — Enhance extraction prompt for actors and problem statement (PIPE-01, PIPE-02, PIPE-03)
+- [ ] 03-02-PLAN.md — Enhance NFR extraction with project-type inference (PIPE-04)
+- [ ] 03-03-PLAN.md — Add extraction quality validation and update completeness scoring
+
 **Success Criteria:**
 1. Generated PRD contains a structured problem/opportunity statement section extracted from conversation
 2. Generated PRD contains full personas with names, goals, pain points, and behaviors (not just actor names)
@@ -163,21 +170,21 @@ Product Helper V2 closes the competitive gap with Epic.dev across two parallel t
 
 **Goal:** Eliminate duplicate code, fix security vulnerabilities, improve type safety, and create reusable patterns
 
-**Status:** Wave 1 Complete (Paused) - Gap closure plans added
+**Status:** ✓ Complete (2026-02-01)
 
 **Dependencies:** None (maintenance work)
 
 **Requirements:** DEBT-01 through DEBT-10
 
-**Plans:** 6 plans in 3 waves
+**Plans:** 6 plans in 3 waves — all complete
 
 Plans:
 - [x] 15-01 — Quick Wins (duplicate hook, rate limit fix, middleware fix) - DONE via Phase 16
 - [x] 15-02 — Security & Type Safety (env validation, any types, SQL injection) - DONE 2026-02-01
 - [x] 15-03 — API Auth Middleware (withProjectAuth HOF, refactor 5 routes) - DONE 2026-02-01
 - [x] 15-04 — Constants & TODOs (magic numbers, TODO tracking) - DONE 2026-02-01
-- [ ] 15-05 — Fix any types in chat routes (gap closure)
-- [ ] 15-06 — Complete auth middleware adoption (gap closure)
+- [x] 15-05 — Fix any types in chat routes (gap closure) - DONE 2026-02-01
+- [x] 15-06 — Complete auth middleware adoption (gap closure) - DONE 2026-02-01
 
 **Success Criteria:**
 1. Environment variables validated at startup with clear error messages
@@ -411,14 +418,14 @@ graphs/
 |-------|------|--------------|--------|
 | 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | ✓ Complete |
 | 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
-| 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | Pending |
+| 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | Planned |
 | 4 | Pipeline Orchestration & Quality | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Pending |
 | 5 | Explorer Shell & Layout | EXPL-01, EXPL-02, EXPL-13, EXPL-14 | Pending |
 | 6 | Content Section Views | EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07 | Pending |
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
-| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | 4/6 plans complete (gap closure pending) |
+| 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | ✓ Complete |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 
@@ -479,10 +486,10 @@ Phase 4: Orchestration ----+                                    |
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | Phase 3 | Pending |
-| PIPE-02 | Phase 3 | Pending |
-| PIPE-03 | Phase 3 | Pending |
-| PIPE-04 | Phase 3 | Pending |
+| PIPE-01 | Phase 3 | Planned |
+| PIPE-02 | Phase 3 | Planned |
+| PIPE-03 | Phase 3 | Planned |
+| PIPE-04 | Phase 3 | Planned |
 | PIPE-05 | Phase 4 | Pending |
 | PIPE-06 | Phase 4 | Pending |
 | PIPE-07 | Phase 4 | Pending |
@@ -523,3 +530,4 @@ Phase 4: Orchestration ----+                                    |
 *Phase 17 plans created: 2026-01-31*
 *Phase 15 plans created: 2026-02-01*
 *Phase 15 gap closure plans added: 2026-02-01*
+*Phase 3 plans created: 2026-02-01*
