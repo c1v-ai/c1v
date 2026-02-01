@@ -1,69 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
-import { projects, userStories, projectData } from '@/lib/db/schema';
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { projects, userStories } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { generateUserStories, prepareStoriesForInsert, type UserStoriesContext } from '@/lib/langchain/agents/user-stories-agent';
 
 /**
  * GET /api/projects/[id]/stories
  * Get all user stories for a project
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // Verify project exists and belongs to team
-    const project = await db.query.projects.findFirst({
-      where: and(
-        eq(projects.id, projectId),
-        eq(projects.teamId, team.id)
-      ),
-    });
-
-    if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
-    }
-
+export const GET = withProjectAuth(
+  async (req, { projectId, project }) => {
     // Get query params for filtering
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get('status');
     const epic = searchParams.get('epic');
     const sortBy = searchParams.get('sortBy') || 'order';
     const sortOrder = searchParams.get('sortOrder') || 'asc';
 
     // Build query
-    let query = db.select()
+    const query = db.select()
       .from(userStories)
       .where(eq(userStories.projectId, projectId));
 
@@ -99,14 +55,9 @@ export async function GET(
       total: filteredStories.length,
       epics,
     });
-  } catch (error) {
-    console.error('Error fetching stories:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { withProject: true }
+);
 
 /**
  * POST /api/projects/[id]/stories
@@ -116,38 +67,9 @@ export async function GET(
  * 1. Generate from use cases: { generate: true }
  * 2. Create single story: { title, description, actor, ... }
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // Verify project exists and belongs to team
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
+    // Need to fetch project with projectData for generation context
     const project = await db.query.projects.findFirst({
       where: and(
         eq(projects.id, projectId),
@@ -165,7 +87,7 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    const body = await req.json();
 
     // Option 1: Generate stories from use cases
     if (body.generate === true) {
@@ -280,11 +202,5 @@ export async function POST(
       projectId,
       story: newStory,
     });
-  } catch (error) {
-    console.error('Error creating stories:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);

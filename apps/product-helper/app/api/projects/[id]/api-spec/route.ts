@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -23,38 +23,9 @@ import type {
  * Query params:
  * - format: 'json' | 'openapi' | 'openapi-yaml' (default: 'json')
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // Verify project exists and belongs to team
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
+    // Fetch project with projectData
     const project = await db.query.projects.findFirst({
       where: and(
         eq(projects.id, projectId),
@@ -83,7 +54,7 @@ export async function GET(
     }
 
     // Check format query param
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
     const format = searchParams.get('format') || 'json';
 
     if (format === 'openapi' || format === 'openapi-json') {
@@ -113,14 +84,8 @@ export async function GET(
       apiSpecification: apiSpec,
       format: 'json',
     });
-  } catch (error) {
-    console.error('Error fetching API specification:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * POST /api/projects/[id]/api-spec
@@ -131,38 +96,9 @@ export async function GET(
  *
  * The generated spec is saved to project_data.api_specification
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // Verify project exists and belongs to team
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
+    // Fetch project with projectData
     const project = await db.query.projects.findFirst({
       where: and(
         eq(projects.id, projectId),
@@ -265,7 +201,7 @@ export async function POST(
       .where(eq(projectData.projectId, projectId));
 
     // Check format query param for response
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
     const format = searchParams.get('format') || 'json';
 
     if (format === 'openapi' || format === 'openapi-json') {
@@ -296,11 +232,5 @@ export async function POST(
       validationErrors: validation.errors,
       apiSpecification: apiSpec,
     });
-  } catch (error) {
-    console.error('Error generating API specification:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
