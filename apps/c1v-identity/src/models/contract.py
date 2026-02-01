@@ -74,7 +74,12 @@ class ConsentContractModel(Base):
 
     # Contract lifecycle status
     status = Column(
-        SQLEnum(ContractStatusEnum, name="contract_status", create_type=False),
+        SQLEnum(
+            ContractStatusEnum,
+            name="contract_status",
+            create_type=False,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=ContractStatusEnum.PROPOSED,
     )
