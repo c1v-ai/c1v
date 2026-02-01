@@ -92,9 +92,18 @@ export async function processWithLangGraph(
 ): Promise<LangGraphResult> {
   const { id: projectId, name: projectName, vision: projectVision, teamId } = project;
 
+  // [STATE_DEBUG] Entry point
+  console.log(`[STATE_DEBUG] processWithLangGraph called for project ${projectId}`);
+
   try {
     // 1. Load existing checkpoint or create initial state
     let state = await loadCheckpoint(projectId);
+
+    // [STATE_DEBUG] Checkpoint load status
+    console.log(`[STATE_DEBUG] Checkpoint loaded: ${state ? 'yes' : 'no'}`);
+    if (state) {
+      console.log(`[STATE_DEBUG] Loaded state - messages: ${state.messages?.length ?? 0}, currentKBStep: ${state.currentKBStep}, completeness: ${state.completeness}`);
+    }
 
     if (!state) {
       // Create new state with existing project data if available
@@ -135,6 +144,10 @@ export async function processWithLangGraph(
       recursionLimit: 20,
     });
 
+    // [STATE_DEBUG] Graph invocation complete
+    console.log(`[STATE_DEBUG] Graph invocation complete`);
+    console.log(`[STATE_DEBUG] Result - messages: ${result.messages?.length ?? 0}, extractedData actors: ${result.extractedData?.actors?.length ?? 0}`);
+
     // 5. Extract AI response from result
     const aiMessages = result.messages.filter(
       (m) => m._getType() === 'ai'
@@ -158,9 +171,13 @@ export async function processWithLangGraph(
     await saveMermaidDiagrams(projectId, response);
 
     // 7. Save checkpoint
+    // [STATE_DEBUG] Saving checkpoint
+    console.log(`[STATE_DEBUG] Saving checkpoint...`);
     await saveCheckpoint(projectId, result);
 
     // 8. Update project data with extracted information
+    // [STATE_DEBUG] Updating project data
+    console.log(`[STATE_DEBUG] Updating project data from state...`);
     await updateProjectDataFromState(projectId, result);
 
     return {
@@ -421,10 +438,20 @@ async function updateProjectDataFromState(
   projectId: number,
   state: IntakeState | Partial<IntakeState>
 ): Promise<void> {
+  // [STATE_DEBUG] Function entry
+  console.log(`[STATE_DEBUG] updateProjectDataFromState called for project ${projectId}`);
+
   try {
     const { extractedData, completeness } = state;
 
+    // [STATE_DEBUG] Data presence check
+    console.log(`[STATE_DEBUG] Has extractedData: ${!!extractedData}, completeness: ${completeness}`);
+    if (extractedData) {
+      console.log(`[STATE_DEBUG] Data to save - actors: ${extractedData.actors?.length ?? 0}, useCases: ${extractedData.useCases?.length ?? 0}`);
+    }
+
     if (!extractedData && completeness === undefined) {
+      console.log(`[STATE_DEBUG] Nothing to update, returning early`);
       return; // Nothing to update
     }
 
@@ -460,12 +487,16 @@ async function updateProjectDataFromState(
         .update(projectData)
         .set(updateData)
         .where(eq(projectData.projectId, projectId));
+      // [STATE_DEBUG] Update success
+      console.log(`[STATE_DEBUG] Project data updated successfully`);
     } else {
       await db.insert(projectData).values({
         projectId,
         ...updateData,
         createdAt: new Date(),
       });
+      // [STATE_DEBUG] Insert success
+      console.log(`[STATE_DEBUG] Project data inserted successfully`);
     }
   } catch (error) {
     // Log but don't throw - we don't want to fail the chat response
@@ -488,5 +519,8 @@ function estimateTokenCount(text: string): number {
  * @returns true if LangGraph should be used
  */
 export function isLangGraphEnabled(): boolean {
-  return process.env.USE_LANGGRAPH === 'true';
+  const enabled = process.env.USE_LANGGRAPH === 'true';
+  // [STATE_DEBUG] Feature flag check
+  console.log(`[STATE_DEBUG] isLangGraphEnabled: ${enabled} (USE_LANGGRAPH=${process.env.USE_LANGGRAPH})`);
+  return enabled;
 }
