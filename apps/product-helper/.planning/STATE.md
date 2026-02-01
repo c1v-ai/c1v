@@ -10,9 +10,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 15-06 (withProjectAuth Middleware Adoption)
-**Next Phase:** Phase 18 (TBD)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE
+**Last Completed:** Phase 03-02 (NFR Project-Type Inference)
+**Active Work:** Phase 3 (PRD Extraction Agents)
+**Next Plan:** Phase 03-03 (if exists) or Phase 3 verification
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | 🔄 PHASE 3 IN PROGRESS
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -23,6 +24,23 @@ Wave 3: ✓ Complete (T042, T045; T044/T046 deferred to v3)
 Independent: ✓ Complete (T023, T033, T048, T056, T060)
 Testing: ✓ Complete (T061-T068)
 ```
+
+### Epic.dev Schema Alignment (2026-02-01)
+
+**Status:** Schema update complete, propagation in progress
+
+Updated `lib/langchain/schemas.ts` from ~440 to ~917 lines to match Epic.dev output format:
+- Full persona fields (demographics, technicalProficiency, usageContext)
+- Complete database schema types (fields, types, constraints, FKs, indexes)
+- Full tech stack types with rationale and alternatives
+- User story types with epic grouping
+- Architecture diagram and system overview schemas
+
+**Impact Map:** See `.planning/SCHEMA-UPDATE-IMPACT.md` for full propagation checklist.
+
+**Blocking Issues:**
+- TypeScript errors in `lib/diagrams/__tests__/generators.test.ts` (6 errors) - old TechStackModel shape
+- Pre-existing test issues in guidelines and infrastructure route tests (signal type)
 
 ### Roadmap Evolution
 - **Phase 16 added (2026-01-31):** Chat/LLM Quality Improvements
@@ -71,6 +89,12 @@ Testing: ✓ Complete (T061-T068)
   - ~600 lines of duplicated auth boilerplate removed
   - Nested params (keyId, storyId) extracted from URL path
   - Closes Gap 2 from 15-VERIFICATION.md
+- **03-01 completed (2026-02-01):** Aggressive PRD Field Extraction
+  - Actor goals/painPoints: Changed from INFER to MUST include, added CRITICAL block
+  - Problem statement: Marked as (REQUIRED), added inference rules and JSON example
+  - Goals/metrics: Marked as (REQUIRED - minimum 3), added dimension coverage
+  - All sections now have "Do NOT return empty" enforcement
+  - 3 atomic commits for each task
 
 ---
 
@@ -789,11 +813,22 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `3d2f55c` - fix(15-05): replace ': any' with proper generics in route.ts helpers
+**Last commit:** `08c3da8` - feat(prompts): strengthen goals/metrics extraction with minimum 3
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 15-05 Any Type Elimination in Chat API Routes
+**Last plan:** Phase 03-01 Aggressive PRD Field Extraction
+**Active work:** Phase 03-02 (Schema Validation)
+
+### Uncommitted Changes
+```
+M lib/langchain/schemas.ts  # Epic.dev parity update (~440 → ~917 lines) - pre-existing
+```
+
+### Blocking TypeScript Errors (8 total)
+- `lib/diagrams/__tests__/generators.test.ts` (6 errors) — old TechStackModel shape
+- `app/api/projects/[id]/guidelines/__tests__/route.test.ts` — signal type (pre-existing)
+- `app/api/projects/[id]/infrastructure/__tests__/route.test.ts` — signal type (pre-existing)
 
 ### Phase 17 UAT Results (2026-02-01)
 
@@ -851,12 +886,33 @@ M lib/mcp/tools/unique/ask-question.ts                   # OpenAI -> Anthropic (
 M package.json                                           # Removed @langchain/openai (16-03)
 ```
 
+### Phase 03-01 Completed (2026-02-01)
+
+1. **Task 1:** Actor goals/painPoints mandatory extraction (`3e54248`)
+2. **Task 2:** Problem statement mandatory extraction (`c4e2bd5`)
+3. **Task 3:** Goals/metrics minimum 3 requirement (`08c3da8`)
+
+**Summary:** `.planning/phases/03-prd-extraction-agents/03-01-SUMMARY.md`
+
 ### Resume Action (Next Session)
 
-1. Verify Vercel deployment succeeded
-2. Run smoke tests from STATUS.md
-3. Set up system-helper differentiation (product vs systems engineering focus)
-4. Start v3 planning (T044, T046, new features)
+**Priority 1: Execute Phase 03-02**
+1. Schema validation and tighter field descriptions
+
+**Priority 2: Fix TypeScript Errors (unblocks build)**
+1. Fix `lib/diagrams/__tests__/generators.test.ts` — update test data to use new TechStackModel shape
+2. Fix signal type issues in route tests (or skip/ignore pre-existing issues)
+
+**Priority 3: Commit Schema Update**
+1. Stage `lib/langchain/schemas.ts`
+2. Commit: `feat(schemas): align with Epic.dev output format`
+1. `/gsd:execute-phase 3` — runs 3 plans to update extraction prompts
+
+**Priority 4: Schema Propagation (post-Phase 3)**
+1. Update `lib/db/schema/v2-types.ts` — align TechStackModel
+2. Update generator agents — output new formats
+3. Update UI components — display new fields
+4. See full checklist: `.planning/SCHEMA-UPDATE-IMPACT.md`
 
 ### Required Vercel Env Vars
 
@@ -913,4 +969,4 @@ M package.json                                           # Removed @langchain/op
 
 ---
 
-*State updated: 2026-02-01*
+*State updated: 2026-02-01 (Epic.dev schema alignment in progress)*
