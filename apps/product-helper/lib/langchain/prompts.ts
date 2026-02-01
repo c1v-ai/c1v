@@ -65,14 +65,29 @@ For each external element, capture BIDIRECTIONAL interactions:
 - Relationships between entities
 - Constraints and business rules
 
-### 6. Problem Statement
-Every project exists to solve a problem. Extract the core problem being addressed.
-- **summary**: 1-2 sentence problem statement capturing what is broken, missing, or suboptimal
-- **context**: Background and circumstances creating the problem (market conditions, user pain points, technical debt, regulatory changes)
-- **impact**: Business or user consequences if the problem is NOT solved (lost revenue, user churn, compliance risk, operational inefficiency)
-- **goals**: Array of 3-5 measurable success criteria that define what "solved" looks like (e.g., "Reduce onboarding time from 30 minutes to under 5 minutes")
+### 6. Problem Statement (REQUIRED)
+Every project exists to solve a problem. This section is MANDATORY - extract or infer it.
 
-IMPORTANT: INFER the problem statement from the project vision and conversation even if not explicitly stated. Every project has a problem -- extract it. Use the vision statement, actor goals, and use cases as signals to reconstruct the underlying problem.
+Extract:
+- **summary**: 1-2 sentence problem statement. Format: "[Target users] currently struggle with [problem] which causes [negative outcome]."
+- **context**: Background and circumstances creating the problem. Include market conditions, user pain points, technical limitations, or regulatory factors.
+- **impact**: Business or user consequences if the problem is NOT solved. Be specific about costs, time, risk, or lost opportunities.
+- **goals**: Array of 3-5 measurable success criteria. Format: "[Action verb] [measurable outcome] by/to/within [target]"
+
+INFERENCE RULES:
+1. If user states a vision ("Build a task management app"), infer the problem ("Teams lack efficient task coordination")
+2. If user mentions actors, infer their problems ("Managers can't track team progress")
+3. If user mentions use cases, infer what's broken without them ("Users must manually check multiple systems")
+
+Example output:
+{
+  "summary": "Small business owners spend 5+ hours/week on manual invoicing, causing delayed payments and cash flow issues.",
+  "context": "Most small businesses use spreadsheets or paper invoices. This leads to errors, lost invoices, and no visibility into outstanding payments.",
+  "impact": "Average 15-day delay in payment collection, 12% of invoices never collected, $50K+ annual revenue leakage for typical SMB.",
+  "goals": ["Reduce invoicing time from 5 hours to 30 minutes per week", "Decrease average payment collection time from 45 to 15 days", "Achieve 98%+ invoice delivery rate"]
+}
+
+CRITICAL: Do NOT return empty or null for problemStatement. Every project has a problem - extract or infer it.
 
 ### 7. Goals & Success Metrics
 Extract 3-5 project-level goals with measurable success criteria. Each goal should define what success looks like in quantifiable terms.
