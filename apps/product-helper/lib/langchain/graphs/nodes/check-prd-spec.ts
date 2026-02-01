@@ -180,7 +180,7 @@ function transformToValidationData(state: IntakeState): ProjectValidationData {
       internal: extractedData.systemBoundaries.internal,
       external: extractedData.systemBoundaries.external,
       inScope: extractedData.systemBoundaries.internal, // Map internal to inScope
-      outOfScope: [], // TODO: Track out-of-scope separately
+      outOfScope: [], // TODO(T090): Track out-of-scope separately in extractedData
     },
 
     // Map data entities
