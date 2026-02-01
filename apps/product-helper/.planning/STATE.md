@@ -2,7 +2,7 @@
 
 **Project:** Product Helper
 **Core Value:** Conversational AI intake pipeline that transforms a product idea into a complete, validated PRD with technical specifications
-**Updated:** 2026-01-31
+**Updated:** 2026-02-01
 
 ---
 
@@ -10,9 +10,9 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 15-02 (Security & Type Safety Fixes)
-**Next Phase:** Phase 15-03 (API Auth Middleware) or Phase 18 (TBD)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | Phase 15: 2/4 plans done
+**Last Completed:** Phase 15-03 (API Auth Middleware Refactoring)
+**Next Phase:** Phase 15-04 or Phase 18 (TBD)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | Phase 15: 3/4 plans done
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -771,11 +771,11 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `e8531bc` - docs(15-02): document SQL template safety in delete account action
+**Last commit:** `a151ff1` - refactor(15-03): migrate 5 routes to withProjectAuth middleware
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 15-02 Security & Type Safety Fixes
+**Last plan:** Phase 15-03 API Auth Middleware Refactoring
 
 ### Phase 17 UAT Results (2026-02-01)
 
@@ -859,7 +859,7 @@ M package.json                                           # Removed @langchain/op
 | 9 | Data Model Depth | v2.0 | Complete |
 | 10 | Generators & Agents | v2.0 | Complete |
 | 11 | MCP Server (17 tools) | v2.0 | Complete |
-| 15 | Code Cleanup & Claude Migration | v2.0 | Wave 1 Complete (Paused) |
+| 15 | Code Cleanup & Claude Migration | v2.0 | 3/4 plans complete |
 | 12 | Educational Content (knowledge banks) | v2.0 | All 6 KBs enriched |
 | — | **V2 Deploy + Security Hardening** | v2.0 | ✅ Complete (2026-01-31) |
 
@@ -879,7 +879,17 @@ M package.json                                           # Removed @langchain/op
 - **NEW:** Beautiful Mermaid for professional diagram styling (light/dark themes)
 - **NEW:** ASCII diagram output for MCP tools (CLI/terminal usage)
 - **NEW:** Supabase local development environment
+- **NEW:** withProjectAuth middleware for API routes (35% code reduction)
 
 ---
 
-*State updated: 2026-01-31*
+## Key Decisions (Recent)
+
+| Decision | Rationale |
+|----------|-----------|
+| withProjectAuth HOF for API auth | Eliminates ~35% of duplicated auth boilerplate, type-safe via overloads |
+| Support both 'id' and 'projectId' params | Different routes use different naming conventions |
+
+---
+
+*State updated: 2026-02-01*
