@@ -64,7 +64,7 @@ export function useAppKeyboardShortcuts() {
       key: 'k',
       meta: true,
       action: () => {
-        // TODO: Open command palette/search when implemented
+        // TODO(T088): Open command palette/search when implemented
         console.log('Search shortcut triggered')
       },
       description: 'Open search',
@@ -80,7 +80,7 @@ export function useAppKeyboardShortcuts() {
       key: 'n',
       meta: true,
       action: () => {
-        // TODO: Open new project dialog when implemented
+        // TODO(T089): Open new project dialog when implemented
         console.log('New project shortcut triggered')
       },
       description: 'New project',
