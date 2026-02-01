@@ -17,6 +17,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
 
 from src.core.database import Base
 
@@ -96,6 +97,9 @@ class ConsentContractModel(Base):
     revoked_at = Column(DateTime(timezone=True), nullable=True)  # Set when status -> revoked
     revoked_by = Column(Text, nullable=True)  # Which party initiated revocation
     revocation_reason = Column(Text, nullable=True)  # Optional explanation
+
+    # Relationship to pins
+    pins = relationship("AgentPinModel", back_populates="contract")
 
     # Table-level constraints matching SCHEMA.sql
     __table_args__ = (
