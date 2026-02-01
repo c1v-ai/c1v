@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -8,38 +8,14 @@ import {
   validateCodingGuidelines,
   type GuidelinesContext,
 } from '@/lib/langchain/agents/guidelines-agent';
-import { codingGuidelinesSchema } from '@/lib/db/schema/v2-validators';
 import type { CodingGuidelines, TechStackModel } from '@/lib/db/schema/v2-types';
 
 /**
  * GET /api/projects/[id]/guidelines
  * Get the existing coding guidelines for a project
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
@@ -61,14 +37,8 @@ export async function GET(
       guidelines: guidelines || null,
       hasGuidelines: !!guidelines,
     });
-  } catch (error) {
-    console.error('Error fetching coding guidelines:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * POST /api/projects/[id]/guidelines
@@ -87,31 +57,8 @@ export async function GET(
  *   }
  * }
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
@@ -146,7 +93,7 @@ export async function POST(
     let preferences: GuidelinesContext['preferences'];
 
     try {
-      const body = await request.json();
+      const body = await req.json();
 
       if (
         body.teamSize &&
@@ -249,11 +196,5 @@ export async function POST(
       guidelines: validated,
       generated: true,
     });
-  } catch (error) {
-    console.error('Error generating coding guidelines:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -9,44 +9,14 @@ import {
   type InfrastructureContext,
   type ScaleRequirements,
 } from '@/lib/langchain/agents/infrastructure-agent';
-import { infrastructureSpecSchema } from '@/lib/db/schema/v2-validators';
 import type { InfrastructureSpec, TechStackModel } from '@/lib/db/schema/v2-types';
 
 /**
  * GET /api/projects/[id]/infrastructure
  * Get the existing infrastructure specification for a project
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -73,14 +43,8 @@ export async function GET(
       infrastructureSpec: infrastructureSpec || null,
       hasSpecification: !!infrastructureSpec,
     });
-  } catch (error) {
-    console.error('Error fetching infrastructure spec:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * POST /api/projects/[id]/infrastructure
@@ -99,37 +63,8 @@ export async function GET(
  *   budgetConstraints?: string
  * }
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(
@@ -154,7 +89,7 @@ export async function POST(
     let budgetConstraints: string | undefined;
 
     try {
-      const body = await request.json();
+      const body = await req.json();
 
       if (body.scaleRequirements && typeof body.scaleRequirements === 'object') {
         scaleRequirements = {
@@ -232,11 +167,5 @@ export async function POST(
       infrastructureSpec: validated,
       generated: true,
     });
-  } catch (error) {
-    console.error('Error generating infrastructure spec:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
