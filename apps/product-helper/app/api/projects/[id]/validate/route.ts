@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -18,40 +18,8 @@ import type { ProjectValidationData } from '@/lib/validation/types';
  *
  * Response: ValidationResult object with detailed gate results
  */
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    // Authentication check
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Please sign in to validate projects' },
-        { status: 401 }
-      );
-    }
-
-    // Get team for authorization
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found', message: 'No team associated with your account' },
-        { status: 404 }
-      );
-    }
-
-    // Parse project ID
-    const { id: projectIdStr } = await params;
-    const projectId = parseInt(projectIdStr, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID', message: 'Project ID must be a number' },
-        { status: 400 }
-      );
-    }
-
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Load project with all related data
     const project = await db.query.projects.findFirst({
       where: and(
@@ -109,18 +77,8 @@ export async function POST(
 
     // Return validation results
     return NextResponse.json(validationResult, { status: 200 });
-  } catch (error) {
-    console.error('Project validation error:', error);
-
-    return NextResponse.json(
-      {
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'An unexpected error occurred',
-      },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * GET /api/projects/[id]/validate
@@ -128,40 +86,8 @@ export async function POST(
  *
  * Returns the validation scores stored in the project record
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    // Authentication check
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Get team for authorization
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    // Parse project ID
-    const { id: projectIdStr } = await params;
-    const projectId = parseInt(projectIdStr, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
     // Load project
     const project = await db.query.projects.findFirst({
       where: and(
@@ -185,11 +111,5 @@ export async function GET(
       validationFailed: project.validationFailed || 0,
       hasBeenValidated: (project.validationScore || 0) > 0,
     });
-  } catch (error) {
-    console.error('Get validation error:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
   }
-}
+);

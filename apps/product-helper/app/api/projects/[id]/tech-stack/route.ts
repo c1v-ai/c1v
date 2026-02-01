@@ -1,48 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { withProjectAuth } from '@/lib/api/with-project-auth';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { recommendTechStack, validateTechStack, type TechStackContext } from '@/lib/langchain/agents/tech-stack-agent';
-import { techStackModelSchema } from '@/lib/db/schema/v2-validators';
 import type { TechStackModel } from '@/lib/db/schema/v2-types';
 
 /**
  * GET /api/projects/[id]/tech-stack
  * Get the existing tech stack for a project
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // Verify project exists and belongs to team
+export const GET = withProjectAuth(
+  async (req, { team, projectId }) => {
+    // Fetch project with projectData
     const project = await db.query.projects.findFirst({
       where: and(
         eq(projects.id, projectId),
@@ -68,14 +38,8 @@ export async function GET(
       techStack: techStack || null,
       hasRecommendation: !!techStack,
     });
-  } catch (error) {
-    console.error('Error fetching tech stack:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 /**
  * POST /api/projects/[id]/tech-stack
@@ -87,38 +51,9 @@ export async function GET(
  *   preferences?: string[]
  * }
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const team = await getTeamForUser();
-    if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const projectId = parseInt(id, 10);
-
-    if (isNaN(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID' },
-        { status: 400 }
-      );
-    }
-
-    // Verify project exists and belongs to team
+export const POST = withProjectAuth(
+  async (req, { team, projectId }) => {
+    // Fetch project with projectData
     const project = await db.query.projects.findFirst({
       where: and(
         eq(projects.id, projectId),
@@ -141,7 +76,7 @@ export async function POST(
     let preferences: string[] = [];
 
     try {
-      const body = await request.json();
+      const body = await req.json();
       if (body.constraints && Array.isArray(body.constraints)) {
         constraints = body.constraints.filter((c: unknown) => typeof c === 'string');
       }
@@ -200,11 +135,5 @@ export async function POST(
       techStack: validated,
       generated: true,
     });
-  } catch (error) {
-    console.error('Error generating tech stack:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
