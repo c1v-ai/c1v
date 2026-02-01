@@ -215,9 +215,10 @@ __pycache__/
 *.pyc
 .DS_Store
 .vscode/
-# Artifacts
-models/
+# Artifacts (ML models, not SQLAlchemy)
+/models/
 data/
+!src/models/
 .streamlit/
 
 # GSD Planning (local only)
