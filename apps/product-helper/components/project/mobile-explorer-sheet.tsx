@@ -4,18 +4,124 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Database,
-  GitBranch,
-  Users,
-  FileText,
   PanelLeft,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { CollapsibleSection } from '@/components/chat/collapsible-section';
 import { useProjectChat } from './project-chat-provider';
-import { getProjectNavItems, isNavItemActive, getDiagramLabel } from './nav-config';
+import { getProjectNavItems, isNavItemActive, type NavItem } from './nav-config';
+
+// ============================================================
+// Sub-components
+// ============================================================
+
+function MobileNavItem({
+  item,
+  pathname,
+  depth = 0,
+  onNavigate,
+}: {
+  item: NavItem;
+  pathname: string;
+  depth?: number;
+  onNavigate: () => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const Icon = item.icon;
+  const hasChildren = item.children && item.children.length > 0;
+  const active = isNavItemActive(item, pathname);
+
+  if (hasChildren) {
+    return (
+      <div>
+        <div
+          className={cn(
+            'flex items-center w-full rounded-md text-sm font-medium transition-colors',
+            'hover:bg-[var(--bg-secondary)]',
+            active && !item.href ? 'bg-[var(--bg-secondary)]' : ''
+          )}
+          style={{ paddingLeft: `${8 + depth * 12}px` }}
+        >
+          {/* Name/Link area - clickable for navigation if href exists */}
+          {item.href ? (
+            <Link
+              href={item.href}
+              onClick={onNavigate}
+              className="flex items-center gap-2 flex-1 py-2"
+              style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}
+            >
+              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <span>{item.name}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-2 flex-1 py-2 text-left"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <span>{item.name}</span>
+            </button>
+          )}
+          {/* Chevron button for expand/collapse */}
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="p-2 mr-1 rounded hover:bg-[var(--bg-primary)]"
+            aria-label={expanded ? 'Collapse section' : 'Expand section'}
+          >
+            {expanded ? (
+              <ChevronUp className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            ) : (
+              <ChevronDown className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            )}
+          </button>
+        </div>
+        {expanded && (
+          <div className="mt-0.5">
+            {item.children!.map((child) => (
+              <MobileNavItem
+                key={child.name}
+                item={child}
+                pathname={pathname}
+                depth={depth + 1}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Leaf node - always a link
+  return (
+    <Link
+      href={item.href!}
+      onClick={onNavigate}
+      className={cn(
+        'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors',
+        active ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'
+      )}
+      style={{
+        paddingLeft: `${8 + depth * 12}px`,
+        color: active ? 'var(--accent)' : 'var(--text-primary)'
+      }}
+    >
+      <Icon className="h-4 w-4 flex-shrink-0" />
+      {item.name}
+    </Link>
+  );
+}
+
+// ============================================================
+// MobileExplorerSheet
+// ============================================================
 
 export function MobileExplorerSheet() {
   const [open, setOpen] = useState(false);
@@ -23,12 +129,14 @@ export function MobileExplorerSheet() {
   const {
     projectId,
     parsedProjectData,
-    parsedArtifacts,
-    setSelectedDiagram,
   } = useProjectChat();
 
-  const { actors, useCases, dataEntities, completeness } = parsedProjectData;
+  const { completeness } = parsedProjectData;
   const navItems = getProjectNavItems(projectId);
+
+  const handleNavigate = () => {
+    setOpen(false);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -43,34 +151,33 @@ export function MobileExplorerSheet() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
-        {/* Section Nav */}
+        {/* Navigation Tree */}
         <nav className="px-2 pt-4 pb-2 space-y-0.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isNavItemActive(item, pathname);
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors',
-                  active ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'
-                )}
-                style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}
-              >
-                <Icon className="h-4 w-4" />
-                {item.name}
-              </Link>
-            );
-          })}
+          {navItems.map((item) => (
+            <MobileNavItem
+              key={item.name}
+              item={item}
+              pathname={pathname}
+              onNavigate={handleNavigate}
+            />
+          ))}
         </nav>
 
         {/* Separator */}
         <div className="border-t mx-3" style={{ borderColor: 'var(--border)' }} />
 
+        {/* Empty state message */}
+        {completeness === 0 && (
+          <div className="flex flex-col items-center justify-center px-4 py-4 text-center">
+            <Sparkles className="h-6 w-6 mb-2" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Start chatting to build your PRD
+            </p>
+          </div>
+        )}
+
         {/* Completeness */}
-        <div className="px-3 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="px-3 py-3 border-t mt-auto" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium uppercase" style={{ color: 'var(--text-muted)' }}>
               Completeness
@@ -88,85 +195,6 @@ export function MobileExplorerSheet() {
               }}
             />
           </div>
-        </div>
-
-        {/* Project data */}
-        <div className="pb-4">
-          <CollapsibleSection title="Actors" icon={Users} count={actors.length} defaultOpen={false}>
-            {actors.length > 0 ? (
-              <div className="space-y-1">
-                {actors.map((actor, i) => (
-                  <div key={`actor-${i}`} className="px-2 py-1">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{actor.name}</p>
-                    {actor.role && <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{actor.role}</p>}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>No actors discovered yet</p>
-            )}
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Use Cases" icon={FileText} count={useCases.length} defaultOpen={false}>
-            {useCases.length > 0 ? (
-              <div className="space-y-1">
-                {useCases.map((uc, i) => (
-                  <div key={`usecase-${i}`} className="px-2 py-1">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{uc.name}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>No use cases discovered yet</p>
-            )}
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Data Entities" icon={Database} count={dataEntities.length} defaultOpen={false}>
-            {dataEntities.length > 0 ? (
-              <div className="space-y-1">
-                {dataEntities.map((entity, i) => (
-                  <div key={`entity-${i}`} className="px-2 py-1">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{entity.name}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>No data entities discovered yet</p>
-            )}
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Diagrams" icon={GitBranch} count={parsedArtifacts.length} defaultOpen>
-            {parsedArtifacts.length > 0 ? (
-              <div className="space-y-1">
-                {parsedArtifacts.map((artifact) => {
-                  const label = getDiagramLabel(artifact.type);
-                  return (
-                    <button
-                      key={`diagram-${artifact.id}`}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDiagram(artifact);
-                        setOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--bg-secondary)] cursor-pointer"
-                    >
-                      <span
-                        className="flex-shrink-0 rounded px-1.5 py-0.5 text-xs font-medium"
-                        style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
-                      >
-                        {label}
-                      </span>
-                      <span className="flex-1 text-sm truncate" style={{ color: 'var(--text-primary)' }}>
-                        {label} Diagram
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>No diagrams generated yet</p>
-            )}
-          </CollapsibleSection>
         </div>
       </SheetContent>
     </Sheet>
