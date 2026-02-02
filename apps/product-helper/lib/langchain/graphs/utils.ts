@@ -10,6 +10,56 @@ import { BaseMessage, HumanMessage, AIMessage, SystemMessage } from '@langchain/
  */
 
 // ============================================================
+// Defensive Type Checking (Turbopack Compatibility)
+// ============================================================
+
+type MessageType = 'human' | 'ai' | 'system' | 'unknown';
+
+/**
+ * Defensive type checker that works even with Turbopack module duplication.
+ * Tries multiple strategies in order of reliability.
+ */
+function safeGetMessageType(msg: BaseMessage | null | undefined): MessageType {
+  if (!msg) return 'unknown';
+
+  // Strategy 1: Try _getType() first (most reliable when it works)
+  try {
+    if (typeof msg._getType === 'function') {
+      const type = msg._getType();
+      if (type === 'human' || type === 'ai' || type === 'system') {
+        return type;
+      }
+    }
+  } catch {
+    // Method doesn't exist or failed, continue to fallbacks
+  }
+
+  // Strategy 2: Check constructor name
+  try {
+    const constructorName = msg.constructor?.name?.toLowerCase() || '';
+    if (constructorName.includes('human')) return 'human';
+    if (constructorName.includes('ai') && !constructorName.includes('chain')) return 'ai';
+    if (constructorName.includes('system')) return 'system';
+  } catch {
+    // Constructor access failed
+  }
+
+  // Strategy 3: Check for 'type' property
+  try {
+    if ('type' in msg && typeof (msg as Record<string, unknown>).type === 'string') {
+      const type = (msg as Record<string, unknown>).type as string;
+      if (type === 'human' || type === 'ai' || type === 'system') {
+        return type;
+      }
+    }
+  } catch {
+    // Property access failed
+  }
+
+  return 'unknown';
+}
+
+// ============================================================
 // Constants
 // ============================================================
 
@@ -81,12 +131,13 @@ export function formatMessagesAsMarkdown(messages: BaseMessage[]): string {
 
 /**
  * Get the role label for a message
+ * Uses defensive type checking for Turbopack compatibility
  *
  * @param message - LangChain message
  * @returns Role label string
  */
 export function getMessageRole(message: BaseMessage): string {
-  const type = message._getType();
+  const type = safeGetMessageType(message);
   switch (type) {
     case 'human':
       return 'User';
@@ -157,6 +208,7 @@ export function getRecentMessages(messages: BaseMessage[], n: number): BaseMessa
 
 /**
  * Get messages from a specific role
+ * Uses defensive type checking for Turbopack compatibility
  *
  * @param messages - Full message array
  * @param role - The role to filter by ('human', 'ai', 'system')
@@ -166,7 +218,7 @@ export function getMessagesByRole(
   messages: BaseMessage[],
   role: 'human' | 'ai' | 'system'
 ): BaseMessage[] {
-  return messages.filter(m => m._getType() === role);
+  return messages.filter(m => safeGetMessageType(m) === role);
 }
 
 /**
@@ -181,13 +233,14 @@ export function getLastMessage(messages: BaseMessage[]): BaseMessage | undefined
 
 /**
  * Get the last user (human) message
+ * Uses defensive type checking for Turbopack compatibility
  *
  * @param messages - Full message array
  * @returns The last human message or undefined
  */
 export function getLastUserMessage(messages: BaseMessage[]): BaseMessage | undefined {
   for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i]._getType() === 'human') {
+    if (safeGetMessageType(messages[i]) === 'human') {
       return messages[i];
     }
   }
@@ -202,7 +255,7 @@ export function getLastUserMessage(messages: BaseMessage[]): BaseMessage | undef
  */
 export function getLastAssistantMessage(messages: BaseMessage[]): BaseMessage | undefined {
   for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i]._getType() === 'ai') {
+    if (safeGetMessageType(messages[i]) === 'ai') {
       return messages[i];
     }
   }
@@ -319,7 +372,7 @@ export function truncateHistoryKeepSystem(
 
   // Check if first message is a system message
   const firstMessage = messages[0];
-  const isSystemFirst = firstMessage._getType() === 'system';
+  const isSystemFirst = safeGetMessageType(firstMessage) === 'system';
 
   if (!isSystemFirst) {
     return truncateHistory(messages, maxTokens);
@@ -444,7 +497,7 @@ export function countConversationTurns(messages: BaseMessage[]): number {
   let lastType: string | null = null;
 
   for (const message of messages) {
-    const currentType = message._getType();
+    const currentType = safeGetMessageType(message);
 
     // Count a turn when we see human -> ai transition
     if (lastType === 'human' && currentType === 'ai') {
@@ -514,7 +567,7 @@ export function serializeMessages(
   messages: BaseMessage[]
 ): Array<{ type: string; content: string }> {
   return messages.map(m => ({
-    type: m._getType(),
+    type: safeGetMessageType(m),
     content: getMessageContent(m),
   }));
 }
@@ -556,9 +609,9 @@ export function deserializeMessages(
  */
 export function createMessagesSummary(messages: BaseMessage[]): string {
   const totalMessages = messages.length;
-  const humanCount = messages.filter(m => m._getType() === 'human').length;
-  const aiCount = messages.filter(m => m._getType() === 'ai').length;
-  const systemCount = messages.filter(m => m._getType() === 'system').length;
+  const humanCount = messages.filter(m => safeGetMessageType(m) === 'human').length;
+  const aiCount = messages.filter(m => safeGetMessageType(m) === 'ai').length;
+  const systemCount = messages.filter(m => safeGetMessageType(m) === 'system').length;
   const totalTokens = estimateTotalTokens(messages);
 
   return [

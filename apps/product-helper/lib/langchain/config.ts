@@ -2,11 +2,11 @@ import { ChatAnthropic } from '@langchain/anthropic';
 import type { z } from 'zod';
 import { LLM_DEFAULTS } from '@/lib/constants';
 
-// Model options
+// Model options - Use correct Anthropic API model identifiers
 export const CLAUDE_MODELS = {
-  OPUS: 'claude-opus-4-5-20251101',      // Most capable, highest cost
-  SONNET: 'claude-sonnet-4-5-20250514',  // Balanced (recommended)
-  HAIKU: 'claude-3-5-haiku-20241022',    // Fast, cost-effective for classification
+  OPUS: 'claude-opus-4-20250514',           // Claude Opus 4 - most capable
+  SONNET: 'claude-sonnet-4-20250514',       // Claude Sonnet 4 - balanced
+  HAIKU: 'claude-3-5-haiku-20241022',       // Claude 3.5 Haiku - fast, cost-effective
 } as const;
 
 // Default model for agents

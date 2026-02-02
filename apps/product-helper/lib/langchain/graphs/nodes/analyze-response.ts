@@ -18,6 +18,7 @@ import {
   containsStopTrigger,
 } from '../types';
 import { getLastMessage, getMessageContent } from '../utils';
+import { isHumanMessage } from '../../message-utils';
 
 // ============================================================
 // Schema Definition
@@ -97,8 +98,8 @@ export async function analyzeResponse(
 ): Promise<Partial<IntakeState>> {
   const lastMessage = getLastMessage(state.messages);
 
-  // Guard: No message or not a human message
-  if (!lastMessage || lastMessage._getType() !== 'human') {
+  // Guard: No message or not a human message (defensive check for Turbopack)
+  if (!lastMessage || !isHumanMessage(lastMessage)) {
     return { lastIntent: 'UNKNOWN' };
   }
 
