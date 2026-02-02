@@ -643,7 +643,7 @@ export const extractionSchema = z.object({
   actors: z.array(actorSchema).describe('All actors/personas mentioned in the conversation'),
   useCases: z.array(useCaseSchema).describe('All use cases identified from the conversation'),
   systemBoundaries: systemBoundariesSchema.describe('System scope boundaries'),
-  dataEntities: z.array(dataEntitySchema).describe('Core data objects in the system (lightweight for extraction)'),
+  dataEntities: z.array(dataEntitySchema).default([]).describe('Core data objects in the system (lightweight for extraction)'),
 
   // Epic.dev parity sections
   problemStatement: problemStatementSchema.optional().describe('Problem statement with target audience'),
