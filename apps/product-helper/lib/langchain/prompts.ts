@@ -80,12 +80,12 @@ INFERENCE RULES:
 3. If user mentions use cases, infer what's broken without them ("Users must manually check multiple systems")
 
 Example output:
-{
+{{
   "summary": "Small business owners spend 5+ hours/week on manual invoicing, causing delayed payments and cash flow issues.",
   "context": "Most small businesses use spreadsheets or paper invoices. This leads to errors, lost invoices, and no visibility into outstanding payments.",
   "impact": "Average 15-day delay in payment collection, 12% of invoices never collected, $50K+ annual revenue leakage for typical SMB.",
   "goals": ["Reduce invoicing time from 5 hours to 30 minutes per week", "Decrease average payment collection time from 45 to 15 days", "Achieve 98%+ invoice delivery rate"]
-}
+}}
 
 CRITICAL: Do NOT return empty or null for problemStatement. Every project has a problem - extract or infer it.
 
@@ -112,10 +112,10 @@ REQUIRED COVERAGE - extract goals across these dimensions:
 
 Example output:
 [
-  { "goal": "Reduce invoice creation time", "metric": "Average time per invoice", "target": "Under 2 minutes" },
-  { "goal": "Improve payment collection rate", "metric": "Percentage of invoices paid within 30 days", "target": "85%" },
-  { "goal": "Increase user adoption", "metric": "Monthly active users", "target": "500 within 6 months" },
-  { "goal": "Achieve platform reliability", "metric": "Monthly uptime percentage", "target": "99.9%" }
+  {{ "goal": "Reduce invoice creation time", "metric": "Average time per invoice", "target": "Under 2 minutes" }},
+  {{ "goal": "Improve payment collection rate", "metric": "Percentage of invoices paid within 30 days", "target": "85%" }},
+  {{ "goal": "Increase user adoption", "metric": "Monthly active users", "target": "500 within 6 months" }},
+  {{ "goal": "Achieve platform reliability", "metric": "Monthly uptime percentage", "target": "99.9%" }}
 ]
 
 CRITICAL: Do NOT return empty array. Every project has goals - extract at least 3.
@@ -176,12 +176,12 @@ REQUIRED COVERAGE:
 
 Example output for a "SaaS project management tool":
 [
-  { "category": "performance", "requirement": "Page load time under 3 seconds", "metric": "Time to First Contentful Paint", "target": "<3s", "priority": "high" },
-  { "category": "security", "requirement": "All API endpoints require authentication", "metric": "Unauthorized access attempts blocked", "target": "100%", "priority": "critical" },
-  { "category": "scalability", "requirement": "Support 10,000 concurrent users", "metric": "Concurrent active sessions without degradation", "target": "10,000", "priority": "high" },
-  { "category": "reliability", "requirement": "System uptime of 99.9%", "metric": "Monthly uptime percentage", "target": ">=99.9%", "priority": "critical" },
-  { "category": "usability", "requirement": "Core workflows completable in under 3 clicks", "metric": "Average clicks to task completion", "target": "<=3", "priority": "medium" },
-  { "category": "compliance", "requirement": "GDPR-compliant data handling", "metric": "Data subject requests fulfilled within 30 days", "target": "100%", "priority": "high" }
+  {{ "category": "performance", "requirement": "Page load time under 3 seconds", "metric": "Time to First Contentful Paint", "target": "<3s", "priority": "high" }},
+  {{ "category": "security", "requirement": "All API endpoints require authentication", "metric": "Unauthorized access attempts blocked", "target": "100%", "priority": "critical" }},
+  {{ "category": "scalability", "requirement": "Support 10,000 concurrent users", "metric": "Concurrent active sessions without degradation", "target": "10,000", "priority": "high" }},
+  {{ "category": "reliability", "requirement": "System uptime of 99.9%", "metric": "Monthly uptime percentage", "target": ">=99.9%", "priority": "critical" }},
+  {{ "category": "usability", "requirement": "Core workflows completable in under 3 clicks", "metric": "Average clicks to task completion", "target": "<=3", "priority": "medium" }},
+  {{ "category": "compliance", "requirement": "GDPR-compliant data handling", "metric": "Data subject requests fulfilled within 30 days", "target": "100%", "priority": "high" }}
 ]
 
 CRITICAL: Do NOT return empty array. Every project has implicit NFRs - extract at least 3 from at least 3 categories.
