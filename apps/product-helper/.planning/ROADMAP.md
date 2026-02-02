@@ -435,7 +435,7 @@ graphs/
 | 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | ✓ Complete |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
-| 18 | Chat Flow Debug | CHAT-FIX-01 | Pending |
+| 18 | Chat Flow Debug | CHAT-FIX-01 | ✓ Complete |
 
 ---
 
@@ -449,11 +449,15 @@ graphs/
 
 **Context:** During Phase 3 UAT, discovered chat is stuck in a loop repeating "I'm working on the Context Diagram step. Can you tell me more about what elements should be in the Context Diagram?" No extraction data exists in any project (all actors/use_cases arrays are empty).
 
-**Plans:** 2 plans in 2 waves
+**Status:** Complete (2026-02-02)
+
+**Plans:** 4 plans in 3 waves — all complete
 
 Plans:
-- [ ] 18-01-PLAN.md — Add diagnostic logging to identify root cause
-- [ ] 18-02-PLAN.md — Fix fallback loop and verify extraction runs
+- [x] 18-01-PLAN.md — Add diagnostic logging to identify root cause
+- [x] 18-02-PLAN.md — Fix fallback loop and verify extraction runs
+- [x] 18-03-PLAN.md — Fix LLM calls failing with isInstance error (gap closure)
+- [x] 18-04-PLAN.md — Fix dataEntities schema + chat scroll behavior (gap closure)
 
 **Success Criteria:**
 1. Chat conversation progresses through multiple exchanges without repeating
