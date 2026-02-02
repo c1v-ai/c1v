@@ -2,7 +2,7 @@
 
 **Project:** id.c1v.ai - Machine-to-Machine Consent Protocol
 **Core Value:** Bilateral consent protocol for AI agent data access with identity resolution, cryptographic contracts, and dual audit logging
-**Updated:** 2026-02-02 (Phase 5 Plan 01 Complete)
+**Updated:** 2026-02-02 (Phase 5 Complete)
 
 ---
 
@@ -10,8 +10,8 @@
 
 **Milestone:** V1 -- Core Protocol Implementation
 **Planning System:** GSD + CLEO (unified)
-**Last Completed:** Phase 5 Plan 01 - Audit Data Layer
-**Status:** Phase 5 in progress (1/2 plans complete)
+**Last Completed:** Phase 5 Plan 02 - Audit API Endpoints
+**Status:** Phase 5 complete (2/2 plans), Phase 6 ready
 
 ```
 Specification Phase: [##########] 100%
@@ -25,7 +25,7 @@ Planning Phase:       [##########] 100%
 ├── ROADMAP.md        ✓ 6 phases with dependencies
 └── CLEO Tasks        ✓ T001-T006 registered
 
-Implementation Phase: [█████████ ] 75%
+Implementation Phase: [████████░░] 83%
 ├── T001 Phase 1: Foundation       ✓ Complete
 ├── T002 Phase 2: Identity         ✓ Complete
 │   ├── 02-01 Data Layer           ✓ Complete (GoldenRecordModel, IdentityService)
@@ -37,9 +37,10 @@ Implementation Phase: [█████████ ] 75%
 │   ├── 04-01 Data Layer           ✓ Complete (AgentPinModel, PinsService)
 │   ├── 04-02 API Endpoints        ✓ Complete (POST /pins, /pins/{id}/validate)
 │   └── 04-UAT Verification        ✓ All 9 tests passed
-├── T005 Phase 5: Audit            ◐ In progress (1/2 plans)  ← CURRENT
-│   └── 05-01 Data Layer           ✓ Complete (AuditLogModel, AuditService)
-└── T006 Phase 6: Hardening        ○ Not started
+├── T005 Phase 5: Audit            ✓ Complete (2/2 plans)
+│   ├── 05-01 Data Layer           ✓ Complete (AuditLogModel, AuditService)
+│   └── 05-02 API Endpoints        ✓ Complete (POST, GET, verify endpoints)
+└── T006 Phase 6: Hardening        ○ Not started  ← NEXT
 ```
 
 ---
@@ -173,12 +174,12 @@ Implementation Phase: [█████████ ] 75%
 - [x] Create PinsService with HMAC-SHA256 signing (04-01)
 - [x] Implement PIN API endpoints (04-02)
 
-### Phase 5: Audit Logging (In Progress)
+### Phase 5: Audit Logging (Complete)
 - [x] Create AuditLogModel with hash-chain fields (05-01)
 - [x] Create AuditService with per-agent chains (05-01)
 - [x] Update SCHEMA.sql with prev_hash/entry_hash (05-01)
-- [ ] Implement audit API endpoints (05-02)
-- [ ] Query endpoints with filtering (05-02)
+- [x] Implement audit API endpoints (05-02)
+- [x] Query endpoints with filtering (05-02)
 
 ### Phase 6: Hardening
 - [ ] Rate limiting
@@ -188,37 +189,28 @@ Implementation Phase: [█████████ ] 75%
 
 ---
 
-## Phase 4 Summary (Verified)
+## Phase 5 Summary (Complete)
 
-### Plan 04-01: PIN Data Layer
-- AgentPinModel SQLAlchemy ORM matching SCHEMA.sql
-- PinsService with HMAC-SHA256 signing
-- Atomic single-use enforcement via SELECT FOR UPDATE
+### Plan 05-01: Audit Data Layer
+- AuditLogModel SQLAlchemy ORM with hash-chain fields
+- AuditService with per-agent chains and verification
+- GENESIS_HASH = 64 zeros for first entry in chain
+- Canonical JSON + SHA256 for deterministic hashing
 
-### Plan 04-02: PIN API Endpoints
-- POST `/api/v1/pins` - Create PIN (201 Created)
-- POST `/api/v1/pins/{id}/validate` - Validate PIN (200)
+### Plan 05-02: Audit API Endpoints
+- POST `/api/v1/audit` - Submit audit log entry (201 Created)
+- GET `/api/v1/audit` - Query logs with filters and pagination
+- GET `/api/v1/audit/verify/{agent_id}` - Verify hash chain integrity
 - Wired into v1 router with OpenAPI documentation
 
-### UAT Verification (9/9 passed)
-1. ✓ Create PIN against active contract
-2. ✓ PIN creation rejected for inactive contract
-3. ✓ PIN creation rejected for non-party agent
-4. ✓ PIN creation rejected for scope exceeding contract
-5. ✓ Validate PIN successfully
-6. ✓ Validate expired PIN (60s TTL)
-7. ✓ Single-use PIN consumed after first validation
-8. ✓ Validate PIN with scope mismatch
-9. ✓ Validate PIN with invalid signature
-
-**Phase 4 Files:**
+**Phase 5 Files:**
 ```
-src/models/pin.py              ✓ AgentPinModel
-src/models/contract.py         ✓ Fixed enum values_callable
-src/services/pins_service.py   ✓ PinsService
-src/api/v1/pins.py             ✓ PIN endpoints
-src/api/v1/router.py           ✓ Updated - includes pins_router
-src/core/config.py             ✓ Updated - pin_signing_key
+src/models/audit_log.py        ✓ AuditLogModel with hash-chain
+src/services/audit_service.py  ✓ AuditService (create, query, verify)
+src/schemas/audit.py           ✓ Request/response schemas
+src/api/v1/audit.py            ✓ Audit endpoints
+src/api/v1/router.py           ✓ Updated - includes audit_router
+SCHEMA.sql                     ✓ Added prev_hash, entry_hash columns
 ```
 
 ---
@@ -226,25 +218,44 @@ src/core/config.py             ✓ Updated - pin_signing_key
 ## Session Continuity
 
 **Last session:** 2026-02-02
-**Stopped at:** Phase 5 Plan 01 complete (Audit Data Layer)
-**Resume file:** .planning/phases/05-audit/05-02-PLAN.md (next)
+**Stopped at:** Phase 5 Plan 02 complete (Audit API Endpoints)
+**Resume file:** Phase 6 planning needed
 
 **Resume action:**
-1. Execute Phase 5 Plan 02 (Audit API Endpoints)
-2. Wire AuditService into FastAPI router
-3. Test audit log submission and querying
+1. Plan Phase 6 (Hardening)
+2. Add rate limiting middleware
+3. Comprehensive input validation
+4. Error handling standardization
+5. Test suite completion
 
 **Recent Commits:**
+- cf450a1: feat(05-02): wire audit router into v1 aggregator
+- c66eae4: feat(05-02): create audit API endpoints
 - 469a65d: feat(05-01): add hash-chain columns to audit_logs schema
 - d5c1fd6: feat(05-01): create AuditService with hash-chain logic
 - ba1e292: feat(05-01): create AuditLogModel with hash-chain fields
-- 9c4893f: test(04): complete UAT - 9/9 passed
 
-**Phase 5 Plan 01 Summary:**
-- AuditLogModel with prev_hash/entry_hash for tamper detection
-- AuditService with per-agent hash chains (create_log, get_logs, verify_chain)
-- GENESIS_HASH = 64 zeros for first entry in chain
-- Canonical JSON + SHA256 for deterministic hashing
+---
+
+## API Endpoints Summary
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/health` | GET | Health check |
+| `/api/v1/version` | GET | Version info |
+| `/api/v1/ready` | GET | Readiness check |
+| `/api/v1/identity/resolve` | POST | Resolve identity |
+| `/api/v1/identity/match` | POST | Match two records |
+| `/api/v1/identity/golden/{uid}` | GET | Get golden record |
+| `/api/v1/contracts/` | POST | Create contract |
+| `/api/v1/contracts/{id}/sign` | POST | Sign contract |
+| `/api/v1/contracts/{id}` | GET | Get contract |
+| `/api/v1/contracts/{id}` | DELETE | Revoke contract |
+| `/api/v1/pins/` | POST | Create PIN |
+| `/api/v1/pins/{id}/validate` | POST | Validate PIN |
+| `/api/v1/audit/` | POST | Submit audit log |
+| `/api/v1/audit/` | GET | Query audit logs |
+| `/api/v1/audit/verify/{agent_id}` | GET | Verify chain |
 
 ---
 
@@ -258,4 +269,4 @@ src/core/config.py             ✓ Updated - pin_signing_key
 
 ---
 
-*State updated: 2026-02-02 via GSD execute-plan (Phase 5 Plan 01 Complete)*
+*State updated: 2026-02-02 via GSD execute-plan (Phase 5 Complete)*
