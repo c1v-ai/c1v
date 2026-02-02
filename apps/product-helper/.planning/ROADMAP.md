@@ -79,19 +79,27 @@ Plans:
 
 ---
 
-## Phase 4: Pipeline Orchestration & Quality
+## Phase 4: Epic.dev Navigation Pattern (Reframed)
 
-**Goal:** Pipeline enforces quality gates, outputs machine-parseable formats, and uses improved knowledge graphs
+**Goal:** Transform sidebar from data display to pure navigation following Epic.dev pattern
 
-**Dependencies:** Phase 3 (extraction agents must exist before gates validate them)
+**Dependencies:** None (UI refactor, existing routes)
 
-**Requirements:** PIPE-05, PIPE-06, PIPE-07, CHAT-01
+**Requirements:** EXPL-01, EXPL-02 (moved from Phase 5 - navigation tree is the core of explorer shell)
+
+**Note:** Original PIPE-05/06/07/CHAT-01 requirements deferred to Phase 19. Research revealed these were over-engineered for current state. The real pain point is sidebar redundancy and missing navigation structure.
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 04-01-PLAN.md — Refactor explorer sidebar to Epic.dev navigation pattern
 
 **Success Criteria:**
-1. System enforces staged approval gates: user must approve PRD before Tech Specs generate, Tech Specs before Implementation, Implementation before Stories
-2. Each artifact outputs in dual format: human-readable markdown (.md) plus machine-parseable format (.mmd for diagrams, .schema.json for DB, .openapi.json for API)
-3. Knowledge graphs produce more accurate scope definitions and requirements from conversation context
-4. Chat responses demonstrate improved requirements-building capability informed by trained knowledge graphs
+1. Sidebar shows expandable navigation tree with "Product Requirements" and "Backend" as parent items
+2. Clicking any nav item navigates to the corresponding route page (routes already exist)
+3. Completeness bar remains visible in sidebar
+4. Data collapsibles removed (Actors, Use Cases, Entities, Diagrams lists)
+5. Collapsed sidebar shows top-level icons only (no data counts)
 
 ---
 
@@ -101,11 +109,13 @@ Plans:
 
 **Dependencies:** None for UI shell (data already exists from phases 9-11). Logically Track B starts here.
 
-**Requirements:** EXPL-01, EXPL-02, EXPL-13, EXPL-14
+**Requirements:** EXPL-13, EXPL-14 (EXPL-01, EXPL-02 moved to Phase 4)
+
+**Note:** After Phase 4 completes, Phase 5 focuses on empty states and chat panel positioning refinements.
 
 **Success Criteria:**
-1. User sees a tree sidebar (left panel, ~256px) listing all project sections with expand/collapse behavior
-2. Explorer tree shows generated sections with item counts and completion indicators
+1. ~~User sees a tree sidebar (left panel, ~256px) listing all project sections with expand/collapse behavior~~ (Done in Phase 4)
+2. ~~Explorer tree shows generated sections with item counts and completion indicators~~ (Done in Phase 4 via nav tree)
 3. Chat panel is persistently visible as a right panel (~400px) alongside the content area
 4. When a section has no generated content, user sees an empty state with a call-to-action that focuses the chat on that topic
 
@@ -419,6 +429,30 @@ graphs/
 
 ---
 
+## Phase 19: Deferred Pipeline Features (Future)
+
+**Goal:** Original Phase 4 requirements that were deferred after research
+
+**Dependencies:** Phase 4 complete, Phase 18 complete
+
+**Requirements:** PIPE-05, PIPE-06, PIPE-07, CHAT-01
+
+**Status:** Not started (deferred)
+
+**Note:** These requirements were analyzed in Phase 4 research and found to be over-engineered for current state:
+- PIPE-05 (staged approval gates): Per-section review status already exists from Wave 3
+- PIPE-06 (dual-format output): Useful for MCP export but not urgent
+- PIPE-07 (improved knowledge graphs): 6 KB files exist, "improved" is vague
+- CHAT-01 (better chat responses): Addressed by Phase 18 fixes
+
+**Success Criteria:**
+1. System enforces staged approval gates: user must approve PRD before Tech Specs generate
+2. Each artifact outputs in dual format: markdown + machine-parseable
+3. Knowledge graphs produce more accurate scope definitions
+4. Chat responses demonstrate improved requirements-building capability
+
+---
+
 ## Progress
 
 | Phase | Name | Requirements | Status |
@@ -426,8 +460,8 @@ graphs/
 | 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | ✓ Complete |
 | 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
 | 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | ✓ Complete |
-| 4 | Pipeline Orchestration & Quality | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Pending |
-| 5 | Explorer Shell & Layout | EXPL-01, EXPL-02, EXPL-13, EXPL-14 | Pending |
+| 4 | Epic.dev Navigation Pattern | EXPL-01, EXPL-02 | **Planned** |
+| 5 | Explorer Shell & Layout | EXPL-13, EXPL-14 | Pending |
 | 6 | Content Section Views | EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07 | Pending |
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
@@ -436,6 +470,7 @@ graphs/
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 | 18 | Chat Flow Debug | CHAT-FIX-01 | ✓ Complete |
+| 19 | Deferred Pipeline Features | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Deferred |
 
 ---
 
@@ -498,22 +533,26 @@ Track A (Pipeline):                 Track B (Explorer UI):
 
 Phase 1: Onboarding --------+
                              |
-Phase 2: Quick Start -----+ |      Phase 5: Explorer Shell ----+
-(IN PROGRESS)              | |                                  |
-                           | |      Phase 6: Content Views -----+---> CONVERGENCE
-Phase 3: Extraction -------+-+                                  |     (UI renders
-                           |        Phase 7: Rich Data Views ---+      pipeline output)
-Phase 4: Orchestration ----+                                    |
-                                    Phase 8: Chat Enhancements -+
-                                                                |
-                                    Phase 9: Inline Editing ----+
+Phase 2: Quick Start -----+ |      Phase 4: Nav Pattern ----------+
+(COMPLETE)                 | |      (NEXT)                         |
+                           | |                                     |
+Phase 3: Extraction -------+-+      Phase 5: Explorer Shell -------+
+(COMPLETE)                 |                                       |
+                           |        Phase 6: Content Views --------+---> CONVERGENCE
+Phase 19: Deferred --------+                                       |     (UI renders
+(FUTURE)                            Phase 7: Rich Data Views ------+      pipeline output)
+                                                                   |
+                                    Phase 8: Chat Enhancements ----+
+                                                                   |
+                                    Phase 9: Inline Editing -------+
 ```
 
 **Phase 1** can run in parallel with everything (no dependencies).
-**Phases 2, 3** can run in parallel with each other and with Phase 5.
-**Phase 4** depends on Phase 3.
+**Phases 2, 3** can run in parallel with each other and with Phase 4/5.
+**Phase 4** unlocks Phase 5 (navigation tree is foundation for explorer shell).
 **Phases 6, 7, 8** depend on Phase 5 but can run in parallel with each other.
 **Phase 9** depends on Phase 6.
+**Phase 19** is deferred indefinitely.
 
 ---
 
@@ -521,18 +560,18 @@ Phase 4: Orchestration ----+                                    |
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | Phase 3 | Planned |
-| PIPE-02 | Phase 3 | Planned |
-| PIPE-03 | Phase 3 | Planned |
-| PIPE-04 | Phase 3 | Planned |
-| PIPE-05 | Phase 4 | Pending |
-| PIPE-06 | Phase 4 | Pending |
-| PIPE-07 | Phase 4 | Pending |
+| PIPE-01 | Phase 3 | Complete |
+| PIPE-02 | Phase 3 | Complete |
+| PIPE-03 | Phase 3 | Complete |
+| PIPE-04 | Phase 3 | Complete |
+| PIPE-05 | Phase 19 | Deferred |
+| PIPE-06 | Phase 19 | Deferred |
+| PIPE-07 | Phase 19 | Deferred |
 | PIPE-08 | Phase 2 | Complete |
 | PIPE-09 | Phase 2 | Complete |
 | PIPE-10 | Phase 2 | Complete |
-| EXPL-01 | Phase 5 | Pending |
-| EXPL-02 | Phase 5 | Pending |
+| EXPL-01 | Phase 4 | **Planned** |
+| EXPL-02 | Phase 4 | **Planned** |
 | EXPL-03 | Phase 6 | Pending |
 | EXPL-04 | Phase 6 | Pending |
 | EXPL-05 | Phase 6 | Pending |
@@ -546,15 +585,15 @@ Phase 4: Orchestration ----+                                    |
 | EXPL-13 | Phase 5 | Pending |
 | EXPL-14 | Phase 5 | Pending |
 | EXPL-15 | Phase 9 | Pending |
-| CHAT-01 | Phase 4 | Pending |
+| CHAT-01 | Phase 19 | Deferred |
 | CHAT-02 | Phase 8 | Pending |
 | CHAT-03 | Phase 8 | Pending |
 | CHAT-04 | Phase 2 | Complete |
-| ONBD-01 | Phase 1 | Pending |
-| ONBD-02 | Phase 1 | Pending |
-| ONBD-03 | Phase 1 | Pending |
-| ONBD-04 | Phase 1 | Pending |
-| ONBD-05 | Phase 1 | Pending |
+| ONBD-01 | Phase 1 | Complete |
+| ONBD-02 | Phase 1 | Complete |
+| ONBD-03 | Phase 1 | Complete |
+| ONBD-04 | Phase 1 | Complete |
+| ONBD-05 | Phase 1 | Complete |
 
 **Mapped: 34/34** -- all v1 requirements covered, no orphans.
 
@@ -567,3 +606,4 @@ Phase 4: Orchestration ----+                                    |
 *Phase 15 gap closure plans added: 2026-02-01*
 *Phase 3 plans created: 2026-02-01*
 *Phase 18 plans created: 2026-02-01*
+*Phase 4 reframed: 2026-02-02 (Epic.dev navigation pattern focus)*
