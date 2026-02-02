@@ -2,7 +2,7 @@
 
 **Project:** id.c1v.ai - Machine-to-Machine Consent Protocol
 **Core Value:** Bilateral consent protocol for AI agent data access with identity resolution, cryptographic contracts, and dual audit logging
-**Updated:** 2026-02-01 (Phase 4 Complete)
+**Updated:** 2026-02-02 (Phase 5 Plan 01 Complete)
 
 ---
 
@@ -10,8 +10,8 @@
 
 **Milestone:** V1 -- Core Protocol Implementation
 **Planning System:** GSD + CLEO (unified)
-**Last Completed:** Phase 4 UAT - All tests passed
-**Status:** Phase 4 verified (9/9 UAT passed), ready for Phase 5
+**Last Completed:** Phase 5 Plan 01 - Audit Data Layer
+**Status:** Phase 5 in progress (1/2 plans complete)
 
 ```
 Specification Phase: [##########] 100%
@@ -25,7 +25,7 @@ Planning Phase:       [##########] 100%
 ├── ROADMAP.md        ✓ 6 phases with dependencies
 └── CLEO Tasks        ✓ T001-T006 registered
 
-Implementation Phase: [████████  ] 67%
+Implementation Phase: [█████████ ] 75%
 ├── T001 Phase 1: Foundation       ✓ Complete
 ├── T002 Phase 2: Identity         ✓ Complete
 │   ├── 02-01 Data Layer           ✓ Complete (GoldenRecordModel, IdentityService)
@@ -37,7 +37,8 @@ Implementation Phase: [████████  ] 67%
 │   ├── 04-01 Data Layer           ✓ Complete (AgentPinModel, PinsService)
 │   ├── 04-02 API Endpoints        ✓ Complete (POST /pins, /pins/{id}/validate)
 │   └── 04-UAT Verification        ✓ All 9 tests passed
-├── T005 Phase 5: Audit            ○ Not started  ← NEXT
+├── T005 Phase 5: Audit            ◐ In progress (1/2 plans)  ← CURRENT
+│   └── 05-01 Data Layer           ✓ Complete (AuditLogModel, AuditService)
 └── T006 Phase 6: Hardening        ○ Not started
 ```
 
@@ -172,10 +173,12 @@ Implementation Phase: [████████  ] 67%
 - [x] Create PinsService with HMAC-SHA256 signing (04-01)
 - [x] Implement PIN API endpoints (04-02)
 
-### Phase 5: Audit Logging
-- [ ] Dual log submission
-- [ ] Immutability enforcement
-- [ ] Query endpoints with filtering
+### Phase 5: Audit Logging (In Progress)
+- [x] Create AuditLogModel with hash-chain fields (05-01)
+- [x] Create AuditService with per-agent chains (05-01)
+- [x] Update SCHEMA.sql with prev_hash/entry_hash (05-01)
+- [ ] Implement audit API endpoints (05-02)
+- [ ] Query endpoints with filtering (05-02)
 
 ### Phase 6: Hardening
 - [ ] Rate limiting
@@ -222,26 +225,26 @@ src/core/config.py             ✓ Updated - pin_signing_key
 
 ## Session Continuity
 
-**Last session:** 2026-02-01
-**Stopped at:** Phase 4 UAT complete (9/9 tests passed)
-**Resume file:** .planning/phases/05-audit/05-01-PLAN.md (when created)
+**Last session:** 2026-02-02
+**Stopped at:** Phase 5 Plan 01 complete (Audit Data Layer)
+**Resume file:** .planning/phases/05-audit/05-02-PLAN.md (next)
 
 **Resume action:**
-1. Plan Phase 5 (Audit Logging)
-2. Create AuditLogModel and AuditService
-3. Implement dual log submission endpoints
+1. Execute Phase 5 Plan 02 (Audit API Endpoints)
+2. Wire AuditService into FastAPI router
+3. Test audit log submission and querying
 
 **Recent Commits:**
+- 469a65d: feat(05-01): add hash-chain columns to audit_logs schema
+- d5c1fd6: feat(05-01): create AuditService with hash-chain logic
+- ba1e292: feat(05-01): create AuditLogModel with hash-chain fields
 - 9c4893f: test(04): complete UAT - 9/9 passed
-- f5aaa8d: feat(04-02): wire pins router into v1 aggregator
-- 9a87baf: feat(04-02): create PIN API endpoints
-- 938819c: feat(04-01): create PinsService business logic
-- 95737b4: feat(04-01): add PIN signing key configuration
 
-**Fixes during UAT:**
-- Added `content_hash` column to consent_contracts table
-- Added `single_use` column to agent_pins table
-- Fixed SQLAlchemy enum values_callable for contract_status
+**Phase 5 Plan 01 Summary:**
+- AuditLogModel with prev_hash/entry_hash for tamper detection
+- AuditService with per-agent hash chains (create_log, get_logs, verify_chain)
+- GENESIS_HASH = 64 zeros for first entry in chain
+- Canonical JSON + SHA256 for deterministic hashing
 
 ---
 
@@ -255,4 +258,4 @@ src/core/config.py             ✓ Updated - pin_signing_key
 
 ---
 
-*State updated: 2026-02-01 via GSD verify-work (Phase 4 UAT Complete - 9/9 passed)*
+*State updated: 2026-02-02 via GSD execute-plan (Phase 5 Plan 01 Complete)*
