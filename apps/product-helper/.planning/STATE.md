@@ -2,7 +2,7 @@
 
 **Project:** Product Helper
 **Core Value:** Conversational AI intake pipeline that transforms a product idea into a complete, validated PRD with technical specifications
-**Updated:** 2026-02-01
+**Updated:** 2026-02-02
 
 ---
 
@@ -10,10 +10,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 3 (PRD Extraction Agents) - 2026-02-01
-**Active Work:** Phase 18 (Chat Flow Debug) - blocker from Phase 3 UAT
-**Next Phase:** Phase 4 (Pipeline Orchestration & Quality) - after Phase 18
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | 🔴 CHAT BLOCKER
+**Last Completed:** Phase 18 (Chat Flow Debug) - 2026-02-02
+**Active Work:** None
+**Next Phase:** Phase 4 (Pipeline Orchestration & Quality)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -825,16 +825,16 @@ Deferred from v2:
 
 **Last session:** 2026-02-01
 **Active branch:** `main`
-**Last commit:** `3796d6e` - fix(18-02): buildFallbackResult tracks rounds and varies responses
+**Last commit:** `0f6a409` - fix(18-04): only auto-scroll chat when near bottom
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 18-02 Fallback Loop Fix
-**Active work:** Phase 18 - Chat flow debugging (manual UAT pending)
+**Last plan:** Phase 18-04 Two Issues Fix
+**Active work:** Phase 18 complete - manual UAT pending
 
 ### Uncommitted Changes
 ```
-M lib/langchain/schemas.ts  # Epic.dev parity update (~440 → ~917 lines) - pre-existing
+(none - all committed)
 ```
 
 ### Blocking TypeScript Errors (8 total)
@@ -945,7 +945,28 @@ M package.json                                           # Removed @langchain/op
 
 **Summary:** `.planning/phases/18-chat-flow-debug/18-02-SUMMARY.md`
 
-**Manual UAT Pending:** Test with authenticated browser session to verify fix works in practice.
+### Phase 18-04 Completed (2026-02-01)
+
+**Two Issues Fix:**
+
+1. **Extraction Schema Validation Error:**
+   - Added `.default([])` to `dataEntities` in extraction schema
+   - Prevents Zod validation failure when LLM omits the field
+   - Commit: `d0debab`
+
+2. **Chat Scrolling - Can't Scroll Up:**
+   - Fixed useEffect that had no dependency array (ran every render)
+   - Added `messageCount` prop to track new messages
+   - Auto-scroll only when new messages added AND user near bottom
+   - Commit: `0f6a409`
+
+**Files Changed:**
+- `lib/langchain/schemas.ts` - dataEntities default
+- `components/chat/chat-window.tsx` - auto-scroll fix
+
+**Summary:** `.planning/phases/18-chat-flow-debug/18-04-SUMMARY.md`
+
+**Manual UAT:** ✅ Verified (2026-02-02) - Chat progresses, extraction works, scroll behavior fixed.
 
 ### Resume Action (Next Session)
 
