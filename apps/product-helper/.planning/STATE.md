@@ -10,10 +10,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 18 (Chat Flow Debug) - 2026-02-02
+**Last Completed:** Phase 4-01 (Epic.dev Navigation Pattern) - 2026-02-02
 **Active Work:** None
-**Next Phase:** Phase 4 (Pipeline Orchestration & Quality)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE
+**Next Phase:** Phase 4-02 (TBD)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4-01 COMPLETE
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -107,6 +107,15 @@ Updated `lib/langchain/schemas.ts` from ~440 to ~917 lines to match Epic.dev out
   - Updated completeness scoring: Actors 15%, Actor depth 5%, Use cases 20%, Boundaries 15%, Entities 10%, Problem statement 10%, Goals 15%, NFRs 10%
   - Created 13 unit tests for calculateCompleteness and mergeExtractionData
   - PIPE-01 through PIPE-04 all implemented
+- **Phase 4-01 completed (2026-02-02):** Epic.dev Navigation Pattern
+  - Refactored explorer sidebar from data display to pure navigation
+  - NavItem interface updated with children support for nested tree
+  - Product Requirements: links to /requirements + 4 children (Architecture, Tech Stack, User Stories, System Overview)
+  - Backend: expand-only (no href) + 4 children (Schema, API Spec, Infrastructure, Guidelines)
+  - Removed data collapsibles (Actors, Use Cases, Entities, Diagrams lists) from sidebar
+  - Mobile explorer sheet updated with same navigation pattern
+  - Completeness bar retained at bottom of sidebar
+  - 3 atomic commits: nav-config, explorer-sidebar, mobile-explorer-sheet
 
 ---
 
@@ -823,14 +832,14 @@ Deferred from v2:
 
 ## Session Continuity
 
-**Last session:** 2026-02-01
+**Last session:** 2026-02-02
 **Active branch:** `main`
-**Last commit:** `0f6a409` - fix(18-04): only auto-scroll chat when near bottom
+**Last commit:** `c579b3b` - feat(04-01): update mobile-explorer-sheet to navigation-only
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 18-04 Two Issues Fix
-**Active work:** Phase 18 complete - manual UAT pending
+**Last plan:** Phase 4-01 Epic.dev Navigation Pattern
+**Active work:** None - Phase 4-01 complete
 
 ### Uncommitted Changes
 ```
@@ -882,20 +891,12 @@ Deferred from v2:
    - Migrated ask-question.ts from OpenAI to Anthropic (cheapLLM/Haiku)
    - Removed @langchain/openai from package.json (no more OpenAI dependency)
 
-### Files Changed
+### Files Changed (Phase 4-01)
 
 ```
-D app/(dashboard)/projects/[id]/chat/chat-client.tsx    # Old chat page
-D app/(dashboard)/projects/[id]/chat/layout.tsx         # Old chat layout
-D components/chat/artifacts-sidebar.tsx                 # Old artifacts sidebar
-M app/api/chat/projects/[projectId]/route.ts           # +rate limiting
-M app/api/mcp/[projectId]/route.ts                     # CORS fix
-M lib/langchain/config.ts                              # +timeout, +cacheControl, +Haiku
-D lib/langchain/agents/intake/clarification-detector.ts  # Dead code removed (16-03)
-D app/api/chat/test/route.ts                             # OpenAI test route removed (16-03)
-D app/api/chat/route.ts                                  # Legacy chat route removed (16-03)
-M lib/mcp/tools/unique/ask-question.ts                   # OpenAI -> Anthropic (16-03)
-M package.json                                           # Removed @langchain/openai (16-03)
+M components/project/nav-config.ts           # Nested NavItem structure (+32 lines)
+M components/project/explorer-sidebar.tsx    # Navigation-only refactor (-56 lines)
+M components/project/mobile-explorer-sheet.tsx  # Mobile navigation update (+28 lines)
 ```
 
 ### Phase 3 Completed (2026-02-01)
@@ -968,18 +969,54 @@ M package.json                                           # Removed @langchain/op
 
 **Manual UAT:** ✅ Verified (2026-02-02) - Chat progresses, extraction works, scroll behavior fixed.
 
+### Phase 4-01 Completed (2026-02-02)
+
+**Epic.dev Navigation Pattern:**
+
+1. **nav-config.ts - Nested NavItem Structure:**
+   - NavItem interface with optional href and children support
+   - Product Requirements: href `/requirements` + 4 children
+   - Backend: no href (expand-only) + 4 children
+   - Commit: `fde8675`
+
+2. **explorer-sidebar.tsx - Navigation-Only Refactor:**
+   - Removed ItemRow, DiagramRow, data collapsibles
+   - Added NavItemComponent for recursive tree navigation
+   - Kept CompletenessBar at bottom
+   - Commit: `e5290f4`
+
+3. **mobile-explorer-sheet.tsx - Mobile Navigation Update:**
+   - Same navigation pattern as desktop
+   - Sheet closes on navigation via onNavigate callback
+   - Commit: `c579b3b`
+
+**Files Changed:**
+- `components/project/nav-config.ts`
+- `components/project/explorer-sidebar.tsx`
+- `components/project/mobile-explorer-sheet.tsx`
+
+**Summary:** `.planning/phases/04-pipeline-orchestration/04-01-SUMMARY.md`
+
 ### Resume Action (Next Session)
 
-**Priority 1: Manual UAT for Phase 18-02 Fix**
+**Priority 1: Manual UAT for Phase 4-01 Navigation Refactor**
 1. Start dev server: `pnpm dev` (port 3001)
 2. Sign in at http://localhost:3001
-3. Open or create a project, go to chat
-4. Send 5+ messages and observe:
-   - Console logs should show `[KB_DEBUG] buildFallbackResult called - round N`
-   - Round number should increment (1, 2, 3, 4...)
-   - Response messages should vary (not identical)
-   - After round 4, should offer to generate draft
-5. If fix works, Phase 18 can be closed; if not, check `[KB_DEBUG]` logs for why LLM path fails
+3. Navigate to any project
+4. Test desktop sidebar:
+   - Overview, Diagrams, Generate, Connections, Settings are direct links
+   - Product Requirements shows 4 children when expanded, clicking text navigates to /requirements
+   - Backend shows 4 children, clicking text expands (no navigation)
+   - Completeness bar visible at bottom
+   - Collapse toggle shows icons only when collapsed
+5. Test mobile (resize viewport):
+   - Explorer sheet opens with same navigation tree
+   - Clicking any link closes sheet and navigates
+
+**Priority 2: Push to trigger Vercel deployment**
+```bash
+git push origin main
+```
 
 **Priority 2: Fix TypeScript Errors (unblocks build)**
 1. Fix `lib/diagrams/__tests__/generators.test.ts` — update test data to use new TechStackModel shape
