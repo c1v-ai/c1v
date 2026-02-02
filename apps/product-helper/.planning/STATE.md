@@ -10,10 +10,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 4-01 (Epic.dev Navigation Pattern) - 2026-02-02
+**Last Completed:** Phase 4-02 (PRD Overview Page with Accordions) - 2026-02-02
 **Active Work:** None
-**Next Phase:** Phase 4-02 (TBD)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4-01 COMPLETE
+**Next Phase:** Phase 4-03 (TBD)
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4-01 COMPLETE | ✅ PHASE 4-02 COMPLETE
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -834,12 +834,12 @@ Deferred from v2:
 
 **Last session:** 2026-02-02
 **Active branch:** `main`
-**Last commit:** `c579b3b` - feat(04-01): update mobile-explorer-sheet to navigation-only
+**Last commit:** `e12f313` - feat(04-02): add requirements overview route page
 **Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 4-01 Epic.dev Navigation Pattern
-**Active work:** None - Phase 4-01 complete
+**Last plan:** Phase 4-02 PRD Overview Page with Accordions
+**Active work:** None - Phase 4-02 complete
 
 ### Uncommitted Changes
 ```
@@ -890,6 +890,44 @@ Deferred from v2:
    - Deleted app/api/chat/route.ts (legacy, superseded by project-specific route)
    - Migrated ask-question.ts from OpenAI to Anthropic (cheapLLM/Haiku)
    - Removed @langchain/openai from package.json (no more OpenAI dependency)
+
+### Phase 4-02 Completed (2026-02-02)
+
+**PRD Overview Page with Accordions:**
+
+1. **Accordion UI Component** (`50dc94c`)
+   - Installed @radix-ui/react-accordion
+   - Created components/ui/accordion.tsx
+   - Added accordion animations to globals.css
+
+2. **ActorsSection Component** (`6debf63`)
+   - Created components/projects/sections/actors-section.tsx
+   - Displays actor cards with goals and pain points
+   - Support compact prop for accordion view
+
+3. **ScopeSection Component** (`b675b1b`)
+   - Created components/projects/sections/scope-section.tsx
+   - Displays use cases grouped by MoSCoW priority
+   - Shows system boundaries (in-scope/out-of-scope)
+
+4. **PRDOverview Component** (`ccccb1b`)
+   - Created components/projects/prd-overview.tsx
+   - 5 accordion sections: Problem, Users, Goals, Scope, NFRs
+   - Status badges and completeness display
+
+5. **Requirements Route Page** (`e12f313`)
+   - Created app/(dashboard)/projects/[id]/requirements/page.tsx
+   - Server component with Suspense loading
+
+**Files Added:**
+- `components/ui/accordion.tsx` (+55 lines)
+- `components/projects/sections/actors-section.tsx` (+255 lines)
+- `components/projects/sections/scope-section.tsx` (+347 lines)
+- `components/projects/prd-overview.tsx` (+296 lines)
+- `app/(dashboard)/projects/[id]/requirements/page.tsx` (+95 lines)
+- `app/globals.css` (+22 lines for animations)
+
+**Summary:** `.planning/phases/04-pipeline-orchestration/04-02-SUMMARY.md`
 
 ### Files Changed (Phase 4-01)
 
@@ -999,32 +1037,32 @@ M components/project/mobile-explorer-sheet.tsx  # Mobile navigation update (+28 
 
 ### Resume Action (Next Session)
 
-**Priority 1: Manual UAT for Phase 4-01 Navigation Refactor**
+**Priority 1: Manual UAT for Phase 4-02 PRD Overview Page**
 1. Start dev server: `pnpm dev` (port 3001)
 2. Sign in at http://localhost:3001
 3. Navigate to any project
-4. Test desktop sidebar:
-   - Overview, Diagrams, Generate, Connections, Settings are direct links
-   - Product Requirements shows 4 children when expanded, clicking text navigates to /requirements
-   - Backend shows 4 children, clicking text expands (no navigation)
-   - Completeness bar visible at bottom
-   - Collapse toggle shows icons only when collapsed
-5. Test mobile (resize viewport):
-   - Explorer sheet opens with same navigation tree
-   - Clicking any link closes sheet and navigates
+4. Click "Product Requirements" in sidebar
+5. Test PRD Overview page at `/projects/[id]/requirements`:
+   - Page loads with "Product Requirements" title
+   - 5 accordion sections visible (Problem, Users, Goals, Scope, NFRs)
+   - First section with content auto-expands
+   - Clicking accordion header expands/collapses
+   - Section count badges show when content exists
+   - Status badges show (AI Generated, completeness %)
+   - Empty sections show "Start Chat" CTA
+6. Test mobile:
+   - Accordion works on mobile viewport
+   - Content readable and not truncated
 
 **Priority 2: Push to trigger Vercel deployment**
 ```bash
 git push origin main
 ```
 
-**Priority 2: Fix TypeScript Errors (unblocks build)**
-1. Fix `lib/diagrams/__tests__/generators.test.ts` — update test data to use new TechStackModel shape
-2. Fix signal type issues in route tests (or skip/ignore pre-existing issues)
-
-**Priority 3: Commit Schema Update**
-1. Stage `lib/langchain/schemas.ts`
-2. Commit: `feat(schemas): align with Epic.dev output format`
+**Priority 3: Fix TypeScript Errors (unblocks build)**
+1. Fix `lib/langchain/graphs/utils.ts:30` — MessageType assignment error
+2. Fix `lib/diagrams/__tests__/generators.test.ts` — old TechStackModel shape
+3. Fix signal type issues in route tests (or skip/ignore pre-existing issues)
 
 **Priority 4: Schema Propagation (post-Phase 3)**
 1. Update `lib/db/schema/v2-types.ts` — align TechStackModel
