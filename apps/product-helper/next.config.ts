@@ -7,13 +7,21 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: '../../',
   },
-  // Externalize LangChain packages to fix Turbopack ESM bundling issues
-  // Without this, AIMessage.isInstance and other runtime checks fail
+  // Externalize LangChain packages for server-side rendering
+  // This prevents bundling which causes duplicate module instances and
+  // breaks isInstance/prototype checks. The packages use Node.js native ESM.
   serverExternalPackages: [
+    // Core LangChain packages - externalized to use Node.js native resolution
     '@langchain/core',
     '@langchain/anthropic',
     '@langchain/langgraph',
+    '@langchain/community',
     'langchain',
+    // Transitive dependencies
+    'zod-to-json-schema',
+    '@anthropic-ai/sdk',
+    '@langchain/textsplitters',
+    '@langchain/openai',
   ],
 };
 

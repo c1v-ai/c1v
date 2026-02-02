@@ -14,6 +14,13 @@
  */
 
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import {
+  filterAIMessages,
+  getLastAIMessage,
+  getMessageContent,
+  getMessageDiagnostics,
+  isAIMessage,
+} from '@/lib/langchain/message-utils';
 import mermaid from 'mermaid';
 import { db } from '@/lib/db/drizzle';
 import { conversations, projectData, artifacts, type NewArtifact } from '@/lib/db/schema';
@@ -148,15 +155,19 @@ export async function processWithLangGraph(
     console.log(`[STATE_DEBUG] Graph invocation complete`);
     console.log(`[STATE_DEBUG] Result - messages: ${result.messages?.length ?? 0}, extractedData actors: ${result.extractedData?.actors?.length ?? 0}`);
 
-    // 5. Extract AI response from result
-    const aiMessages = result.messages.filter(
-      (m) => m._getType() === 'ai'
-    ) as AIMessage[];
-    const lastAIMessage = aiMessages[aiMessages.length - 1];
+    // 5. Extract AI response from result using defensive utilities
+    // These work even when Turbopack module duplication breaks _getType()
+    const lastAIMessage = getLastAIMessage(result.messages);
+
+    // [STATE_DEBUG] Message diagnostics for debugging bundling issues
+    if (!lastAIMessage) {
+      console.log(`[STATE_DEBUG] No AI message found. Message diagnostics:`,
+        result.messages.slice(-3).map(m => getMessageDiagnostics(m))
+      );
+    }
+
     const response = lastAIMessage
-      ? typeof lastAIMessage.content === 'string'
-        ? lastAIMessage.content
-        : JSON.stringify(lastAIMessage.content)
+      ? getMessageContent(lastAIMessage)
       : 'I apologize, but I was unable to generate a response. Please try again.';
 
     // 6. Save AI response to conversations table
@@ -271,13 +282,11 @@ export async function streamWithLangGraph(
             const output = nodeOutput as Partial<IntakeState>;
 
             // Stream messages as they come in
+            // Use defensive type checking for Turbopack compatibility
             if (output.messages && output.messages.length > 0) {
               for (const msg of output.messages) {
-                if (msg._getType() === 'ai') {
-                  const content =
-                    typeof msg.content === 'string'
-                      ? msg.content
-                      : JSON.stringify(msg.content);
+                if (isAIMessage(msg)) {
+                  const content = getMessageContent(msg);
 
                   // Only send new content
                   const newContent = content.slice(fullResponse.length);

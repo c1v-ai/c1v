@@ -1,6 +1,7 @@
 import { BaseMessage } from '@langchain/core/messages';
 import { ExtractionResult } from '../schemas';
 import type { KnowledgeBankStep } from '@/lib/education/knowledge-bank';
+import { isHumanMessage } from '../message-utils';
 
 /**
  * LangGraph State Machine Types for Product-Helper Intake System
@@ -596,12 +597,13 @@ export function determineCurrentPhase(generated: ArtifactPhase[]): ArtifactPhase
 /**
  * Count human messages in the message array
  * Used to initialize the turn counter
+ * Uses defensive type checking for Turbopack compatibility
  *
  * @param messages - Array of LangChain messages
  * @returns Number of human messages
  */
 function countHumanMessages(messages: BaseMessage[]): number {
-  return messages.filter(m => m._getType() === 'human').length;
+  return messages.filter(m => isHumanMessage(m)).length;
 }
 
 /**

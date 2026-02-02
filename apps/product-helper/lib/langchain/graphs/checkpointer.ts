@@ -5,6 +5,7 @@ import { HumanMessage, AIMessage, SystemMessage, BaseMessage } from '@langchain/
 import type { IntakeState, ArtifactPhase, ArtifactReadiness, ValidationResult } from './types';
 import { ensureCompleteState } from './channels';
 import type { ExtractionResult } from '../schemas';
+import { getMessageType } from '../message-utils';
 
 /**
  * LangGraph State Checkpointer for Product-Helper Intake System
@@ -113,9 +114,9 @@ interface CheckpointMetadata {
  */
 export function serializeState(state: IntakeState): SerializedState {
   return {
-    // Serialize messages
+    // Serialize messages using defensive type checking for Turbopack compatibility
     messages: state.messages.map(m => ({
-      type: m._getType() as 'human' | 'ai' | 'system',
+      type: getMessageType(m) as 'human' | 'ai' | 'system',
       content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content),
     })),
 

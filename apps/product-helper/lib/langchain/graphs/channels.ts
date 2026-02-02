@@ -1,6 +1,7 @@
 import { BaseMessage } from '@langchain/core/messages';
 import type { IntakeState, ArtifactPhase, ArtifactReadiness, ValidationResult, PendingArtifact, StepStatus, GuessHistoryEntry } from './types';
 import type { ExtractionResult } from '../schemas';
+import { getMessageType, getMessageContent as safeGetContent } from '../message-utils';
 
 /**
  * LangGraph Channel Configuration for Product-Helper Intake System
@@ -61,12 +62,13 @@ export function messagesReducer(
   const newMessages = Array.isArray(incoming) ? incoming : [incoming];
 
   // Deduplicate by checking message content
+  // Use defensive type checking for Turbopack compatibility
   const existingContents = new Set(
-    existing.map(m => `${m._getType()}:${m.content}`)
+    existing.map(m => `${getMessageType(m)}:${safeGetContent(m)}`)
   );
 
   const uniqueNewMessages = newMessages.filter(m => {
-    const key = `${m._getType()}:${m.content}`;
+    const key = `${getMessageType(m)}:${safeGetContent(m)}`;
     if (existingContents.has(key)) {
       return false;
     }
