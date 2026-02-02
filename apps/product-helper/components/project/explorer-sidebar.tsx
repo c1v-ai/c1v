@@ -1,71 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Database,
-  GitBranch,
   ChevronLeft,
   ChevronRight,
-  Users,
-  FileText,
+  ChevronDown,
+  ChevronUp,
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CollapsibleSection } from '@/components/chat/collapsible-section';
 import { useProjectChat } from './project-chat-provider';
-import { getProjectNavItems, isNavItemActive, getDiagramLabel } from './nav-config';
-import type { ParsedArtifact } from '@/lib/db/type-guards';
+import { getProjectNavItems, isNavItemActive, type NavItem } from './nav-config';
 
 // ============================================================
 // Sub-components
 // ============================================================
 
-function ItemRow({ primary, secondary }: { primary: string; secondary?: string }) {
-  return (
-    <div className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-          {primary}
-        </p>
-        {secondary && (
-          <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {secondary}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function DiagramRow({ artifact, onClick }: { artifact: ParsedArtifact; onClick: () => void }) {
-  const label = getDiagramLabel(artifact.type);
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left',
-        'transition-colors duration-150',
-        'hover:bg-[var(--bg-secondary)] cursor-pointer'
-      )}
-    >
-      <span
-        className="flex-shrink-0 rounded px-1.5 py-0.5 text-xs font-medium"
-        style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
-      >
-        {label}
-      </span>
-      <span className="flex-1 text-sm truncate" style={{ color: 'var(--text-primary)' }}>
-        {label} Diagram
-      </span>
-    </button>
-  );
-}
-
 function CompletenessBar({ percentage }: { percentage: number }) {
   return (
-    <div className="px-3 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+    <div className="px-3 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium uppercase" style={{ color: 'var(--text-muted)' }}>
           Completeness
@@ -90,6 +45,88 @@ function CompletenessBar({ percentage }: { percentage: number }) {
   );
 }
 
+function NavItemComponent({ item, pathname, depth = 0 }: { item: NavItem; pathname: string; depth?: number }) {
+  const [expanded, setExpanded] = useState(true);
+  const Icon = item.icon;
+  const hasChildren = item.children && item.children.length > 0;
+  const active = isNavItemActive(item, pathname);
+
+  if (hasChildren) {
+    return (
+      <div>
+        <div
+          className={cn(
+            'flex items-center w-full rounded-md text-sm font-medium transition-colors',
+            'hover:bg-[var(--bg-secondary)]',
+            active && !item.href ? 'bg-[var(--bg-secondary)]' : ''
+          )}
+          style={{ paddingLeft: `${8 + depth * 12}px` }}
+        >
+          {/* Name/Link area - clickable for navigation if href exists */}
+          {item.href ? (
+            <Link
+              href={item.href}
+              className="flex items-center gap-2 flex-1 py-1.5"
+              style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}
+            >
+              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <span>{item.name}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-2 flex-1 py-1.5 text-left"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <span>{item.name}</span>
+            </button>
+          )}
+          {/* Chevron button for expand/collapse */}
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="p-1.5 mr-1 rounded hover:bg-[var(--bg-primary)]"
+            aria-label={expanded ? 'Collapse section' : 'Expand section'}
+          >
+            {expanded ? (
+              <ChevronUp className="h-3 w-3" style={{ color: 'var(--text-muted)' }} />
+            ) : (
+              <ChevronDown className="h-3 w-3" style={{ color: 'var(--text-muted)' }} />
+            )}
+          </button>
+        </div>
+        {expanded && (
+          <div className="mt-0.5">
+            {item.children!.map((child) => (
+              <NavItemComponent key={child.name} item={child} pathname={pathname} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Leaf node - always a link
+  return (
+    <Link
+      href={item.href!}
+      className={cn(
+        'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors',
+        active ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'
+      )}
+      style={{
+        paddingLeft: `${8 + depth * 12}px`,
+        color: active ? 'var(--accent)' : 'var(--text-primary)'
+      }}
+    >
+      <Icon className="h-4 w-4 flex-shrink-0" />
+      {item.name}
+    </Link>
+  );
+}
+
 // ============================================================
 // ExplorerSidebar
 // ============================================================
@@ -99,19 +136,12 @@ export function ExplorerSidebar({ className }: { className?: string }) {
   const {
     projectId,
     parsedProjectData,
-    parsedArtifacts,
     explorerCollapsed,
     toggleExplorer,
-    setSelectedDiagram,
   } = useProjectChat();
 
   const navItems = getProjectNavItems(projectId);
-  const { actors, useCases, dataEntities, completeness } = parsedProjectData;
-  const hasData =
-    actors.length > 0 ||
-    useCases.length > 0 ||
-    dataEntities.length > 0 ||
-    parsedArtifacts.length > 0;
+  const { completeness } = parsedProjectData;
 
   return (
     <aside
@@ -147,10 +177,12 @@ export function ExplorerSidebar({ className }: { className?: string }) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isNavItemActive(item, pathname);
-            return (
+            // For collapsed state, link to href if available, otherwise just show icon
+            const href = item.href || (item.children?.[0]?.href);
+            return href ? (
               <Link
                 key={item.name}
-                href={item.href}
+                href={href}
                 title={item.name}
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
@@ -161,132 +193,44 @@ export function ExplorerSidebar({ className }: { className?: string }) {
                   className={cn('h-4 w-4', active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]')}
                 />
               </Link>
+            ) : (
+              <div
+                key={item.name}
+                title={item.name}
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-md',
+                  active ? 'bg-[var(--bg-secondary)]' : ''
+                )}
+              >
+                <Icon
+                  className={cn('h-4 w-4', active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]')}
+                />
+              </div>
             );
           })}
-          <div className="w-8 border-t my-1" style={{ borderColor: 'var(--border)' }} />
-          <div className="flex flex-col items-center gap-1" title={`${actors.length} Actors`}>
-            <Users className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{actors.length}</span>
-          </div>
-          <div className="flex flex-col items-center gap-1" title={`${useCases.length} Use Cases`}>
-            <FileText className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{useCases.length}</span>
-          </div>
-          <div className="flex flex-col items-center gap-1" title={`${dataEntities.length} Data Entities`}>
-            <Database className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{dataEntities.length}</span>
-          </div>
-          <div className="flex flex-col items-center gap-1" title={`${parsedArtifacts.length} Diagrams`}>
-            <GitBranch className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{parsedArtifacts.length}</span>
-          </div>
         </div>
       ) : (
         /* Expanded State */
         <div className="flex flex-col h-full overflow-hidden pt-2">
-          {/* Section Navigation */}
-          <nav className="px-2 pb-2 space-y-0.5">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = isNavItemActive(item, pathname);
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors',
-                    active
-                      ? 'bg-[var(--bg-secondary)]'
-                      : 'hover:bg-[var(--bg-secondary)]'
-                  )}
-                  style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              );
-            })}
+          {/* Navigation Tree */}
+          <nav className="px-2 pb-2 space-y-0.5 flex-1 overflow-y-auto">
+            {navItems.map((item) => (
+              <NavItemComponent key={item.name} item={item} pathname={pathname} />
+            ))}
           </nav>
 
-          {/* Separator */}
-          <div className="border-t mx-3" style={{ borderColor: 'var(--border)' }} />
+          {/* Empty state message */}
+          {completeness === 0 && (
+            <div className="flex flex-col items-center justify-center px-4 py-4 text-center">
+              <Sparkles className="h-6 w-6 mb-2" style={{ color: 'var(--text-muted)' }} />
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Start chatting to build your PRD
+              </p>
+            </div>
+          )}
 
-          {/* Completeness Bar */}
+          {/* Completeness Bar - always at bottom */}
           <CompletenessBar percentage={completeness} />
-
-          {/* Scrollable Data Content */}
-          <div className="flex-1 overflow-y-auto">
-            {hasData ? (
-              <>
-                <CollapsibleSection title="Actors" icon={Users} count={actors.length} defaultOpen={false}>
-                  {actors.length > 0 ? (
-                    <div className="space-y-1">
-                      {actors.map((actor, i) => (
-                        <ItemRow key={`actor-${i}`} primary={actor.name} secondary={actor.role} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>
-                      No actors discovered yet
-                    </p>
-                  )}
-                </CollapsibleSection>
-
-                <CollapsibleSection title="Use Cases" icon={FileText} count={useCases.length} defaultOpen={false}>
-                  {useCases.length > 0 ? (
-                    <div className="space-y-1">
-                      {useCases.map((uc, i) => (
-                        <ItemRow key={`usecase-${i}`} primary={uc.name} secondary={uc.id} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>
-                      No use cases discovered yet
-                    </p>
-                  )}
-                </CollapsibleSection>
-
-                <CollapsibleSection title="Data Entities" icon={Database} count={dataEntities.length} defaultOpen={false}>
-                  {dataEntities.length > 0 ? (
-                    <div className="space-y-1">
-                      {dataEntities.map((entity, i) => (
-                        <ItemRow key={`entity-${i}`} primary={entity.name} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>
-                      No data entities discovered yet
-                    </p>
-                  )}
-                </CollapsibleSection>
-
-                <CollapsibleSection title="Diagrams" icon={GitBranch} count={parsedArtifacts.length} defaultOpen>
-                  {parsedArtifacts.length > 0 ? (
-                    <div className="space-y-1">
-                      {parsedArtifacts.map((artifact) => (
-                        <DiagramRow
-                          key={`diagram-${artifact.id}`}
-                          artifact={artifact}
-                          onClick={() => setSelectedDiagram(artifact)}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>
-                      No diagrams generated yet
-                    </p>
-                  )}
-                </CollapsibleSection>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center px-4 py-8 text-center">
-                <Sparkles className="h-8 w-8 mb-3" style={{ color: 'var(--text-muted)' }} />
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  Keep chatting to discover more data!
-                </p>
-              </div>
-            )}
-          </div>
         </div>
       )}
     </aside>
