@@ -73,10 +73,13 @@ export function ChatMessages({
 export interface ChatLayoutProps {
   content: ReactNode;
   footer: ReactNode;
+  /** Number of messages for auto-scroll tracking */
+  messageCount?: number;
 }
 
-export function ChatLayout({ content, footer }: ChatLayoutProps) {
+export function ChatLayout({ content, footer, messageCount = 0 }: ChatLayoutProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(0);
   const [showScrollButton, setShowScrollButton] = React.useState(false);
 
   // Scroll to bottom helper
@@ -89,10 +92,22 @@ export function ChatLayout({ content, footer }: ChatLayoutProps) {
     }
   }, []);
 
-  // Auto-scroll to bottom when content changes
+  // Auto-scroll only when new messages are added AND user is near bottom
   useEffect(() => {
-    scrollToBottom('instant');
-  });
+    // Only auto-scroll when messages are added, not on every render
+    if (messageCount > prevMessageCountRef.current) {
+      if (scrollRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
+
+        // Scroll if user was near bottom OR this is the first messages
+        if (isNearBottom || prevMessageCountRef.current === 0) {
+          scrollToBottom('instant');
+        }
+      }
+      prevMessageCountRef.current = messageCount;
+    }
+  }, [messageCount, scrollToBottom]);
 
   // Handle virtual keyboard on iOS - scroll to bottom when keyboard appears
   useEffect(() => {
@@ -267,6 +282,7 @@ export function ChatWindow({
 
   return (
     <ChatLayout
+      messageCount={chat.messages.length}
       content={
         <ChatMessages
           messages={chat.messages}
