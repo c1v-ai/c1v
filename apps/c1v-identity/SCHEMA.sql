@@ -403,6 +403,11 @@ CREATE TABLE audit_logs (
     source_ip INET,
     geo_location TEXT,  -- ISO 3166 code
 
+    -- Hash-chain fields for tamper detection
+    -- Each agent maintains an independent hash chain
+    prev_hash TEXT,  -- NULL only for genesis entry in agent's chain
+    entry_hash TEXT NOT NULL,  -- SHA256 of canonical content
+
     -- Foreign keys (soft - don't block inserts if references missing)
     CONSTRAINT audit_logs_contract_fk
         FOREIGN KEY (contract_id)
@@ -432,6 +437,10 @@ COMMENT ON COLUMN audit_logs.source IS
     'Which party/system created this log entry';
 COMMENT ON COLUMN audit_logs.request_id IS
     'Correlation ID for linking request/response pairs';
+COMMENT ON COLUMN audit_logs.prev_hash IS
+    'SHA256 hash of previous entry in this agent''s chain (NULL for genesis)';
+COMMENT ON COLUMN audit_logs.entry_hash IS
+    'SHA256 hash of this entry''s canonical content for tamper detection';
 
 -- -----------------------------------------------------------------------------
 -- INDEXES
@@ -490,6 +499,11 @@ CREATE INDEX idx_audit_logs_request_id ON audit_logs(request_id)
     WHERE request_id IS NOT NULL;
 -- Composite index for compliance queries (by source and time range)
 CREATE INDEX idx_audit_logs_source_timestamp ON audit_logs(source, timestamp DESC);
+-- Index for chain verification (find latest entry for agent)
+CREATE INDEX idx_audit_logs_agent_prev_hash ON audit_logs(agent_id, prev_hash)
+    WHERE agent_id IS NOT NULL;
+-- Index for entry hash lookup
+CREATE INDEX idx_audit_logs_entry_hash ON audit_logs(entry_hash);
 
 -- -----------------------------------------------------------------------------
 -- TRIGGERS
