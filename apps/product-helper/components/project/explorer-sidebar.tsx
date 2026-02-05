@@ -147,7 +147,7 @@ export function ExplorerSidebar({ className }: { className?: string }) {
     <aside
       className={cn(
         'relative flex-col h-full border-r transition-all duration-300 ease-in-out flex-shrink-0',
-        explorerCollapsed ? 'w-14' : 'w-60',
+        explorerCollapsed ? 'w-14' : 'w-64',
         className
       )}
       style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
