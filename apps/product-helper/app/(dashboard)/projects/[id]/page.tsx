@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProjectById } from '@/app/actions/projects';
-import { MessageSquare, Edit, TrendingUp, Calendar, User, Database, GitBranch, FileDown, Plug } from 'lucide-react';
+import { Edit, TrendingUp, Calendar, User } from 'lucide-react';
 import { DeleteProjectButton } from './delete-button';
 import { ValidationReport } from '@/components/validation/validation-report';
-import { ExportButton } from '@/components/export/export-button';
 
 const statusColors = {
   intake: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
@@ -115,142 +114,6 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
               >
                 {project.vision}
               </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Button
-              asChild
-              style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
-              className="hover:opacity-90 h-auto py-4"
-            >
-              <Link href={`/projects/${project.id}/chat`}>
-                <div className="flex flex-col items-start w-full">
-                  <div className="flex items-center gap-2 mb-1">
-                    <MessageSquare className="h-5 w-5" />
-                    <span className="font-semibold">Start Chat</span>
-                  </div>
-                  <span className="text-xs opacity-90">
-                    Continue requirements gathering
-                  </span>
-                </div>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto py-4"
-            >
-              <Link href={`/projects/${project.id}/data`}>
-                <div className="flex flex-col items-start w-full">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Database className="h-5 w-5" />
-                    <span className="font-semibold">View Data</span>
-                  </div>
-                  <span className="text-xs">
-                    Extracted actors, use cases, entities
-                  </span>
-                </div>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto py-4"
-            >
-              <Link href={`/projects/${project.id}/diagrams`}>
-                <div className="flex flex-col items-start w-full">
-                  <div className="flex items-center gap-2 mb-1">
-                    <GitBranch className="h-5 w-5" />
-                    <span className="font-semibold">View Diagrams</span>
-                  </div>
-                  <span className="text-xs">
-                    Context, use case, and class diagrams
-                  </span>
-                </div>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto py-4"
-            >
-              <Link href={`/projects/${project.id}/connections`}>
-                <div className="flex flex-col items-start w-full">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Plug className="h-5 w-5" />
-                    <span className="font-semibold">Connections</span>
-                  </div>
-                  <span className="text-xs">
-                    MCP server for Claude Code
-                  </span>
-                </div>
-              </Link>
-            </Button>
-
-            <div className="h-auto py-4 flex items-center justify-center">
-              <div className="flex flex-col items-center w-full">
-                <div className="flex items-center gap-2 mb-1">
-                  <FileDown className="h-5 w-5" />
-                  <span className="font-semibold">Export PRD</span>
-                </div>
-                <ExportButton
-                  projectId={project.id}
-                  projectName={project.name}
-                  variant="outline"
-                  size="sm"
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Project Statistics Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
-            Project Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
-                {project.conversations?.length || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">Messages</div>
-            </div>
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
-                {project.artifacts?.length || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">Artifacts</div>
-            </div>
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
-                {project.validationPassed || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">Checks Passed</div>
-            </div>
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
-                {project.projectData?.completeness || 0}%
-              </div>
-              <div className="text-sm text-muted-foreground">Completeness</div>
             </div>
           </div>
         </CardContent>
