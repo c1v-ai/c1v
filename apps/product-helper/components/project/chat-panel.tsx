@@ -96,7 +96,7 @@ export function ChatPanel({ className }: { className?: string }) {
 
   return (
     <aside
-      className={cn('flex-col w-[380px] border-l flex-shrink-0 h-full', className)}
+      className={cn('flex-col w-[400px] border-l flex-shrink-0 h-full', className)}
       style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
     >
       {/* Header */}
