@@ -81,37 +81,74 @@ Plans:
 
 ## Phase 4: Epic.dev Navigation Pattern (Reframed)
 
-**Goal:** Transform sidebar from data display to pure navigation following Epic.dev pattern
+**Goal:** Transform sidebar from data display to pure navigation, with PRD Overview page showing accordions
 
 **Dependencies:** None (UI refactor, existing routes)
 
-**Requirements:** EXPL-01, EXPL-02 (moved from Phase 5 - navigation tree is the core of explorer shell)
+**Requirements:** EXPL-01, EXPL-02 (navigation tree is the core of explorer shell)
 
-**Note:** Original PIPE-05/06/07/CHAT-01 requirements deferred to Phase 19. Research revealed these were over-engineered for current state. The real pain point is sidebar redundancy and missing navigation structure.
+**Note:** Original PIPE-05/06/07/CHAT-01 deferred to Phase 19. The real need is sidebar navigation + PRD Overview page.
 
-**Plans:** 1 plan
+**Data Migration (sidebar → center):**
+- Actors list → Target Users accordion in PRD Overview
+- Use Cases list → User Stories page (existing route)
+- Data Entities list → Database Schema page (existing route)
+- Diagrams list → Diagrams page (existing route)
+
+**Plans:** 2 plans in 2 waves
+
+**Status:** Complete (2026-02-02)
 
 Plans:
-- [ ] 04-01-PLAN.md — Refactor explorer sidebar to Epic.dev navigation pattern
+- [x] 04-01-PLAN.md — Refactor sidebar to navigation tree (Wave 1)
+- [x] 04-02-PLAN.md — Create PRD Overview page with accordions (Wave 2)
+
+**Navigation Structure:**
+```
+Overview
+Product Requirements ▼  ← Click = PRD Overview (accordions)
+  ├── Architecture Diagram
+  ├── Tech Stack
+  ├── User Stories        ← Use Cases data here
+  └── System Overview
+Backend ▼                 ← Click = expands only (no overview)
+  ├── Database Schema     ← Data Entities here
+  ├── API Specification
+  ├── Infrastructure
+  └── Coding Guidelines
+Diagrams                  ← Diagrams data here
+Generate
+Connections
+Settings
+```
 
 **Success Criteria:**
-1. Sidebar shows expandable navigation tree with "Product Requirements" and "Backend" as parent items
-2. Clicking any nav item navigates to the corresponding route page (routes already exist)
-3. Completeness bar remains visible in sidebar
-4. Data collapsibles removed (Actors, Use Cases, Entities, Diagrams lists)
-5. Collapsed sidebar shows top-level icons only (no data counts)
+1. Sidebar shows navigation tree (no data lists)
+2. "Product Requirements" navigates to PRD Overview with accordions
+3. PRD Overview shows: Problem Statement, Target Users (from Actors), Goals & Metrics, Scope, NFRs
+4. "Backend" expands to show children only (no overview page)
+5. Data displays in center: User Stories, Database Schema, Diagrams pages
+6. Completeness bar visible in sidebar
+7. Collapsed sidebar shows icons only
 
 ---
 
 ## Phase 5: Explorer Shell & Layout
 
-**Goal:** Users navigate their project through a tree sidebar with persistent chat panel and guided empty states
+**Goal:** Clean up Canvas (middle content area), adjust layout dimensions, ensure consistent empty states
 
 **Dependencies:** None for UI shell (data already exists from phases 9-11). Logically Track B starts here.
 
 **Requirements:** EXPL-13, EXPL-14 (EXPL-01, EXPL-02 moved to Phase 4)
 
-**Note:** After Phase 4 completes, Phase 5 focuses on empty states and chat panel positioning refinements.
+**Note:** After Phase 4 completes, Phase 5 focuses on Overview cleanup, layout dimensions, and empty state consistency.
+
+**Plans:** 3 plans in 1 wave
+
+Plans:
+- [ ] 05-01-PLAN.md — Clean Overview page (remove Quick Actions/Statistics, add empty state)
+- [ ] 05-02-PLAN.md — Layout dimension adjustments (Chat 400px, Explorer 256px)
+- [ ] 05-03-PLAN.md — Empty state audit across 13 section components
 
 **Success Criteria:**
 1. ~~User sees a tree sidebar (left panel, ~256px) listing all project sections with expand/collapse behavior~~ (Done in Phase 4)
@@ -460,8 +497,8 @@ graphs/
 | 1 | Onboarding & First Impressions | ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05 | ✓ Complete |
 | 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
 | 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | ✓ Complete |
-| 4 | Epic.dev Navigation Pattern | EXPL-01, EXPL-02 | **Planned** |
-| 5 | Explorer Shell & Layout | EXPL-13, EXPL-14 | Pending |
+| 4 | Epic.dev Navigation Pattern | EXPL-01, EXPL-02 | ✓ Complete |
+| 5 | Explorer Shell & Layout | EXPL-13, EXPL-14 | **Planned** |
 | 6 | Content Section Views | EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07 | Pending |
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
@@ -534,10 +571,10 @@ Track A (Pipeline):                 Track B (Explorer UI):
 Phase 1: Onboarding --------+
                              |
 Phase 2: Quick Start -----+ |      Phase 4: Nav Pattern ----------+
-(COMPLETE)                 | |      (NEXT)                         |
+(COMPLETE)                 | |      (COMPLETE)                     |
                            | |                                     |
 Phase 3: Extraction -------+-+      Phase 5: Explorer Shell -------+
-(COMPLETE)                 |                                       |
+(COMPLETE)                 |        (NEXT)                         |
                            |        Phase 6: Content Views --------+---> CONVERGENCE
 Phase 19: Deferred --------+                                       |     (UI renders
 (FUTURE)                            Phase 7: Rich Data Views ------+      pipeline output)
@@ -570,8 +607,8 @@ Phase 19: Deferred --------+                                       |     (UI ren
 | PIPE-08 | Phase 2 | Complete |
 | PIPE-09 | Phase 2 | Complete |
 | PIPE-10 | Phase 2 | Complete |
-| EXPL-01 | Phase 4 | **Planned** |
-| EXPL-02 | Phase 4 | **Planned** |
+| EXPL-01 | Phase 4 | Complete |
+| EXPL-02 | Phase 4 | Complete |
 | EXPL-03 | Phase 6 | Pending |
 | EXPL-04 | Phase 6 | Pending |
 | EXPL-05 | Phase 6 | Pending |
@@ -582,8 +619,8 @@ Phase 19: Deferred --------+                                       |     (UI ren
 | EXPL-10 | Phase 7 | Pending |
 | EXPL-11 | Phase 7 | Pending |
 | EXPL-12 | Phase 7 | Pending |
-| EXPL-13 | Phase 5 | Pending |
-| EXPL-14 | Phase 5 | Pending |
+| EXPL-13 | Phase 5 | **Planned** |
+| EXPL-14 | Phase 5 | **Planned** |
 | EXPL-15 | Phase 9 | Pending |
 | CHAT-01 | Phase 19 | Deferred |
 | CHAT-02 | Phase 8 | Pending |
@@ -607,3 +644,4 @@ Phase 19: Deferred --------+                                       |     (UI ren
 *Phase 3 plans created: 2026-02-01*
 *Phase 18 plans created: 2026-02-01*
 *Phase 4 reframed: 2026-02-02 (Epic.dev navigation pattern focus)*
+*Phase 5 plans created: 2026-02-04*
