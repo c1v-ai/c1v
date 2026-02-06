@@ -161,12 +161,14 @@ async function ProjectDetail({ projectId }: { projectId: number }) {
         </Card>
       )}
 
-      {/* Validation Report */}
-      <ValidationReport
-        projectId={project.id}
-        projectName={project.name}
-        initialValidationScore={project.validationScore || 0}
-      />
+      {/* Validation Report - dev only (hidden from end users) */}
+      {process.env.NODE_ENV === 'development' && (
+        <ValidationReport
+          projectId={project.id}
+          projectName={project.name}
+          initialValidationScore={project.validationScore || 0}
+        />
+      )}
     </div>
   );
 }
