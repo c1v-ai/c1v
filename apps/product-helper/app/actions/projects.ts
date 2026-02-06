@@ -267,6 +267,7 @@ export async function getProjectById(projectId: number) {
         },
         projectData: true,
         artifacts: true,
+        userStories: true,
         conversations: {
           orderBy: (conversations, { asc }) => [asc(conversations.createdAt)],
           limit: 50,
