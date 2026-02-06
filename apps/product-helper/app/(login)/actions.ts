@@ -101,8 +101,8 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return createCheckoutSession({ team: foundTeam, priceId });
   }
 
-  // Redirect returning users to their projects list
-  redirect('/projects');
+  // Redirect returning users to welcome page (matches new user flow)
+  redirect('/welcome-test');
 });
 
 const signUpSchema = z.object({
