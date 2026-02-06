@@ -2,8 +2,8 @@
 
 **Created:** 2026-01-26
 **Depth:** Comprehensive
-**Phases:** 9
-**Coverage:** 34/34 v1 requirements mapped
+**Phases:** 10
+**Coverage:** 34/34 v1 requirements + 13 UX/mobile requirements mapped
 
 ---
 
@@ -133,7 +133,7 @@ Settings
 
 ---
 
-## Phase 5: Explorer Shell & Layout
+## Phase 5: Explorer Shell & Layout ✓
 
 **Goal:** Clean up Canvas (middle content area), adjust layout dimensions, ensure consistent empty states
 
@@ -141,37 +141,59 @@ Settings
 
 **Requirements:** EXPL-13, EXPL-14 (EXPL-01, EXPL-02 moved to Phase 4)
 
-**Note:** After Phase 4 completes, Phase 5 focuses on Overview cleanup, layout dimensions, and empty state consistency.
+**Status:** Complete (2026-02-04). All 3 plans executed in 1 wave.
 
 **Plans:** 3 plans in 1 wave
 
 Plans:
-- [ ] 05-01-PLAN.md — Clean Overview page (remove Quick Actions/Statistics, add empty state)
-- [ ] 05-02-PLAN.md — Layout dimension adjustments (Chat 400px, Explorer 256px)
-- [ ] 05-03-PLAN.md — Empty state audit across 13 section components
+- [x] 05-01-PLAN.md — Clean Overview page (remove Quick Actions/Statistics, add empty state)
+- [x] 05-02-PLAN.md — Layout dimension adjustments (Chat 400px, Explorer 256px)
+- [x] 05-03-PLAN.md — Empty state audit across 13 section components
 
 **Success Criteria:**
 1. ~~User sees a tree sidebar (left panel, ~256px) listing all project sections with expand/collapse behavior~~ (Done in Phase 4)
 2. ~~Explorer tree shows generated sections with item counts and completion indicators~~ (Done in Phase 4 via nav tree)
-3. Chat panel is persistently visible as a right panel (~400px) alongside the content area
-4. When a section has no generated content, user sees an empty state with a call-to-action that focuses the chat on that topic
+3. ✓ Chat panel is persistently visible as a right panel (~400px) alongside the content area
+4. ✓ When a section has no generated content, user sees an empty state with a call-to-action that focuses the chat on that topic
 
 ---
 
-## Phase 6: Content Section Views
+## Phase 6: Content Section Views + UX Polish
 
-**Goal:** Users can view all generated PRD and technical specification content in formatted, section-specific views
+**Goal:** Users can view all generated PRD and technical specification content in formatted, section-specific views, AND the project page UX is overhauled to clearly communicate value, surface generated content, and eliminate jargon
 
 **Dependencies:** Phase 5 (explorer shell must exist to host content views)
 
-**Requirements:** EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07
+**Requirements:** EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07, UX-01 through UX-09
 
-**Success Criteria:**
+**Plans:** 5 plans in 2 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — Quick UX fixes: post-login redirect, vision metadata stripping, validation hide, green hover removal (UX-01, UX-02, UX-08, UX-09)
+- [ ] 06-02-PLAN.md — Content view verification: confirm all 5 section views render correctly (EXPL-03 to EXPL-07)
+- [ ] 06-03-PLAN.md — Explorer status indicators and pulse animation (UX-04, UX-05)
+- [ ] 06-04-PLAN.md — Overview page redesign: quick instructions, context card, artifact pipeline (UX-03)
+- [ ] 06-05-PLAN.md — Plain language prompts and educational loading states (UX-06, UX-07)
+
+**Success Criteria (Content Views - original):**
 1. User can select "Product Requirements" in the tree and view the full PRD content in a formatted markdown view
 2. User can view System Overview section with project summary, actors, and system boundaries
 3. User can view Tech Stack section showing recommended technologies with rationale and alternatives
 4. User can view Infrastructure & Deployment section showing hosting, CI/CD, monitoring, and environments
 5. User can view Architecture Diagram section with the rendered system architecture Mermaid diagram
+
+**Success Criteria (UX Polish - expanded scope):**
+6. All users (new + returning) land on `/welcome` after sign-in instead of `/projects`
+7. System prompt metadata (`[Mode: ...]`, context strings) no longer visible in chat messages or vision statement field
+8. Overview middle section shows: 2-step quick instructions (Chat -> Export), project context card, interactive artifact pipeline with status, compact connector cards linking to Connections page
+9. Explorer tree items display completion status indicators (checkmark / spinner / empty circle)
+10. Explorer tree pulses/highlights items when new content arrives from AI generation
+11. AI chat responses explain systems engineering concepts in plain language before using technical terms
+12. Loading states during AI processing show rotating educational snippets (knowledge bank updated for current product scope -- all skill levels)
+13. PRD-SPEC Validation section moved to dev-only (removed from user-facing overview)
+14. Green hover highlighting removed from system overview description points
+
+**Source:** `.planning/VOICE-NOTES-ENHANCED.md` (voice notes session 2026-02-06)
 
 ---
 
@@ -217,6 +239,26 @@ Plans:
 **Success Criteria:**
 1. User can click on a PRD section within the explorer view and edit the content inline
 2. Edits persist and are reflected when the section is next viewed
+
+---
+
+## Phase 10: Mobile Redesign
+
+**Goal:** Mobile interface restructured with purposeful navigation that serves users creating PRDs
+
+**Dependencies:** Phase 6 (desktop UX must be stable before mobile adaptation)
+
+**Requirements:** MOB-01, MOB-02, MOB-03, MOB-04
+
+**Success Criteria:**
+1. Bottom nav "Chat" opens current project chat (not new chat)
+2. Bottom nav restructured: Explorer replaces Projects, Account moved to profile menu, Home removed
+3. Navigation layers consolidated from three (bottom nav + hamburger + project toggles) to coherent hierarchy
+4. Mobile chatbot UX follows best practices from research phase
+
+**Research needed:** Mobile chatbot UX patterns audit before implementation. Reference: `upgrade v2/mobile-inspo-2.png`
+
+**Source:** `.planning/VOICE-NOTES-ENHANCED.md` (voice notes session 2026-02-06)
 
 ---
 
@@ -498,8 +540,8 @@ graphs/
 | 2 | Quick Start Pipeline | PIPE-08, PIPE-09, PIPE-10, CHAT-04 | ✓ Complete |
 | 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | ✓ Complete |
 | 4 | Epic.dev Navigation Pattern | EXPL-01, EXPL-02 | ✓ Complete |
-| 5 | Explorer Shell & Layout | EXPL-13, EXPL-14 | **Planned** |
-| 6 | Content Section Views | EXPL-03, EXPL-04, EXPL-05, EXPL-06, EXPL-07 | Pending |
+| 5 | Explorer Shell & Layout | EXPL-13, EXPL-14 | ✓ Complete |
+| 6 | Content Section Views + UX Polish | EXPL-03 to EXPL-07, UX-01 to UX-09 | **Planned** |
 | 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
 | 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
@@ -507,6 +549,7 @@ graphs/
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
 | 17 | Infrastructure & Diagrams | INFRA-01, INFRA-02, INFRA-03 | ✓ Complete |
 | 18 | Chat Flow Debug | CHAT-FIX-01 | ✓ Complete |
+| 10 | Mobile Redesign | MOB-01, MOB-02, MOB-03, MOB-04 | Pending |
 | 19 | Deferred Pipeline Features | PIPE-05, PIPE-06, PIPE-07, CHAT-01 | Deferred |
 
 ---
@@ -582,6 +625,8 @@ Phase 19: Deferred --------+                                       |     (UI ren
                                     Phase 8: Chat Enhancements ----+
                                                                    |
                                     Phase 9: Inline Editing -------+
+                                                                   |
+                                    Phase 10: Mobile Redesign -----+
 ```
 
 **Phase 1** can run in parallel with everything (no dependencies).
@@ -589,6 +634,7 @@ Phase 19: Deferred --------+                                       |     (UI ren
 **Phase 4** unlocks Phase 5 (navigation tree is foundation for explorer shell).
 **Phases 6, 7, 8** depend on Phase 5 but can run in parallel with each other.
 **Phase 9** depends on Phase 6.
+**Phase 10** depends on Phase 6 (desktop UX must be stable before mobile adaptation).
 **Phase 19** is deferred indefinitely.
 
 ---
@@ -609,18 +655,18 @@ Phase 19: Deferred --------+                                       |     (UI ren
 | PIPE-10 | Phase 2 | Complete |
 | EXPL-01 | Phase 4 | Complete |
 | EXPL-02 | Phase 4 | Complete |
-| EXPL-03 | Phase 6 | Pending |
-| EXPL-04 | Phase 6 | Pending |
-| EXPL-05 | Phase 6 | Pending |
-| EXPL-06 | Phase 6 | Pending |
-| EXPL-07 | Phase 6 | Pending |
+| EXPL-03 | Phase 6 | Planned |
+| EXPL-04 | Phase 6 | Planned |
+| EXPL-05 | Phase 6 | Planned |
+| EXPL-06 | Phase 6 | Planned |
+| EXPL-07 | Phase 6 | Planned |
 | EXPL-08 | Phase 7 | Pending |
 | EXPL-09 | Phase 7 | Pending |
 | EXPL-10 | Phase 7 | Pending |
 | EXPL-11 | Phase 7 | Pending |
 | EXPL-12 | Phase 7 | Pending |
-| EXPL-13 | Phase 5 | **Planned** |
-| EXPL-14 | Phase 5 | **Planned** |
+| EXPL-13 | Phase 5 | Complete |
+| EXPL-14 | Phase 5 | Complete |
 | EXPL-15 | Phase 9 | Pending |
 | CHAT-01 | Phase 19 | Deferred |
 | CHAT-02 | Phase 8 | Pending |
@@ -632,7 +678,21 @@ Phase 19: Deferred --------+                                       |     (UI ren
 | ONBD-04 | Phase 1 | Complete |
 | ONBD-05 | Phase 1 | Complete |
 
-**Mapped: 34/34** -- all v1 requirements covered, no orphans.
+| UX-01 | Phase 6 | Planned |
+| UX-02 | Phase 6 | Planned |
+| UX-03 | Phase 6 | Planned |
+| UX-04 | Phase 6 | Planned |
+| UX-05 | Phase 6 | Planned |
+| UX-06 | Phase 6 | Planned |
+| UX-07 | Phase 6 | Planned |
+| UX-08 | Phase 6 | Planned |
+| UX-09 | Phase 6 | Planned |
+| MOB-01 | Phase 10 | Pending |
+| MOB-02 | Phase 10 | Pending |
+| MOB-03 | Phase 10 | Pending |
+| MOB-04 | Phase 10 | Pending |
+
+**Mapped: 47/47** -- all v1 + UX + mobile requirements covered, no orphans.
 
 ---
 
@@ -645,3 +705,6 @@ Phase 19: Deferred --------+                                       |     (UI ren
 *Phase 18 plans created: 2026-02-01*
 *Phase 4 reframed: 2026-02-02 (Epic.dev navigation pattern focus)*
 *Phase 5 plans created: 2026-02-04*
+*Phase 6 expanded with UX polish (UX-01 to UX-09): 2026-02-06*
+*Phase 10 (Mobile Redesign) added: 2026-02-06*
+*Phase 6 plans created: 2026-02-06 (5 plans in 2 waves)*
