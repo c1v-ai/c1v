@@ -213,8 +213,31 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
     return '__end__';
   }
 
-  // Stop trigger always generates whatever we have
+  // Check if all 6 core KB artifacts are already generated
+  const coreArtifacts = [
+    'context_diagram',
+    'use_case_diagram',
+    'scope_tree',
+    'ucbd',
+    'requirements_table',
+    'sysml_activity_diagram',
+  ];
+  const allCoreComplete = coreArtifacts.every(a =>
+    generatedArtifacts.includes(a as ArtifactPhase)
+  );
+
+  // If all core artifacts done, end intake — generation is separate
+  if (allCoreComplete) {
+    return '__end__';
+  }
+
+  // Stop trigger: generate current phase if not already done
   if (lastIntent === 'STOP_TRIGGER') {
+    if (generatedArtifacts.includes(currentPhase)) {
+      // Current phase already generated — end if all core done (checked above),
+      // otherwise advance to next ungenerated phase
+      return '__end__';
+    }
     return 'generate_artifact';
   }
 

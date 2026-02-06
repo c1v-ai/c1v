@@ -126,8 +126,8 @@ export async function analyzeResponse(
   // Fast path: Check for stop triggers before LLM call
   const hasStopTrigger = containsStopTrigger(userText);
 
-  // If clear stop trigger with short message, skip LLM analysis
-  if (hasStopTrigger && userText.length < 50) {
+  // If clear stop trigger with short/medium message, skip LLM analysis
+  if (hasStopTrigger && userText.length < 120) {
     return {
       lastIntent: 'STOP_TRIGGER',
       turnCount: state.turnCount + 1,
