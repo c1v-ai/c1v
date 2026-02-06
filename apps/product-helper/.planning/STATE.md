@@ -76,6 +76,31 @@ Testing: ✓ Complete (T061-T068)
 - Commit: `9a19281` -- `fix(06-02): include userStories relation in getProjectById query`
 - **Summary:** `.planning/phases/06-content-section-views-ux-polish/06-02-SUMMARY.md`
 
+### Phase 6-01 Completed (2026-02-06)
+
+**Quick UX Fixes (4 items):**
+
+1. **UX-01: Post-Login Redirect** (`3c5aa1b`)
+   - Changed returning user redirect from `/projects` to `/welcome-test`
+   - File: `app/(login)/actions.ts` line 105
+
+2. **UX-02: Vision Metadata Stripping Utility** (`3c5aa1b`)
+   - Created `lib/utils/vision.ts` with `stripVisionMetadata()` function
+   - Strips `[Mode: ...]` prefix and `---\n<context>` from vision strings
+   - Utility created but NOT applied to page.tsx (deferred to 06-04)
+   - Chat auto-send confirmed to already strip metadata
+
+3. **UX-08: Validation Report Dev-Only** (`fda4aa2`)
+   - Wrapped `<ValidationReport>` in `process.env.NODE_ENV === 'development'` check
+   - File: `app/(dashboard)/projects/[id]/page.tsx`
+
+4. **UX-09: Green Hover Removal** (`fda4aa2`)
+   - Removed `hover:bg-muted/50` from actor table rows and entity cards
+   - File: `components/projects/sections/system-overview-section.tsx`
+   - Cleaned up unused `cn` import
+
+**Summary:** `.planning/phases/06-content-section-views-ux-polish/06-01-SUMMARY.md`
+
 ### Epic.dev Schema Alignment (2026-02-01)
 
 **Status:** Schema update complete, propagation in progress
@@ -891,7 +916,7 @@ Deferred from v2:
 
 **Last session:** 2026-02-06
 **Active branch:** `main`
-**Last commit:** `9a19281` - fix(06-02): include userStories relation in getProjectById query
+**Last commit:** `fda4aa2` - feat(06-01): hide validation in prod + remove hover highlighting
 **Dev server:** Working (`pnpm dev` at localhost:3001) -- Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
 **Deployment:** Pending push
@@ -1265,4 +1290,4 @@ Phase 6 requirements (EXPL-03 to EXPL-07):
 
 ---
 
-*State updated: 2026-02-05 (Phase 5 complete - Explorer Shell & Layout)*
+*State updated: 2026-02-06 (Phase 6-01 complete - Quick UX Fixes)*
