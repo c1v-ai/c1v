@@ -48,10 +48,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 5-02 (Layout Dimension Adjustments) - 2026-02-04
-**Active Work:** None
-**Next Phase:** Phase 5-03 (Canvas Content Area Polish)
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4 COMPLETE | ✅ PHASE 5-01 COMPLETE | ✅ PHASE 5-02 COMPLETE
+**Last Completed:** Phase 6-02 (Content Section View Verification) - 2026-02-06
+**Active Work:** Phase 6 (Content Section Views & UX Polish)
+**Next Plan:** Phase 6-03
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4 COMPLETE | ✅ PHASE 5 COMPLETE | ✅ PHASE 6-01 COMPLETE | ✅ PHASE 6-02 COMPLETE
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -62,6 +62,19 @@ Wave 3: ✓ Complete (T042, T045; T044/T046 deferred to v3)
 Independent: ✓ Complete (T023, T033, T048, T056, T060)
 Testing: ✓ Complete (T061-T068)
 ```
+
+### Phase 6-02 Completed (2026-02-06)
+
+**Content Section View Verification:**
+
+- Verified all 5 content views: PRD Overview, System Overview, Tech Stack, Infrastructure, Architecture
+- Verified all 9 nav-config hrefs match actual route file paths
+- Verified data shape compatibility between DB JSONB fields and component props
+- TypeScript compilation: PASS (zero errors)
+- **Bug found:** `getProjectById` missing `userStories` relation -- User Stories section always showed empty state
+- **Fix:** Added `userStories: true` to Drizzle `with` clause in `getProjectById`
+- Commit: `9a19281` -- `fix(06-02): include userStories relation in getProjectById query`
+- **Summary:** `.planning/phases/06-content-section-views-ux-polish/06-02-SUMMARY.md`
 
 ### Epic.dev Schema Alignment (2026-02-01)
 
@@ -876,14 +889,15 @@ Deferred from v2:
 
 ## Session Continuity
 
-**Last session:** 2026-02-04
+**Last session:** 2026-02-06
 **Active branch:** `main`
-**Last commit:** `d98f4df` - feat(05-01): add empty state for new projects on Overview page
-**Dev server:** Working (`pnpm dev` at localhost:3001) — Next.js 15.5.9 stable
+**Last commit:** `9a19281` - fix(06-02): include userStories relation in getProjectById query
+**Dev server:** Working (`pnpm dev` at localhost:3001) -- Next.js 15.5.9 stable
 **Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
-**Deployment:** Pending push to trigger Vercel build
-**Last plan:** Phase 5-01 Clean Overview Page
-**Active work:** None - Phase 5-01 complete
+**Deployment:** Pending push
+**Last plan:** Phase 6-02 Content Section View Verification (complete)
+**Active work:** Phase 6 (Content Section Views & UX Polish)
+**Next up:** Phase 6-03
 
 ### Uncommitted Changes
 ```
@@ -1004,6 +1018,20 @@ Deferred from v2:
   8. MessageSquare and ArrowRight icons
 - **Result:** No fixes needed - all components already consistent
 - **Summary:** `.planning/phases/05-explorer-shell-layout/05-03-SUMMARY.md`
+
+### Phase 5 Complete (2026-02-05)
+
+**Explorer Shell & Layout** — All 3 plans executed, verified, pushed to main
+
+| Plan | What it did | Commits |
+|------|-------------|---------|
+| 05-01 | Clean Overview page (remove Quick Actions/Statistics, add empty state) | `92f6753`, `d98f4df` |
+| 05-02 | Layout dimensions (Chat 400px, Explorer 256px) | `25ec303`, `8b4d714` |
+| 05-03 | Empty state audit (13 sections verified consistent) | Documentation only |
+
+**Requirements completed:** EXPL-13, EXPL-14
+**Verification:** 6/6 must-haves passed
+**Next:** Phase 6 (Content Section Views)
 
 ### Phase 4-02 Completed (2026-02-02)
 
@@ -1151,38 +1179,34 @@ M components/project/mobile-explorer-sheet.tsx  # Mobile navigation update (+28 
 
 ### Resume Action (Next Session)
 
-**Priority 1: Manual UAT for Phase 4-02 PRD Overview Page**
-1. Start dev server: `pnpm dev` (port 3001)
-2. Sign in at http://localhost:3001
-3. Navigate to any project
-4. Click "Product Requirements" in sidebar
-5. Test PRD Overview page at `/projects/[id]/requirements`:
-   - Page loads with "Product Requirements" title
-   - 5 accordion sections visible (Problem, Users, Goals, Scope, NFRs)
-   - First section with content auto-expands
-   - Clicking accordion header expands/collapses
-   - Section count badges show when content exists
-   - Status badges show (AI Generated, completeness %)
-   - Empty sections show "Start Chat" CTA
-6. Test mobile:
-   - Accordion works on mobile viewport
-   - Content readable and not truncated
+**Phase 5 Complete (2026-02-05)** — Pushed to main, Vercel deployment triggered
 
-**Priority 2: Push to trigger Vercel deployment**
+**Priority 1: Start Phase 6 (Content Section Views)**
 ```bash
-git push origin main
+/gsd:discuss-phase 6   # Clarify requirements
+/gsd:plan-phase 6      # Or skip discussion, plan directly
 ```
 
-**Priority 3: Fix TypeScript Errors (unblocks build)**
-1. Fix `lib/langchain/graphs/utils.ts:30` — MessageType assignment error
-2. Fix `lib/diagrams/__tests__/generators.test.ts` — old TechStackModel shape
-3. Fix signal type issues in route tests (or skip/ignore pre-existing issues)
+Phase 6 requirements (EXPL-03 to EXPL-07):
+- User can view PRD content in formatted section view
+- User can view System Overview section
+- User can view Tech Stack section
+- User can view Infrastructure & Deployment section
+- User can view Architecture Diagram section
 
-**Priority 4: Schema Propagation (post-Phase 3)**
-1. Update `lib/db/schema/v2-types.ts` — align TechStackModel
-2. Update generator agents — output new formats
-3. Update UI components — display new fields
-4. See full checklist: `.planning/SCHEMA-UPDATE-IMPACT.md`
+**Priority 2: Manual UAT for Phase 5**
+1. Start dev server: `pnpm dev` (port 3001)
+2. Sign in at http://localhost:3001
+3. Create a new project (intake status, 0% completeness)
+4. Verify Overview shows empty state with "Start Conversation" CTA
+5. Verify existing project shows Vision Statement (no Quick Actions/Statistics)
+6. Verify chat panel is 400px wide
+7. Verify explorer sidebar is 256px wide when expanded
+
+**Priority 3: Fix TypeScript Errors (pre-existing)**
+- `lib/diagrams/__tests__/generators.test.ts` — old TechStackModel shape
+- `app/api/projects/[id]/guidelines/__tests__/route.test.ts` — signal type
+- `app/api/projects/[id]/infrastructure/__tests__/route.test.ts` — signal type
 
 ### Required Vercel Env Vars
 
@@ -1241,4 +1265,4 @@ git push origin main
 
 ---
 
-*State updated: 2026-02-04 (Phase 5-01 complete - Clean Overview Page)*
+*State updated: 2026-02-05 (Phase 5 complete - Explorer Shell & Layout)*
