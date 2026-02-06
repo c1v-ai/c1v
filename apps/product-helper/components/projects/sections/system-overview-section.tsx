@@ -20,7 +20,7 @@ import {
   MessageSquare,
   ArrowRight,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -113,10 +113,7 @@ function ActorsTable({ actors }: { actors: Actor[] }) {
               {actors.map((actor, index) => (
                 <tr
                   key={actor.name + index}
-                  className={cn(
-                    'border-b last:border-b-0',
-                    'hover:bg-muted/50 transition-colors'
-                  )}
+                  className="border-b last:border-b-0"
                   style={{ borderColor: 'var(--border)' }}
                 >
                   <td
@@ -324,7 +321,7 @@ function DataEntitiesSummary({ entities }: { entities: DataEntity[] }) {
             return (
               <div
                 key={entity.name + index}
-                className="rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                className="rounded-lg border p-4"
                 style={{ borderColor: 'var(--border)' }}
               >
                 <h5
