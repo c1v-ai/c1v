@@ -375,7 +375,7 @@ async function DashboardContent() {
                 asChild
                 style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
               >
-                <Link href="/welcome-test">
+                <Link href="/home">
                   <FolderPlus className="mr-2 h-4 w-4" />
                   New Project
                 </Link>
@@ -433,7 +433,7 @@ async function DashboardContent() {
                   asChild
                   style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
                 >
-                  <Link href="/welcome-test">
+                  <Link href="/home">
                     <FolderPlus className="mr-2 h-4 w-4" />
                     Create First Project
                   </Link>

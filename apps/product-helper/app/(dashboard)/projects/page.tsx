@@ -40,7 +40,7 @@ function EmptyState() {
         Create your first PRD project to get started with conversational requirements gathering and AI-powered documentation.
       </p>
       <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
-        <Link href="/welcome-test">
+        <Link href="/home">
           <FolderPlus className="mr-2 h-4 w-4" />
           Create First Project
         </Link>
@@ -88,7 +88,7 @@ export default function ProjectsPage() {
           style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
           className="hover:opacity-90"
         >
-          <Link href="/welcome-test">
+          <Link href="/home">
             <FolderPlus className="mr-2 h-4 w-4" />
             New Project
           </Link>
