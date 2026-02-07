@@ -11,10 +11,10 @@ import {
   ChevronUp,
   CheckCircle2,
   Circle,
+  Loader2,
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import { useProjectChat } from './project-chat-provider';
 import { getProjectNavItems, isNavItemActive, type NavItem } from './nav-config';
 
@@ -30,12 +30,20 @@ type HasDataMap = Record<string, boolean>;
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
-function StatusIndicator({ hasData, isNew }: { hasData: boolean; isNew: boolean }) {
+function StatusIndicator({ hasData, isNew, isGenerating }: { hasData: boolean; isNew: boolean; isGenerating: boolean }) {
   if (hasData) {
     return (
       <CheckCircle2
         className={cn('h-3 w-3 ml-auto shrink-0', isNew && 'animate-pulse')}
         style={{ color: 'var(--success, #22c55e)' }}
+      />
+    );
+  }
+  if (isGenerating) {
+    return (
+      <Loader2
+        className="h-3 w-3 ml-auto shrink-0 animate-spin"
+        style={{ color: 'var(--accent)' }}
       />
     );
   }
@@ -80,12 +88,14 @@ function NavItemComponent({
   depth = 0,
   hasDataMap,
   newlyCompleted,
+  isGenerating,
 }: {
   item: NavItem;
   pathname: string;
   depth?: number;
   hasDataMap?: HasDataMap;
   newlyCompleted?: Set<string>;
+  isGenerating?: boolean;
 }) {
   const [expanded, setExpanded] = useState(true);
   const Icon = item.icon;
@@ -148,6 +158,7 @@ function NavItemComponent({
                 depth={depth + 1}
                 hasDataMap={hasDataMap}
                 newlyCompleted={newlyCompleted}
+                isGenerating={isGenerating}
               />
             ))}
           </div>
@@ -175,7 +186,7 @@ function NavItemComponent({
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
       <span className="flex-1">{item.name}</span>
-      {showStatus && <StatusIndicator hasData={itemHasData} isNew={isNew} />}
+      {showStatus && <StatusIndicator hasData={itemHasData} isNew={isNew} isGenerating={!itemHasData && !!isGenerating} />}
     </Link>
   );
 }
@@ -203,6 +214,7 @@ function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
   const prevHasData = useRef<HasDataMap>({});
   const isFirstLoad = useRef(true);
   const [newlyCompleted, setNewlyCompleted] = useState<Set<string>>(new Set());
+  const { append } = useProjectChat();
 
   useEffect(() => {
     if (!hasDataMap) return;
@@ -226,21 +238,20 @@ function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
     if (newItems.size > 0) {
       setNewlyCompleted(newItems);
 
-      // Notify user about each newly completed section
-      for (const key of newItems) {
-        const info = DATA_KEY_LABELS[key];
-        const label = info?.name || key;
-        const location = info?.section;
-        toast.success(`${label} is ready`, {
-          description: location ? `Find it under ${location} in the sidebar.` : 'View it in the sidebar.',
-          duration: 4000,
-        });
-      }
+      // Add completion messages to chat (persistent, not toast)
+      const completedNames = [...newItems]
+        .map((key) => DATA_KEY_LABELS[key]?.name || key)
+        .join(', ');
+
+      append({
+        role: 'assistant',
+        content: `**Artifact ready:** ${completedNames}. Check the sidebar to view.`,
+      });
 
       const timer = setTimeout(() => setNewlyCompleted(new Set()), 3000);
       return () => clearTimeout(timer);
     }
-  }, [hasDataMap]);
+  }, [hasDataMap, append]);
 
   return newlyCompleted;
 }
@@ -256,6 +267,7 @@ export function ExplorerSidebar({ className }: { className?: string }) {
     parsedProjectData,
     explorerCollapsed,
     toggleExplorer,
+    isLoading,
   } = useProjectChat();
 
   const { data: explorerData } = useSWR<{ hasData: HasDataMap; completeness: number }>(
@@ -348,6 +360,7 @@ export function ExplorerSidebar({ className }: { className?: string }) {
                 pathname={pathname}
                 hasDataMap={hasDataMap}
                 newlyCompleted={newlyCompleted}
+                isGenerating={isLoading}
               />
             ))}
           </nav>

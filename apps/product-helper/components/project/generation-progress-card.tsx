@@ -20,12 +20,12 @@ interface StageInfo {
 
 /** Map LangGraph node names to user-facing stage info */
 const NODE_STAGE: Record<string, { label: string; index: number; progress: number }> = {
-  analyze_response: { label: 'Analyzing your input', index: 1, progress: 15 },
-  extract_data: { label: 'Extracting requirements', index: 2, progress: 35 },
-  compute_next_question: { label: 'Finding next question', index: 3, progress: 55 },
-  check_prd_spec: { label: 'Validating PRD quality', index: 4, progress: 70 },
-  generate_artifact: { label: 'Creating diagrams', index: 5, progress: 85 },
-  generate_response: { label: 'Crafting response', index: 6, progress: 92 },
+  analyze_response: { label: 'Reading your response', index: 1, progress: 15 },
+  extract_data: { label: 'Building requirements data', index: 2, progress: 35 },
+  compute_next_question: { label: 'Preparing next question', index: 3, progress: 55 },
+  check_prd_spec: { label: 'Checking quality gates', index: 4, progress: 70 },
+  generate_artifact: { label: 'Building diagrams & artifacts', index: 5, progress: 85 },
+  generate_response: { label: 'Writing response', index: 6, progress: 92 },
 };
 
 const TOTAL_STAGES = 6;
@@ -51,13 +51,13 @@ function computeStage(
 
   // Fallback: time-based guessing (before first marker arrives)
   if (hasDiagram) {
-    return { label: 'Creating diagrams', index: 5, total: TOTAL_STAGES, progress: 85 };
+    return { label: 'Building diagrams & artifacts', index: 5, total: TOTAL_STAGES, progress: 85 };
   }
   if (elapsedMs > 8000) {
-    return { label: 'Processing requirements', index: 3, total: TOTAL_STAGES, progress: 55 };
+    return { label: 'Building requirements data', index: 3, total: TOTAL_STAGES, progress: 55 };
   }
   if (elapsedMs > 3000) {
-    return { label: 'Analyzing your input', index: 2, total: TOTAL_STAGES, progress: 30 };
+    return { label: 'Reading your response', index: 2, total: TOTAL_STAGES, progress: 30 };
   }
   return { label: 'Starting...', index: 1, total: TOTAL_STAGES, progress: 10 };
 }
@@ -114,12 +114,12 @@ export function GenerationProgressCard() {
   const stage = computeStage(postGenerationPhase, currentNode, hasStreamingDiagram, elapsed);
   const isComplete = postGenerationPhase === 'complete';
 
-  // Title based on phase
+  // Title based on phase — show what's actually happening
   const title = isComplete
     ? 'Generation Complete'
     : postGenerationPhase === 'saving'
-      ? 'Processing Data...'
-      : 'Generating Response...';
+      ? 'Saving artifacts...'
+      : stage.label;
 
   return (
     <div
@@ -173,25 +173,25 @@ export function GenerationProgressCard() {
       </div>
 
       {/* Stage + time estimate */}
-      <div className="mt-2 flex items-center justify-between text-xs">
+      <div className="mt-2 flex items-baseline justify-between text-xs">
         <span style={{ color: 'var(--text-muted)' }}>
           Stage {stage.index}/{stage.total}: {stage.label}
         </span>
         {!isComplete && (
-          <div className="flex flex-col items-end gap-0.5">
-            <span
-              className="flex items-center gap-1 tabular-nums"
-              style={{ color: 'var(--accent)' }}
-            >
-              <Sparkles className="h-3 w-3" />
-              {formatElapsed(elapsed)}
-            </span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-              may take 3 - 5 min
-            </span>
-          </div>
+          <span
+            className="flex items-center gap-1 tabular-nums shrink-0"
+            style={{ color: 'var(--accent)' }}
+          >
+            <Sparkles className="h-3 w-3" />
+            {formatElapsed(elapsed)}
+          </span>
         )}
       </div>
+      {!isComplete && (
+        <p className="mt-0.5 text-right" style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+          may take 3 - 5 min
+        </p>
+      )}
 
       {/* Progress bar */}
       <div

@@ -188,22 +188,7 @@ export function ProjectChatProvider({
       !hasSentInitialMessage.current &&
       projectVision
     ) {
-      const visionLines = projectVision.split('\n');
-      const modeLineIndex = visionLines.findIndex((line) => line.startsWith('[Mode:'));
-      const separatorIndex = visionLines.findIndex((line) => line === '---');
-
-      let userDescription = '';
-      if (modeLineIndex !== -1 && separatorIndex !== -1) {
-        userDescription = visionLines
-          .slice(modeLineIndex + 1, separatorIndex)
-          .join('\n')
-          .trim();
-      } else if (modeLineIndex !== -1) {
-        userDescription = visionLines
-          .slice(modeLineIndex + 1)
-          .join('\n')
-          .trim();
-      }
+      const userDescription = stripVisionMetadata(projectVision);
 
       if (userDescription && userDescription.length > 10) {
         hasSentInitialMessage.current = true;
