@@ -114,15 +114,51 @@ export async function getExplorerData(
     return false;
   };
 
-  // System overview is considered present if actors or system boundaries exist
+  // Helpers for stricter checks that match what section components render
+  const hasNonEmptyArray = (field: unknown): boolean =>
+    Array.isArray(field) && field.length > 0;
+
+  const asRecord = (field: unknown): Record<string, unknown> | null =>
+    field && typeof field === 'object' && !Array.isArray(field)
+      ? (field as Record<string, unknown>)
+      : null;
+
+  // System overview: section checks actors || boundaries.internal/external || entities
   const hasSystemOverview =
     hasJsonbData(dataResult?.actors) ||
-    hasJsonbData(dataResult?.systemBoundaries);
-
-  // Architecture is based on system boundaries or data entities
-  const hasArchitecture =
     hasJsonbData(dataResult?.systemBoundaries) ||
-    hasJsonbData(dataResult?.dataEntities);
+    entitiesArray.length > 0;
+
+  // Architecture: section checks dataEntities.length > 0 || context_diagram artifact
+  // We check entities + artifacts (context_diagram stored as artifact)
+  const hasArchitecture =
+    entitiesArray.length > 0 ||
+    (artifactCountResult[0]?.value ?? 0) > 0;
+
+  // Schema: section checks databaseSchema.tables/entities array length > 0 || class_diagram artifact
+  const schemaObj = asRecord(dataResult?.databaseSchema);
+  const hasSchema =
+    hasNonEmptyArray(schemaObj?.tables) ||
+    hasNonEmptyArray(schemaObj?.entities) ||
+    (artifactCountResult[0]?.value ?? 0) > 0;
+
+  // API spec: section extracts endpoints from .endpoints, .routes, .paths, or .groups
+  const apiObj = asRecord(dataResult?.apiSpecification);
+  const hasApiSpec = (() => {
+    if (!apiObj) return false;
+    if (hasNonEmptyArray(apiObj.endpoints)) return true;
+    if (hasNonEmptyArray(apiObj.routes)) return true;
+    if (apiObj.paths && typeof apiObj.paths === 'object' && Object.keys(apiObj.paths).length > 0) return true;
+    if (hasNonEmptyArray(apiObj.groups)) return true;
+    return false;
+  })();
+
+  // Infrastructure: section checks for categories array length > 0 || activity_diagram artifact
+  const infraObj = asRecord(dataResult?.infrastructureSpec);
+  const hasInfrastructure =
+    hasNonEmptyArray(infraObj?.categories) ||
+    hasNonEmptyArray(infraObj?.sections) ||
+    (infraObj !== null && hasJsonbData(dataResult?.infrastructureSpec));
 
   return {
     project: {
@@ -143,10 +179,10 @@ export async function getExplorerData(
     },
     hasData: {
       hasSystemOverview,
-      hasSchema: hasJsonbData(dataResult?.databaseSchema),
+      hasSchema,
       hasTechStack: hasJsonbData(dataResult?.techStack),
-      hasApiSpec: hasJsonbData(dataResult?.apiSpecification),
-      hasInfrastructure: hasJsonbData(dataResult?.infrastructureSpec),
+      hasApiSpec,
+      hasInfrastructure,
       hasGuidelines: hasJsonbData(dataResult?.codingGuidelines),
       hasArchitecture,
       hasUserStories: (storyCountResult[0]?.value ?? 0) > 0,

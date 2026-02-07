@@ -32,12 +32,17 @@ import type { LucideIcon } from 'lucide-react';
 // Types
 // ---------------------------------------------------------------------------
 
+interface TechAlternative {
+  name: string;
+  whyNot: string;
+}
+
 interface TechChoice {
   name?: string;
   technology?: string;
   rationale?: string;
   reason?: string;
-  alternatives?: string[];
+  alternatives?: (string | TechAlternative)[];
 }
 
 interface TechStackData {
@@ -179,7 +184,7 @@ function TechCategoryCard({
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {choice.alternatives.map((alt, i) => (
                         <Badge key={i} variant="outline" className="text-xs">
-                          {alt}
+                          {typeof alt === 'string' ? alt : alt.name}
                         </Badge>
                       ))}
                     </div>

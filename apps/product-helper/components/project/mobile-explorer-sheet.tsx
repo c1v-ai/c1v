@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import useSWR from 'swr';
 import {
   PanelLeft,
   ChevronDown,
   ChevronUp,
+  CheckCircle2,
+  Circle,
   Sparkles,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -16,19 +19,48 @@ import { useProjectChat } from './project-chat-provider';
 import { getProjectNavItems, isNavItemActive, type NavItem } from './nav-config';
 
 // ============================================================
+// Types
+// ============================================================
+
+type HasDataMap = Record<string, boolean>;
+
+// ============================================================
 // Sub-components
 // ============================================================
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+function StatusIndicator({ hasData, isNew }: { hasData: boolean; isNew: boolean }) {
+  if (hasData) {
+    return (
+      <CheckCircle2
+        className={cn('h-3 w-3 ml-auto shrink-0', isNew && 'animate-pulse')}
+        style={{ color: 'var(--success, #22c55e)' }}
+      />
+    );
+  }
+  return (
+    <Circle
+      className="h-3 w-3 ml-auto shrink-0"
+      style={{ color: 'var(--text-muted)', opacity: 0.4 }}
+    />
+  );
+}
 
 function MobileNavItem({
   item,
   pathname,
   depth = 0,
   onNavigate,
+  hasDataMap,
+  newlyCompleted,
 }: {
   item: NavItem;
   pathname: string;
   depth?: number;
   onNavigate: () => void;
+  hasDataMap?: HasDataMap;
+  newlyCompleted?: Set<string>;
 }) {
   const [expanded, setExpanded] = useState(true);
   const Icon = item.icon;
@@ -91,6 +123,8 @@ function MobileNavItem({
                 pathname={pathname}
                 depth={depth + 1}
                 onNavigate={onNavigate}
+                hasDataMap={hasDataMap}
+                newlyCompleted={newlyCompleted}
               />
             ))}
           </div>
@@ -100,6 +134,10 @@ function MobileNavItem({
   }
 
   // Leaf node - always a link
+  const showStatus = item.dataKey && hasDataMap;
+  const itemHasData = showStatus ? !!hasDataMap[item.dataKey!] : false;
+  const isNew = showStatus && newlyCompleted ? newlyCompleted.has(item.dataKey!) : false;
+
   return (
     <Link
       href={item.href!}
@@ -114,7 +152,8 @@ function MobileNavItem({
       }}
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
-      {item.name}
+      <span className="flex-1">{item.name}</span>
+      {showStatus && <StatusIndicator hasData={itemHasData} isNew={isNew} />}
     </Link>
   );
 }
@@ -131,7 +170,38 @@ export function MobileExplorerSheet() {
     parsedProjectData,
   } = useProjectChat();
 
-  const { completeness } = parsedProjectData;
+  const { data: explorerData } = useSWR<{ hasData: HasDataMap; completeness: number }>(
+    projectId ? `/api/projects/${projectId}/explorer` : null,
+    fetcher,
+    { refreshInterval: 5000 }
+  );
+
+  const hasDataMap = explorerData?.hasData;
+
+  // Pulse tracking
+  const prevHasData = useRef<HasDataMap>({});
+  const [newlyCompleted, setNewlyCompleted] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!hasDataMap) return;
+
+    const newItems = new Set<string>();
+    for (const [key, value] of Object.entries(hasDataMap)) {
+      if (value && !prevHasData.current[key]) {
+        newItems.add(key);
+      }
+    }
+
+    prevHasData.current = { ...hasDataMap };
+
+    if (newItems.size > 0) {
+      setNewlyCompleted(newItems);
+      const timer = setTimeout(() => setNewlyCompleted(new Set()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasDataMap]);
+
+  const completeness = explorerData?.completeness ?? parsedProjectData.completeness;
   const navItems = getProjectNavItems(projectId);
 
   const handleNavigate = () => {
@@ -159,6 +229,8 @@ export function MobileExplorerSheet() {
               item={item}
               pathname={pathname}
               onNavigate={handleNavigate}
+              hasDataMap={hasDataMap}
+              newlyCompleted={newlyCompleted}
             />
           ))}
         </nav>
