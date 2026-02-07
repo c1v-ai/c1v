@@ -22,6 +22,7 @@ export interface NavItem {
   icon: LucideIcon;
   exact?: boolean;
   children?: NavItem[];
+  dataKey?: string;
 }
 
 export function getProjectNavItems(projectId: number): NavItem[] {
@@ -32,23 +33,23 @@ export function getProjectNavItems(projectId: number): NavItem[] {
       href: `/projects/${projectId}/requirements`,
       icon: FileText,
       children: [
-        { name: 'Architecture Diagram', href: `/projects/${projectId}/requirements/architecture`, icon: Layers },
-        { name: 'Tech Stack', href: `/projects/${projectId}/requirements/tech-stack`, icon: Code },
-        { name: 'User Stories', href: `/projects/${projectId}/requirements/user-stories`, icon: BookOpen },
-        { name: 'System Overview', href: `/projects/${projectId}/requirements/system-overview`, icon: Users },
+        { name: 'Architecture Diagram', href: `/projects/${projectId}/requirements/architecture`, icon: Layers, dataKey: 'hasArchitecture' },
+        { name: 'Tech Stack', href: `/projects/${projectId}/requirements/tech-stack`, icon: Code, dataKey: 'hasTechStack' },
+        { name: 'User Stories', href: `/projects/${projectId}/requirements/user-stories`, icon: BookOpen, dataKey: 'hasUserStories' },
+        { name: 'System Overview', href: `/projects/${projectId}/requirements/system-overview`, icon: Users, dataKey: 'hasSystemOverview' },
       ],
     },
     {
       name: 'Backend',
       icon: Server,
       children: [
-        { name: 'Database Schema', href: `/projects/${projectId}/backend/schema`, icon: Database },
-        { name: 'API Specification', href: `/projects/${projectId}/backend/api-spec`, icon: Code },
-        { name: 'Infrastructure', href: `/projects/${projectId}/backend/infrastructure`, icon: Cloud },
-        { name: 'Coding Guidelines', href: `/projects/${projectId}/backend/guidelines`, icon: FileText },
+        { name: 'Database Schema', href: `/projects/${projectId}/backend/schema`, icon: Database, dataKey: 'hasSchema' },
+        { name: 'API Specification', href: `/projects/${projectId}/backend/api-spec`, icon: Code, dataKey: 'hasApiSpec' },
+        { name: 'Infrastructure', href: `/projects/${projectId}/backend/infrastructure`, icon: Cloud, dataKey: 'hasInfrastructure' },
+        { name: 'Coding Guidelines', href: `/projects/${projectId}/backend/guidelines`, icon: FileText, dataKey: 'hasGuidelines' },
       ],
     },
-    { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch },
+    { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch, dataKey: 'hasDiagrams' },
     { name: 'Generate', href: `/projects/${projectId}/generate`, icon: Sparkles },
     { name: 'Connections', href: `/projects/${projectId}/connections`, icon: Plug },
     { name: 'Settings', href: `/projects/${projectId}/settings`, icon: Settings },

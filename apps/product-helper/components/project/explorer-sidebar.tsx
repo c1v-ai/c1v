@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import useSWR from 'swr';
 import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CheckCircle2,
+  Circle,
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,8 +18,33 @@ import { useProjectChat } from './project-chat-provider';
 import { getProjectNavItems, isNavItemActive, type NavItem } from './nav-config';
 
 // ============================================================
+// Types
+// ============================================================
+
+type HasDataMap = Record<string, boolean>;
+
+// ============================================================
 // Sub-components
 // ============================================================
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+function StatusIndicator({ hasData, isNew }: { hasData: boolean; isNew: boolean }) {
+  if (hasData) {
+    return (
+      <CheckCircle2
+        className={cn('h-3 w-3 ml-auto shrink-0', isNew && 'animate-pulse')}
+        style={{ color: 'var(--success, #22c55e)' }}
+      />
+    );
+  }
+  return (
+    <Circle
+      className="h-3 w-3 ml-auto shrink-0"
+      style={{ color: 'var(--text-muted)', opacity: 0.4 }}
+    />
+  );
+}
 
 function CompletenessBar({ percentage }: { percentage: number }) {
   return (
@@ -45,7 +73,19 @@ function CompletenessBar({ percentage }: { percentage: number }) {
   );
 }
 
-function NavItemComponent({ item, pathname, depth = 0 }: { item: NavItem; pathname: string; depth?: number }) {
+function NavItemComponent({
+  item,
+  pathname,
+  depth = 0,
+  hasDataMap,
+  newlyCompleted,
+}: {
+  item: NavItem;
+  pathname: string;
+  depth?: number;
+  hasDataMap?: HasDataMap;
+  newlyCompleted?: Set<string>;
+}) {
   const [expanded, setExpanded] = useState(true);
   const Icon = item.icon;
   const hasChildren = item.children && item.children.length > 0;
@@ -100,7 +140,14 @@ function NavItemComponent({ item, pathname, depth = 0 }: { item: NavItem; pathna
         {expanded && (
           <div className="mt-0.5">
             {item.children!.map((child) => (
-              <NavItemComponent key={child.name} item={child} pathname={pathname} depth={depth + 1} />
+              <NavItemComponent
+                key={child.name}
+                item={child}
+                pathname={pathname}
+                depth={depth + 1}
+                hasDataMap={hasDataMap}
+                newlyCompleted={newlyCompleted}
+              />
             ))}
           </div>
         )}
@@ -109,6 +156,10 @@ function NavItemComponent({ item, pathname, depth = 0 }: { item: NavItem; pathna
   }
 
   // Leaf node - always a link
+  const showStatus = item.dataKey && hasDataMap;
+  const itemHasData = showStatus ? !!hasDataMap[item.dataKey!] : false;
+  const isNew = showStatus && newlyCompleted ? newlyCompleted.has(item.dataKey!) : false;
+
   return (
     <Link
       href={item.href!}
@@ -122,9 +173,40 @@ function NavItemComponent({ item, pathname, depth = 0 }: { item: NavItem; pathna
       }}
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
-      {item.name}
+      <span className="flex-1">{item.name}</span>
+      {showStatus && <StatusIndicator hasData={itemHasData} isNew={isNew} />}
     </Link>
   );
+}
+
+// ============================================================
+// Pulse tracking hook
+// ============================================================
+
+function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
+  const prevHasData = useRef<HasDataMap>({});
+  const [newlyCompleted, setNewlyCompleted] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!hasDataMap) return;
+
+    const newItems = new Set<string>();
+    for (const [key, value] of Object.entries(hasDataMap)) {
+      if (value && !prevHasData.current[key]) {
+        newItems.add(key);
+      }
+    }
+
+    prevHasData.current = { ...hasDataMap };
+
+    if (newItems.size > 0) {
+      setNewlyCompleted(newItems);
+      const timer = setTimeout(() => setNewlyCompleted(new Set()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasDataMap]);
+
+  return newlyCompleted;
 }
 
 // ============================================================
@@ -140,8 +222,17 @@ export function ExplorerSidebar({ className }: { className?: string }) {
     toggleExplorer,
   } = useProjectChat();
 
+  const { data: explorerData } = useSWR<{ hasData: HasDataMap; completeness: number }>(
+    projectId ? `/api/projects/${projectId}/explorer` : null,
+    fetcher,
+    { refreshInterval: 5000 }
+  );
+
+  const hasDataMap = explorerData?.hasData;
+  const newlyCompleted = useNewlyCompleted(hasDataMap);
+
   const navItems = getProjectNavItems(projectId);
-  const { completeness } = parsedProjectData;
+  const completeness = explorerData?.completeness ?? parsedProjectData.completeness;
 
   return (
     <aside
@@ -215,7 +306,13 @@ export function ExplorerSidebar({ className }: { className?: string }) {
           {/* Navigation Tree */}
           <nav className="px-2 pb-2 space-y-0.5 flex-1 overflow-y-auto">
             {navItems.map((item) => (
-              <NavItemComponent key={item.name} item={item} pathname={pathname} />
+              <NavItemComponent
+                key={item.name}
+                item={item}
+                pathname={pathname}
+                hasDataMap={hasDataMap}
+                newlyCompleted={newlyCompleted}
+              />
             ))}
           </nav>
 
