@@ -214,7 +214,7 @@ function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
   const prevHasData = useRef<HasDataMap>({});
   const isFirstLoad = useRef(true);
   const [newlyCompleted, setNewlyCompleted] = useState<Set<string>>(new Set());
-  const { append } = useProjectChat();
+  const { addNotification } = useProjectChat();
 
   useEffect(() => {
     if (!hasDataMap) return;
@@ -238,20 +238,17 @@ function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
     if (newItems.size > 0) {
       setNewlyCompleted(newItems);
 
-      // Add completion messages to chat (persistent, not toast)
+      // Add completion message to chat (local notification, no API call)
       const completedNames = [...newItems]
         .map((key) => DATA_KEY_LABELS[key]?.name || key)
         .join(', ');
 
-      append({
-        role: 'assistant',
-        content: `**Artifact ready:** ${completedNames}. Check the sidebar to view.`,
-      });
+      addNotification(`**Artifact ready:** ${completedNames}. Check the sidebar to view.`);
 
       const timer = setTimeout(() => setNewlyCompleted(new Set()), 3000);
       return () => clearTimeout(timer);
     }
-  }, [hasDataMap, append]);
+  }, [hasDataMap, addNotification]);
 
   return newlyCompleted;
 }

@@ -47,6 +47,9 @@ interface ProjectChatContextValue {
   parsedProjectData: ParsedProjectData;
   parsedArtifacts: ParsedArtifact[];
 
+  // Local notification messages (appear in chat without triggering API)
+  addNotification: (content: string) => void;
+
   // Diagram popup state
   selectedDiagram: ParsedArtifact | null;
   setSelectedDiagram: (artifact: ParsedArtifact | null) => void;
@@ -119,6 +122,20 @@ export function ProjectChatProvider({
   const [explorerCollapsed, setExplorerCollapsed] = useState(false);
   const [chatPanelCollapsed, setChatPanelCollapsed] = useState(false);
   const [selectedDiagram, setSelectedDiagram] = useState<ParsedArtifact | null>(null);
+
+  // Local notification messages (shown in chat without triggering API calls)
+  const [notifications, setNotifications] = useState<Message[]>([]);
+  const notificationCounter = useRef(0);
+
+  const addNotification = useCallback((content: string) => {
+    notificationCounter.current += 1;
+    const msg: Message = {
+      id: `notification-${notificationCounter.current}`,
+      role: 'assistant',
+      content,
+    };
+    setNotifications((prev) => [...prev, msg]);
+  }, []);
 
   // Generation progress tracking
   const [generationStartedAt, setGenerationStartedAt] = useState<number | null>(null);
@@ -262,17 +279,24 @@ export function ProjectChatProvider({
     setChatPanelCollapsed((prev) => !prev);
   }, []);
 
+  // Merge real messages + local notifications for display
+  const allMessages = useMemo(
+    () => [...strippedMessages, ...notifications],
+    [strippedMessages, notifications]
+  );
+
   const value: ProjectChatContextValue = {
     projectId,
     projectName,
     projectStatus,
-    messages: strippedMessages,
+    messages: allMessages,
     input: chat.input,
     isLoading: chat.isLoading,
     handleInputChange: chat.handleInputChange,
     handleSubmit,
     stop: chat.stop,
     append: chat.append,
+    addNotification,
     parsedProjectData,
     parsedArtifacts,
     selectedDiagram,
