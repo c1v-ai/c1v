@@ -136,34 +136,39 @@ export interface SchemaExtractionContext {
 export async function extractDatabaseSchema(
   context: SchemaExtractionContext
 ): Promise<DatabaseSchemaModel> {
-  try {
-    const structuredModel = createClaudeAgent(databaseSchemaSchema, 'extract_database_schema', {
-      temperature: 0.2, // Claude performs better at 0.2 than 0
-    });
+  const structuredModel = createClaudeAgent(databaseSchemaSchema, 'extract_database_schema', {
+    temperature: 0.2,
+    maxTokens: 8000, // Schema generation needs more output tokens
+  });
 
-    const dataEntitiesText = context.dataEntities
-      .map((entity, idx) => {
-        const attrs = entity.attributes.length > 0
-          ? `Attributes: ${entity.attributes.join(', ')}`
-          : 'Attributes: (none specified)';
-        const rels = entity.relationships.length > 0
-          ? `Relationships: ${entity.relationships.join('; ')}`
-          : 'Relationships: (none specified)';
-        return `${idx + 1}. ${entity.name}\n   ${attrs}\n   ${rels}`;
-      })
-      .join('\n\n');
+  const dataEntitiesText = context.dataEntities
+    .map((entity, idx) => {
+      const attrs = entity.attributes.length > 0
+        ? `Attributes: ${entity.attributes.join(', ')}`
+        : 'Attributes: (none specified)';
+      const rels = entity.relationships.length > 0
+        ? `Relationships: ${entity.relationships.join('; ')}`
+        : 'Relationships: (none specified)';
+      return `${idx + 1}. ${entity.name}\n   ${attrs}\n   ${rels}`;
+    })
+    .join('\n\n');
 
-    const useCasesText = context.useCases
-      ? context.useCases
-          .map((uc, idx) => `${idx + 1}. ${uc.name}: ${uc.description}`)
-          .join('\n')
-      : '(No use cases provided)';
+  const useCasesText = context.useCases
+    ? context.useCases
+        .map((uc, idx) => `${idx + 1}. ${uc.name}: ${uc.description}`)
+        .join('\n')
+    : '(No use cases provided)';
 
-    const prompt = `You are a database architect converting PRD data entities into a complete PostgreSQL database schema.
+  // Keep vision concise to avoid overwhelming the model
+  const visionText = context.projectVision.length > 1500
+    ? context.projectVision.slice(0, 1500) + '...'
+    : context.projectVision;
+
+  const prompt = `You are a database architect converting PRD data entities into a complete PostgreSQL database schema.
 
 ## Project Context
 Project Name: ${context.projectName}
-Vision: ${context.projectVision}
+Vision: ${visionText}
 
 ## Data Entities from PRD
 ${dataEntitiesText}
@@ -173,7 +178,8 @@ ${useCasesText}
 
 ## Instructions
 
-Convert the data entities into a complete PostgreSQL database schema:
+Convert EACH data entity above into a database table with proper fields and relationships.
+You MUST generate at least one entity in the "entities" array for every data entity listed above.
 
 ### Field Naming and Types
 - Use snake_case for all field and table names
@@ -196,25 +202,99 @@ Convert the data entities into a complete PostgreSQL database schema:
 ### Enums
 - Create PostgreSQL enums for status/type fields
 
-Generate the complete database schema now.`;
+Generate the complete database schema now. Remember: the "entities" array is REQUIRED and must contain one entity per data entity above.`;
 
+  // Attempt 1
+  try {
     const result = await structuredModel.invoke(prompt);
-
-    return {
-      entities: result.entities as DatabaseEntity[],
-      enums: (result.enums as DatabaseEnum[]) || [],
-      version: '1.0.0',
-      generatedAt: new Date().toISOString(),
-    };
+    if (result.entities && (result.entities as DatabaseEntity[]).length > 0) {
+      return {
+        entities: result.entities as DatabaseEntity[],
+        enums: (result.enums as DatabaseEnum[]) || [],
+        version: '1.0.0',
+        generatedAt: new Date().toISOString(),
+      };
+    }
+    console.warn('[Schema] First attempt returned empty entities, retrying...');
   } catch (error) {
-    console.error('Schema extraction error:', error);
-    return {
-      entities: [],
-      enums: [],
-      version: '1.0.0',
-      generatedAt: new Date().toISOString(),
-    };
+    console.warn('[Schema] First attempt failed, retrying...', (error as Error).message?.slice(0, 100));
   }
+
+  // Attempt 2: Shorter, more focused prompt
+  try {
+    const retryPrompt = `Generate a PostgreSQL database schema for these entities. Return them in the "entities" array.
+
+Project: ${context.projectName}
+
+Entities to convert:
+${context.dataEntities.map(e => `- ${e.name} (fields: ${e.attributes.join(', ')})`).join('\n')}
+
+For each entity, include: name (PascalCase), description, fields array (with name in snake_case, type as PostgreSQL type, nullable, description), indexes array, and relationships array.
+Add id (uuid), created_at, updated_at to every entity.`;
+
+    const result = await structuredModel.invoke(retryPrompt);
+    if (result.entities && (result.entities as DatabaseEntity[]).length > 0) {
+      return {
+        entities: result.entities as DatabaseEntity[],
+        enums: (result.enums as DatabaseEnum[]) || [],
+        version: '1.0.0',
+        generatedAt: new Date().toISOString(),
+      };
+    }
+  } catch (error) {
+    console.error('Schema extraction error (retry):', error);
+  }
+
+  // Fallback: construct minimal schema from input entities
+  console.warn('[Schema] Both attempts failed, constructing from input entities');
+  const fallbackEntities: DatabaseEntity[] = context.dataEntities.map(e => ({
+    name: e.name.replace(/\s+/g, ''),
+    description: `${e.name} entity`,
+    fields: [
+      { name: 'id', type: 'uuid' as DatabaseFieldType, nullable: false, constraints: ['PRIMARY KEY' as const, 'NOT NULL' as const], description: 'Primary key' },
+      ...e.attributes.map(attr => ({
+        name: attr.replace(/\s+/g, '_').toLowerCase(),
+        type: inferPostgresType(attr) as DatabaseFieldType,
+        nullable: true,
+        constraints: [],
+        description: attr,
+      })),
+      { name: 'created_at', type: 'timestamptz' as DatabaseFieldType, nullable: false, constraints: ['NOT NULL' as const], description: 'Creation timestamp' },
+      { name: 'updated_at', type: 'timestamptz' as DatabaseFieldType, nullable: false, constraints: ['NOT NULL' as const], description: 'Last update timestamp' },
+    ],
+    indexes: [],
+    relationships: e.relationships.map(r => ({
+      type: 'many-to-many' as const,
+      targetEntity: r,
+      foreignKey: `${r.toLowerCase().replace(/\s+/g, '_')}_id`,
+      description: `References ${r}`,
+    })),
+  }));
+
+  return {
+    entities: fallbackEntities,
+    enums: [],
+    version: '1.0.0',
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Infer PostgreSQL type from attribute name heuristics
+ */
+function inferPostgresType(attr: string): string {
+  const lower = attr.toLowerCase().replace(/\s+/g, '_');
+  if (lower.includes('id') && !lower.includes('video')) return 'uuid';
+  if (lower.includes('email')) return 'text';
+  if (lower.includes('name') || lower.includes('title') || lower.includes('description')) return 'text';
+  if (lower.includes('url') || lower.includes('path') || lower.includes('link')) return 'text';
+  if (lower.includes('date') || lower.includes('_at') || lower.includes('time') || lower.includes('timestamp')) return 'timestamptz';
+  if (lower.includes('count') || lower.includes('quantity') || lower.includes('number') || lower.includes('age')) return 'integer';
+  if (lower.includes('price') || lower.includes('amount') || lower.includes('cost') || lower.includes('rate')) return 'numeric';
+  if (lower.includes('is_') || lower.includes('has_') || lower.includes('active') || lower.includes('enabled')) return 'boolean';
+  if (lower.includes('status') || lower.includes('type') || lower.includes('role') || lower.includes('level')) return 'text';
+  if (lower.includes('data') || lower.includes('config') || lower.includes('metadata') || lower.includes('preferences')) return 'jsonb';
+  return 'text';
 }
 
 // ============================================================
