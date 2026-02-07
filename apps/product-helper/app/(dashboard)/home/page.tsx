@@ -9,7 +9,7 @@ function SidebarSkeleton() {
 }
 
 // Main page - sidebar streams in, main content is instant
-export default function WelcomeTestPage() {
+export default function HomePage() {
   return (
     <WelcomeOnboarding
       sidebar={

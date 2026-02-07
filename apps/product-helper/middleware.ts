@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
 import { TIME_CONSTANTS } from '@/lib/constants';
 
-const protectedPrefixes = ['/dashboard', '/projects', '/welcome-test', '/account'];
+const protectedPrefixes = ['/dashboard', '/projects', '/home', '/account'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

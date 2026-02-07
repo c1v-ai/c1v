@@ -14,7 +14,7 @@ export class ProjectsPage {
     this.newProjectButton = page.getByRole('link', { name: /new project/i }).or(
       page.getByRole('button', { name: /new project/i })
     );
-    this.createFirstProjectButton = page.locator('a[href="/welcome-test"]');
+    this.createFirstProjectButton = page.locator('a[href="/home"]');
     this.projectGrid = page.locator('.grid');
     this.emptyState = page.getByText(/no projects yet/i);
   }

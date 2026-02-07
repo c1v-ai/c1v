@@ -102,7 +102,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   }
 
   // Redirect returning users to welcome page (matches new user flow)
-  redirect('/welcome-test');
+  redirect('/home');
 });
 
 const signUpSchema = z.object({
@@ -234,7 +234,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   }
 
   // Redirect to welcome page for new users to start their first project
-  redirect('/welcome-test');
+  redirect('/home');
 });
 
 export async function signOut() {
