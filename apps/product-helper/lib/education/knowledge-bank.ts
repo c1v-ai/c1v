@@ -741,3 +741,154 @@ export function findTooltipByTerm(term: string): TooltipTerm | undefined {
   }
   return undefined;
 }
+
+// ---------------------------------------------------------------------------
+// General-purpose educational snippets (not tied to a specific KB step)
+// ---------------------------------------------------------------------------
+
+/**
+ * General educational snippets shown during AI processing.
+ * Written for ALL skill levels (beginners through experienced developers).
+ * Used when no specific LangGraph node context is available.
+ */
+export const generalThinkingMessages: ThinkingMessage[] = [
+  {
+    headline: '56% of project failures trace to requirements...',
+    tip: 'Not code, not design, not team dynamics. The #1 reason software fails is that nobody wrote down what it was supposed to do. This process fixes that.',
+    duration: 6000,
+  },
+  {
+    headline: 'The Contractor Test...',
+    tip: 'If you handed your spec to a stranger and they built something different than you imagined -- the spec has gaps, not the contractor. That\'s what we\'re closing.',
+    duration: 6000,
+  },
+  {
+    headline: 'Features vs. use cases -- the distinction that matters...',
+    tip: '"Shopping cart" is a feature. "Customer adds item while comparing prices on mobile with spotty wifi" is a use case -- and it reveals 5x more requirements.',
+    duration: 7000,
+  },
+  {
+    headline: 'Why we don\'t name the system yet...',
+    tip: 'Professional systems engineers avoid naming the product early. "Uber for dogs" anchors your thinking to someone else\'s architecture. We call it "The System" until the design is done.',
+    duration: 7000,
+  },
+  {
+    headline: 'The AND test...',
+    tip: 'If a requirement has "and" in it, it\'s probably two requirements. "The system shall validate input and save to database" -- that\'s two things that fail independently.',
+    duration: 6000,
+  },
+  {
+    headline: '"Fast" is not a requirement...',
+    tip: '"Fast," "easy," and "user-friendly" are wishes. "Responds in under 200ms at p95" and "completes checkout in 3 steps or fewer" are requirements. If you can\'t test it, it\'s not real.',
+    duration: 7000,
+  },
+  {
+    headline: 'The persistence test...',
+    tip: 'If a piece of data needs to survive a page refresh, it\'s a database entity. If it needs to survive a server restart, it needs a schema. Most vibe-coded apps discover this at 2 AM.',
+    duration: 6000,
+  },
+  {
+    headline: 'Scope is defined by what you say NO to...',
+    tip: 'The most important line in any PRD is the "Out of Scope" section. Unbounded scope is the #1 killer of MVPs. If it\'s not explicitly in, it\'s explicitly out.',
+    duration: 6000,
+  },
+  {
+    headline: 'Think about the 3 AM edge case now...',
+    tip: 'Hackers, drunk users, expired tokens, race conditions. Finding these in requirements costs 10x less than finding them in production. Systems engineers call these "undesired actors."',
+    duration: 7000,
+  },
+  {
+    headline: 'WHAT, never HOW...',
+    tip: '"The system SHALL authenticate users" leaves room for passwords, OAuth, biometrics, magic links. "The system SHALL use JWT" locks you into one solution on day one. Requirements describe needs, not implementations.',
+    duration: 7000,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Node-specific educational messages (tied to LangGraph node transitions)
+// ---------------------------------------------------------------------------
+
+/**
+ * Educational messages mapped to LangGraph node names.
+ * These are shown when stream markers indicate a specific node is executing.
+ * Each node gets 2-3 messages that explain what's happening in plain language.
+ */
+export const nodeThinkingMessages: Record<string, ThinkingMessage[]> = {
+  analyze_response: [
+    {
+      headline: 'Reading between the lines...',
+      tip: 'A single sentence like "it\'s a marketplace" implies actors (buyers, sellers, admins), payment flows, dispute resolution, and trust systems. The AI is unpacking all of that.',
+      duration: 4000,
+    },
+    {
+      headline: 'Classifying your input...',
+      tip: 'New information, a correction, a question, or a "let\'s move on" -- each triggers a different path through the requirements pipeline.',
+      duration: 3000,
+    },
+  ],
+  extract_data: [
+    {
+      headline: 'Nouns become tables, verbs become endpoints...',
+      tip: 'Systems engineers use noun-verb analysis on requirements to discover data models and APIs. "User uploads photo" = users table, photos table, POST /photos endpoint.',
+      duration: 5000,
+    },
+    {
+      headline: 'Finding the hidden actors...',
+      tip: 'Most people list 2-3 users. Real systems have 8-20 actors: admins, support, payment processors, notification services, rate limiters, audit systems. Missing one means missing requirements.',
+      duration: 5000,
+    },
+    {
+      headline: 'Separating what you control from what you don\'t...',
+      tip: 'Stripe handles payments. Auth0 handles identity. Your CDN handles distribution. Drawing these boundaries now prevents building things that already exist.',
+      duration: 5000,
+    },
+  ],
+  compute_next_question: [
+    {
+      headline: 'Finding the highest-value question...',
+      tip: 'Not all gaps are equal. A missing actor can invalidate 20 requirements. A missing field label affects one screen. The AI targets the gaps with the biggest blast radius.',
+      duration: 5000,
+    },
+    {
+      headline: 'The "what else must it do?" technique...',
+      tip: 'Systems engineers call this "delving." For every action, ask: "If it has to do this, what else must it do?" Login implies password reset, session management, rate limiting, lockout...',
+      duration: 5000,
+    },
+  ],
+  check_prd_spec: [
+    {
+      headline: 'Running 10 quality gates...',
+      tip: 'Professional PRDs are validated against 10 properties: complete, consistent, unambiguous, verifiable, traceable, modifiable, ranked, correct, necessary, implementation-free.',
+      duration: 4000,
+    },
+    {
+      headline: 'Checking for the "shall" standard...',
+      tip: '"Shall" means non-negotiable. "Should" means nice-to-have. "Will" is ambiguous. The word choice in requirements has legal and contractual weight in professional engineering.',
+      duration: 4000,
+    },
+  ],
+  generate_artifact: [
+    {
+      headline: 'Converting conversation to specification...',
+      tip: 'What takes most teams a week of meetings is being compressed into a structured deliverable. Context diagrams, use case diagrams, and requirements tables -- the same artifacts used on billion-dollar systems.',
+      duration: 6000,
+    },
+    {
+      headline: 'Building machine-readable output...',
+      tip: 'These artifacts aren\'t just documentation. They\'re structured data that AI coding tools (Cursor, Claude Code) can consume to generate implementation code that actually matches your spec.',
+      duration: 6000,
+    },
+  ],
+  generate_response: [
+    {
+      headline: 'Synthesizing next steps...',
+      tip: 'Each response balances three things: acknowledging what you said, showing what it learned, and asking the single most valuable question to move the PRD forward.',
+      duration: 4000,
+    },
+    {
+      headline: 'Applying the educated guess pattern...',
+      tip: 'Instead of asking 20 questions, the AI makes informed guesses and asks you to confirm or correct. This is 3-5x faster than starting from a blank page.',
+      duration: 4000,
+    },
+  ],
+};

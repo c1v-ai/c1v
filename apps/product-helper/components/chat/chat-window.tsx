@@ -3,13 +3,13 @@
 import React, { type FormEvent, type ReactNode, useRef, useEffect, useCallback, useState } from 'react';
 import { type Message, useChat } from 'ai/react';
 import { toast } from 'sonner';
-import { ChatMessageBubble, ChatLoadingBubble } from './chat-message-bubble';
+import { ChatMessageBubble } from './chat-message-bubble';
 import { ChatInput } from './chat-input';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThinkingState } from '@/components/education/thinking-state';
-import { getEducationContext } from '@/lib/education/phase-mapping';
+import { generalThinkingMessages } from '@/lib/education/knowledge-bank';
 import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
 
 /**
@@ -53,13 +53,7 @@ export function ChatMessages({
         />
       ))}
       {isLoading && (
-        currentPhase ? (
-          <ThinkingState
-            messages={getEducationContext(currentPhase).thinkingMessages}
-          />
-        ) : (
-          <ChatLoadingBubble aiEmoji={aiEmoji} />
-        )
+        <ThinkingState messages={generalThinkingMessages} />
       )}
     </div>
   );
@@ -218,6 +212,7 @@ export function ChatWindow({
   chatOptions = {},
 }: ChatWindowProps) {
   const [currentPhase, setCurrentPhase] = useState<ArtifactPhase | null>(null);
+  const [currentNode, setCurrentNode] = useState<string | null>(null);
 
   // Initialize chat with Vercel AI SDK
   const chat = useChat({
@@ -272,6 +267,26 @@ export function ChatWindow({
       }
     },
   });
+
+  // Parse stream status markers from streaming content to drive ThinkingState
+  useEffect(() => {
+    if (!chat.isLoading) {
+      setCurrentNode(null);
+      return;
+    }
+
+    const lastMsg = chat.messages[chat.messages.length - 1];
+    if (!lastMsg || lastMsg.role !== 'assistant') return;
+
+    const markers = [...lastMsg.content.matchAll(/<!--status:(.*?)-->/g)];
+    if (markers.length > 0) {
+      try {
+        const latest = JSON.parse(markers[markers.length - 1][1]);
+        setCurrentNode(latest.node);
+        if (latest.phase) setCurrentPhase(latest.phase);
+      } catch { /* malformed marker, skip */ }
+    }
+  }, [chat.messages, chat.isLoading]);
 
   // Handle form submission
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
