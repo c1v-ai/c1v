@@ -11,7 +11,6 @@
  */
 
 import { createClaudeAgent } from '../config';
-import { PromptTemplate } from '@langchain/core/prompts';
 import {
   codingGuidelinesSchema,
 } from '../../db/schema/v2-validators';
@@ -60,21 +59,28 @@ const structuredGuidelinesLLM = createClaudeAgent(codingGuidelinesSchema, 'gener
 // Prompt Template
 // ============================================================
 
-const guidelinesPrompt = PromptTemplate.fromTemplate(`
-You are a senior software architect creating coding guidelines for a development team.
+function buildGuidelinesPrompt(vars: {
+  projectName: string;
+  teamSize: string;
+  experienceLevel: string;
+  projectType: string;
+  techStackFormatted: string;
+  preferencesFormatted: string;
+}): string {
+  return `You are a senior software architect creating coding guidelines for a development team.
 Generate comprehensive, practical guidelines tailored to the project's tech stack and team context.
 
 ## Project Context
-**Name:** {projectName}
-**Team Size:** {teamSize}
-**Experience Level:** {experienceLevel}
-**Project Type:** {projectType}
+**Name:** ${vars.projectName}
+**Team Size:** ${vars.teamSize}
+**Experience Level:** ${vars.experienceLevel}
+**Project Type:** ${vars.projectType}
 
 ## Tech Stack
-{techStackFormatted}
+${vars.techStackFormatted}
 
 ## Team Preferences
-{preferencesFormatted}
+${vars.preferencesFormatted}
 
 ## Instructions
 
@@ -139,7 +145,7 @@ For each forbidden pattern, provide:
 
 ### 7. Import Configuration (optional but recommended)
 - **style**: "absolute" | "relative" | "aliases"
-- **aliases**: Path aliases mapping (e.g., {"@/*": "./src/*"})
+- **aliases**: Path aliases mapping (e.g., "@/*" => "./src/*")
 - **sortOrder**: Import sort order preferences
 
 ### 8. Commit Conventions (optional but recommended)
@@ -152,8 +158,8 @@ Consider these factors when generating guidelines:
 - Team size and experience (stricter for larger/junior teams)
 - Project type (enterprise needs more documentation, startups need flexibility)
 - Modern best practices for 2024-2025
-- Developer experience and productivity
-`);
+- Developer experience and productivity`;
+}
 
 // ============================================================
 // Main Function
@@ -183,7 +189,7 @@ export async function generateCodingGuidelines(
       : 'No specific preferences';
 
     // Build prompt
-    const promptText = await guidelinesPrompt.format({
+    const promptText = buildGuidelinesPrompt({
       projectName: context.projectName,
       teamSize: context.teamSize || 'small',
       experienceLevel: context.experienceLevel || 'mixed',
