@@ -42,7 +42,7 @@ export function stripVisionMetadata(vision: string | null | undefined): string {
   if (!vision) return '';
 
   return vision
-    .replace(/^\[Mode:[^\]]*\]\s*\n*/m, '')
-    .replace(/\n---\n[\s\S]*$/, '')
+    .replace(/^\[Mode:[^\]]*\]\s*[\r\n]*/m, '')
+    .replace(/\r?\n---\r?\n[\s\S]*$/, '')
     .trim();
 }

@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { getProjectById } from '@/app/actions/projects';
 import { getConversations } from '@/app/actions/conversations';
 import { ProjectLayoutClient } from './project-layout-client';
+import { stripVisionMetadata } from '@/lib/utils/vision';
 
 function LayoutLoadingSkeleton() {
   return (
@@ -32,13 +33,21 @@ async function ProjectLayoutContent({
   // Load conversation history
   const conversations = await getConversations(projectId);
 
-  // Convert to Vercel AI SDK format
-  const initialMessages = conversations.map((conv) => ({
-    id: `${conv.id}`,
-    role: conv.role as 'user' | 'assistant',
-    content: conv.content,
-    createdAt: conv.createdAt,
-  }));
+  // Convert to Vercel AI SDK format, stripping metadata from first user message
+  let firstUserSeen = false;
+  const initialMessages = conversations.map((conv) => {
+    let content = conv.content;
+    if (conv.role === 'user' && !firstUserSeen) {
+      firstUserSeen = true;
+      content = stripVisionMetadata(content);
+    }
+    return {
+      id: `${conv.id}`,
+      role: conv.role as 'user' | 'assistant',
+      content,
+      createdAt: conv.createdAt,
+    };
+  });
 
   const projectData = project.projectData;
   const artifacts = project.artifacts || [];
