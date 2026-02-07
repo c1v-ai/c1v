@@ -13,6 +13,9 @@ import {
   BookOpen,
   Database,
   Cloud,
+  Target,
+  BarChart3,
+  Shield,
 } from 'lucide-react';
 import type { DiagramType } from '@/lib/db/type-guards';
 
@@ -33,10 +36,13 @@ export function getProjectNavItems(projectId: number): NavItem[] {
       href: `/projects/${projectId}/requirements`,
       icon: FileText,
       children: [
+        { name: 'Problem Statement', href: `/projects/${projectId}/requirements/problem-statement`, icon: Target, dataKey: 'hasProblemStatement' },
+        { name: 'Goals & Metrics', href: `/projects/${projectId}/requirements/goals-metrics`, icon: BarChart3, dataKey: 'hasGoalsMetrics' },
         { name: 'Architecture Diagram', href: `/projects/${projectId}/requirements/architecture`, icon: Layers, dataKey: 'hasArchitecture' },
         { name: 'Tech Stack', href: `/projects/${projectId}/requirements/tech-stack`, icon: Code, dataKey: 'hasTechStack' },
         { name: 'User Stories', href: `/projects/${projectId}/requirements/user-stories`, icon: BookOpen, dataKey: 'hasUserStories' },
         { name: 'System Overview', href: `/projects/${projectId}/requirements/system-overview`, icon: Users, dataKey: 'hasSystemOverview' },
+        { name: 'Non-Functional Req.', href: `/projects/${projectId}/requirements/nfr`, icon: Shield, dataKey: 'hasNfr' },
       ],
     },
     {

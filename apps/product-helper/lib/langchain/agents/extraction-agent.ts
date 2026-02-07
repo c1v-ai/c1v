@@ -23,7 +23,7 @@ import { extractionPrompt } from '../prompts';
  */
 const structuredExtractionLLM = createClaudeAgent(extractionSchema, 'extract_prd_data', {
   temperature: 0.2,
-  maxTokens: 3000,
+  maxTokens: 20000,
 });
 
 /**

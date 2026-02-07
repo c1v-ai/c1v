@@ -640,9 +640,9 @@ export type NonFunctionalRequirement = z.infer<typeof nonFunctionalRequirementSc
  */
 export const extractionSchema = z.object({
   // Core PRD sections
-  actors: z.array(actorSchema).describe('All actors/personas mentioned in the conversation'),
-  useCases: z.array(useCaseSchema).describe('All use cases identified from the conversation'),
-  systemBoundaries: systemBoundariesSchema.describe('System scope boundaries'),
+  actors: z.array(actorSchema).default([]).describe('All actors/personas mentioned in the conversation'),
+  useCases: z.array(useCaseSchema).default([]).describe('All use cases identified from the conversation'),
+  systemBoundaries: systemBoundariesSchema.default({ internal: [], external: [] }).describe('System scope boundaries'),
   dataEntities: z.array(dataEntitySchema).default([]).describe('Core data objects in the system (lightweight for extraction)'),
 
   // Epic.dev parity sections

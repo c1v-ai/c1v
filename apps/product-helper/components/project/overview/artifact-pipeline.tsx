@@ -14,6 +14,9 @@ import {
   Database,
   Cloud,
   FileText,
+  Target,
+  BarChart3,
+  Shield,
 } from 'lucide-react';
 import { useProjectChat } from '@/components/project/project-chat-provider';
 
@@ -29,10 +32,13 @@ interface PipelineItem {
 }
 
 const requirementsItems: PipelineItem[] = [
+  { name: 'Problem Statement', dataKey: 'hasProblemStatement', href: '/requirements/problem-statement', icon: Target },
+  { name: 'Goals & Metrics', dataKey: 'hasGoalsMetrics', href: '/requirements/goals-metrics', icon: BarChart3 },
   { name: 'Architecture Diagram', dataKey: 'hasArchitecture', href: '/requirements/architecture', icon: Layers },
   { name: 'Tech Stack', dataKey: 'hasTechStack', href: '/requirements/tech-stack', icon: Code },
   { name: 'User Stories', dataKey: 'hasUserStories', href: '/requirements/user-stories', icon: BookOpen },
   { name: 'System Overview', dataKey: 'hasSystemOverview', href: '/requirements/system-overview', icon: Users },
+  { name: 'Non-Functional Req.', dataKey: 'hasNfr', href: '/requirements/nfr', icon: Shield },
 ];
 
 const backendItems: PipelineItem[] = [
