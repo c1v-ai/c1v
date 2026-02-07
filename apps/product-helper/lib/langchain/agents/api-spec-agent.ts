@@ -199,73 +199,176 @@ Generate the complete API specification now.`;
 export async function generateAPISpecification(
   context: APISpecGenerationContext
 ): Promise<APISpecification> {
+  const structuredModel = createClaudeAgent(apiSpecificationSchema, 'generate_api_specification', {
+    temperature: 0.2,
+    maxTokens: 8000, // API spec generation needs more output tokens for endpoints
+  });
+
+  // Format use cases for prompt
+  const useCasesText = context.useCases
+    .map((uc, idx) => {
+      const preconditions = uc.preconditions?.length
+        ? `\n   Preconditions: ${uc.preconditions.join(', ')}`
+        : '';
+      const postconditions = uc.postconditions?.length
+        ? `\n   Postconditions: ${uc.postconditions.join(', ')}`
+        : '';
+      return `${idx + 1}. ${uc.id}: ${uc.name}\n   Actor: ${uc.actor}\n   Description: ${uc.description}${preconditions}${postconditions}`;
+    })
+    .join('\n\n');
+
+  // Format data entities for prompt
+  const dataEntitiesText = context.dataEntities
+    .map((entity, idx) => {
+      const attrs = entity.attributes.length > 0
+        ? `Attributes: ${entity.attributes.join(', ')}`
+        : 'Attributes: (none specified)';
+      const rels = entity.relationships.length > 0
+        ? `\n   Relationships: ${entity.relationships.join('; ')}`
+        : '';
+      return `${idx + 1}. ${entity.name}\n   ${attrs}${rels}`;
+    })
+    .join('\n\n');
+
+  // Format tech stack context
+  const techStackText = context.techStack
+    ? `Backend: ${context.techStack.backend || 'Not specified'}\nDatabase: ${context.techStack.database || 'Not specified'}\nAuth: ${context.techStack.auth || 'JWT/Bearer (inferred)'}`
+    : 'Not specified (use modern REST best practices with JWT authentication)';
+
+  // Truncate vision to avoid overwhelming the model
+  const visionText = context.projectVision.length > 1500
+    ? context.projectVision.slice(0, 1500) + '...'
+    : context.projectVision;
+
+  const prompt = API_SPEC_PROMPT
+    .replace('{projectName}', context.projectName)
+    .replace('{projectVision}', visionText)
+    .replace('{useCasesText}', useCasesText || '(No use cases provided)')
+    .replace('{dataEntitiesText}', dataEntitiesText || '(No data entities provided)')
+    .replace('{techStackText}', techStackText);
+
+  // Attempt 1
   try {
-    const structuredModel = createClaudeAgent(apiSpecificationSchema, 'generate_api_specification', {
-      temperature: 0.2, // Claude performs better at 0.2 than 0
-    });
-
-    // Format use cases for prompt
-    const useCasesText = context.useCases
-      .map((uc, idx) => {
-        const preconditions = uc.preconditions?.length
-          ? `\n   Preconditions: ${uc.preconditions.join(', ')}`
-          : '';
-        const postconditions = uc.postconditions?.length
-          ? `\n   Postconditions: ${uc.postconditions.join(', ')}`
-          : '';
-        return `${idx + 1}. ${uc.id}: ${uc.name}\n   Actor: ${uc.actor}\n   Description: ${uc.description}${preconditions}${postconditions}`;
-      })
-      .join('\n\n');
-
-    // Format data entities for prompt
-    const dataEntitiesText = context.dataEntities
-      .map((entity, idx) => {
-        const attrs = entity.attributes.length > 0
-          ? `Attributes: ${entity.attributes.join(', ')}`
-          : 'Attributes: (none specified)';
-        const rels = entity.relationships.length > 0
-          ? `\n   Relationships: ${entity.relationships.join('; ')}`
-          : '';
-        return `${idx + 1}. ${entity.name}\n   ${attrs}${rels}`;
-      })
-      .join('\n\n');
-
-    // Format tech stack context
-    const techStackText = context.techStack
-      ? `Backend: ${context.techStack.backend || 'Not specified'}\nDatabase: ${context.techStack.database || 'Not specified'}\nAuth: ${context.techStack.auth || 'JWT/Bearer (inferred)'}`
-      : 'Not specified (use modern REST best practices with JWT authentication)';
-
-    const prompt = API_SPEC_PROMPT
-      .replace('{projectName}', context.projectName)
-      .replace('{projectVision}', context.projectVision)
-      .replace('{useCasesText}', useCasesText || '(No use cases provided)')
-      .replace('{dataEntitiesText}', dataEntitiesText || '(No data entities provided)')
-      .replace('{techStackText}', techStackText);
-
     const result = await structuredModel.invoke(prompt);
-
-    // Cast through unknown to handle LLM output type flexibility
     const baseSpec = result as unknown as APISpecification;
-
-    // Add metadata
-    const spec: APISpecification = {
-      ...baseSpec,
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        generatorVersion: '1.0.0',
-        endpointCount: baseSpec.endpoints.length,
-        useCasesCovered: context.useCases.map(uc => uc.id),
-        entitiesReferenced: context.dataEntities.map(e => e.name),
-      },
-    };
-
-    return spec;
+    if (baseSpec.endpoints && baseSpec.endpoints.length > 0) {
+      return {
+        ...baseSpec,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          generatorVersion: '1.0.0',
+          endpointCount: baseSpec.endpoints.length,
+          useCasesCovered: context.useCases.map(uc => uc.id),
+          entitiesReferenced: context.dataEntities.map(e => e.name),
+        },
+      };
+    }
+    console.warn('[APISpec] First attempt returned no endpoints, retrying...');
   } catch (error) {
-    console.error('API specification generation error:', error);
-
-    // Return minimal valid spec on failure
-    return getDefaultAPISpecification();
+    console.warn('[APISpec] First attempt failed, retrying...', (error as Error).message?.slice(0, 100));
   }
+
+  // Attempt 2: Shorter, focused prompt emphasizing endpoints
+  try {
+    const retryPrompt = `Generate a REST API specification for "${context.projectName}".
+
+Entities: ${context.dataEntities.map(e => e.name).join(', ')}
+Use Cases: ${context.useCases.map(uc => `${uc.name} (${uc.actor})`).join(', ')}
+
+Generate CRUD endpoints for each entity. The "endpoints" array is REQUIRED.
+For each endpoint include: path, method, description, authentication (boolean), operationId, tags, responseBody (JSON schema), and errorCodes.
+Use REST conventions: plural nouns, proper HTTP methods, /api/v1 prefix.`;
+
+    const result = await structuredModel.invoke(retryPrompt);
+    const baseSpec = result as unknown as APISpecification;
+    if (baseSpec.endpoints && baseSpec.endpoints.length > 0) {
+      return {
+        ...baseSpec,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          generatorVersion: '1.0.0',
+          endpointCount: baseSpec.endpoints.length,
+          useCasesCovered: context.useCases.map(uc => uc.id),
+          entitiesReferenced: context.dataEntities.map(e => e.name),
+        },
+      };
+    }
+  } catch (error) {
+    console.error('API specification generation error (retry):', error);
+  }
+
+  // Fallback: construct basic CRUD endpoints from entities
+  console.warn('[APISpec] Both attempts failed, constructing CRUD endpoints from entities');
+  const fallbackEndpoints = context.dataEntities.flatMap(entity => {
+    const resource = entity.name.toLowerCase().replace(/\s+/g, '-') + 's';
+    const tag = entity.name;
+    return [
+      {
+        path: `/api/v1/${resource}`,
+        method: 'GET' as const,
+        description: `List all ${resource}`,
+        authentication: true,
+        operationId: `list${entity.name.replace(/\s+/g, '')}`,
+        tags: [tag],
+        queryParameters: [
+          { name: 'page', in: 'query' as const, type: 'integer', required: false, description: 'Page number' },
+          { name: 'limit', in: 'query' as const, type: 'integer', required: false, description: 'Items per page' },
+        ],
+        responseBody: { type: 'array' as const, description: `List of ${resource}` },
+        errorCodes: [{ code: 401, name: 'Unauthorized', description: 'Missing authentication' }],
+      },
+      {
+        path: `/api/v1/${resource}`,
+        method: 'POST' as const,
+        description: `Create a new ${entity.name.toLowerCase()}`,
+        authentication: true,
+        operationId: `create${entity.name.replace(/\s+/g, '')}`,
+        tags: [tag],
+        requestBody: {
+          contentType: 'application/json',
+          required: true,
+          description: `${entity.name} data`,
+          schema: {
+            type: 'object' as const,
+            properties: Object.fromEntries(
+              entity.attributes.map(a => [a, { type: 'string' as const, description: a }])
+            ),
+          },
+        },
+        responseBody: { type: 'object' as const, description: `Created ${entity.name.toLowerCase()}` },
+        errorCodes: [
+          { code: 400, name: 'BadRequest', description: 'Invalid data' },
+          { code: 401, name: 'Unauthorized', description: 'Missing authentication' },
+        ],
+      },
+      {
+        path: `/api/v1/${resource}/{id}`,
+        method: 'GET' as const,
+        description: `Get ${entity.name.toLowerCase()} by ID`,
+        authentication: true,
+        operationId: `get${entity.name.replace(/\s+/g, '')}ById`,
+        tags: [tag],
+        pathParameters: [{ name: 'id', in: 'path' as const, type: 'string', required: true, description: `${entity.name} ID` }],
+        responseBody: { type: 'object' as const, description: entity.name },
+        errorCodes: [
+          { code: 401, name: 'Unauthorized', description: 'Missing authentication' },
+          { code: 404, name: 'NotFound', description: `${entity.name} not found` },
+        ],
+      },
+    ];
+  });
+
+  return {
+    ...getDefaultAPISpecification(),
+    endpoints: fallbackEndpoints as APISpecification['endpoints'],
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      generatorVersion: '1.0.0',
+      endpointCount: fallbackEndpoints.length,
+      useCasesCovered: context.useCases.map(uc => uc.id),
+      entitiesReferenced: context.dataEntities.map(e => e.name),
+    },
+  };
 }
 
 /**
