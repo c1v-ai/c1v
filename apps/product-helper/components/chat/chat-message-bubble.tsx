@@ -32,6 +32,9 @@ export function ChatMessageBubble({
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
+  // Strip stream status markers injected by LangGraph handler
+  const displayContent = message.content.replace(/<!--status:.*?-->\n?/g, '');
+
   return (
     <>
     <div
@@ -75,11 +78,11 @@ export function ChatMessageBubble({
         <div className="break-words">
           {isUser ? (
             // User messages: plain text with white-space preserved
-            <div className="whitespace-pre-wrap">{message.content}</div>
+            <div className="whitespace-pre-wrap">{displayContent}</div>
           ) : (
             // Assistant messages: rendered markdown with diagram click handler
             <MarkdownRenderer
-              content={message.content}
+              content={displayContent}
               onDiagramClick={(syntax) => setActiveDiagram(syntax)}
               currentPhase={currentPhase}
             />

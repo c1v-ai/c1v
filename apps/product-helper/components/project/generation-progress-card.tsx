@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { Loader2, CheckCircle2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectChat } from './project-chat-provider';
+import { ThinkingState } from '@/components/education/thinking-state';
+import { nodeThinkingMessages } from '@/lib/education/knowledge-bank';
 
 // ============================================================
 // Stage computation
@@ -16,36 +18,52 @@ interface StageInfo {
   progress: number; // 0-100
 }
 
+/** Map LangGraph node names to user-facing stage info */
+const NODE_STAGE: Record<string, { label: string; index: number; progress: number }> = {
+  analyze_response: { label: 'Analyzing your input', index: 1, progress: 15 },
+  extract_data: { label: 'Extracting requirements', index: 2, progress: 35 },
+  compute_next_question: { label: 'Finding next question', index: 3, progress: 55 },
+  check_prd_spec: { label: 'Validating PRD quality', index: 4, progress: 70 },
+  generate_artifact: { label: 'Creating diagrams', index: 5, progress: 85 },
+  generate_response: { label: 'Crafting response', index: 6, progress: 92 },
+};
+
+const TOTAL_STAGES = 6;
+
 function computeStage(
-  isLoading: boolean,
   postPhase: 'idle' | 'saving' | 'complete',
+  currentNode: string | null,
   hasDiagram: boolean,
   elapsedMs: number
 ): StageInfo {
-  const total = 4;
-
   if (postPhase === 'complete') {
-    return { label: 'Complete', index: total, total, progress: 100 };
+    return { label: 'Complete', index: TOTAL_STAGES, total: TOTAL_STAGES, progress: 100 };
   }
   if (postPhase === 'saving') {
-    return { label: 'Saving & extracting data', index: total, total, progress: 90 };
+    return { label: 'Saving & extracting data', index: TOTAL_STAGES, total: TOTAL_STAGES, progress: 95 };
   }
 
-  // During streaming
+  // Use real node info from stream markers when available
+  if (currentNode && NODE_STAGE[currentNode]) {
+    const ns = NODE_STAGE[currentNode];
+    return { label: ns.label, index: ns.index, total: TOTAL_STAGES, progress: ns.progress };
+  }
+
+  // Fallback: time-based guessing (before first marker arrives)
   if (hasDiagram) {
-    return { label: 'Creating diagrams', index: 3, total, progress: 75 };
+    return { label: 'Creating diagrams', index: 5, total: TOTAL_STAGES, progress: 85 };
   }
   if (elapsedMs > 8000) {
-    return { label: 'Generating response', index: 3, total, progress: 65 };
+    return { label: 'Processing requirements', index: 3, total: TOTAL_STAGES, progress: 55 };
   }
   if (elapsedMs > 3000) {
-    return { label: 'Processing requirements', index: 2, total, progress: 40 };
+    return { label: 'Analyzing your input', index: 2, total: TOTAL_STAGES, progress: 30 };
   }
-  return { label: 'Analyzing your message', index: 1, total, progress: 15 };
+  return { label: 'Starting...', index: 1, total: TOTAL_STAGES, progress: 10 };
 }
 
-function formatRemaining(ms: number): string {
-  const seconds = Math.max(0, Math.ceil(ms / 1000));
+function formatElapsed(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
   if (seconds >= 60) {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -58,14 +76,13 @@ function formatRemaining(ms: number): string {
 // Component
 // ============================================================
 
-const ESTIMATED_TOTAL_MS = 15000; // average generation cycle
-
 export function GenerationProgressCard() {
   const {
     isLoading,
     generationStartedAt,
     postGenerationPhase,
     messages,
+    currentNode,
   } = useProjectChat();
 
   const [elapsed, setElapsed] = useState(0);
@@ -76,7 +93,6 @@ export function GenerationProgressCard() {
       setElapsed(0);
       return;
     }
-    // Set immediately to avoid flicker
     setElapsed(Date.now() - generationStartedAt);
     const interval = setInterval(() => {
       setElapsed(Date.now() - generationStartedAt);
@@ -95,9 +111,8 @@ export function GenerationProgressCard() {
   const isActive = isLoading || postGenerationPhase !== 'idle';
   if (!isActive || !generationStartedAt) return null;
 
-  const stage = computeStage(isLoading, postGenerationPhase, hasStreamingDiagram, elapsed);
+  const stage = computeStage(postGenerationPhase, currentNode, hasStreamingDiagram, elapsed);
   const isComplete = postGenerationPhase === 'complete';
-  const estimatedRemaining = Math.max(0, ESTIMATED_TOTAL_MS - elapsed);
 
   // Title based on phase
   const title = isComplete
@@ -163,13 +178,18 @@ export function GenerationProgressCard() {
           Stage {stage.index}/{stage.total}: {stage.label}
         </span>
         {!isComplete && (
-          <span
-            className="flex items-center gap-1 tabular-nums"
-            style={{ color: 'var(--accent)' }}
-          >
-            <Sparkles className="h-3 w-3" />
-            ~{formatRemaining(estimatedRemaining)} remaining
-          </span>
+          <div className="flex flex-col items-end gap-0.5">
+            <span
+              className="flex items-center gap-1 tabular-nums"
+              style={{ color: 'var(--accent)' }}
+            >
+              <Sparkles className="h-3 w-3" />
+              {formatElapsed(elapsed)}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+              may take 3 - 5 min
+            </span>
+          </div>
         )}
       </div>
 
@@ -189,6 +209,13 @@ export function GenerationProgressCard() {
           }}
         />
       </div>
+
+      {/* Node-specific thinking content (only when we know which node is active) */}
+      {!isComplete && currentNode && nodeThinkingMessages[currentNode] && (
+        <div className="mt-3">
+          <ThinkingState messages={nodeThinkingMessages[currentNode]} className="border-0 px-0 py-0" />
+        </div>
+      )}
     </div>
   );
 }

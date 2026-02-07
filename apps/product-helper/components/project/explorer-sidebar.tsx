@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { useProjectChat } from './project-chat-provider';
 import { getProjectNavItems, isNavItemActive, type NavItem } from './nav-config';
 
@@ -183,12 +184,35 @@ function NavItemComponent({
 // Pulse tracking hook
 // ============================================================
 
+const DATA_KEY_LABELS: Record<string, { name: string; section: string }> = {
+  hasArchitecture: { name: 'Architecture Diagram', section: 'Product Requirements' },
+  hasTechStack: { name: 'Tech Stack', section: 'Product Requirements' },
+  hasUserStories: { name: 'User Stories', section: 'Product Requirements' },
+  hasSystemOverview: { name: 'System Overview', section: 'Product Requirements' },
+  hasSchema: { name: 'Database Schema', section: 'Backend' },
+  hasApiSpec: { name: 'API Specification', section: 'Backend' },
+  hasInfrastructure: { name: 'Infrastructure', section: 'Backend' },
+  hasGuidelines: { name: 'Coding Guidelines', section: 'Backend' },
+  hasDiagrams: { name: 'Diagrams', section: 'Diagrams' },
+  hasProblemStatement: { name: 'Problem Statement', section: 'Product Requirements' },
+  hasGoalsMetrics: { name: 'Goals & Metrics', section: 'Product Requirements' },
+  hasNfr: { name: 'Non-Functional Requirements', section: 'Product Requirements' },
+};
+
 function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
   const prevHasData = useRef<HasDataMap>({});
+  const isFirstLoad = useRef(true);
   const [newlyCompleted, setNewlyCompleted] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!hasDataMap) return;
+
+    // Skip notifications on initial page load
+    if (isFirstLoad.current) {
+      prevHasData.current = { ...hasDataMap };
+      isFirstLoad.current = false;
+      return;
+    }
 
     const newItems = new Set<string>();
     for (const [key, value] of Object.entries(hasDataMap)) {
@@ -201,6 +225,18 @@ function useNewlyCompleted(hasDataMap: HasDataMap | undefined) {
 
     if (newItems.size > 0) {
       setNewlyCompleted(newItems);
+
+      // Notify user about each newly completed section
+      for (const key of newItems) {
+        const info = DATA_KEY_LABELS[key];
+        const label = info?.name || key;
+        const location = info?.section;
+        toast.success(`${label} is ready`, {
+          description: location ? `Find it under ${location} in the sidebar.` : 'View it in the sidebar.',
+          duration: 4000,
+        });
+      }
+
       const timer = setTimeout(() => setNewlyCompleted(new Set()), 3000);
       return () => clearTimeout(timer);
     }

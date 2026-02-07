@@ -416,6 +416,16 @@ export async function streamWithLangGraph(
           for (const [nodeName, nodeOutput] of Object.entries(chunk)) {
             const output = nodeOutput as Partial<IntakeState>;
 
+            // Inject stream status marker so frontend can show node-specific thinking content
+            try {
+              const markerPhase = output.currentPhase || accumulatedState.currentPhase || state.currentPhase;
+              controller.enqueue(encoder.encode(
+                `<!--status:${JSON.stringify({ node: nodeName, phase: markerPhase || '' })}-->\n`
+              ));
+            } catch (markerErr) {
+              console.warn('[STREAM] Failed to inject status marker:', markerErr);
+            }
+
             // Stream messages as they come in
             // Use defensive type checking for Turbopack compatibility
             if (output.messages && output.messages.length > 0) {

@@ -40,6 +40,8 @@ interface TechAlternative {
 interface TechChoice {
   name?: string;
   technology?: string;
+  choice?: string;
+  category?: string;
   rationale?: string;
   reason?: string;
   alternatives?: (string | TechAlternative)[];
@@ -151,7 +153,7 @@ function TechCategoryCard({
       <CardContent>
         <div className="space-y-4">
           {choices.map((choice, index) => {
-            const techName = choice.name || choice.technology || 'Unknown';
+            const techName = choice.name || choice.technology || choice.choice || 'Unknown';
             const reason = choice.rationale || choice.reason;
 
             return (
@@ -255,13 +257,31 @@ export function TechStackSection({ project }: TechStackSectionProps) {
 
   // Parse the tech stack into category -> choices pairs
   const categories: Array<{ key: string; choices: TechChoice[] }> = [];
-  const skipKeys = new Set(['metadata', 'generatedAt', 'projectId']);
+  const skipKeys = new Set(['metadata', 'generatedAt', 'projectId', 'constraints', 'rationale', 'estimatedCost', 'scalability']);
 
-  for (const [key, value] of Object.entries(techStack)) {
-    if (skipKeys.has(key)) continue;
-    const choices = normalizeTechChoices(value);
-    if (choices.length > 0) {
+  // Handle TechStackModel format: { categories: [{ category, choice, rationale, alternatives }] }
+  if ('categories' in techStack && Array.isArray(techStack.categories)) {
+    const grouped = new Map<string, TechChoice[]>();
+    for (const tc of techStack.categories as TechChoice[]) {
+      const cat = tc.category || 'other';
+      if (!grouped.has(cat)) grouped.set(cat, []);
+      grouped.get(cat)!.push({
+        name: tc.choice || tc.name || tc.technology,
+        rationale: tc.rationale || tc.reason,
+        alternatives: tc.alternatives,
+      });
+    }
+    for (const [key, choices] of grouped) {
       categories.push({ key, choices });
+    }
+  } else {
+    // Legacy format: category-keyed data { frontend: {...}, backend: {...} }
+    for (const [key, value] of Object.entries(techStack)) {
+      if (skipKeys.has(key)) continue;
+      const choices = normalizeTechChoices(value);
+      if (choices.length > 0) {
+        categories.push({ key, choices });
+      }
     }
   }
 

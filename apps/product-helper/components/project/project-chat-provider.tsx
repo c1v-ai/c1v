@@ -6,12 +6,14 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   type FormEvent,
   type ReactNode,
 } from 'react';
 import { useChat, type Message } from 'ai/react';
 import { toast } from 'sonner';
+import { stripVisionMetadata } from '@/lib/utils/vision';
 import useSWR from 'swr';
 import {
   parseProjectData,
@@ -60,6 +62,9 @@ interface ProjectChatContextValue {
   // Generation progress
   generationStartedAt: number | null;
   postGenerationPhase: 'idle' | 'saving' | 'complete';
+
+  // Current LangGraph node (from stream markers)
+  currentNode: string | null;
 
   // Whether this is a new project (no initial messages)
   isNewProject: boolean;
@@ -221,6 +226,49 @@ export function ProjectChatProvider({
     prevIsLoading.current = chat.isLoading;
   }, [chat.isLoading]);
 
+  // Parse stream status markers from streaming content
+  const [currentNode, setCurrentNode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!chat.isLoading) {
+      setCurrentNode(null);
+      return;
+    }
+    const lastMsg = chat.messages[chat.messages.length - 1];
+    if (!lastMsg || lastMsg.role !== 'assistant') return;
+
+    const markers = [...lastMsg.content.matchAll(/<!--status:(.*?)-->/g)];
+    if (markers.length > 0) {
+      try {
+        const latest = JSON.parse(markers[markers.length - 1][1]);
+        setCurrentNode(latest.node);
+      } catch { /* malformed marker */ }
+    }
+  }, [chat.messages, chat.isLoading]);
+
+  // Strip internal markers and metadata from messages so consumers never see them
+  const strippedMessages = useMemo(
+    () => {
+      let firstUserSeen = false;
+      return chat.messages.map((m) => {
+        // Strip stream status markers from assistant messages
+        if (m.role === 'assistant' && m.content.includes('<!--status:')) {
+          return { ...m, content: m.content.replace(/<!--status:.*?-->\r?\n?/g, '') };
+        }
+        // Strip vision metadata (mode prefix, system context) from first user message
+        if (m.role === 'user' && !firstUserSeen) {
+          firstUserSeen = true;
+          const cleaned = stripVisionMetadata(m.content);
+          if (cleaned !== m.content) {
+            return { ...m, content: cleaned };
+          }
+        }
+        return m;
+      });
+    },
+    [chat.messages]
+  );
+
   const toggleExplorer = useCallback(() => {
     setExplorerCollapsed((prev) => !prev);
   }, []);
@@ -233,7 +281,7 @@ export function ProjectChatProvider({
     projectId,
     projectName,
     projectStatus,
-    messages: chat.messages,
+    messages: strippedMessages,
     input: chat.input,
     isLoading: chat.isLoading,
     handleInputChange: chat.handleInputChange,
@@ -250,6 +298,7 @@ export function ProjectChatProvider({
     toggleChatPanel,
     generationStartedAt,
     postGenerationPhase,
+    currentNode,
     isNewProject: initialMessages.length === 0,
   };
 
