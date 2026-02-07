@@ -21,22 +21,27 @@ import {
   getMessageDiagnostics,
   isAIMessage,
 } from '@/lib/langchain/message-utils';
-import mermaid from 'mermaid';
 import { db } from '@/lib/db/drizzle';
-import { conversations, projectData, artifacts, type NewArtifact } from '@/lib/db/schema';
+import { conversations, projectData, artifacts, projects, type NewArtifact } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
-
-// Initialize mermaid for server-side validation (parsing only, no rendering)
-mermaid.initialize({ startOnLoad: false });
 import {
   getIntakeGraph,
   createInitialState,
   loadCheckpoint,
   saveCheckpoint,
   type IntakeState,
+  type ArtifactPhase,
 } from '@/lib/langchain/graphs';
 import type { ExtractionResult } from '@/lib/langchain/schemas';
+import { recommendTechStack, type TechStackContext } from '@/lib/langchain/agents/tech-stack-agent';
+import { generateUserStories, type UserStoriesContext } from '@/lib/langchain/agents/user-stories-agent';
+import { extractDatabaseSchema, type SchemaExtractionContext } from '@/lib/langchain/agents/schema-extraction-agent';
+import { generateAPISpecification } from '@/lib/langchain/agents/api-spec-agent';
+import type { APISpecGenerationContext } from '@/lib/types/api-specification';
+import { generateInfrastructureSpec, type InfrastructureContext } from '@/lib/langchain/agents/infrastructure-agent';
+import { generateCodingGuidelines, type GuidelinesContext } from '@/lib/langchain/agents/guidelines-agent';
+import { userStories } from '@/lib/db/schema';
 
 // ============================================================
 // Types
@@ -130,7 +135,54 @@ export async function processWithLangGraph(
       );
     }
 
-    // 2. Add user message to state
+    // 2. Early exit: if all core KB artifacts are generated, intake is done
+    const coreKBPhases = [
+      'context_diagram',
+      'use_case_diagram',
+      'scope_tree',
+      'ucbd',
+      'requirements_table',
+      'sysml_activity_diagram',
+    ];
+    const allCoreGenerated = state && state.generatedArtifacts?.length > 0 &&
+      coreKBPhases.every(p => state!.generatedArtifacts.includes(p as ArtifactPhase));
+
+    if (allCoreGenerated) {
+      console.log(`[STATE_DEBUG] All core artifacts already generated (${state.generatedArtifacts.length}), skipping graph — intake complete`);
+
+      // Save user message
+      await db.insert(conversations).values({
+        projectId,
+        role: 'user',
+        content: userMessage,
+        tokens: estimateTokenCount(userMessage),
+      });
+
+      const completionMsg = await buildCompletionMessage(projectId);
+
+      await db.insert(conversations).values({
+        projectId,
+        role: 'assistant',
+        content: completionMsg,
+        tokens: estimateTokenCount(completionMsg),
+      });
+
+      // Only mark as 'generated' if all backend artifacts exist
+      const pd = await db.query.projectData.findFirst({
+        where: eq(projectData.projectId, projectId),
+      });
+      const allBackendDone = pd?.techStack && pd?.databaseSchema && pd?.apiSpecification && pd?.infrastructureSpec && pd?.codingGuidelines;
+      await db.update(projects)
+        .set({ status: allBackendDone ? 'generated' : 'in_progress', updatedAt: new Date() })
+        .where(eq(projects.id, projectId));
+
+      return {
+        response: completionMsg,
+        state: state!,
+      };
+    }
+
+    // 2b. Add user message to state
     state = {
       ...state,
       messages: [...state.messages, new HumanMessage(userMessage)],
@@ -166,7 +218,7 @@ export async function processWithLangGraph(
       );
     }
 
-    const response = lastAIMessage
+    let response = lastAIMessage
       ? getMessageContent(lastAIMessage)
       : 'I apologize, but I was unable to generate a response. Please try again.';
 
@@ -190,6 +242,36 @@ export async function processWithLangGraph(
     // [STATE_DEBUG] Updating project data
     console.log(`[STATE_DEBUG] Updating project data from state...`);
     await updateProjectDataFromState(projectId, result);
+
+    // 9. Check if intake is complete and trigger post-intake generation
+    const artifactCount = result.generatedArtifacts?.length ?? 0;
+    if (artifactCount >= 4 && result.extractedData) {
+      const existing = await db.query.projectData.findFirst({
+        where: eq(projectData.projectId, projectId),
+        columns: { techStack: true },
+      });
+      if (!existing?.techStack) {
+        console.log(`[POST_INTAKE] Intake complete (${artifactCount} artifacts), triggering generation`);
+        try {
+          const genSummary = await triggerPostIntakeGeneration(
+            projectId,
+            result.extractedData,
+            projectName,
+            projectVision,
+          );
+          // Append generation summary to chat
+          response += '\n\n---\n\n' + genSummary;
+          await db.insert(conversations).values({
+            projectId,
+            role: 'assistant',
+            content: `[Auto-Generation] ${genSummary}`,
+            tokens: estimateTokenCount(genSummary),
+          });
+        } catch (genError) {
+          console.error('[POST_INTAKE] Generation failed:', genError);
+        }
+      }
+    }
 
     return {
       response,
@@ -246,6 +328,54 @@ export async function streamWithLangGraph(
     );
   }
 
+  // Early exit: if all core KB artifacts are generated, intake is done
+  const coreKBPhases: ArtifactPhase[] = [
+    'context_diagram',
+    'use_case_diagram',
+    'scope_tree',
+    'ucbd',
+    'requirements_table',
+    'sysml_activity_diagram',
+  ];
+  const allCoreGenerated = state.generatedArtifacts?.length > 0 &&
+    coreKBPhases.every(p => state!.generatedArtifacts.includes(p));
+
+  if (allCoreGenerated) {
+    console.log(`[STREAM] All core artifacts already generated, returning completion message`);
+
+    await db.insert(conversations).values({
+      projectId,
+      role: 'user',
+      content: userMessage,
+      tokens: estimateTokenCount(userMessage),
+    });
+
+    const completionMsg = await buildCompletionMessage(projectId);
+
+    await db.insert(conversations).values({
+      projectId,
+      role: 'assistant',
+      content: completionMsg,
+      tokens: estimateTokenCount(completionMsg),
+    });
+
+    const pd = await db.query.projectData.findFirst({
+      where: eq(projectData.projectId, projectId),
+    });
+    const allBackendDone = pd?.techStack && pd?.databaseSchema && pd?.apiSpecification && pd?.infrastructureSpec && pd?.codingGuidelines;
+    await db.update(projects)
+      .set({ status: allBackendDone ? 'generated' : 'in_progress', updatedAt: new Date() })
+      .where(eq(projects.id, projectId));
+
+    const encoder = new TextEncoder();
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode(completionMsg));
+        controller.close();
+      },
+    });
+  }
+
   // Add user message
   state = {
     ...state,
@@ -264,7 +394,6 @@ export async function streamWithLangGraph(
   // Create streaming response
   const encoder = new TextEncoder();
   let fullResponse = '';
-  let finalState: IntakeState | null = null;
 
   const graph = getIntakeGraph();
 
@@ -275,6 +404,12 @@ export async function streamWithLangGraph(
         const eventStream = await graph.stream(state, {
           recursionLimit: 20,
         });
+
+        // Track generated artifacts across all chunks
+        const accumulatedArtifacts = new Set<string>(state.generatedArtifacts ?? []);
+        let latestExtractedData: ExtractionResult | undefined;
+        // Accumulate all non-message state fields across node outputs
+        let accumulatedState: Partial<IntakeState> = {};
 
         for await (const chunk of eventStream) {
           // Each chunk is { nodeName: nodeOutput }
@@ -298,9 +433,20 @@ export async function streamWithLangGraph(
               }
             }
 
-            // Capture final state
-            if (output.extractedData || output.completeness !== undefined) {
-              finalState = output as IntakeState;
+            // Track generated artifacts
+            if (output.generatedArtifacts && Array.isArray(output.generatedArtifacts)) {
+              for (const art of output.generatedArtifacts) {
+                accumulatedArtifacts.add(art as string);
+              }
+            }
+
+            // Merge node output into accumulated state (exclude messages
+            // to prevent shorter partial arrays overwriting cumulative messages)
+            const { messages: _msgs, ...rest } = output;
+            accumulatedState = { ...accumulatedState, ...rest };
+
+            if (output.extractedData) {
+              latestExtractedData = output.extractedData;
             }
           }
         }
@@ -318,18 +464,45 @@ export async function streamWithLangGraph(
           await saveMermaidDiagrams(projectId, fullResponse);
         }
 
-        // Save checkpoint with accumulated state
-        if (finalState) {
-          await saveCheckpoint(projectId, {
-            ...state,
-            ...finalState,
-            messages: [
-              ...state.messages,
-              new AIMessage(fullResponse || 'No response generated'),
-            ],
-          });
+        // Save checkpoint with accumulated state from all node outputs
+        const checkpointState: IntakeState = {
+          ...state,
+          ...accumulatedState,
+          messages: [
+            ...state.messages,
+            new AIMessage(fullResponse || 'No response generated'),
+          ],
+          generatedArtifacts: Array.from(accumulatedArtifacts) as ArtifactPhase[],
+        };
+        await saveCheckpoint(projectId, checkpointState);
 
-          await updateProjectDataFromState(projectId, finalState);
+        if (accumulatedState.extractedData || accumulatedState.completeness !== undefined) {
+          await updateProjectDataFromState(projectId, accumulatedState);
+        }
+
+        // Check if intake is complete and trigger post-intake generation
+        const extractedData = latestExtractedData ?? accumulatedState.extractedData ?? state.extractedData;
+        if (accumulatedArtifacts.size >= 4 && extractedData) {
+          const existing = await db.query.projectData.findFirst({
+            where: eq(projectData.projectId, projectId),
+            columns: { techStack: true },
+          });
+          if (!existing?.techStack) {
+            console.log(`[POST_INTAKE] Intake complete (stream, ${accumulatedArtifacts.size} artifacts), triggering generation`);
+            // Fire generation in background — don't block the stream close
+            triggerPostIntakeGeneration(projectId, extractedData, projectName, projectVision)
+              .then(summary => {
+                console.log(`[POST_INTAKE] Background generation complete: ${summary}`);
+                // Save summary as conversation message
+                return db.insert(conversations).values({
+                  projectId,
+                  role: 'assistant',
+                  content: `[Auto-Generation] ${summary}`,
+                  tokens: estimateTokenCount(summary),
+                });
+              })
+              .catch(err => console.error('[POST_INTAKE] Background generation failed:', err));
+          }
         }
 
         controller.close();
@@ -351,6 +524,52 @@ export async function streamWithLangGraph(
 // ============================================================
 // Helper Functions
 // ============================================================
+
+/**
+ * Build an honest completion message by checking which backend
+ * artifacts actually exist in the database.
+ */
+async function buildCompletionMessage(projectId: number): Promise<string> {
+  const pd = await db.query.projectData.findFirst({
+    where: eq(projectData.projectId, projectId),
+    columns: {
+      techStack: true,
+      databaseSchema: true,
+      apiSpecification: true,
+      infrastructureSpec: true,
+      codingGuidelines: true,
+    },
+  });
+
+  const storyCount = await db.query.userStories.findMany({
+    where: eq(userStories.projectId, projectId),
+    columns: { id: true },
+  });
+
+  const generated: string[] = [];
+  const missing: string[] = [];
+
+  if (pd?.techStack) generated.push('Tech Stack'); else missing.push('Tech Stack');
+  if (storyCount.length > 0) generated.push('User Stories'); else missing.push('User Stories');
+  if (pd?.databaseSchema) generated.push('Database Schema'); else missing.push('Database Schema');
+  if (pd?.apiSpecification) generated.push('API Specification'); else missing.push('API Specification');
+  if (pd?.infrastructureSpec) generated.push('Infrastructure'); else missing.push('Infrastructure');
+  if (pd?.codingGuidelines) generated.push('Coding Guidelines'); else missing.push('Coding Guidelines');
+
+  const parts: string[] = ['Your project requirements intake is complete!'];
+
+  if (generated.length > 0) {
+    parts.push(`\nGenerated successfully: **${generated.join('**, **')}**.`);
+  }
+
+  if (missing.length > 0) {
+    parts.push(`\nStill generating or failed: **${missing.join('**, **')}**. You can regenerate these from the **Generate** page in the sidebar.`);
+  } else {
+    parts.push('\nAll artifacts are ready — explore them in the sidebar.');
+  }
+
+  return parts.join('');
+}
 
 /**
  * Extract mermaid code blocks from content
@@ -388,15 +607,6 @@ async function saveMermaidDiagrams(projectId: number, content: string): Promise<
       console.log(`[LangGraph Diagrams] Found ${mermaidBlocks.length} mermaid diagram(s)`);
       for (const mermaidSyntax of mermaidBlocks) {
         const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
-
-        // Validate Mermaid syntax before saving
-        try {
-          await mermaid.parse(cleanedSyntax);
-        } catch (parseError) {
-          console.error(`[LangGraph Diagrams] Invalid Mermaid syntax, skipping:`, parseError);
-          console.error(`[LangGraph Diagrams] Problematic diagram:\n${cleanedSyntax.substring(0, 200)}...`);
-          continue; // Skip invalid diagrams
-        }
 
         const diagramType = detectDiagramType(cleanedSyntax);
         const newArtifact: NewArtifact = {
@@ -511,6 +721,453 @@ async function updateProjectDataFromState(
     // Log but don't throw - we don't want to fail the chat response
     console.error('[LangGraph Handler] Failed to update project data:', error);
   }
+}
+
+// ============================================================
+// Post-Intake Generation
+// ============================================================
+
+/**
+ * Trigger generation of backend artifacts after intake completes.
+ *
+ * Runs 6 generator agents:
+ * - Phase 1 (parallel): tech stack, user stories, schema, API spec, infrastructure
+ * - Phase 2 (sequential): coding guidelines (depends on tech stack result)
+ *
+ * Uses Promise.allSettled for graceful partial failures.
+ * Persists results to projectData and userStories tables.
+ */
+async function triggerPostIntakeGeneration(
+  projectId: number,
+  extractedData: ExtractionResult,
+  projectName: string,
+  projectVision: string,
+): Promise<string> {
+  console.log(`[POST_INTAKE] Starting post-intake generation for project ${projectId}`);
+
+  const actors = extractedData.actors ?? [];
+  const useCases = extractedData.useCases ?? [];
+  let dataEntities = extractedData.dataEntities ?? [];
+  const systemBoundaries = extractedData.systemBoundaries;
+  const problemStatement = extractedData.problemStatement;
+  const goalsMetrics = extractedData.goalsMetrics ?? [];
+  const nfrs = extractedData.nonFunctionalRequirements ?? [];
+
+  // ── Derive entities from ALL available data when extraction left them empty ──
+  if (dataEntities.length === 0) {
+    console.log(`[POST_INTAKE] No dataEntities found, deriving from actors, use cases, and boundaries`);
+    const entityMap = new Map<string, { attributes: string[]; relationships: string[] }>();
+
+    // 1. Actors ARE entities — they interact with the system, so they need DB representation
+    for (const actor of actors) {
+      if (!actor.name || actor.role === 'To be determined') continue;
+      // Strip parenthetical qualifiers: "AI Agent (Initiator)" → "AI Agent"
+      const baseName = actor.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+      if (!baseName) continue;
+
+      const existing = entityMap.get(baseName);
+      const attrs = existing?.attributes ?? ['id', 'created_at', 'updated_at'];
+      const rels = existing?.relationships ?? [];
+
+      attrs.push('name', 'status', 'role', 'description');
+      if (actor.demographics) attrs.push('demographics');
+      if (actor.technicalProficiency) attrs.push('technical_proficiency');
+      if (actor.usageContext) attrs.push('usage_context');
+      // Actor goals suggest capability/permission attributes
+      if (actor.goals?.length) {
+        attrs.push('permissions', 'capabilities');
+        for (const goal of actor.goals) {
+          // "Securely authenticate identity" → authentication-related fields
+          if (/authenticat/i.test(goal)) attrs.push('credentials', 'auth_token');
+          if (/communicat|channel/i.test(goal)) attrs.push('communication_channel');
+          if (/monitor|log|audit/i.test(goal)) attrs.push('audit_log');
+          if (/config|manage|polic/i.test(goal)) attrs.push('configuration', 'policies');
+        }
+      }
+      // Actor pain points suggest what the system must handle
+      if (actor.painPoints?.length) {
+        for (const pain of actor.painPoints) {
+          if (/credential|identity/i.test(pain)) attrs.push('identity_verified', 'credential_type');
+          if (/trust/i.test(pain)) attrs.push('trust_level', 'trust_score');
+          if (/security|breach/i.test(pain)) attrs.push('security_level');
+          if (/scale|overwhelm/i.test(pain)) attrs.push('rate_limit', 'max_concurrent');
+        }
+      }
+
+      entityMap.set(baseName, { attributes: attrs, relationships: rels });
+    }
+
+    // 2. Use case mainFlow steps reveal resources, tokens, sessions, events
+    for (const uc of useCases) {
+      if (uc.mainFlow) {
+        for (const step of uc.mainFlow) {
+          const text = `${step.action ?? ''} ${step.systemResponse ?? ''}`.toLowerCase();
+          // Direct object mentions become entities
+          if (/token|certificate|credential/i.test(text)) {
+            const e = entityMap.get('AuthToken') ?? { attributes: ['id', 'created_at', 'updated_at'], relationships: [] };
+            e.attributes.push('token_value', 'token_type', 'issued_at', 'expires_at', 'issuer_id', 'subject_id', 'scope', 'is_revoked');
+            entityMap.set('AuthToken', e);
+          }
+          if (/session|channel/i.test(text)) {
+            const e = entityMap.get('Session') ?? { attributes: ['id', 'created_at', 'updated_at'], relationships: [] };
+            e.attributes.push('initiator_id', 'responder_id', 'status', 'started_at', 'expires_at', 'session_type');
+            entityMap.set('Session', e);
+          }
+          if (/request|attempt/i.test(text)) {
+            const e = entityMap.get('AuthRequest') ?? { attributes: ['id', 'created_at', 'updated_at'], relationships: [] };
+            e.attributes.push('requester_id', 'target_id', 'status', 'request_type', 'context', 'response_code', 'resolved_at');
+            entityMap.set('AuthRequest', e);
+          }
+          if (/polic|rule|config/i.test(text)) {
+            const e = entityMap.get('Policy') ?? { attributes: ['id', 'created_at', 'updated_at'], relationships: [] };
+            e.attributes.push('name', 'description', 'rules', 'scope', 'priority', 'is_active', 'created_by');
+            entityMap.set('Policy', e);
+          }
+          if (/log|audit|event|record/i.test(text)) {
+            const e = entityMap.get('AuditEvent') ?? { attributes: ['id', 'created_at'], relationships: [] };
+            e.attributes.push('event_type', 'actor_id', 'target_id', 'action', 'outcome', 'metadata', 'ip_address');
+            entityMap.set('AuditEvent', e);
+          }
+          if (/alert|notif/i.test(text)) {
+            const e = entityMap.get('Notification') ?? { attributes: ['id', 'created_at'], relationships: [] };
+            e.attributes.push('recipient_id', 'type', 'title', 'message', 'severity', 'is_read', 'action_url');
+            entityMap.set('Notification', e);
+          }
+        }
+      }
+
+      // Preconditions/postconditions reveal state transitions and entity fields
+      for (const cond of [...(uc.preconditions ?? []), ...(uc.postconditions ?? [])]) {
+        if (/trust|store|registry/i.test(cond)) {
+          const e = entityMap.get('TrustRelationship') ?? { attributes: ['id', 'created_at', 'updated_at'], relationships: [] };
+          e.attributes.push('source_id', 'target_id', 'trust_level', 'established_at', 'expires_at', 'evidence');
+          entityMap.set('TrustRelationship', e);
+        }
+      }
+    }
+
+    // 3. System boundary internals = services/components that need entities
+    if (systemBoundaries?.internal) {
+      for (const item of systemBoundaries.internal) {
+        // Skip vague requirement descriptions
+        if (/requirement|performance|scalability|capacity/i.test(item)) continue;
+        // Services like "Token generation and management" → "Token" entity already handled
+        // But "Agent identity registry" → likely an entity
+        if (/registry/i.test(item)) {
+          const e = entityMap.get('IdentityRegistry') ?? { attributes: ['id', 'created_at', 'updated_at'], relationships: [] };
+          e.attributes.push('agent_id', 'public_key', 'identity_type', 'registered_at', 'is_active', 'metadata');
+          entityMap.set('IdentityRegistry', e);
+        }
+      }
+    }
+
+    // 4. System boundary externals = integration points
+    if (systemBoundaries?.external) {
+      for (const ext of systemBoundaries.external) {
+        if (/certificate authority/i.test(ext)) {
+          const e = entityMap.get('Certificate') ?? { attributes: ['id', 'created_at'], relationships: [] };
+          e.attributes.push('subject', 'issuer', 'serial_number', 'valid_from', 'valid_until', 'public_key', 'is_revoked');
+          entityMap.set('Certificate', e);
+        }
+      }
+    }
+
+    // Build cross-entity relationships
+    const entityNames = Array.from(entityMap.keys());
+    for (const [name, entity] of entityMap) {
+      // Deduplicate attributes
+      entity.attributes = [...new Set(entity.attributes)];
+      // Link entities that reference each other via _id fields
+      for (const attr of entity.attributes) {
+        if (attr.endsWith('_id')) {
+          const refName = attr.replace(/_id$/, '');
+          const match = entityNames.find(n => n.toLowerCase().includes(refName));
+          if (match && match !== name) {
+            entity.relationships.push(`belongs to ${match}`);
+          }
+        }
+      }
+      // If no specific relationships, connect to core entities
+      if (entity.relationships.length === 0 && name !== 'AuditEvent') {
+        for (const other of entityNames) {
+          if (other !== name && !['AuditEvent', 'Notification'].includes(other)) {
+            entity.relationships.push(`associated with ${other}`);
+            break; // Just one default relationship
+          }
+        }
+      }
+    }
+
+    dataEntities = entityNames.map(name => ({
+      name,
+      attributes: entityMap.get(name)!.attributes,
+      relationships: [...new Set(entityMap.get(name)!.relationships)],
+    }));
+
+    console.log(`[POST_INTAKE] Derived ${dataEntities.length} entities: ${entityNames.join(', ')}`);
+  }
+
+  // ── Build enriched vision from ALL available context ──
+  const visionParts = [projectVision];
+
+  if (problemStatement) {
+    visionParts.push('');
+    visionParts.push(`## Problem`);
+    if (problemStatement.summary) visionParts.push(problemStatement.summary);
+    if (problemStatement.context) visionParts.push(`Context: ${problemStatement.context}`);
+    if (problemStatement.impact) visionParts.push(`Impact: ${problemStatement.impact}`);
+    if (problemStatement.targetAudience) visionParts.push(`Target Audience: ${problemStatement.targetAudience}`);
+    if (problemStatement.goals?.length) visionParts.push(`Goals: ${problemStatement.goals.join('; ')}`);
+  }
+
+  if (goalsMetrics.length > 0) {
+    visionParts.push('');
+    visionParts.push(`## Success Metrics`);
+    for (const gm of goalsMetrics) {
+      const parts = [`${gm.goal}: ${gm.metric}`];
+      if (gm.target) parts.push(`target=${gm.target}`);
+      if (gm.baseline) parts.push(`baseline=${gm.baseline}`);
+      if (gm.timeframe) parts.push(`by ${gm.timeframe}`);
+      visionParts.push(`- ${parts.join(', ')}`);
+    }
+  }
+
+  if (systemBoundaries) {
+    visionParts.push('');
+    visionParts.push(`## System Scope`);
+    if (systemBoundaries.inScope?.length) visionParts.push(`In scope: ${systemBoundaries.inScope.join('; ')}`);
+    if (systemBoundaries.outOfScope?.length) visionParts.push(`Out of scope: ${systemBoundaries.outOfScope.join('; ')}`);
+    if (systemBoundaries.internal?.length) visionParts.push(`Internal components: ${systemBoundaries.internal.join('; ')}`);
+    if (systemBoundaries.external?.length) visionParts.push(`External systems: ${systemBoundaries.external.join('; ')}`);
+  }
+
+  if (nfrs.length > 0) {
+    visionParts.push('');
+    visionParts.push(`## Non-Functional Requirements`);
+    for (const nfr of nfrs) {
+      const parts = [`[${nfr.category}/${nfr.priority}] ${nfr.requirement}`];
+      if (nfr.metric) parts.push(`metric: ${nfr.metric}`);
+      if (nfr.target) parts.push(`target: ${nfr.target}`);
+      visionParts.push(`- ${parts.join(' — ')}`);
+    }
+  }
+
+  if (actors.length > 0) {
+    visionParts.push('');
+    visionParts.push(`## Key Actors (${actors.filter(a => a.role !== 'To be determined').length} detailed)`);
+    for (const actor of actors) {
+      if (actor.role === 'To be determined') continue;
+      const parts = [`${actor.name} (${actor.role}): ${actor.description}`];
+      if (actor.goals?.length) parts.push(`Goals: ${actor.goals.join('; ')}`);
+      if (actor.painPoints?.length) parts.push(`Pain points: ${actor.painPoints.join('; ')}`);
+      visionParts.push(`- ${parts.join('. ')}`);
+    }
+  }
+
+  const enrichedVision = visionParts.join('\n');
+
+  // ── Build enriched use case descriptions (include mainFlow, acceptance criteria) ──
+  const enrichedUseCaseDescriptions = useCases.map(uc => {
+    const parts = [uc.description];
+    if (uc.trigger) parts.push(`Trigger: ${uc.trigger}`);
+    if (uc.outcome) parts.push(`Outcome: ${uc.outcome}`);
+    if (uc.mainFlow?.length) {
+      parts.push('Flow: ' + uc.mainFlow.map(s =>
+        `${s.stepNumber}. [${s.actor}] ${s.action} → ${s.systemResponse}`
+      ).join(' | '));
+    }
+    if (uc.alternativeFlows?.length) {
+      for (const af of uc.alternativeFlows) {
+        parts.push(`Alt flow "${af.name}" (from step ${af.branchPoint}, when: ${af.condition}): ${af.steps.map(s => s.action).join(' → ')}`);
+      }
+    }
+    if (uc.acceptanceCriteria?.length) {
+      parts.push(`Acceptance: ${uc.acceptanceCriteria.join('; ')}`);
+    }
+    if (uc.preconditions?.length) parts.push(`Pre: ${uc.preconditions.join('; ')}`);
+    if (uc.postconditions?.length) parts.push(`Post: ${uc.postconditions.join('; ')}`);
+    return parts.join('\n');
+  });
+
+  // Build contexts for each generator
+  const techStackCtx: TechStackContext = {
+    projectName,
+    projectVision: enrichedVision,
+    useCases: useCases.map((uc, i) => ({ name: uc.name, description: enrichedUseCaseDescriptions[i] })),
+    dataEntities: dataEntities.map(e => ({ name: e.name })),
+  };
+
+  const userStoriesCtx: UserStoriesContext = {
+    projectName,
+    projectVision: enrichedVision,
+    useCases: useCases.map((uc, i) => ({
+      id: uc.id,
+      name: uc.name,
+      description: enrichedUseCaseDescriptions[i],
+      actor: uc.actor,
+      trigger: uc.trigger ?? undefined,
+      outcome: uc.outcome ?? undefined,
+      preconditions: uc.preconditions ?? undefined,
+      postconditions: uc.postconditions ?? undefined,
+      priority: uc.priority ?? undefined,
+    })),
+    actors: actors.map(a => ({
+      name: a.name,
+      role: a.role,
+    })),
+  };
+
+  const schemaCtx: SchemaExtractionContext = {
+    projectName,
+    projectVision: enrichedVision,
+    dataEntities: dataEntities.map(e => ({
+      name: e.name,
+      attributes: e.attributes ?? [],
+      relationships: e.relationships ?? [],
+    })),
+    useCases: useCases.map((uc, i) => ({ name: uc.name, description: enrichedUseCaseDescriptions[i] })),
+  };
+
+  const apiSpecCtx: APISpecGenerationContext = {
+    projectName,
+    projectVision: enrichedVision,
+    useCases: useCases.map((uc, i) => ({
+      id: uc.id,
+      name: uc.name,
+      description: enrichedUseCaseDescriptions[i],
+      actor: uc.actor,
+      preconditions: uc.preconditions ?? undefined,
+      postconditions: uc.postconditions ?? undefined,
+    })),
+    dataEntities: dataEntities.map(e => ({
+      name: e.name,
+      attributes: e.attributes ?? [],
+      relationships: e.relationships ?? [],
+    })),
+  };
+
+  const infraCtx: InfrastructureContext = {
+    projectName,
+    projectDescription: enrichedVision,
+  };
+
+  // Phase 1: Run 5 generators in parallel
+  console.log(`[POST_INTAKE] Running 5 generators in parallel...`);
+  const [techStackResult, storiesResult, schemaResult, apiSpecResult, infraResult] =
+    await Promise.allSettled([
+      recommendTechStack(techStackCtx),
+      generateUserStories(userStoriesCtx),
+      extractDatabaseSchema(schemaCtx),
+      generateAPISpecification(apiSpecCtx),
+      generateInfrastructureSpec(infraCtx),
+    ]);
+
+  // Phase 2: Guidelines depends on tech stack result
+  console.log(`[POST_INTAKE] Running guidelines generator...`);
+  let guidelinesResult: PromiseSettledResult<unknown>;
+  if (techStackResult.status === 'fulfilled') {
+    const guidelinesCtx: GuidelinesContext = {
+      projectName,
+      techStack: techStackResult.value,
+    };
+    [guidelinesResult] = await Promise.allSettled([generateCodingGuidelines(guidelinesCtx)]);
+  } else {
+    guidelinesResult = {
+      status: 'rejected' as const,
+      reason: new Error('Skipped: tech stack generation failed'),
+    };
+  }
+
+  // Collect results
+  const succeeded: string[] = [];
+  const failed: string[] = [];
+  const allResults: [string, PromiseSettledResult<unknown>][] = [
+    ['tech stack', techStackResult],
+    ['user stories', storiesResult],
+    ['database schema', schemaResult],
+    ['API specification', apiSpecResult],
+    ['infrastructure', infraResult],
+    ['coding guidelines', guidelinesResult],
+  ];
+
+  for (const [name, result] of allResults) {
+    if (result.status === 'fulfilled') {
+      succeeded.push(name);
+    } else {
+      failed.push(name);
+      console.error(`[POST_INTAKE] ${name} failed:`, (result as PromiseRejectedResult).reason);
+    }
+  }
+
+  console.log(`[POST_INTAKE] Generation complete: ${succeeded.length}/6 succeeded`);
+
+  // Persist results to database
+  try {
+    const updatePayload: Record<string, unknown> = { updatedAt: new Date() };
+
+    if (techStackResult.status === 'fulfilled') {
+      updatePayload.techStack = techStackResult.value;
+    }
+    if (schemaResult.status === 'fulfilled') {
+      updatePayload.databaseSchema = schemaResult.value;
+    }
+    if (apiSpecResult.status === 'fulfilled') {
+      updatePayload.apiSpecification = apiSpecResult.value;
+    }
+    if (infraResult.status === 'fulfilled') {
+      updatePayload.infrastructureSpec = infraResult.value;
+    }
+    if (guidelinesResult.status === 'fulfilled') {
+      updatePayload.codingGuidelines = guidelinesResult.value;
+    }
+
+    if (Object.keys(updatePayload).length > 1) {
+      await db
+        .update(projectData)
+        .set(updatePayload)
+        .where(eq(projectData.projectId, projectId));
+      console.log(`[POST_INTAKE] Saved generated data to project_data`);
+    }
+
+    // Save user stories to separate table
+    if (storiesResult.status === 'fulfilled' && Array.isArray(storiesResult.value) && storiesResult.value.length > 0) {
+      const storyValues = storiesResult.value.map((story, idx) => ({
+        projectId,
+        useCaseId: story.useCaseId ?? null,
+        title: story.title,
+        description: story.description,
+        actor: story.actor ?? 'User',
+        epic: story.epic ?? null,
+        acceptanceCriteria: story.acceptanceCriteria ?? [],
+        status: 'backlog' as const,
+        priority: story.priority ?? 'medium',
+        estimatedEffort: story.estimatedEffort ?? null,
+        order: idx,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+      await db.insert(userStories).values(storyValues);
+      console.log(`[POST_INTAKE] Saved ${storyValues.length} user stories`);
+    }
+
+    // Update project status
+    await db
+      .update(projects)
+      .set({ status: 'in_progress', updatedAt: new Date() })
+      .where(eq(projects.id, projectId));
+  } catch (error) {
+    console.error(`[POST_INTAKE] Failed to persist results:`, error);
+  }
+
+  // Build summary
+  if (succeeded.length === 0) {
+    return 'Generation failed for all artifacts. You can regenerate from the project page.';
+  }
+  const parts = [`Generated ${succeeded.length} artifacts: ${succeeded.join(', ')}.`];
+  if (failed.length > 0) {
+    parts.push(`Failed: ${failed.join(', ')}.`);
+  }
+  return parts.join(' ');
 }
 
 /**
