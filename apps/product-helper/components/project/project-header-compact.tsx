@@ -22,7 +22,7 @@ export function ProjectHeaderCompact() {
       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-primary)' }}
     >
       <Link
-        href="/projects"
+        href="/home"
         className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-[var(--bg-secondary)] transition-colors"
         aria-label="Back to projects"
       >

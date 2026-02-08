@@ -9,7 +9,7 @@ export default function NewProjectPage() {
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <Button variant="ghost" asChild className="mb-4">
-            <Link href="/projects">
+            <Link href="/home">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Projects
             </Link>

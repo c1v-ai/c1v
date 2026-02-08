@@ -381,7 +381,7 @@ async function DashboardContent() {
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/projects">
+                <Link href="/home">
                   <FileText className="mr-2 h-4 w-4" />
                   View All Projects
                 </Link>
@@ -407,7 +407,7 @@ async function DashboardContent() {
               Recent Projects
             </CardTitle>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/projects">
+              <Link href="/home">
                 View all
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -461,9 +461,5 @@ export default async function HomePage() {
     return <LandingPage />;
   }
 
-  return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardContent />
-    </Suspense>
-  );
+  redirect('/home');
 }
