@@ -70,13 +70,13 @@ function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="flex flex-col gap-1">
         <DropdownMenuItem className="cursor-pointer">
-          <Link href="/projects" className="flex w-full items-center">
+          <Link href="/home" className="flex w-full items-center">
             <Home className="mr-2 h-4 w-4" />
             <span>Home</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">
-          <Link href="/projects" className="flex w-full items-center">
+          <Link href="/home" className="flex w-full items-center">
             <FolderOpen className="mr-2 h-4 w-4" />
             <span>Projects</span>
           </Link>
@@ -119,7 +119,7 @@ function Header() {
         {user && (
           <nav className="hidden md:flex items-center space-x-6">
             <Link
-              href="/projects"
+              href="/home"
               className="text-sm font-medium flex items-center gap-2 group"
               style={{ color: 'var(--text-primary)' }}
             >
@@ -134,7 +134,7 @@ function Header() {
               </kbd>
             </Link>
             <Link
-              href="/projects"
+              href="/home"
               className="text-sm font-medium flex items-center gap-2"
               style={{ color: 'var(--text-primary)' }}
             >

@@ -47,7 +47,7 @@ export function ExplorerHeader({ projectName, status }: ExplorerHeaderProps) {
     >
       {/* Back to projects */}
       <Link
-        href="/projects"
+        href="/home"
         className="inline-flex items-center gap-1.5 text-xs font-medium mb-2 transition-colors no-underline"
         style={{ color: 'var(--text-muted)' }}
         onMouseEnter={(e) => {

@@ -39,7 +39,7 @@ export function ProjectsSidebar({ projects }: ProjectsSidebarProps) {
               My Projects
             </h3>
             <Link
-              href="/projects"
+              href="/home"
               className="text-xs hover:underline"
               style={{ color: 'var(--accent)' }}
             >
@@ -90,7 +90,7 @@ export function ProjectsSidebar({ projects }: ProjectsSidebarProps) {
               Collaborating On
             </h3>
             <Link
-              href="/projects"
+              href="/home"
               className="text-xs hover:underline"
               style={{ color: 'var(--accent)' }}
             >

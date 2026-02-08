@@ -31,7 +31,7 @@ export class DashboardPage {
     // Header
     this.logo = page.locator('header a[href="/"]').first();
     this.desktopNav = page.locator('header nav');
-    this.homeLink = page.locator('header a[href="/projects"]').first();
+    this.homeLink = page.locator('header a[href="/home"]').first();
     this.projectsLink = page.locator('header a').filter({ hasText: 'Projects' });
     this.chatLink = page.locator('header a').filter({ hasText: 'Chat' });
 
