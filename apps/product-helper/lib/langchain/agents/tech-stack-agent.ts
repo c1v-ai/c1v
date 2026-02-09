@@ -20,6 +20,7 @@ import {
   techStackModelSchema,
 } from '../../db/schema/v2-validators';
 import type { TechStackModel, TechChoice, TechCategory } from '../../db/schema/v2-types';
+import { getTechStackKnowledge } from '../../education/generator-kb';
 
 // ============================================================
 // Context Interface
@@ -58,6 +59,8 @@ const techStackPrompt = PromptTemplate.fromTemplate(`
 You are a senior software architect recommending a technology stack for a new project.
 Analyze the project requirements and provide well-reasoned technology choices.
 
+${getTechStackKnowledge()}
+
 ## Project Context
 **Name:** {projectName}
 **Vision:** {projectVision}
@@ -75,6 +78,9 @@ Analyze the project requirements and provide well-reasoned technology choices.
 {preferencesFormatted}
 
 ## Instructions
+
+Use the Knowledge Bank above as your primary reference for current (February 2026) technology recommendations.
+Match the project type to the recommended stacks, then customize based on specific constraints and preferences.
 
 Recommend technologies for the following REQUIRED categories:
 1. **frontend** - UI framework and libraries
@@ -97,8 +103,8 @@ Also consider these OPTIONAL categories if relevant to the project:
 - **analytics** - If user analytics are needed
 
 For EACH technology choice, provide:
-1. **choice** - The recommended technology (e.g., "Next.js", "PostgreSQL")
-2. **version** - Recommended version (e.g., "14.x", "16")
+1. **choice** - The recommended technology (e.g., "Next.js 16", "PostgreSQL 18")
+2. **version** - Recommended version using current 2026 versions
 3. **rationale** - WHY this technology fits the project (2-3 sentences)
 4. **alternatives** - 1-2 alternatives with "whyNot" explanations
 5. **documentation** - Official docs URL (optional)
@@ -106,18 +112,8 @@ For EACH technology choice, provide:
 
 Also provide:
 - **Overall rationale** - How the stack works together as a cohesive whole
-- **Estimated monthly cost** - Infrastructure cost estimate for production
+- **Estimated monthly cost** - Infrastructure cost estimate for production (use Knowledge Bank cost data)
 - **Scalability notes** - How the stack handles growth
-
-Base your recommendations on:
-- Project complexity inferred from use cases
-- Data model complexity from entities
-- Any explicit constraints or preferences
-- Modern best practices and ecosystem maturity
-- Developer experience and time-to-market
-
-Prefer well-established, battle-tested technologies unless the project specifically
-requires cutting-edge solutions. Consider TypeScript/JavaScript ecosystem synergies.
 `);
 
 // ============================================================
@@ -196,50 +192,50 @@ function getDefaultTechStack(projectName: string): TechStackModel {
       {
         category: 'frontend',
         choice: 'Next.js',
-        version: '14.x',
-        rationale: 'Full-stack React framework with excellent DX and performance',
+        version: '16.x',
+        rationale: 'Full-stack React framework with React Compiler, RSC, and the largest ecosystem',
         alternatives: [
-          { name: 'Remix', whyNot: 'Smaller ecosystem compared to Next.js' },
-          { name: 'Vite + React', whyNot: 'Requires more setup for SSR' },
+          { name: 'TanStack Start', whyNot: 'Newer, smaller ecosystem but 30-35% smaller bundles' },
+          { name: 'SvelteKit 5', whyNot: 'Different paradigm, smaller community' },
         ],
         documentation: 'https://nextjs.org/docs',
         license: 'MIT',
       },
       {
         category: 'backend',
-        choice: 'Next.js API Routes',
-        version: '14.x',
-        rationale: 'Unified framework reduces complexity and deployment overhead',
+        choice: 'Next.js API Routes + tRPC',
+        version: '16.x',
+        rationale: 'Unified framework with end-to-end type safety via tRPC for internal APIs',
         alternatives: [
-          { name: 'Express.js', whyNot: 'Additional service to manage' },
+          { name: 'Hono', whyNot: 'Better for edge/standalone APIs, separate deployment' },
           { name: 'Fastify', whyNot: 'Separate deployment, more infrastructure' },
         ],
-        documentation: 'https://nextjs.org/docs/api-routes/introduction',
+        documentation: 'https://nextjs.org/docs',
         license: 'MIT',
       },
       {
         category: 'database',
         choice: 'PostgreSQL',
-        version: '16',
-        rationale: 'Robust relational database with excellent ecosystem support',
+        version: '18',
+        rationale: 'Most popular database (55.6% adoption), native UUIDv7, async I/O with 3x performance',
         alternatives: [
-          { name: 'MySQL', whyNot: 'PostgreSQL has better JSON and extension support' },
-          { name: 'MongoDB', whyNot: 'Relational model better fits structured data' },
+          { name: 'MySQL', whyNot: 'PostgreSQL has better JSON, vector, and extension support' },
+          { name: 'MongoDB', whyNot: 'Relational model better fits structured data with ACID guarantees' },
         ],
         documentation: 'https://www.postgresql.org/docs/',
         license: 'PostgreSQL License',
       },
       {
         category: 'auth',
-        choice: 'NextAuth.js',
-        version: '5.x',
-        rationale: 'Native Next.js integration with multiple provider support',
+        choice: 'Better Auth',
+        version: 'latest',
+        rationale: 'Framework-agnostic, data in YOUR database, MIT licensed, 15k+ GitHub stars',
         alternatives: [
-          { name: 'Clerk', whyNot: 'Additional cost for managed service' },
-          { name: 'Auth0', whyNot: 'More complex setup for simple use cases' },
+          { name: 'Clerk', whyNot: 'Managed service adds cost but provides pre-built UI and SOC2 compliance' },
+          { name: 'Auth.js', whyNot: 'More community maturity but fewer features than Better Auth' },
         ],
-        documentation: 'https://next-auth.js.org/',
-        license: 'ISC',
+        documentation: 'https://www.better-auth.com/',
+        license: 'MIT',
       },
       {
         category: 'hosting',

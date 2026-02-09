@@ -41,6 +41,10 @@ import { generateUserStories, type UserStoriesContext } from '../agents/user-sto
 import { extractDatabaseSchema, type SchemaExtractionContext } from '../agents/schema-extraction-agent';
 import { generateAPISpecification } from '../agents/api-spec-agent';
 import type { APISpecGenerationContext } from '@/lib/types/api-specification';
+import { generateInfrastructureSpec, type InfrastructureContext } from '../agents/infrastructure-agent';
+import { generateCodingGuidelines, type GuidelinesContext } from '../agents/guidelines-agent';
+import type { InfrastructureSpec } from '@/lib/db/schema/v2-types';
+import type { CodingGuidelines } from '@/lib/db/schema/v2-types';
 import { validateProject } from '@/lib/validation/validator';
 import type { ProjectValidationData } from '@/lib/validation/types';
 

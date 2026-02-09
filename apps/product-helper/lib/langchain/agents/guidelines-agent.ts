@@ -19,6 +19,7 @@ import type {
   TechStackModel,
   NamingStyle,
 } from '../../db/schema/v2-types';
+import { getCodingStandardsKnowledge } from '../../education/generator-kb';
 
 // ============================================================
 // Context Interface
@@ -70,6 +71,8 @@ function buildGuidelinesPrompt(vars: {
   return `You are a senior software architect creating coding guidelines for a development team.
 Generate comprehensive, practical guidelines tailored to the project's tech stack and team context.
 
+${getCodingStandardsKnowledge()}
+
 ## Project Context
 **Name:** ${vars.projectName}
 **Team Size:** ${vars.teamSize}
@@ -83,6 +86,9 @@ ${vars.techStackFormatted}
 ${vars.preferencesFormatted}
 
 ## Instructions
+
+Use the Knowledge Bank above as your primary reference for naming conventions, file organization, testing strategy, linting tools, and git conventions.
+Match the project type to KB standards, then customize based on team size and experience level.
 
 Generate comprehensive coding guidelines covering all the following areas:
 
@@ -157,7 +163,7 @@ Consider these factors when generating guidelines:
 - Tech stack compatibility (e.g., TypeScript strict mode for TS projects)
 - Team size and experience (stricter for larger/junior teams)
 - Project type (enterprise needs more documentation, startups need flexibility)
-- Modern best practices for 2024-2025
+- Modern best practices for 2026 (use Knowledge Bank data)
 - Developer experience and productivity`;
 }
 

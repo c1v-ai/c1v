@@ -19,6 +19,7 @@ import type {
   APISpecification,
   APISpecGenerationContext,
 } from '../../types/api-specification';
+import { getAPISpecKnowledge } from '../../education/generator-kb';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -114,6 +115,8 @@ const apiSpecificationSchema = z.object({
 
 const API_SPEC_PROMPT = `You are an expert API architect generating REST API specifications from PRD data.
 
+${getAPISpecKnowledge()}
+
 ## Project Context
 Project Name: {projectName}
 Vision: {projectVision}
@@ -129,50 +132,42 @@ Vision: {projectVision}
 
 ## Instructions
 
-Generate a comprehensive REST API specification following these principles:
+Use the Knowledge Bank above as your primary reference for REST conventions, error codes, auth patterns, and endpoint design.
 
-### REST Best Practices
-1. **Resource-based URLs**: Use nouns (e.g., /users, /orders), not verbs
-2. **HTTP Methods**:
-   - GET for retrieval (idempotent)
-   - POST for creation
-   - PUT for full replacement
-   - PATCH for partial updates
-   - DELETE for removal
-3. **Plural nouns**: Use /users not /user
-4. **Nested resources**: /users/{id}/orders for relationships
-5. **Query params**: For filtering, sorting, pagination
+Generate a comprehensive REST API specification following the Knowledge Bank patterns:
 
 ### Coverage Requirements
 - Generate endpoints for EVERY use case
-- Include CRUD operations for each data entity
+- Include CRUD operations for each data entity (following KB endpoint generation rules)
 - Add authentication endpoints if login/signup use cases exist
-- Include list endpoints with pagination for collections
+- Include list endpoints with cursor-based pagination for collections
+- Add action endpoints for state transitions (POST /orders/{id}/cancel)
+- Include GET /health endpoint
+- Add search endpoints for entities with complex filtering needs
 
 ### Endpoint Design
 For each endpoint:
 - Use descriptive operationId (camelCase, e.g., "createUser", "getUserOrders")
 - Tag by resource type (e.g., "Users", "Orders")
+- Follow KB naming rules: plural nouns, lowercase hyphens, max 2 nesting levels
 - Include all relevant path and query parameters
-- Define complete request/response schemas based on data entities
-- List appropriate error codes (400, 401, 403, 404, 409, 500)
+- Define complete request/response schemas matching KB response patterns
+- List appropriate error codes using KB error code standards
 - Link to source use cases
 
-### Schema Design
-- Map data entity attributes to JSON schema properties
-- Use appropriate types: string (with format), number, integer, boolean, array, object
-- Mark required fields in request bodies
-- Include example values where helpful
-
 ### Authentication
-- Infer auth type from use cases (JWT/Bearer is common for modern APIs)
+- Use KB authentication patterns to infer auth type
+- API keys for API-to-API, JWT Bearer for user sessions
 - Mark protected endpoints as requiring authentication
 - Public endpoints (signup, public listings) don't require auth
 
+### Rate Limiting
+- Include rate limit info using KB tier structure
+- Add rate limit headers pattern to response format
+
 ### Error Handling
-- Use standard HTTP status codes
-- Provide consistent error response format
-- Include common errors: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Server Error
+- Use KB error response format: { "error": { "code", "message", "details", "requestId" } }
+- Use standard HTTP status codes from KB (400 vs 422 distinction)
 
 Generate the complete API specification now.`;
 

@@ -20,6 +20,7 @@ import type {
   DatabaseEnum,
   DatabaseFieldType,
 } from '../../db/schema/v2-types';
+import { getSchemaKnowledge } from '../../education/generator-kb';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -166,6 +167,8 @@ export async function extractDatabaseSchema(
 
   const prompt = `You are a database architect converting PRD data entities into a complete PostgreSQL database schema.
 
+${getSchemaKnowledge()}
+
 ## Project Context
 Project Name: ${context.projectName}
 Vision: ${visionText}
@@ -178,29 +181,38 @@ ${useCasesText}
 
 ## Instructions
 
+Use the Knowledge Bank above as your primary reference for PostgreSQL 18 best practices, field types, constraints, and patterns.
+
 Convert EACH data entity above into a database table with proper fields and relationships.
 You MUST generate at least one entity in the "entities" array for every data entity listed above.
 
 ### Field Naming and Types
 - Use snake_case for all field and table names
 - Use PascalCase for entity names
-- Infer appropriate PostgreSQL types from attribute names
+- Use the Knowledge Bank field type rules to infer PostgreSQL types from attribute names
 
 ### Standard Fields (add to EVERY entity)
-- id: uuid PRIMARY KEY DEFAULT gen_random_uuid()
+- id: uuid PRIMARY KEY DEFAULT uuidv7() (PostgreSQL 18 native)
 - created_at: timestamptz NOT NULL DEFAULT now()
 - updated_at: timestamptz NOT NULL DEFAULT now()
 
 ### Relationships
 - Parse relationship strings to determine cardinality and foreign keys
-- Set appropriate onDelete action (CASCADE for child tables)
+- Use Knowledge Bank relationship patterns (CASCADE for children, SET NULL for optional, RESTRICT to prevent orphans)
 
 ### Indexes
-- Add indexes for foreign keys and commonly queried fields
-- Add unique indexes for unique fields (email, username)
+- Index ALL foreign keys (PostgreSQL does NOT auto-index FKs)
+- Add indexes for commonly queried fields (status, type, email)
+- Use partial indexes for filtered queries (e.g., WHERE status = 'active')
+- Add unique indexes for unique fields (email, username, slug)
 
 ### Enums
 - Create PostgreSQL enums for status/type fields
+
+### Domain Patterns
+- Match the project type to Knowledge Bank domain entity patterns for completeness
+- For B2B SaaS: include organization_id for multi-tenancy
+- For AI products: include vector embedding fields where appropriate
 
 Generate the complete database schema now. Remember: the "entities" array is REQUIRED and must contain one entity per data entity above.`;
 

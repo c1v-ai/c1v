@@ -31,6 +31,7 @@ import type {
   CICDProvider,
   MonitoringProvider,
 } from '../../db/schema/v2-types';
+import { getInfrastructureKnowledge } from '../../education/generator-kb';
 
 // ============================================================
 // Context Interface
@@ -80,6 +81,8 @@ const infrastructurePrompt = PromptTemplate.fromTemplate(`
 You are a senior DevOps and cloud infrastructure architect recommending infrastructure for a new project.
 Analyze the project requirements and provide well-reasoned infrastructure recommendations.
 
+${getInfrastructureKnowledge()}
+
 ## Project Context
 **Name:** {projectName}
 **Description:** {projectDescription}
@@ -97,6 +100,9 @@ Analyze the project requirements and provide well-reasoned infrastructure recomm
 {budgetFormatted}
 
 ## Instructions
+
+Use the Knowledge Bank above as your primary reference for platform selection, cost estimates, monitoring stack, and security checklist.
+Match the project stage and type to KB recommendations, then customize based on specific requirements.
 
 Recommend a complete infrastructure specification covering:
 
