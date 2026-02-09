@@ -169,11 +169,12 @@ Plans:
 **Plans:** 5 plans in 2 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — Quick UX fixes: post-login redirect, vision metadata stripping, validation hide, green hover removal (UX-01, UX-02, UX-08, UX-09)
-- [ ] 06-02-PLAN.md — Content view verification: confirm all 5 section views render correctly (EXPL-03 to EXPL-07)
-- [ ] 06-03-PLAN.md — Explorer status indicators and pulse animation (UX-04, UX-05)
-- [ ] 06-04-PLAN.md — Overview page redesign: quick instructions, context card, artifact pipeline (UX-03)
-- [ ] 06-05-PLAN.md — Plain language prompts and educational loading states (UX-06, UX-07)
+- [x] 06-01-PLAN.md — Quick UX fixes: post-login redirect, vision metadata stripping, validation hide, green hover removal (UX-01, UX-02, UX-08, UX-09)
+- [x] 06-02-PLAN.md — Content view verification: confirm all 5 section views render correctly (EXPL-03 to EXPL-07)
+- [x] 06-03-PLAN.md — Explorer status indicators and pulse animation (UX-04, UX-05)
+- [x] 06-04-PLAN.md — Overview page redesign: quick instructions, artifact pipeline (UX-03)
+- [x] 06-05-PLAN.md — Plain language prompts and educational loading states (UX-06, UX-07)
+- [ ] 06-07-PLAN.md — Quick PRD Mode: single prompt → full PRD via ambiguity gate (planned, not executed)
 
 **Success Criteria (Content Views - original):**
 1. User can select "Product Requirements" in the tree and view the full PRD content in a formatted markdown view
@@ -197,7 +198,7 @@ Plans:
 
 ---
 
-## Phase 7: Rich Data Views (Stories, Schema, API, Diagrams)
+## Phase 7: Rich Data Views (Stories, Schema, API, Diagrams) ✓
 
 **Goal:** Users can interact with structured data views -- user stories table, database schema, API spec, and enhanced diagram controls
 
@@ -205,12 +206,20 @@ Plans:
 
 **Requirements:** EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12
 
+**Status:** Complete (2026-02-06). All 5 requirements met by components built during earlier phases. Verified via production screenshots of project 77 ("Uber Roulette").
+
+**Implementation (built across Phases 4-6):**
+- `user-stories-section.tsx` (423 lines) — epic grouping, expandable acceptance criteria, priority/status badges, completion counters
+- `schema-section.tsx` (435 lines) — table cards with column types, constraint badges, FK indicators, relationships
+- `api-spec-section.tsx` (463 lines) — endpoint grouping, method badges, expandable details, parameter tables
+- `diagram-viewer.tsx` (685 lines) — zoom +/- with %, drag pan, fullscreen, code view, copy, SVG/PNG export
+
 **Success Criteria:**
-1. User can view User Stories in a table grouped by feature/epic with columns for ID, title, status, and priority
-2. User Stories display priority badges (color-coded), status indicators, completion counters ("0/32 completed"), and time estimates ("~17.5 days estimated")
-3. User can view Database Schema section showing entities with fields, types, constraints, and relationships
-4. User can view API Specification section showing endpoints with methods, request/response schemas, and auth requirements
-5. Diagram viewer supports zoom (+/- with percentage), pan (drag), copy Mermaid source, and fullscreen mode
+1. ✓ User can view User Stories in a table grouped by feature/epic with columns for ID, title, status, and priority
+2. ✓ User Stories display priority badges (color-coded), status indicators, completion counters ("0/32 completed"), and time estimates ("~17.5 days estimated")
+3. ✓ User can view Database Schema section showing entities with fields, types, constraints, and relationships
+4. ✓ User can view API Specification section showing endpoints with methods, request/response schemas, and auth requirements
+5. ✓ Diagram viewer supports zoom (+/- with percentage), pan (drag), copy Mermaid source, and fullscreen mode
 
 ---
 
@@ -222,9 +231,11 @@ Plans:
 
 **Requirements:** CHAT-02, CHAT-03
 
+**Status:** CHAT-03 addressed by Phase 6-05 (plain language prompts + educational loading states). CHAT-02 (agent role selector) deferred to V3 — low user value relative to effort.
+
 **Success Criteria:**
-1. User can select an agent role (e.g., "Architect", "Product Manager") from a dropdown in the chat panel header
-2. Loading states show clear, contextual progress indicators during AI processing (not just a generic spinner)
+1. ~~User can select an agent role (e.g., "Architect", "Product Manager") from a dropdown in the chat panel header~~ → Deferred to V3
+2. ✓ Loading states show clear, contextual progress indicators during AI processing (not just a generic spinner) → Covered by 06-05 (UX-06, UX-07)
 
 ---
 
@@ -541,9 +552,9 @@ graphs/
 | 3 | PRD Extraction Agents | PIPE-01, PIPE-02, PIPE-03, PIPE-04 | ✓ Complete |
 | 4 | Epic.dev Navigation Pattern | EXPL-01, EXPL-02 | ✓ Complete |
 | 5 | Explorer Shell & Layout | EXPL-13, EXPL-14 | ✓ Complete |
-| 6 | Content Section Views + UX Polish | EXPL-03 to EXPL-07, UX-01 to UX-09 | **Planned** |
-| 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | Pending |
-| 8 | Chat Enhancements | CHAT-02, CHAT-03 | Pending |
+| 6 | Content Section Views + UX Polish | EXPL-03 to EXPL-07, UX-01 to UX-09 | **5/6 plans complete** (06-07 remaining) |
+| 7 | Rich Data Views | EXPL-08, EXPL-09, EXPL-10, EXPL-11, EXPL-12 | ✓ Complete |
+| 8 | Chat Enhancements | CHAT-02, CHAT-03 | ✓ Complete (CHAT-03 via 06-05, CHAT-02 deferred V3) |
 | 9 | Inline Section Editing | EXPL-15 | Pending |
 | 15 | Code Cleanup & Technical Debt | DEBT-01 to DEBT-10 | ✓ Complete |
 | 16 | Chat/LLM Quality Improvements | LLM-01 to LLM-06 | ✓ Complete |
@@ -655,22 +666,22 @@ Phase 19: Deferred --------+                                       |     (UI ren
 | PIPE-10 | Phase 2 | Complete |
 | EXPL-01 | Phase 4 | Complete |
 | EXPL-02 | Phase 4 | Complete |
-| EXPL-03 | Phase 6 | Planned |
-| EXPL-04 | Phase 6 | Planned |
-| EXPL-05 | Phase 6 | Planned |
-| EXPL-06 | Phase 6 | Planned |
-| EXPL-07 | Phase 6 | Planned |
-| EXPL-08 | Phase 7 | Pending |
-| EXPL-09 | Phase 7 | Pending |
-| EXPL-10 | Phase 7 | Pending |
-| EXPL-11 | Phase 7 | Pending |
-| EXPL-12 | Phase 7 | Pending |
+| EXPL-03 | Phase 6 | Complete |
+| EXPL-04 | Phase 6 | Complete |
+| EXPL-05 | Phase 6 | Complete |
+| EXPL-06 | Phase 6 | Complete |
+| EXPL-07 | Phase 6 | Complete |
+| EXPL-08 | Phase 7 | Complete |
+| EXPL-09 | Phase 7 | Complete |
+| EXPL-10 | Phase 7 | Complete |
+| EXPL-11 | Phase 7 | Complete |
+| EXPL-12 | Phase 7 | Complete |
 | EXPL-13 | Phase 5 | Complete |
 | EXPL-14 | Phase 5 | Complete |
 | EXPL-15 | Phase 9 | Pending |
 | CHAT-01 | Phase 19 | Deferred |
-| CHAT-02 | Phase 8 | Pending |
-| CHAT-03 | Phase 8 | Pending |
+| CHAT-02 | Phase 8 | Deferred V3 |
+| CHAT-03 | Phase 6-05 | Complete |
 | CHAT-04 | Phase 2 | Complete |
 | ONBD-01 | Phase 1 | Complete |
 | ONBD-02 | Phase 1 | Complete |
@@ -678,15 +689,15 @@ Phase 19: Deferred --------+                                       |     (UI ren
 | ONBD-04 | Phase 1 | Complete |
 | ONBD-05 | Phase 1 | Complete |
 
-| UX-01 | Phase 6 | Planned |
-| UX-02 | Phase 6 | Planned |
-| UX-03 | Phase 6 | Planned |
-| UX-04 | Phase 6 | Planned |
-| UX-05 | Phase 6 | Planned |
-| UX-06 | Phase 6 | Planned |
-| UX-07 | Phase 6 | Planned |
-| UX-08 | Phase 6 | Planned |
-| UX-09 | Phase 6 | Planned |
+| UX-01 | Phase 6-01 | Complete |
+| UX-02 | Phase 6-04 | Complete |
+| UX-03 | Phase 6-04 | Complete |
+| UX-04 | Phase 6-03/04 | Complete |
+| UX-05 | Phase 6-04 | Complete |
+| UX-06 | Phase 6-05 | Complete |
+| UX-07 | Phase 6-05 | Complete |
+| UX-08 | Phase 6-01 | Complete |
+| UX-09 | Phase 6-01 | Complete |
 | MOB-01 | Phase 10 | Pending |
 | MOB-02 | Phase 10 | Pending |
 | MOB-03 | Phase 10 | Pending |
@@ -708,3 +719,6 @@ Phase 19: Deferred --------+                                       |     (UI ren
 *Phase 6 expanded with UX polish (UX-01 to UX-09): 2026-02-06*
 *Phase 10 (Mobile Redesign) added: 2026-02-06*
 *Phase 6 plans created: 2026-02-06 (5 plans in 2 waves)*
+*Phase 6 plans 06-01 through 06-05 marked complete: 2026-02-08*
+*Phase 7, 8 marked complete: 2026-02-08*
+*KB 07-12 + generator agent wiring completed: 2026-02-08*

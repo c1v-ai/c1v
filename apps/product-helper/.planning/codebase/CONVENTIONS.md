@@ -1,13 +1,14 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-02-06
+**Analysis Date:** 2026-02-08
 
 ## Naming Patterns
 
 **Files:**
-- Components: kebab-case (`chat-window.tsx`, `chat-message-bubble.tsx`, `tech-stack-section.tsx`)
-- Library modules: kebab-case (`with-project-auth.ts`, `rate-limit.ts`, `knowledge-bank.ts`)
+- Components: kebab-case (`chat-window.tsx`, `chat-message-bubble.tsx`, `thinking-state.tsx`)
+- Library modules: kebab-case (`with-project-auth.ts`, `rate-limit.ts`, `knowledge-bank.ts`, `generator-kb.ts`)
 - Schema files: kebab-case with prefix (`v2-validators.ts`, `v2-types.ts`)
+- Utility modules: kebab-case (`vision.ts`, `use-media-query.ts`)
 - Test files: `*.test.ts` inside co-located `__tests__/` directories
 - E2E page objects: `*.page.ts` (`sign-in.page.ts`, `projects.page.ts`)
 - E2E specs: `*.spec.ts` (`smoke.spec.ts`, `auth.spec.ts`)
@@ -16,7 +17,8 @@
 - camelCase for all functions: `getUser()`, `recommendTechStack()`, `validateProject()`
 - Async functions use descriptive verbs: `generateUserStories()`, `calculateCompleteness()`, `mergeExtractionData()`
 - Boolean functions use `is`/`has`/`should` prefix: `isValidKeyFormat()`, `hasRequiredCategories()`, `shouldForceEnd()`
-- Handler functions: `handler` for MCP tools, named exports `GET`/`POST` for API routes
+- Handler functions: `handler` for MCP tools, named exports `GET`/`POST`/`PUT`/`DELETE` for API routes
+- String processing utilities: `stripVisionMetadata()` in `lib/utils/vision.ts`
 
 **Variables:**
 - camelCase for local variables and parameters
@@ -25,9 +27,10 @@
 
 **Types:**
 - PascalCase for types and interfaces: `IntakeState`, `TechStackContext`, `AuthContext`
-- Prefix `New` for insert types: `NewUser`, `NewProject`, `NewArtifact`
-- Suffix `Props` for component props: `ChatMessagesProps`, `TechStackSectionProps`
+- Prefix `New` for Drizzle insert types: `NewUser`, `NewProject`, `NewArtifact`
+- Suffix `Props` for component props: `ChatMessagesProps`, `ThinkingStateProps`, `ChatLayoutProps`
 - Suffix `Result` for return types: `ExtractionResult`, `CompletionResult`, `ValidationResult`
+- Suffix `Entry` for knowledge bank types: `KnowledgeBankEntry`
 - Enums use PascalCase with UPPER_SNAKE_CASE members: `ActivityType.SIGN_UP`, `ProjectStatus.INTAKE`
 
 **Database:**
@@ -38,8 +41,8 @@
 ## Code Style
 
 **Formatting:**
-- No ESLint or Prettier config detected -- relies on editor defaults and TypeScript strict mode
-- 2-space indentation (observed throughout codebase)
+- No ESLint or Prettier config -- relies on editor defaults and TypeScript strict mode
+- 2-space indentation throughout
 - Single quotes for strings in TypeScript files
 - Double quotes in JSX attributes (standard React convention)
 - Trailing commas in multi-line structures
@@ -83,7 +86,7 @@
 - Use the `withProjectAuth` HOF from `lib/api/with-project-auth.ts` for project-scoped routes -- handles auth, team lookup, project ID parsing, and error responses automatically
 
 ```typescript
-// Pattern: API route with withProjectAuth
+// Pattern: API route with withProjectAuth (base context)
 export const GET = withProjectAuth(
   async (req, { team, projectId }) => {
     // Handler logic -- auth/team/projectId already validated
@@ -91,8 +94,8 @@ export const GET = withProjectAuth(
   }
 );
 
-// Pattern: API route with project fetching
-export const GET = withProjectAuth(
+// Pattern: API route with project fetching (extended context)
+export const PUT = withProjectAuth(
   async (req, { user, team, projectId, project }) => {
     return NextResponse.json(project);
   },
@@ -123,6 +126,7 @@ if (!parsed.success) {
 **Middleware:**
 - `middleware.ts` catches all errors and deletes invalid session cookies
 - Redirects to `/sign-in` for protected routes when auth fails
+- Sets OWASP security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, etc.)
 
 ## Logging
 
@@ -144,7 +148,7 @@ if (!parsed.success) {
 **JSDoc/TSDoc:**
 - Use `@module` tag for test files: `@module graphs/__tests__/analyze-response.test.ts`
 - Use `@param` and `@returns` for public API functions
-- Use `@example` blocks in HOF documentation (see `lib/api/with-project-auth.ts`)
+- Use `@example` blocks in utility and HOF documentation (see `lib/api/with-project-auth.ts`, `lib/utils/vision.ts`)
 - Module-level doc comments: Purpose, Pattern, Team assignment (see `lib/langchain/agents/tech-stack-agent.ts`)
 
 ```typescript
@@ -178,6 +182,7 @@ if (!parsed.success) {
 - Database queries return `null` for "not found" (not undefined, not throw)
 - Validation functions return `T | null` (parsed data or null): `validateTechStack(data): TechStackModel | null`
 - Boolean helpers return `boolean` directly
+- String utilities handle null/undefined gracefully: `stripVisionMetadata(null)` returns `''`
 
 ## Module Design
 
@@ -208,7 +213,7 @@ export const LLM_DEFAULTS = {
 } as const;
 ```
 
-**When to extract:** All magic numbers should be named constants. Scoring weights, timeouts, limits, thresholds -- all live in `lib/constants/index.ts`.
+**When to extract:** All magic numbers should be named constants. Scoring weights, timeouts, limits, thresholds, rate limits, infrastructure costs -- all live in `lib/constants/index.ts`.
 
 ## Component Patterns
 
@@ -234,25 +239,179 @@ function Button({ className, variant, size, asChild, ...props }) {
 
 **Domain Components (`components/[domain]/`):**
 - Mark client components with `'use client'` directive at top of file
-- Props interfaces defined inline or at top of file
+- Props interfaces defined with `export interface` at top of file, named `ComponentNameProps`
 - Use SWR for client-side data fetching: `useSWR<Type>('/api/endpoint', fetcher)`
 - Responsive design with mobile-first Tailwind: `'gap-3 md:gap-4'`
+- Use CSS variables for theme-aware colors: `style={{ color: 'var(--text-primary)' }}`
+- Accessibility: Include `role`, `aria-live`, `aria-label` on dynamic status elements
+
+```typescript
+// Pattern: Education component with accessibility
+<div
+  role="status"
+  aria-live="polite"
+  aria-label="AI is processing"
+>
+  {/* content */}
+</div>
+```
+
+**Server Components (default):**
+- Pages and layouts are server components by default
+- No `'use client'` directive needed
+- Can directly call database queries and server-side functions
 
 ## Data Fetching Patterns
 
 **Server Components:**
 - Direct database queries in server components and server actions
 - Use `getUser()` from `lib/db/queries.ts` for session-based user lookup
+- SWR fallback data pre-loaded in root layout for `/api/user` and `/api/team`
+
+```typescript
+// Pattern: Root layout SWR prefetch (app/layout.tsx)
+<SWRConfig value={{
+  fallback: {
+    '/api/user': getUser(),
+    '/api/team': getTeamForUser()
+  }
+}}>
+```
 
 **Client Components:**
 - SWR for data fetching: `const { data } = useSWR<User>('/api/user', fetcher)`
 - Fetcher function: `const fetcher = (url: string) => fetch(url).then((res) => res.json())`
 - Toast notifications via Sonner: `toast.error('message')`
 
-**API Routes:**
-- Use Drizzle ORM query builder or relational queries
-- Prefer `db.query.tableName.findFirst()` / `findMany()` with `with:` for joins
-- Use `db.select().from(table).where()` for custom projections
+**Server Actions:**
+- Located in `app/(login)/actions.ts`
+- Use `'use server'` directive
+- Use `validatedAction()` and `validatedActionWithUser()` HOFs from `lib/auth/middleware.ts`
+- Accept `(prevState: ActionState, formData: FormData)` signature for form integration
+- Return `{ error: string }` or `{ success: string }` -- never throw on user errors
+
+```typescript
+// Pattern: Validated server action
+export const signIn = validatedAction(signInSchema, async (data, formData) => {
+  const { email, password } = data;
+  // ... logic
+  return { error: 'Invalid email or password.' };
+});
+```
+
+## Database Patterns
+
+**ORM:** Drizzle ORM with `postgres` driver (not `pg`)
+
+**Schema Location:** `lib/db/schema.ts` (single file with all tables, relations, types, enums)
+
+**Connection:** `lib/db/drizzle.ts` -- connection pooling (max 10, idle timeout 20s), SSL in production
+
+**Query Patterns:**
+```typescript
+// Pattern: Relational query with joins
+const project = await db.query.projects.findFirst({
+  where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),
+  with: {
+    createdByUser: { columns: { id: true, name: true, email: true } },
+    projectData: true,
+    artifacts: true,
+    conversations: { orderBy: (c, { asc }) => [asc(c.createdAt)], limit: 50 },
+  },
+});
+
+// Pattern: Insert with returning
+const [project] = await db.insert(projects).values(newProject).returning();
+
+// Pattern: Update with returning
+const [updatedProject] = await db.update(projects)
+  .set(updates)
+  .where(eq(projects.id, projectId))
+  .returning();
+```
+
+**Validation Schemas:** `lib/db/schema/v2-validators.ts` -- Zod schemas for JSONB field validation (use cases, tech stack, database schema, API spec, etc.)
+
+**Type Pattern:** Export both `$inferSelect` and `$inferInsert` types for every table:
+```typescript
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+```
+
+**Enum Constants:** Export as `const` arrays with derived types for DB columns:
+```typescript
+export const PROJECT_TYPES = ['saas', 'mobile-app', ...] as const;
+export type ProjectType = typeof PROJECT_TYPES[number];
+```
+
+## Agent Patterns
+
+**Location:** `lib/langchain/agents/` (one file per agent)
+
+**LLM Configuration:** Centralized in `lib/langchain/config.ts`:
+- Pre-configured instances: `llm`, `streamingLLM`, `extractionLLM`, `structuredLLM`, `cheapLLM`
+- `createClaudeAgent()` factory for structured output agents with Zod schema validation
+- Temperature: 0.2 for structured/deterministic, 0.7 for conversational
+- Model tiers: Sonnet 4 (default), Haiku 3.5 (cheap tasks), Opus 4 (most capable)
+
+**Agent Function Pattern:**
+```typescript
+// 1. Define context interface
+export interface TechStackContext {
+  projectName: string;
+  projectVision: string;
+  useCases: Array<{ name: string; description: string }>;
+}
+
+// 2. Create structured LLM with Zod validation
+const structuredLLM = createClaudeAgent(techStackModelSchema, 'recommend_tech_stack', {
+  temperature: 0.3,
+});
+
+// 3. Define prompt template
+const prompt = PromptTemplate.fromTemplate(`...`);
+
+// 4. Main function with try/catch and fallback
+export async function recommendTechStack(context: TechStackContext): Promise<TechStackModel> {
+  try {
+    const promptText = await prompt.format({ ... });
+    const result = await structuredLLM.invoke(promptText);
+    return { ...result, generatedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error('Tech stack recommendation error:', error);
+    return getDefaultTechStack(context.projectName);
+  }
+}
+
+// 5. Helper functions: validators, mergers, getters
+export function validateTechStack(data: unknown): TechStackModel | null { ... }
+```
+
+**Knowledge Bank Integration:** Agents import educational content from `lib/education/generator-kb.ts` and inject it into prompt templates via `${getTechStackKnowledge()}`.
+
+**Graph Pattern (LangGraph):**
+- Graph definitions in `lib/langchain/graphs/`
+- State type in `lib/langchain/graphs/types.ts`
+- Node functions in `lib/langchain/graphs/nodes/`
+- Edge/routing functions in `lib/langchain/graphs/edges.ts`
+- Artifact phase sequence: `context_diagram` -> `use_case_diagram` -> `scope_tree` -> `ucbd` -> `requirements_table` -> `constants_table` -> `sysml_activity_diagram`
+
+## State Management
+
+**Client-Side State:**
+- `useState` for component-local state
+- SWR for server state (`useSWR`)
+- Vercel AI SDK `useChat` for chat state in `components/chat/chat-window.tsx`
+- Custom hooks in `lib/hooks/` for responsive detection (`useIsMobile()`, `useIsDesktop()`)
+
+**Server State:**
+- Next.js cookies for session management (JWT in `session` cookie)
+- Database as single source of truth for project/user state
+- LangGraph checkpoints stored in `graph_checkpoints` table for intake state persistence
+
+**Form State:**
+- Server actions with `useActionState` for auth forms
+- `ActionState` type: `{ error?: string; success?: string; [key: string]: any }`
 
 ## Environment Validation
 
@@ -260,15 +419,23 @@ function Button({ className, variant, size, asChild, ...props }) {
 - App will not start if any required env var is missing or invalid
 - Custom `.refine()` validators for API key format checks (`sk-ant-`, `sk_`, `whsec_`)
 - Export typed `env` object for use throughout codebase
+- Required: `POSTGRES_URL`, `AUTH_SECRET` (32+ chars), `ANTHROPIC_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `BASE_URL`
+- Optional: `RESEND_API_KEY`, `NODE_ENV` (defaults to `development`)
 
-## LLM Configuration
+## Education Content Pattern
 
-**Pattern:** Centralized in `lib/langchain/config.ts`:
-- Pre-configured LLM instances: `llm`, `streamingLLM`, `extractionLLM`, `structuredLLM`, `cheapLLM`
-- `createClaudeAgent()` factory for structured output agents
-- Temperature: 0.2 for structured/deterministic, 0.7 for conversational
-- Model tiers: Sonnet 4 (default), Haiku 3.5 (cheap tasks), Opus 4 (most capable)
+**Knowledge Banks:** `lib/education/knowledge-bank.ts` (types and hardcoded content for 6 KB steps)
+- Types: `ThinkingMessage`, `TooltipTerm`, `ValidationError`, `KnowledgeBankEntry`
+- Steps: `context-diagram`, `use-case-diagram`, `scope-tree`, `ucbd`, `functional-requirements`, `sysml-activity-diagram`
+
+**Generator Knowledge Banks:** `lib/education/generator-kb.ts` (content for generator agents: tech-stack, schema, api-spec, infrastructure, guidelines)
+
+**Phase Mapping:** `lib/education/phase-mapping.ts` (maps between KB steps and LangGraph artifact phases)
+
+**UI Components:**
+- `components/education/thinking-state.tsx` -- animated cycling messages during AI processing
+- `components/education/tooltip-term.tsx` -- inline term definitions
 
 ---
 
-*Convention analysis: 2026-02-06*
+*Convention analysis: 2026-02-08*

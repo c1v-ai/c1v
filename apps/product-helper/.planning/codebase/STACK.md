@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Analysis Date:** 2026-02-06
+**Analysis Date:** 2026-02-08
 
 ## Languages
 
@@ -21,8 +21,8 @@
 - Actual runtime on dev machine: v20.19.6
 
 **Package Manager:**
-- pnpm 9.15.0 (monorepo-level lockfile at `/Users/davidancor/Desktop/coding/c1v/pnpm-lock.yaml`)
-- Workspace config: `/Users/davidancor/Desktop/coding/c1v/pnpm-workspace.yaml`
+- pnpm (monorepo-level lockfile at repo root `pnpm-lock.yaml`)
+- Workspace config: repo root `pnpm-workspace.yaml`
 - Lockfile: present (monorepo root)
 
 ## Frameworks
@@ -32,14 +32,15 @@
   - Config: `next.config.ts`
   - Turbopack root set to `../../` for monorepo support
   - `serverExternalPackages` configured to externalize all LangChain packages
+  - Runtime: `nodejs` (explicitly set on API routes that use Drizzle ORM)
 
 **AI/Agent:**
-- LangChain.js 0.3.26 - Agent orchestration framework
-- LangGraph 0.2.60 (`@langchain/langgraph`) - Stateful workflow graphs
-- `@langchain/anthropic` 0.3.14 - Anthropic Claude provider
-- `@langchain/core` 0.3.40 - Core abstractions (messages, prompts, schemas)
+- LangChain.js 0.3.26 (`langchain`) - Agent orchestration framework
+- LangGraph 0.2.60 (`@langchain/langgraph`) - Stateful workflow graphs (StateGraph, Annotation, conditional edges)
+- `@langchain/anthropic` 0.3.14 - Anthropic Claude provider (`ChatAnthropic`)
+- `@langchain/core` 0.3.40 - Core abstractions (messages, prompts, output parsers)
 - `@langchain/community` 0.3.26 - Community integrations
-- Vercel AI SDK 3.4.33 (`ai`) - Chat UI hooks (`useChat`), streaming, `Message` types
+- Vercel AI SDK 3.4.33 (`ai`) - Chat UI hooks (`useChat`), streaming (`StreamingTextResponse`), `Message` types
 
 **UI:**
 - React 19.1.0 + React DOM 19.1.0
@@ -47,6 +48,7 @@
 - Radix UI - Headless accessible components (accordion, collapsible, dialog, select, tabs)
 - shadcn/ui pattern - Component library built on Radix + CVA + Tailwind
 - Lucide React 0.511.0 - Icon library
+- next-themes 0.4.6 - Dark/light mode theming
 
 **Database:**
 - Drizzle ORM 0.43.1 - TypeScript-first ORM
@@ -54,16 +56,19 @@
   - Config: `drizzle.config.ts`
   - Schema: `lib/db/schema.ts`
   - Migrations: `lib/db/migrations/`
+  - Additional types: `lib/db/schema/v2-types.ts` (TechStackModel, DatabaseSchemaModel, InfrastructureSpec, CodingGuidelines)
 
 **Testing:**
-- Jest 30.2.0 - Unit testing (456 tests)
+- Jest 30.2.0 - Unit testing (456+ tests)
   - Config: `jest.config.ts`
   - Preset: `ts-jest` (ts-jest 29.4.6)
-  - Coverage threshold: 70% across all metrics
+  - Coverage threshold: 70% across all metrics (branches, functions, lines, statements)
+  - Test location: co-located `__tests__/` directories
 - Playwright 1.57.0 - E2E testing
   - Config: `playwright.config.ts`
-  - 8 projects: desktop (Chrome, Firefox, Safari), mobile (Chrome, Safari, Safari landscape), tablet (iPad)
-  - Auth setup project with storage state persistence
+  - 8 projects: auth-setup, unauthenticated, desktop (Chrome, Firefox, Safari), mobile (Chrome, Safari, Safari landscape), tablet (iPad)
+  - Auth setup project with storage state persistence (`tests/e2e/.auth/user.json`)
+  - 60s test timeout, 30s navigation timeout, 15s action timeout
 - axe-core/playwright 4.11.0 - Accessibility testing
 
 **Build/Dev:**
@@ -80,9 +85,9 @@
 - `postgres` 3.4.8 - PostgreSQL driver (postgres.js)
 - `jose` 6.1.3 - JWT signing/verification for custom auth
 - `bcryptjs` 3.0.3 - Password hashing
-- `stripe` 18.5.0 - Payment processing
+- `stripe` 18.5.0 - Payment processing (API version: `2025-08-27.basil`)
 - `zod` 3.25.76 - Schema validation everywhere (env, API, forms, LLM output)
-- `ai` 3.4.33 - Chat streaming infrastructure
+- `ai` 3.4.33 - Chat streaming infrastructure (`StreamingTextResponse`, `Message` types)
 
 **UI/UX:**
 - `mermaid` 11.12.2 - Diagram rendering (context, use-case, activity diagrams)
@@ -93,7 +98,7 @@
 - `clsx` 2.1.1 + `tailwind-merge` 3.4.0 - Conditional class merging
 - `sonner` 1.7.4 - Toast notifications
 - `next-themes` 0.4.6 - Dark/light mode theming
-- `swr` 2.3.8 - Client-side data fetching with caching
+- `swr` 2.3.8 - Client-side data fetching with caching (used in 9+ components)
 - `use-stick-to-bottom` 1.1.1 - Chat auto-scroll behavior
 - `tw-animate-css` 1.4.0 - Tailwind animation utilities
 
@@ -114,22 +119,23 @@
 - Examples: `.env.example`, `.env.local.example`, `.env.test.example`
 - Required vars: `POSTGRES_URL`, `AUTH_SECRET` (32+ chars), `ANTHROPIC_API_KEY` (sk-ant-*), `STRIPE_SECRET_KEY` (sk_*), `STRIPE_WEBHOOK_SECRET` (whsec_*), `BASE_URL`
 - Optional vars: `RESEND_API_KEY`, `LANGCHAIN_API_KEY`, `LANGCHAIN_TRACING_V2`, `LANGCHAIN_PROJECT`
-- Feature flag: `USE_LANGGRAPH` (enables LangGraph-based chat workflow)
+- Feature flag: `USE_LANGGRAPH` (enables LangGraph-based chat workflow vs legacy prompt-based)
 
 **Build:**
 - `next.config.ts` - Next.js + Turbopack + server external packages
 - `tsconfig.json` - TypeScript strict mode, ESNext target
-- `drizzle.config.ts` - Drizzle Kit (schema/migrations location)
+- `drizzle.config.ts` - Drizzle Kit (schema at `./lib/db/schema.ts`, migrations at `./lib/db/migrations`)
 - `postcss.config.mjs` - PostCSS with Tailwind plugin
-- `jest.config.ts` - Jest with ts-jest, path aliases, coverage
+- `jest.config.ts` - Jest with ts-jest, path aliases, coverage thresholds
 - `playwright.config.ts` - E2E with 8 browser/device projects
 
 **Constants:**
 - Centralized in `lib/constants/index.ts`
-- LLM defaults: 30s timeout, 4000 max tokens extraction, 2000 max tokens chat
+- LLM defaults: 30s timeout, 4000 max tokens extraction, 2000 max tokens chat, 1000 max tokens cheap
 - Rate limits: 100 req/min MCP, 20 req/min chat
 - Token estimation: ~4 chars/token, 128k context window
 - Scoring thresholds for PRD completeness validation
+- Infrastructure cost estimates for various cloud providers
 
 ## Platform Requirements
 
@@ -152,12 +158,26 @@
 pnpm db:start            # Start local Supabase (PostgreSQL)
 pnpm db:stop             # Stop local Supabase
 pnpm db:generate         # Generate Drizzle migrations
-pnpm db:migrate          # Run migrations via drizzle-kit (known issues)
+pnpm db:migrate          # Run migrations via drizzle-kit (known issues with api_keys conflict)
 pnpm db:migrate:sql      # Run migrations via psql (workaround)
-pnpm db:seed             # Seed database (requires env vars sourced)
+pnpm db:seed             # Seed database (requires env vars: set -a && source .env.local && set +a && npx tsx lib/db/seed.ts)
 pnpm db:studio           # Open Drizzle Studio
+pnpm db:status           # Check Supabase status
+pnpm db:reset            # Reset Supabase database
+```
+
+**Test Commands:**
+```bash
+pnpm test                # Run all Jest unit tests
+pnpm test:watch          # Jest watch mode
+pnpm test:coverage       # Jest with coverage report
+pnpm test:e2e            # Run Playwright E2E tests
+pnpm test:e2e:ui         # Playwright with UI mode
+pnpm test:e2e:mobile     # Playwright mobile projects only
+pnpm test:e2e:desktop    # Playwright desktop projects only
+pnpm test:lighthouse     # Lighthouse performance audit
 ```
 
 ---
 
-*Stack analysis: 2026-02-06*
+*Stack analysis: 2026-02-08*

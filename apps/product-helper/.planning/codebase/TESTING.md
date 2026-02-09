@@ -1,6 +1,6 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-02-06
+**Analysis Date:** 2026-02-08
 
 ## Test Framework
 
@@ -8,10 +8,12 @@
 - Jest 30.2.0
 - Config: `jest.config.ts`
 - Transform: ts-jest 29.4.6
+- Environment: `node`
 
 **E2E Runner:**
 - Playwright 1.57.0
 - Config: `playwright.config.ts`
+- Accessibility: `@axe-core/playwright` 4.11.0
 
 **Assertion Library:**
 - Jest: `@jest/globals` (`describe`, `it`, `expect`, `jest`, `beforeEach`)
@@ -26,6 +28,7 @@ pnpm test:e2e              # All E2E tests (Playwright)
 pnpm test:e2e:ui           # E2E with Playwright UI
 pnpm test:e2e:mobile       # Mobile device E2E tests
 pnpm test:e2e:desktop      # Desktop browser E2E tests
+pnpm test:lighthouse       # Lighthouse performance audit
 ```
 
 ## Test File Organization
@@ -61,6 +64,19 @@ lib/
   diagrams/
     __tests__/
       generators.test.ts
+app/
+  api/
+    projects/
+      [id]/
+        api-spec/
+          __tests__/
+            route.test.ts
+        guidelines/
+          __tests__/
+            route.test.ts
+        infrastructure/
+          __tests__/
+            route.test.ts
 ```
 
 **E2E Tests:**
@@ -83,16 +99,16 @@ tests/e2e/
     dashboard.page.ts        # Page Object: Dashboard
     index.ts                 # Barrel export
   .auth/
-    user.json                # Stored auth state (generated)
+    user.json                # Stored auth state (generated, not committed)
   auth.setup.ts              # Global auth setup (runs once)
   auth.spec.ts               # Auth flow tests (unauthenticated)
   smoke.spec.ts              # Infrastructure smoke tests
-  projects.spec.ts           # Project CRUD tests
+  projects.spec.ts           # Project CRUD and navigation tests
   chat.spec.ts               # Chat interaction tests
   responsive.spec.ts         # Responsive layout tests
   layout.spec.ts             # Layout structure tests
   content-views.spec.ts      # Content view tests
-  accessibility.spec.ts      # a11y tests
+  accessibility.spec.ts      # WCAG 2.1 AA, keyboard nav, ARIA, focus indicators
   visual-regression.spec.ts  # Visual regression tests
   pwa.spec.ts                # PWA feature tests
 ```
@@ -106,7 +122,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 describe('ModuleName', () => {
   // Optional setup
   beforeEach(() => {
-    clearState();
+    jest.clearAllMocks();
   });
 
   describe('functionName', () => {
@@ -158,6 +174,11 @@ function createExtraction(data: Partial<ExtractionResult> = {}): ExtractionResul
     dataEntities: data.dataEntities || [],
   };
 }
+
+// API route test helper
+function createMockRequest(url: string, method: string = 'GET'): NextRequest {
+  return new NextRequest(new URL(url, 'http://localhost:3000'), { method });
+}
 ```
 
 **Golden Test Pattern:**
@@ -167,18 +188,20 @@ The codebase uses "golden test scenarios" -- named, documented end-to-end scenar
 describe('golden test scenarios', () => {
   /**
    * Golden Test: Basic SaaS App
-   *
-   * Vision: A project management tool for small teams
-   * Conversation:
-   * 1. "Team leads and developers will use it"
-   * 2. "Integrates with GitHub and Slack"
-   * 3. "That's enough for now"
-   *
-   * Expected: context_diagram ready, moving to use_case_diagram
+   * User says "That's enough for now" after providing data
    */
-  describe('basic SaaS app scenario', () => {
-    it('should extract actors from first message', () => { ... });
-    it('should have context_diagram ready after conversation', () => { ... });
+  it('should recognize stop trigger in golden test scenario', () => {
+    const userResponse = "That's enough for now";
+    expect(containsStopTrigger(userResponse)).toBe(true);
+  });
+
+  /**
+   * Golden Test: E-commerce Platform
+   * User says "Generate the context diagram" to request artifact
+   */
+  it('should recognize artifact request in golden test scenario', () => {
+    const userResponse = 'Generate the context diagram';
+    expect(containsStopTrigger(userResponse)).toBe(true);
   });
 });
 ```
@@ -199,32 +222,41 @@ jest.mock('../../config', () => ({
 
 **Database Mocking:**
 ```typescript
-// Create mock query functions
-const mockProjectsFindFirst = jest.fn();
+jest.mock('@/lib/db/queries', () => ({
+  getUser: jest.fn(),
+  getTeamForUser: jest.fn(),
+}));
 
-// Mock the Drizzle client
 jest.mock('@/lib/db/drizzle', () => ({
   db: {
     query: {
-      projects: { findFirst: mockProjectsFindFirst },
-      projectData: { findFirst: mockProjectDataFindFirst },
+      projects: { findFirst: jest.fn() },
     },
+    update: jest.fn(() => ({
+      set: jest.fn(() => ({
+        where: jest.fn(),
+      })),
+    })),
   },
-}));
-
-// Mock ORM operators
-jest.mock('drizzle-orm', () => ({
-  eq: jest.fn((col, val) => ({ col, val })),
-  and: jest.fn((...conditions) => conditions),
 }));
 ```
 
-**Schema Mocking:**
+**Agent Mocking:**
 ```typescript
-jest.mock('@/lib/db/schema', () => ({
-  projects: { id: 'projects.id' },
-  projectData: { projectId: 'projectData.projectId' },
+jest.mock('@/lib/langchain/agents/api-spec-agent', () => ({
+  generateAPISpecification: jest.fn(),
+  validateAPISpecification: jest.fn(() => ({ valid: true, errors: [] })),
 }));
+```
+
+**Type-Safe Mock Access:**
+```typescript
+const mockedGetUser = getUser as jest.MockedFunction<typeof getUser>;
+const mockedFindFirst = db.query.projects.findFirst as jest.MockedFunction<typeof db.query.projects.findFirst>;
+
+// In beforeEach:
+mockedGetUser.mockResolvedValue({ id: 1, email: 'test@test.com' } as any);
+mockedFindFirst.mockResolvedValue(mockProject as any);
 ```
 
 **Module Mock Import Order (CRITICAL):**
@@ -235,20 +267,23 @@ jest.mock('@/lib/db/drizzle', () => ({ ... }));
 jest.mock('@/lib/db/schema', () => ({ ... }));
 
 // 2. Import handlers AFTER mocks
-import { handler as getPrdHandler } from '../get-prd';
+import { GET, POST } from '../route';
+import { getUser } from '@/lib/db/queries';
 ```
 
 **What to Mock:**
 - LLM/AI API calls (never call real LLM in unit tests)
 - Database client (`lib/db/drizzle.ts`)
+- Database query functions (`lib/db/queries.ts`)
 - External service SDKs (Stripe, Resend)
-- Drizzle ORM operators (`eq`, `and`, `desc`, etc.)
+- Agent functions when testing API routes
 
 **What NOT to Mock:**
 - Pure functions (scoring, merging, validation logic)
 - State creation/transformation functions
 - Routing/edge functions in the LangGraph graph
 - Zod schema validation
+- String utility functions
 
 ## Fixtures and Factories
 
@@ -266,6 +301,24 @@ const baseExtraction: ExtractionResult = {
 const withActors = {
   ...baseExtraction,
   actors: [{ name: 'User', role: 'Primary', description: 'End user' }],
+};
+
+// Sample API specification for testing
+const mockAPISpec: APISpecification = {
+  baseUrl: '/api/v1',
+  version: '1.0.0',
+  authentication: { type: 'bearer', ... },
+  endpoints: [{ path: '/users', method: 'GET', ... }],
+  ...
+};
+
+// Mock project data
+const mockProject = {
+  id: 1,
+  name: 'Test Project',
+  vision: 'A test project vision',
+  teamId: 1,
+  projectData: { ... },
 };
 ```
 
@@ -304,6 +357,32 @@ export const VIEWPORTS = {
   desktop: { width: 1280, height: 720 },
   desktopWide: { width: 1920, height: 1080 },
 } as const;
+
+export const BREAKPOINTS = {
+  sm: 640,
+  md: 768,   // Chat panel visible
+  lg: 1024,  // Explorer sidebar visible
+  xl: 1280,
+  '2xl': 1536,
+} as const;
+```
+
+## Custom E2E Assertion Helpers
+
+**Location:** `tests/e2e/helpers/assertions.ts`
+
+```typescript
+// Assert no severe console errors (ignoring known benign warnings)
+export async function expectNoConsoleErrors(page: Page) { ... }
+
+// Assert no horizontal overflow (no unwanted horizontal scrollbar)
+export async function expectNoHorizontalScroll(page: Page) { ... }
+
+// Assert minimum touch target size (44x44px per Apple HIG)
+export async function expectAdequateTouchTarget(page: Page, selector: string, minSize = 44) { ... }
+
+// Wait for network to be idle
+export async function waitForNetworkIdle(page: Page, timeout = 5000) { ... }
 ```
 
 ## Coverage
@@ -334,36 +413,60 @@ coverageThreshold: {
 pnpm test:coverage         # Generate coverage report
 ```
 
-**Coverage scope:** Only `lib/` directory is measured. Components and API routes are NOT included in coverage metrics.
+**Coverage scope:** Only `lib/` directory is measured. Components (`components/`) and API routes (`app/api/`) are NOT included in coverage metrics -- they are covered by E2E tests instead.
 
 ## Test Types
 
 **Unit Tests (Jest):**
-- Scope: Pure functions, scoring logic, state management, routing decisions, utility functions
-- Location: `lib/**/\__tests__/*.test.ts`
+- Scope: Pure functions, scoring logic, state management, routing decisions, utility functions, MCP auth/server
+- Location: `lib/**/__tests__/*.test.ts` and `app/api/**/__tests__/*.test.ts`
 - Count: ~16 test files with ~456 tests (per CLAUDE.md)
 - Do NOT require running services or API keys
 - Focus on logic, not integration
 
 **Integration Tests (Jest, within unit test files):**
 - Tests that exercise multiple modules together but still mock external deps
-- Example: `intake-graph.test.ts` tests edge routing across the full graph flow
+- Example: `lib/langchain/graphs/__tests__/intake-graph.test.ts` tests edge routing across the full graph flow
+- Example: `app/api/projects/[id]/api-spec/__tests__/route.test.ts` tests full route handler with mocked DB and agents
 - Still use Jest, co-located in `__tests__/` directories
 
 **E2E Tests (Playwright):**
 - Scope: Full browser-based user flows
 - Location: `tests/e2e/*.spec.ts`
 - Count: 10 spec files
-- Requires running dev server (auto-started by Playwright)
+- Requires running dev server (auto-started by Playwright via `npm run dev`)
 - Requires seeded test database with test user
 - Auth setup runs once, state reused across authenticated tests
 
-**Playwright Configuration:**
-- 8 browser projects: auth-setup, unauthenticated, chromium, firefox, webkit, Mobile Chrome, Mobile Safari, Mobile Safari (landscape), iPad
-- Auth state stored in `tests/e2e/.auth/user.json`
-- Timeout: 60s per test, 30s navigation, 15s actions
+**Accessibility Tests (Playwright + axe-core):**
+- WCAG 2.1 AA compliance scans on sign-in, sign-up, projects, project detail pages
+- Keyboard navigation tab order verification
+- Focus indicator visibility checks
+- ARIA label accessibility verification
+- Form error announcement validation
+- Skip-to-content link check
+
+**Playwright Browser Projects:**
+- `auth-setup` -- runs first, saves storage state
+- `unauthenticated` -- auth flow tests (Desktop Chrome, no stored state)
+- `chromium` -- Desktop Chrome (authenticated, depends on auth-setup)
+- `firefox` -- Desktop Firefox (authenticated)
+- `webkit` -- Desktop Safari (authenticated)
+- `Mobile Chrome` -- Pixel 5 (authenticated)
+- `Mobile Safari` -- iPhone 12 (authenticated)
+- `Mobile Safari (landscape)` -- iPhone 12 landscape (authenticated)
+- `iPad` -- iPad gen 7 (authenticated)
+
+**Playwright Timeouts:**
+- Test timeout: 60s
+- Navigation timeout: 30s
+- Action timeout: 15s
+- Web server startup timeout: 120s
+
+**Playwright CI vs Local:**
+- CI: `forbidOnly: true`, retries: 2, workers: 1, reporters: HTML + GitHub
+- Local: no retries, parallel workers, reporter: HTML
 - Screenshots on failure, traces on first retry
-- CI: retries 2, single worker; Local: no retries, parallel workers
 
 ## E2E Page Object Pattern
 
@@ -396,18 +499,28 @@ export class SignInPage {
     await this.passwordInput.fill(password);
     await this.submitButton.click();
   }
+
+  async signInAndWait(email: string, password: string) {
+    await this.signIn(email, password);
+    await this.page.waitForURL('**/projects**', { timeout: 60000, waitUntil: 'commit' });
+  }
 }
 ```
 
 **Custom Playwright Fixtures (`tests/e2e/fixtures/base.ts`):**
 ```typescript
 import { test as base } from '@playwright/test';
-import { SignInPage, ProjectsPage, DashboardPage } from '../pages';
+import { SignInPage, ProjectsPage, ProjectDetailPage, ChatPanelPage, DashboardPage } from '../pages';
 
 type Fixtures = {
+  // Unauthenticated page objects (for testing auth flows)
   signInPage: SignInPage;
-  projectsPage: ProjectsPage;
+  signUpPage: SignUpPage;
+  // Authenticated page objects (use stored auth state)
   dashboardPage: DashboardPage;
+  projectsPage: ProjectsPage;
+  projectDetailPage: ProjectDetailPage;
+  chatPanelPage: ChatPanelPage;
 };
 
 export const test = base.extend<Fixtures>({
@@ -417,6 +530,7 @@ export const test = base.extend<Fixtures>({
   projectsPage: async ({ page }, use) => {
     await use(new ProjectsPage(page));
   },
+  // ... etc
 });
 ```
 
@@ -500,6 +614,56 @@ it('routes to compute_next_question for DENY', () => { ... });
 it('routes to extract_data for UNKNOWN', () => { ... });
 ```
 
+**API Route Testing:**
+```typescript
+describe('GET /api/projects/[id]/api-spec', () => {
+  it('should return 401 if user is not authenticated', async () => {
+    mockedGetUser.mockResolvedValue(null as any);
+    const request = createMockRequest('/api/projects/1/api-spec');
+    const response = await GET(request, { params: mockParams });
+    const data = await response.json();
+    expect(response.status).toBe(401);
+    expect(data.error).toBe('Unauthorized');
+  });
+
+  it('should return existing API spec in JSON format', async () => {
+    mockedFindFirst.mockResolvedValue({ ...mockProject, ... } as any);
+    const request = createMockRequest('/api/projects/1/api-spec');
+    const response = await GET(request, { params: mockParams });
+    const data = await response.json();
+    expect(response.status).toBe(200);
+    expect(data.apiSpecification).toEqual(mockAPISpec);
+  });
+});
+```
+
+**E2E Graceful Skip Pattern:**
+When tests depend on data that may not exist, skip gracefully:
+```typescript
+test('clicking a project card navigates to project detail page', async ({ projectsPage, page }) => {
+  await projectsPage.goto();
+  const projectCount = await projectsPage.getProjectCount();
+  if (projectCount === 0) {
+    test.skip();
+    return;
+  }
+  // ... test logic
+});
+```
+
+**E2E Accessibility Testing:**
+```typescript
+import AxeBuilder from '@axe-core/playwright';
+
+test('projects list page has no WCAG 2.1 AA violations', async ({ projectsPage }) => {
+  await projectsPage.goto();
+  const results = await new AxeBuilder({ page: projectsPage.page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .analyze();
+  expect(results.violations.length).toBe(0);
+});
+```
+
 ## Adding New Tests
 
 **New unit test for a `lib/` module:**
@@ -508,6 +672,18 @@ it('routes to extract_data for UNKNOWN', () => { ... });
 3. Mock external deps with `jest.mock()` BEFORE importing the module under test
 4. Define test helpers locally (not exported)
 5. Follow the section separator pattern with `// ============================================================`
+6. Include edge cases: empty string, null/undefined, whitespace
+7. Use `beforeEach` with `jest.clearAllMocks()` to reset state
+
+**New API route test:**
+1. Create `app/api/[domain]/[id]/[feature]/__tests__/route.test.ts`
+2. Mock `@/lib/db/queries` (getUser, getTeamForUser)
+3. Mock `@/lib/db/drizzle` (db.query, db.update, etc.)
+4. Mock agent functions if route calls them
+5. Import route handlers AFTER all mocks
+6. Test auth (401), team not found (404), invalid ID (400), not found (404), success (200)
+7. Use `createMockRequest()` helper for request creation
+8. Use async `Promise.resolve({ id: '1' })` for params (Next.js 15 pattern)
 
 **New E2E test:**
 1. Create `tests/e2e/[feature].spec.ts`
@@ -515,8 +691,10 @@ it('routes to extract_data for UNKNOWN', () => { ... });
 3. Import from `'@playwright/test'` for unauthenticated tests
 4. Create page object in `tests/e2e/pages/[page].page.ts` if needed
 5. Add to barrel export in `tests/e2e/pages/index.ts`
-6. Use test data builders from `tests/e2e/helpers/test-data.ts`
+6. Register in fixtures (`tests/e2e/fixtures/base.ts`) if page object is needed
+7. Use test data builders from `tests/e2e/helpers/test-data.ts`
+8. Handle missing data gracefully with `test.skip()` pattern
 
 ---
 
-*Testing analysis: 2026-02-06*
+*Testing analysis: 2026-02-08*

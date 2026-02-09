@@ -2,7 +2,7 @@
 
 **Project:** Product Helper
 **Core Value:** Conversational AI intake pipeline that transforms a product idea into a complete, validated PRD with technical specifications
-**Updated:** 2026-02-05
+**Updated:** 2026-02-08
 
 ---
 
@@ -48,10 +48,10 @@
 
 **Milestone:** V2 -- Epic.dev Feature Parity
 **Planning System:** GSD
-**Last Completed:** Phase 6-02 (Content Section View Verification) - 2026-02-06
-**Active Work:** Phase 6 (Content Section Views & UX Polish)
-**Next Plan:** Phase 6-03
-**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4 COMPLETE | ✅ PHASE 5 COMPLETE | ✅ PHASE 6-01 COMPLETE | ✅ PHASE 6-02 COMPLETE
+**Last Completed:** Phase 6-05 + route consolidation + extraction fix (2026-02-07), Knowledge Banks 07-12 created + generator agent wiring (2026-02-08)
+**Active Work:** Phase 6-07 — Quick PRD Mode (plan written, ready to execute). KB + agent changes uncommitted.
+**Next:** Commit KB + agent work, execute 06-07, push to main
+**Status:** ✅ V2 DEPLOYED | ✅ PHASE 15 COMPLETE | ✅ PHASE 16 COMPLETE | ✅ PHASE 17 COMPLETE | ✅ PHASE 3 COMPLETE | ✅ PHASE 18 COMPLETE | ✅ PHASE 4 COMPLETE | ✅ PHASE 5 COMPLETE | ✅ PHASE 6-01 COMPLETE | ✅ PHASE 6-02 COMPLETE | ✅ PHASE 6-03 COMPLETE | ✅ PHASE 6-04 COMPLETE | ✅ PHASE 6-05 COMPLETE | ✅ PHASE 6-06 COMPLETE | ✅ KBs 07-12 CREATED
 
 ```
 CLEO Progress: [##########] 36 of 36 tasks done (100%)
@@ -62,6 +62,105 @@ Wave 3: ✓ Complete (T042, T045; T044/T046 deferred to v3)
 Independent: ✓ Complete (T023, T033, T048, T056, T060)
 Testing: ✓ Complete (T061-T068)
 ```
+
+### Route Consolidation (2026-02-07)
+
+**Commits:** `900afe5`, `6e67cf7`
+
+1. **Rename /welcome-test to /home** — Updated route, middleware, auth redirects, nav links, E2E tests
+2. **Consolidate /projects and / to /home** — All /projects links now point to /home, root / redirects authenticated users to /home. Updated nav, sidebar, headers, back buttons, E2E tests.
+
+**Files Changed:** middleware.ts, actions.ts, layout.tsx, page.tsx, nav links, E2E page objects
+
+### Extraction Token Limit Fix (2026-02-07)
+
+**Commit:** `43630d3`
+
+1. **Extraction agent maxTokens**: 3000 → 20000 to prevent truncated output that silently discards actors and use cases
+2. **Zod defaults**: Added `.default([])` on `systemBoundaries`, `actors`, `useCases` in extractionSchema so partial LLM output doesn't throw
+3. **Nav config**: Added Problem Statement, Goals & Metrics, NFR to sidebar nav and artifact pipeline
+4. **Duplicate chat messages**: Replaced `append()` with `addNotification()` to prevent duplicate messages (append triggers API calls)
+
+### Phase 6-05 Completed (2026-02-07)
+
+**Plain Language Prompts & Educational Loading States (UX-06, UX-07):**
+
+**Commit:** `7f8f858`
+
+1. Plain language communication guidelines and glossary added to system prompt
+2. `generalThinkingMessages` (10 golden nuggets) and `nodeThinkingMessages` added to knowledge bank
+3. Stream status markers injected in LangGraph handler for node-aware progress
+4. Markers parsed in `ProjectChatProvider`, stripped from displayed messages
+5. Differentiated `ThinkingState`: node-specific in `ProgressCard`, general in `ChatMessages`
+6. Replaced inaccurate time estimate with elapsed timer + "may take 3-5 min" hint
+7. Fixed Tech Stack "Unknown" sections (TechStackModel format with categories array)
+8. Added completion toast notifications with section location (e.g., "Find it under Backend")
+9. Stripped vision metadata from first user message display
+
+**Files Changed:** langgraph-handler.ts, chat-message-bubble.tsx, chat-window.tsx, explorer-sidebar.tsx, generation-progress-card.tsx, project-chat-provider.tsx, tech-stack-section.tsx, knowledge-bank.ts, generate-response.ts
+
+### Phase 6-04 Completed (2026-02-07)
+
+**Overview Redesign, Vision Leak Fix, UX Improvements (UX-02, UX-03, UX-04, UX-05):**
+
+**Commit:** `0067f86`
+
+1. Fixed vision metadata leak caused by `\r\n` line endings in DB (regex now handles `\r?\n`)
+2. Removed empty state placeholder — always show `QuickInstructions` + `ArtifactPipeline`
+3. Removed `ProjectContextCard` and `ValidationReport` from overview
+4. Removed IDE connector badges, link to Connectors page instead
+5. Replaced generic "Generating Response..." with descriptive stage labels
+6. Replaced toast notifications with persistent chat messages for artifact completion
+7. Added spinning loader icons on pending artifacts in sidebar and pipeline during generation
+8. Stripped vision metadata from initial messages in `layout.tsx`
+
+**Files Added:** `overview/artifact-pipeline.tsx` (+152), `overview/quick-instructions.tsx` (+80)
+**Files Changed:** layout.tsx, page.tsx, explorer-sidebar.tsx, generation-progress-card.tsx, project-chat-provider.tsx, vision.ts
+
+### Phase 6-03 Completed (2026-02-06)
+
+**Explorer Status API Endpoint (UX-04):**
+
+**Commit:** `850bc55`
+
+- Added explorer status API endpoint for real-time section completion indicators
+- **Summary:** `.planning/phases/06-content-section-views-ux-polish/06-03-SUMMARY.md`
+
+### Knowledge Banks 07-12 Created (2026-02-08)
+
+**6 new decision-guidance Knowledge Banks for generator agents (GEN-01):**
+
+| KB | File | Size | Purpose |
+|----|------|------|---------|
+| 07 | `07-ENTITY-DISCOVERY.md` | 9 KB | Entity recognition, relationship inference, domain patterns |
+| 08 | `08-DATABASE-SCHEMA-DESIGN.md` | 15 KB | Field types, constraints, indexes, schema patterns |
+| 09 | `09-TECH-STACK-SELECTION.md` | 15 KB | Decision framework, selection matrices, rationale templates |
+| 10 | `10-API-SPECIFICATION-PATTERNS.md` | 11 KB | REST/GraphQL, endpoints, auth, error codes |
+| 11 | `11-INFRASTRUCTURE-PATTERNS.md` | 12 KB | Hosting by stage, CI/CD, monitoring, security checklist |
+| 12 | `12-CODING-STANDARDS.md` | 16 KB | Naming, file org, testing, git conventions |
+
+**Also created:** `lib/education/generator-kb.ts` (20 KB) — KB loading utility for generator agents
+
+### Generator Agent KB Wiring (2026-02-08, uncommitted)
+
+**5 generator agents modified to load KB content:**
+
+| Agent | File | Changes |
+|-------|------|---------|
+| Schema | `schema-extraction-agent.ts` | Loads KB 07+08, outputs full fields/types/constraints |
+| Tech Stack | `tech-stack-agent.ts` | Loads KB 09, outputs categories with rationale + alternatives |
+| API Spec | `api-spec-agent.ts` | Loads KB 10, outputs complete endpoint definitions |
+| Infrastructure | `infrastructure-agent.ts` | Loads KB 11, outputs deployment architecture |
+| Guidelines | `guidelines-agent.ts` | Loads KB 12, outputs language-specific standards |
+
+**Also modified:** `quick-start/orchestrator.ts` — imports generator KB utility
+
+### Codebase Map Refreshed (2026-02-08)
+
+All 7 `.planning/codebase/` documents refreshed via 4 parallel mapper agents:
+- STACK.md (183 lines), INTEGRATIONS.md (252), ARCHITECTURE.md (272), STRUCTURE.md (583), CONVENTIONS.md (441), TESTING.md (700), CONCERNS.md (316)
+
+**Notable findings:** 93 `as any` assertions, 30 duplicate `getUser()` calls, 180+ lines legacy dead code, no `error.tsx` boundaries, 251 console.logs
 
 ### Phase 6-02 Completed (2026-02-06)
 
@@ -914,20 +1013,109 @@ Deferred from v2:
 
 ## Session Continuity
 
-**Last session:** 2026-02-06
+**Last session:** 2026-02-08
 **Active branch:** `main`
-**Last commit:** `fda4aa2` - feat(06-01): hide validation in prod + remove hover highlighting
-**Dev server:** Working (`pnpm dev` at localhost:3001) -- Next.js 15.5.9 stable
-**Supabase local:** Running at localhost:54322 (DB), 54323 (Studio)
-**Deployment:** Pending push
-**Last plan:** Phase 6-02 Content Section View Verification (complete)
-**Active work:** Phase 6 (Content Section Views & UX Polish)
-**Next up:** Phase 6-03
+**Last commit:** `6e67cf7` - refactor: consolidate /projects and / routes to /home
+**Dev server:** Working (`pnpm dev` at localhost:3000) — Next.js 15.5.9 stable
+**Supabase local:** localhost:54322 (DB), 54323 (Studio)
+**Deployment:** Pending push (multiple commits since last push)
+**Last plan:** Phase 6-07 Quick PRD Mode (planned, not executed)
+**Active work:** KB 07-12 created, generator agents wired (all uncommitted). 06-07 plan ready.
+**Next up:** Commit KB + agent work, execute 06-07, push to main
 
 ### Uncommitted Changes
 ```
-(none - all committed)
+M  .planning/STATE.md                    — This update
+M  .planning/ROADMAP.md                  — Phase status updates
+M  .planning/REQUIREMENTS.md             — Checkbox updates
+M  .planning/CONTEXT-HANDOFF.md          — Full rewrite
+M  .planning/codebase/*.md               — 7 refreshed codebase map documents
+M  lib/langchain/agents/api-spec-agent.ts         — KB 10 injection
+M  lib/langchain/agents/guidelines-agent.ts       — KB 12 injection
+M  lib/langchain/agents/infrastructure-agent.ts   — KB 11 injection
+M  lib/langchain/agents/schema-extraction-agent.ts — KB 07+08 injection
+M  lib/langchain/agents/tech-stack-agent.ts       — KB 09 injection
+M  lib/langchain/quick-start/orchestrator.ts      — Generator KB import
+?? lib/education/generator-kb.ts                  — NEW: KB loading utility for generators
 ```
+
+### Phase 6 Execution Status (2026-02-06)
+
+**Wave 1: COMPLETE**
+- 06-01 ✅ Quick UX fixes (3c5aa1b, fda4aa2)
+- 06-02 ✅ Content view verification (9a19281, a646dd2)
+
+**Pipeline Fixes (between waves): COMPLETE**
+- 5e9fdce ✅ Fix intake loop (stop trigger char limit, allCoreComplete check)
+- 06-06 ✅ Auto-trigger generators after intake — `triggerPostIntakeGeneration()` implemented
+  - Parallel generation: tech stack, user stories, schema, API spec, infrastructure + sequential guidelines
+  - Enriched context building from extracted data (actors, use cases, boundaries, NFRs, goals)
+  - `Promise.allSettled()` for graceful partial failures
+  - DB persistence to project_data + user_stories tables
+
+**Bugs found during testing (06-06):**
+1. Streaming checkpoint not saving accumulated state → FIXED (accumulatedState pattern)
+2. Completion message lied about generated artifacts → FIXED (buildCompletionMessage checks DB)
+3. Guidelines agent PromptTemplate curly-brace issues → FIXED (template literal)
+4. API Spec and Database Schema generators failing silently → Root cause: agents lack decision-guidance KBs (V2 voice note insight). Output is thin/empty. Fix is 06-07.
+
+**06-07: Quick PRD Mode — PLANNED, NOT EXECUTED**
+- Plan: `.planning/phases/06-content-section-views-ux-polish/06-07-PLAN.md`
+- Research: Complete (Quick Start orchestrator pattern, intake graph topology, KB structure, extraction types)
+- 5 tasks: ambiguity scorer → wire into chat → delete regex entities → extract enriched-context util → progress streaming
+- Key insight: Quick Start orchestrator already does single-prompt → full PRD via separate API. 06-07 wires this into the chat flow with an ambiguity gate.
+
+**Wave 2: COMPLETE**
+- 06-03 ✅ Explorer status indicators + pulse animation (`850bc55`)
+- 06-04 ✅ Overview redesign, vision leak fix, UX improvements (`0067f86`)
+- 06-05 ✅ Plain language prompts, educational loading states (`7f8f858`)
+
+**Post-Wave 2 Fixes (2026-02-07):**
+- `43630d3` ✅ Extraction token limit 3K→20K, Zod defaults, nav items, duplicate message fix
+- `900afe5` ✅ Rename /welcome-test to /home
+- `6e67cf7` ✅ Consolidate /projects and / routes to /home
+
+### Local Environment Setup (2026-02-06)
+
+- Docker running, Supabase local started
+- All migrations applied (0000-0007 + manual columns)
+- `last_extracted_message_index` column added manually
+- Seed data: test@test.com / admin123, Test Team
+- Dev server on port 3000 (not 3001 as previously documented)
+
+### Resume Action (Next Session)
+
+**Priority 1: Commit KB + Agent Work**
+KB 07-12 files, `generator-kb.ts`, and 5 agent modifications are uncommitted. Commit and push.
+
+**Priority 2: Execute Phase 6-07 — Quick PRD Mode**
+Plan written: `.planning/phases/06-content-section-views-ux-polish/06-07-PLAN.md`
+Context: `.planning/phases/06-content-section-views-ux-polish/06-07-CONTEXT.md`
+5 tasks: ambiguity scorer → wire into chat → delete regex entities → extract enriched-context util → progress streaming
+With KBs loaded, Quick PRD output quality will match conversational path.
+
+**Priority 3: Push to Main**
+Multiple commits pending push (06-03 through route consolidation + KB/agent work).
+
+**Priority 4: Phase 9 (Inline Section Editing) or Phase 10 (Mobile Redesign)**
+Phase 6 will be fully complete after 06-07. Next milestone phases are 9 or 10.
+
+### Milestone Progress Update (2026-02-08)
+
+**Completed since last STATE.md update (2026-02-06):**
+- Phase 6-03 ✅ Explorer status indicators (`850bc55`)
+- Phase 6-04 ✅ Overview redesign + vision leak fix (`0067f86`)
+- Phase 6-05 ✅ Plain language prompts + educational loading (`7f8f858`)
+- Extraction token limit fix (`43630d3`)
+- Route consolidation: /welcome-test → /home, /projects → /home (`900afe5`, `6e67cf7`)
+- Knowledge Banks 07-12 created (6 files, uncommitted)
+- Generator agent KB wiring (5 agents + orchestrator, uncommitted)
+- `generator-kb.ts` utility created (uncommitted)
+- Codebase map refreshed (7 documents, uncommitted)
+
+**Phase 6 status: 5 of 6 plans complete. Only 06-07 (Quick PRD Mode) remains.**
+**Phase 7 (Rich Data Views):** Complete (verified 2026-02-06)
+**Phase 8 (Chat Enhancements):** CHAT-03 complete via 06-05, CHAT-02 deferred to V3
 
 ### Blocking TypeScript Errors (8 total)
 - `lib/diagrams/__tests__/generators.test.ts` (6 errors) — old TechStackModel shape
@@ -1281,6 +1469,10 @@ Phase 6 requirements (EXPL-03 to EXPL-07):
 
 | Decision | Rationale |
 |----------|-----------|
+| Quick PRD as default first-message behavior | Users want single prompt → everything. Ambiguity gate handles edge cases. No separate mode toggle. |
+| Reuse Quick Start synthesis, not rebuild | `synthesizeProjectContext()` is battle-tested. Wire into chat, don't duplicate. |
+| Delete regex entity derivation | 150 lines of brittle keyword matching. LLM synthesis already produces entities. |
+| Honest completion messages | Check DB for actual artifacts, don't assume. `buildCompletionMessage()` queries project_data. |
 | withProjectAuth HOF for API auth | Eliminates ~35% of duplicated auth boilerplate, type-safe via overloads |
 | Support both 'id' and 'projectId' params | Different routes use different naming conventions |
 | Centralized constants module | Single source of truth for config values improves maintainability |
@@ -1290,4 +1482,4 @@ Phase 6 requirements (EXPL-03 to EXPL-07):
 
 ---
 
-*State updated: 2026-02-06 (Phase 6-01 complete - Quick UX Fixes)*
+*State updated: 2026-02-08 (06-03/04/05 complete, KBs 07-12 created, agents wired, 06-07 next)*
