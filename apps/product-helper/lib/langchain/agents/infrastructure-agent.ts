@@ -12,7 +12,6 @@
 
 import { createClaudeAgent } from '../config';
 import { z } from 'zod';
-import { PromptTemplate } from '@langchain/core/prompts';
 import {
   infrastructureSpecSchema,
   hostingConfigSchema,
@@ -32,6 +31,7 @@ import type {
   MonitoringProvider,
 } from '../../db/schema/v2-types';
 import { getInfrastructureKnowledge } from '../../education/generator-kb';
+import type { KBProjectContext } from '../../education/reference-data/types';
 
 // ============================================================
 // Context Interface
@@ -47,6 +47,7 @@ export interface InfrastructureContext {
   scaleRequirements?: ScaleRequirements;
   complianceRequirements?: string[];
   budgetConstraints?: string;
+  projectContext?: Partial<KBProjectContext>;
 }
 
 /**
@@ -74,14 +75,14 @@ const structuredInfrastructureLLM = createClaudeAgent(infrastructureSpecSchema, 
 });
 
 // ============================================================
-// Prompt Template
+// Prompt Builder
 // ============================================================
 
-const infrastructurePrompt = PromptTemplate.fromTemplate(`
-You are a senior DevOps and cloud infrastructure architect recommending infrastructure for a new project.
+function buildInfrastructurePrompt(projectContext?: Partial<KBProjectContext>): string {
+  return `You are a senior DevOps and cloud infrastructure architect recommending infrastructure for a new project.
 Analyze the project requirements and provide well-reasoned infrastructure recommendations.
 
-${getInfrastructureKnowledge()}
+${getInfrastructureKnowledge(projectContext)}
 
 ## Project Context
 **Name:** {projectName}
@@ -160,7 +161,8 @@ Base your recommendations on:
 
 For smaller projects or startups, prefer managed services over self-hosted.
 For enterprise projects, consider compliance, support, and SLAs.
-`);
+`;
+}
 
 // ============================================================
 // Main Function
@@ -195,14 +197,13 @@ export async function generateInfrastructureSpec(
     const budgetFormatted = context.budgetConstraints || 'No specific budget constraints';
 
     // Build prompt
-    const promptText = await infrastructurePrompt.format({
-      projectName: context.projectName,
-      projectDescription: context.projectDescription,
-      techStackFormatted,
-      scaleFormatted,
-      complianceFormatted,
-      budgetFormatted,
-    });
+    const promptText = buildInfrastructurePrompt(context.projectContext)
+      .replace('{projectName}', context.projectName)
+      .replace('{projectDescription}', context.projectDescription)
+      .replace('{techStackFormatted}', techStackFormatted)
+      .replace('{scaleFormatted}', scaleFormatted)
+      .replace('{complianceFormatted}', complianceFormatted)
+      .replace('{budgetFormatted}', budgetFormatted);
 
     // Invoke structured LLM
     const result = await structuredInfrastructureLLM.invoke(promptText);

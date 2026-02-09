@@ -431,6 +431,7 @@ export interface APISpecGenerationContext {
     database?: string;
     auth?: string;
   };
+  projectContext?: import('../education/reference-data/types').KBProjectContext;
 }
 
 /**

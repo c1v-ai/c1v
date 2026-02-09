@@ -113,9 +113,10 @@ const apiSpecificationSchema = z.object({
 // API Specification Prompt
 // ============================================================
 
-const API_SPEC_PROMPT = `You are an expert API architect generating REST API specifications from PRD data.
+function buildAPISpecPrompt(projectContext?: import('../../education/reference-data/types').KBProjectContext): string {
+  return `You are an expert API architect generating REST API specifications from PRD data.
 
-${getAPISpecKnowledge()}
+${getAPISpecKnowledge(projectContext)}
 
 ## Project Context
 Project Name: {projectName}
@@ -170,6 +171,7 @@ For each endpoint:
 - Use standard HTTP status codes from KB (400 vs 422 distinction)
 
 Generate the complete API specification now.`;
+}
 
 // ============================================================
 // Main Generation Function
@@ -235,7 +237,7 @@ export async function generateAPISpecification(
     ? context.projectVision.slice(0, 1500) + '...'
     : context.projectVision;
 
-  const prompt = API_SPEC_PROMPT
+  const prompt = buildAPISpecPrompt(context.projectContext)
     .replace('{projectName}', context.projectName)
     .replace('{projectVision}', visionText)
     .replace('{useCasesText}', useCasesText || '(No use cases provided)')

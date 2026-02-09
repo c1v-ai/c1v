@@ -30,6 +30,7 @@ import type { TechStackModel } from '@/lib/db/schema/v2-types';
 import type { DatabaseSchemaModel } from '@/lib/db/schema/v2-types';
 import type { APISpecification } from '@/lib/types/api-specification';
 import type { GeneratedStory } from '../agents/user-stories-agent';
+import type { KBProjectContext } from '@/lib/education/reference-data/types';
 
 import {
   synthesizeProjectContext,
@@ -91,6 +92,8 @@ export interface QuickStartConfig {
   userId: number;
   userInput: string;
   onProgress?: ProgressCallback;
+  /** Optional project context for KB-aware generation (industry, market, budget, etc.) */
+  projectContext?: Partial<KBProjectContext>;
 }
 
 /**
@@ -199,6 +202,7 @@ async function runParallelExtractions(
   synthesis: SynthesisResult,
   conversationHistory: string,
   onProgress?: ProgressCallback,
+  projectContext?: Partial<KBProjectContext>,
 ): Promise<{
   extraction: AgentResult<ExtractionResult>;
   techStack: AgentResult<TechStackModel>;
@@ -221,6 +225,7 @@ async function runParallelExtractions(
     dataEntities: useCaseDerivation.dataEntities.map(e => ({
       name: e.name,
     })),
+    projectContext,
   };
 
   const userStoriesContext: UserStoriesContext = {
@@ -241,6 +246,7 @@ async function runParallelExtractions(
       name: a.name,
       role: a.role,
     })),
+    projectContext,
   };
 
   const schemaContext: SchemaExtractionContext = {
@@ -255,6 +261,7 @@ async function runParallelExtractions(
       name: uc.name,
       description: uc.description,
     })),
+    projectContext,
   };
 
   const apiSpecContext: APISpecGenerationContext = {
@@ -273,6 +280,7 @@ async function runParallelExtractions(
       attributes: e.attributes,
       relationships: e.relationships,
     })),
+    projectContext,
   };
 
   // Signal start of parallel phase
@@ -824,7 +832,7 @@ export async function runQuickStartPipeline(
     stories,
     dbSchema,
     apiSpec,
-  } = await runParallelExtractions(synthesis, conversationHistory, onProgress);
+  } = await runParallelExtractions(synthesis, conversationHistory, onProgress, config.projectContext);
 
   // ---- Phase 3: Validation ----
   const {

@@ -21,6 +21,7 @@ import type {
   DatabaseFieldType,
 } from '../../db/schema/v2-types';
 import { getSchemaKnowledge } from '../../education/generator-kb';
+import type { KBProjectContext } from '../../education/reference-data/types';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -128,6 +129,7 @@ export interface SchemaExtractionContext {
     name: string;
     description: string;
   }>;
+  projectContext?: Partial<KBProjectContext>;
 }
 
 // ============================================================
@@ -167,7 +169,7 @@ export async function extractDatabaseSchema(
 
   const prompt = `You are a database architect converting PRD data entities into a complete PostgreSQL database schema.
 
-${getSchemaKnowledge()}
+${getSchemaKnowledge(context.projectContext)}
 
 ## Project Context
 Project Name: ${context.projectName}

@@ -9,6 +9,8 @@
 
 import { createClaudeAgent } from '../config';
 import { z } from 'zod';
+import { getUserStoriesKnowledge } from '../../education/generator-kb';
+import type { KBProjectContext } from '../../education/reference-data/types';
 
 // ============================================================
 // Types and Schemas
@@ -37,6 +39,7 @@ export interface UserStoriesContext {
     role: string;
     description?: string;
   }>;
+  projectContext?: Partial<KBProjectContext>;
 }
 
 export interface GeneratedStory {
@@ -108,6 +111,8 @@ export async function generateUserStories(
     });
 
     const prompt = `You are an expert Agile product manager transforming use cases into well-structured user stories.
+
+${getUserStoriesKnowledge(context.projectContext)}
 
 ## Project Context
 Project Name: ${context.projectName}

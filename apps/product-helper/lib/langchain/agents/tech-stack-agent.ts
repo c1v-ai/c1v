@@ -12,7 +12,6 @@
 
 import { createClaudeAgent } from '../config';
 import { z } from 'zod';
-import { PromptTemplate } from '@langchain/core/prompts';
 import {
   techCategorySchema,
   techAlternativeSchema,
@@ -21,6 +20,7 @@ import {
 } from '../../db/schema/v2-validators';
 import type { TechStackModel, TechChoice, TechCategory } from '../../db/schema/v2-types';
 import { getTechStackKnowledge } from '../../education/generator-kb';
+import type { KBProjectContext } from '../../education/reference-data/types';
 
 // ============================================================
 // Context Interface
@@ -36,6 +36,7 @@ export interface TechStackContext {
   dataEntities: Array<{ name: string }>;
   constraints?: string[];
   preferences?: string[];
+  projectContext?: Partial<KBProjectContext>;
 }
 
 // ============================================================
@@ -52,14 +53,14 @@ const structuredTechStackLLM = createClaudeAgent(techStackModelSchema, 'recommen
 });
 
 // ============================================================
-// Prompt Template
+// Prompt Builder
 // ============================================================
 
-const techStackPrompt = PromptTemplate.fromTemplate(`
-You are a senior software architect recommending a technology stack for a new project.
+function buildTechStackPrompt(projectContext?: Partial<KBProjectContext>): string {
+  return `You are a senior software architect recommending a technology stack for a new project.
 Analyze the project requirements and provide well-reasoned technology choices.
 
-${getTechStackKnowledge()}
+${getTechStackKnowledge(projectContext)}
 
 ## Project Context
 **Name:** {projectName}
@@ -114,7 +115,8 @@ Also provide:
 - **Overall rationale** - How the stack works together as a cohesive whole
 - **Estimated monthly cost** - Infrastructure cost estimate for production (use Knowledge Bank cost data)
 - **Scalability notes** - How the stack handles growth
-`);
+`;
+}
 
 // ============================================================
 // Main Function
@@ -153,14 +155,13 @@ export async function recommendTechStack(
       : 'No specific preferences';
 
     // Build prompt
-    const promptText = await techStackPrompt.format({
-      projectName: context.projectName,
-      projectVision: context.projectVision,
-      useCasesFormatted,
-      dataEntitiesFormatted,
-      constraintsFormatted,
-      preferencesFormatted,
-    });
+    const promptText = buildTechStackPrompt(context.projectContext)
+      .replace('{projectName}', context.projectName)
+      .replace('{projectVision}', context.projectVision)
+      .replace('{useCasesFormatted}', useCasesFormatted)
+      .replace('{dataEntitiesFormatted}', dataEntitiesFormatted)
+      .replace('{constraintsFormatted}', constraintsFormatted)
+      .replace('{preferencesFormatted}', preferencesFormatted);
 
     // Invoke structured LLM
     const result = await structuredTechStackLLM.invoke(promptText);

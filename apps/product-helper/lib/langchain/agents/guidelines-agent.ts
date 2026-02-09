@@ -20,6 +20,7 @@ import type {
   NamingStyle,
 } from '../../db/schema/v2-types';
 import { getCodingStandardsKnowledge } from '../../education/generator-kb';
+import type { KBProjectContext } from '../../education/reference-data/types';
 
 // ============================================================
 // Context Interface
@@ -40,6 +41,7 @@ export interface GuidelinesContext {
     testCoverage?: number;
     commitStyle?: 'conventional' | 'gitmoji' | 'custom';
   };
+  projectContext?: Partial<KBProjectContext>;
 }
 
 // ============================================================
@@ -67,11 +69,12 @@ function buildGuidelinesPrompt(vars: {
   projectType: string;
   techStackFormatted: string;
   preferencesFormatted: string;
+  projectContext?: Partial<KBProjectContext>;
 }): string {
   return `You are a senior software architect creating coding guidelines for a development team.
 Generate comprehensive, practical guidelines tailored to the project's tech stack and team context.
 
-${getCodingStandardsKnowledge()}
+${getCodingStandardsKnowledge(vars.projectContext)}
 
 ## Project Context
 **Name:** ${vars.projectName}
@@ -202,6 +205,7 @@ export async function generateCodingGuidelines(
       projectType: context.projectType || 'startup',
       techStackFormatted,
       preferencesFormatted,
+      projectContext: context.projectContext,
     });
 
     // Invoke structured LLM
