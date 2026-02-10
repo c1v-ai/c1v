@@ -1,6 +1,0 @@
-{
-  "mode": "interactive",
-  "depth": "comprehensive",
-  "parallelization": true,
-  "notes": "Interactive with progressive complexity in explanations (ELI5 -> junior dev). User wants clear reasoning for each step and zero duplicated code."
-}
