@@ -62,12 +62,11 @@ export const POST = withProjectAuth(
     const body = await req.json();
     const { name, scopes, expiresAt } = body;
 
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      );
-    }
+    // Default name if not provided (field is optional in UI)
+    const keyName =
+      name && typeof name === 'string' && name.trim().length > 0
+        ? name.trim()
+        : `Key ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
     // Generate key
     const { key, hash, prefix } = await generateApiKey(projectId);
@@ -75,7 +74,7 @@ export const POST = withProjectAuth(
     // Create record
     const record = await createApiKeyRecord({
       projectId,
-      name: name.trim(),
+      name: keyName,
       keyHash: hash,
       keyPrefix: prefix,
       scopes: scopes || ['read:prd', 'read:schema', 'read:stories'],

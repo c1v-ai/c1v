@@ -40,6 +40,7 @@ export function ApiKeyManagement({ projectId }: ApiKeyManagementProps) {
   const [copied, setCopied] = useState(false);
   const [deleteKeyId, setDeleteKeyId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchKeys = async () => {
     try {
@@ -61,6 +62,7 @@ export function ApiKeyManagement({ projectId }: ApiKeyManagementProps) {
 
   const createKey = async () => {
     setCreating(true);
+    setError(null);
     try {
       const response = await fetch(`/api/projects/${projectId}/keys`, {
         method: 'POST',
@@ -73,9 +75,13 @@ export function ApiKeyManagement({ projectId }: ApiKeyManagementProps) {
         setNewKeyFull(data.key);
         setNewKeyName('');
         await fetchKeys();
+      } else {
+        const data = await response.json().catch(() => null);
+        setError(data?.error || `Failed to create key (${response.status})`);
       }
-    } catch (error) {
-      console.error('Error creating API key:', error);
+    } catch (err) {
+      console.error('Error creating API key:', err);
+      setError('Network error. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -128,7 +134,7 @@ export function ApiKeyManagement({ projectId }: ApiKeyManagementProps) {
               Manage API keys for MCP server authentication
             </CardDescription>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setError(null); }}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-1" />
@@ -142,6 +148,12 @@ export function ApiKeyManagement({ projectId }: ApiKeyManagementProps) {
                   Create a new API key for MCP server access. The full key will only be shown once.
                 </DialogDescription>
               </DialogHeader>
+
+              {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
+                  {error}
+                </div>
+              )}
 
               {newKeyFull ? (
                 <div className="space-y-4">

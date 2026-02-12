@@ -34,7 +34,7 @@ export async function generateApiKey(projectId: number): Promise<{
   const projectIdPrefix = projectIdStr.slice(0, PROJECT_ID_PREFIX_LENGTH);
   const key = `${KEY_PREFIX}_${projectIdPrefix}_${randomPart}`;
   const keyHash = hashApiKey(key);
-  const prefix = key.slice(0, 12);
+  const prefix = key.slice(0, 8);
 
   return { key, hash: keyHash, prefix };
 }
