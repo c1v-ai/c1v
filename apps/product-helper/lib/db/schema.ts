@@ -330,7 +330,7 @@ export const apiKeys = pgTable('api_keys', {
 
   // Key info
   keyHash: text('key_hash').notNull(),
-  keyPrefix: varchar('key_prefix', { length: 8 }).notNull(),
+  keyPrefix: varchar('key_prefix', { length: 12 }).notNull(),
   name: varchar('name', { length: 100 }).notNull(),
 
   // Usage tracking

@@ -34,7 +34,7 @@ export async function generateApiKey(projectId: number): Promise<{
   const projectIdPrefix = projectIdStr.slice(0, PROJECT_ID_PREFIX_LENGTH);
   const key = `${KEY_PREFIX}_${projectIdPrefix}_${randomPart}`;
   const keyHash = hashApiKey(key);
-  const prefix = key.slice(0, 8);
+  const prefix = `${KEY_PREFIX}_${projectIdPrefix}`;
 
   return { key, hash: keyHash, prefix };
 }
@@ -139,11 +139,11 @@ export function isValidKeyFormat(key: string): boolean {
 }
 
 /**
- * Extract the prefix (first 12 chars) from a key
+ * Extract the prefix (ph_XXXXXXXX) from a key
  */
 export function extractKeyPrefix(key: string): string | null {
-  if (!key || key.length < 12) return null;
-  return key.slice(0, 12);
+  if (!key || key.length < 11) return null;
+  return key.slice(0, 11);
 }
 
 /**
