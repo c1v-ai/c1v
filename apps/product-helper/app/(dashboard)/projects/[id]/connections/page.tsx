@@ -34,7 +34,7 @@ async function ConnectionsContent({ projectId }: { projectId: number }) {
   }
 
   // Get the base URL for MCP server
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const mcpUrl = `${baseUrl}/api/mcp/${projectId}`;
 
   return (
