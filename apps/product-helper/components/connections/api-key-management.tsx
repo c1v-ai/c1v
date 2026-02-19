@@ -211,37 +211,43 @@ export function InlineApiKeyCreation({ projectId, onKeyCreated, onKeyRevoked }: 
       {!loading && activeKeys.length > 0 && (
         <div className="space-y-2 pt-2 border-t">
           <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Keys</h4>
-          {activeKeys.map((key) => (
-            <div
-              key={key.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 bg-muted rounded-lg text-sm gap-2"
-            >
-              <div className="flex items-center gap-2 flex-wrap">
-                <Key className="h-3.5 w-3.5 text-muted-foreground" />
-                <code className="text-xs font-mono">{key.keyPrefix}...</code>
-                {key.name && (
-                  <Badge variant="secondary" className="text-xs">{key.name}</Badge>
-                )}
+          {activeKeys.map((key) => {
+            const isInUse = newKeyFull ? newKeyFull.startsWith(key.keyPrefix) : false;
+            return (
+              <div
+                key={key.id}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between p-2.5 rounded-lg text-sm gap-2 ${isInUse ? 'bg-primary/5 ring-1 ring-primary/20' : 'bg-muted'}`}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Key className="h-3.5 w-3.5 text-muted-foreground" />
+                  <code className="text-xs font-mono">{key.keyPrefix}...</code>
+                  {key.name && (
+                    <Badge variant="secondary" className="text-xs">{key.name}</Badge>
+                  )}
+                  {isInUse && (
+                    <Badge className="text-xs bg-primary/10 text-primary border-primary/20">in use</Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    Created {formatDate(key.createdAt)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Last used: {formatDate(key.lastUsedAt)}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive h-7 w-7 p-0"
+                    aria-label={`Revoke key ${key.keyPrefix}`}
+                    onClick={() => setRevokeDialogKeyId(key.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">
-                  Created {formatDate(key.createdAt)}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Last used: {formatDate(key.lastUsedAt)}
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive h-7 w-7 p-0"
-                  aria-label={`Revoke key ${key.keyPrefix}`}
-                  onClick={() => setRevokeDialogKeyId(key.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

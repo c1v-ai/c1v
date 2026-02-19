@@ -20,8 +20,8 @@ export function ConnectionsFlow({ projectId, projectName, mcpUrl }: ConnectionsF
       {/* Step 1: Create folder & download files */}
       <SetupStep
         stepNumber={1}
-        title="Create a project folder"
-        subtitle="Create a folder on your computer to store your project's code and skills"
+        title="Set up your Project Folder"
+        subtitle="Create a new project folder, then download CLAUDE.md and SKILL.md into it"
       >
         <ProjectFileDownloads projectId={projectId} projectName={projectName} />
       </SetupStep>

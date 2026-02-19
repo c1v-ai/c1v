@@ -12,7 +12,7 @@ interface SetupStepProps {
 
 export function SetupStep({ stepNumber, title, subtitle, children, className }: SetupStepProps) {
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('rounded-xl border bg-card p-6 shadow-sm', className)}>
       <div className="flex items-start gap-4">
         <div
           className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold"
@@ -32,7 +32,7 @@ export function SetupStep({ stepNumber, title, subtitle, children, className }: 
           )}
         </div>
       </div>
-      <div className="pl-12">
+      <div className="pl-12 mt-4">
         {children}
       </div>
     </div>

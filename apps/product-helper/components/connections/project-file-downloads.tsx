@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Download, Loader2, FileText, Check } from 'lucide-react';
+import { Download, Loader2, Check, Wrench } from 'lucide-react';
 
 interface ProjectFileDownloadsProps {
   projectId: number;
@@ -43,48 +42,46 @@ export function ProjectFileDownloads({ projectId, projectName }: ProjectFileDown
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Create a folder on your computer, then download these files into it. They give your AI assistant full context about your project&apos;s requirements, architecture, and conventions.
-      </p>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Button
-          variant={downloaded.has('claude-md') ? 'outline' : 'default'}
-          className="h-auto py-3 px-4 justify-start"
+        <button
+          className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 disabled:opacity-50 ${downloaded.has('claude-md') ? 'border-green-300 bg-green-50/50 dark:border-green-800 dark:bg-green-900/10' : ''}`}
           onClick={() => downloadFile('claude-md')}
           disabled={downloading === 'claude-md'}
         >
-          {downloading === 'claude-md' ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : downloaded.has('claude-md') ? (
-            <Check className="h-4 w-4 mr-2 text-green-500" />
-          ) : (
-            <Download className="h-4 w-4 mr-2" />
-          )}
-          <div className="text-left">
-            <div className="font-medium">CLAUDE.md</div>
-            <div className="text-xs opacity-70">Quick reference for AI tools</div>
+          <div className="flex-shrink-0 w-8 h-8 rounded-md bg-muted flex items-center justify-center">
+            {downloading === 'claude-md' ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : downloaded.has('claude-md') ? (
+              <Check className="h-4 w-4 text-green-600" />
+            ) : (
+              <Download className="h-4 w-4 text-muted-foreground" />
+            )}
           </div>
-        </Button>
+          <div>
+            <div className="text-sm font-semibold">CLAUDE.md</div>
+            <div className="text-xs text-muted-foreground">Quick reference for AI tools</div>
+          </div>
+        </button>
 
-        <Button
-          variant={downloaded.has('skill') ? 'outline' : 'default'}
-          className="h-auto py-3 px-4 justify-start"
+        <button
+          className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 disabled:opacity-50 ${downloaded.has('skill') ? 'border-green-300 bg-green-50/50 dark:border-green-800 dark:bg-green-900/10' : ''}`}
           onClick={() => downloadFile('skill')}
           disabled={downloading === 'skill'}
         >
-          {downloading === 'skill' ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : downloaded.has('skill') ? (
-            <Check className="h-4 w-4 mr-2 text-green-500" />
-          ) : (
-            <Download className="h-4 w-4 mr-2" />
-          )}
-          <div className="text-left">
-            <div className="font-medium">SKILL.md</div>
-            <div className="text-xs opacity-70">Full project context &amp; tools</div>
+          <div className="flex-shrink-0 w-8 h-8 rounded-md bg-muted flex items-center justify-center">
+            {downloading === 'skill' ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : downloaded.has('skill') ? (
+              <Check className="h-4 w-4 text-green-600" />
+            ) : (
+              <Download className="h-4 w-4 text-muted-foreground" />
+            )}
           </div>
-        </Button>
+          <div>
+            <div className="text-sm font-semibold">SKILL.md</div>
+            <div className="text-xs text-muted-foreground">Full project context &amp; tools</div>
+          </div>
+        </button>
       </div>
 
       {error && (
@@ -94,8 +91,8 @@ export function ProjectFileDownloads({ projectId, projectName }: ProjectFileDown
       )}
 
       <div className="text-xs text-muted-foreground bg-muted rounded-md p-3">
-        <FileText className="h-3.5 w-3.5 inline mr-1 -mt-0.5" />
-        Place these files in your project root. Claude Code and other AI tools auto-detect them.
+        <Wrench className="h-3.5 w-3.5 inline mr-1 -mt-0.5" />
+        17 MCP tools included: <span className="font-mono">get_prd</span>, <span className="font-mono">get_user_stories</span>, <span className="font-mono">get_database_schema</span>, <span className="font-mono">get_api_specs</span>, <span className="font-mono">get_diagrams</span>, <span className="font-mono">invoke_agent</span>, <span className="font-mono">search_project_context</span>, and more.
       </div>
     </div>
   );
