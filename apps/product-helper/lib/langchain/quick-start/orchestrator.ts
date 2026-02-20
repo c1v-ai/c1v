@@ -36,6 +36,7 @@ import {
   synthesizeProjectContext,
   type SynthesisResult,
 } from '../agents/quick-start-synthesis-agent';
+import { inferProjectContext } from '@/lib/education/reference-data';
 import { extractProjectData } from '../agents/extraction-agent';
 import { recommendTechStack, type TechStackContext } from '../agents/tech-stack-agent';
 import { generateUserStories, type UserStoriesContext } from '../agents/user-stories-agent';
@@ -616,6 +617,8 @@ async function persistResults(
   stories: AgentResult<GeneratedStory[]>,
   dbSchema: AgentResult<DatabaseSchemaModel>,
   apiSpec: AgentResult<APISpecification>,
+  infraSpec: AgentResult<InfrastructureSpec>,
+  guidelines: AgentResult<CodingGuidelines>,
   generatedArtifactTypes: string[],
   validationScore: number,
   onProgress?: ProgressCallback,
@@ -673,6 +676,8 @@ async function persistResults(
       databaseSchema: dbSchema.data || null,
       techStack: techStack.data || null,
       apiSpecification: apiSpec.data || null,
+      infrastructureSpec: infraSpec.data || null,
+      codingGuidelines: guidelines.data || null,
       completeness: Math.min(Math.round(validationScore * 0.8), 100),
       lastExtractedAt: new Date(),
       updatedAt: new Date(),
@@ -824,6 +829,19 @@ export async function runQuickStartPipeline(
     throw new Error('Synthesis phase failed: unable to analyze project idea');
   }
 
+  // ---- Phase 1b: Context Inference (Haiku, ~200-400ms) ----
+  let projectContext = config.projectContext || {};
+  try {
+    const inferred = await inferProjectContext(synthesis);
+    // User-provided overrides take priority over inference
+    projectContext = { ...inferred, ...projectContext };
+    if (Object.keys(inferred).length > 0) {
+      console.log(`[QUICK_START] Inferred context: ${JSON.stringify(inferred)}`);
+    }
+  } catch (error) {
+    console.warn('[QUICK_START] Context inference failed, using generic:', error);
+  }
+
   // ---- Phase 2: Extraction (parallel) ----
   const conversationHistory = buildSyntheticConversation(synthesis);
   const {
@@ -832,7 +850,39 @@ export async function runQuickStartPipeline(
     stories,
     dbSchema,
     apiSpec,
-  } = await runParallelExtractions(synthesis, conversationHistory, onProgress, config.projectContext);
+  } = await runParallelExtractions(synthesis, conversationHistory, onProgress, projectContext);
+
+  // ---- Phase 2b: Infrastructure (parallel with extraction) ----
+  let infraResult: AgentResult<InfrastructureSpec> = { success: false, data: null };
+  try {
+    const infraCtx: InfrastructureContext = {
+      projectName: synthesis.domainAnalysis.projectName,
+      projectDescription: synthesis.domainAnalysis.projectVision,
+      projectContext,
+    };
+    const infra = await generateInfrastructureSpec(infraCtx);
+    infraResult = { success: true, data: infra };
+  } catch (error) {
+    console.error('[QUICK_START] Infrastructure generation failed:', error);
+    infraResult = { success: false, data: null, error: String(error) };
+  }
+
+  // ---- Phase 2c: Guidelines (depends on tech stack) ----
+  let guidelinesResult: AgentResult<CodingGuidelines> = { success: false, data: null };
+  if (techStack.success && techStack.data) {
+    try {
+      const guidelinesCtx: GuidelinesContext = {
+        projectName: synthesis.domainAnalysis.projectName,
+        techStack: techStack.data,
+        projectContext,
+      };
+      const guidelines = await generateCodingGuidelines(guidelinesCtx);
+      guidelinesResult = { success: true, data: guidelines };
+    } catch (error) {
+      console.error('[QUICK_START] Guidelines generation failed:', error);
+      guidelinesResult = { success: false, data: null, error: String(error) };
+    }
+  }
 
   // ---- Phase 3: Validation ----
   const {
@@ -855,6 +905,8 @@ export async function runQuickStartPipeline(
     stories,
     dbSchema,
     apiSpec,
+    infraResult,
+    guidelinesResult,
     generatedArtifactTypes,
     validationScore,
     onProgress,
