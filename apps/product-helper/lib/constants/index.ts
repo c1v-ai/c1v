@@ -109,3 +109,39 @@ export const VALIDATION = {
   /** Minimum use cases for requirements table */
   MIN_USE_CASES_FOR_REQUIREMENTS: 5,
 } as const;
+
+// ============================================================
+// Plan / Subscription Tier Limits
+// ============================================================
+
+export type TierName = 'free' | 'base' | 'plus';
+
+export const PLAN_LIMITS = {
+  free: {
+    creditLimit: 2500,
+    creditGrace: 2750,   // 10% overage
+    teamMemberLimit: 2,  // owner + 1 invite
+  },
+  base: {
+    creditLimit: 5000,
+    creditGrace: 5500,   // 10% overage
+    teamMemberLimit: 2,
+  },
+  plus: {
+    creditLimit: 999999,
+    creditGrace: 999999,
+    teamMemberLimit: 999999,
+  },
+} as const;
+
+/** Maps Stripe product name to tier key */
+export function resolvePlanTier(planName: string | null): TierName {
+  if (planName === 'Base') return 'base';
+  if (planName === 'Plus') return 'plus';
+  return 'free';
+}
+
+/** Returns true when a member limit value means "unlimited" */
+export function isUnlimitedMembers(limit: number): boolean {
+  return limit >= 999999;
+}
