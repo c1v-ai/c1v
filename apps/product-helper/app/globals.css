@@ -77,10 +77,11 @@
 
 @layer utilities {
   body {
-    font-family: var(--font-body, Verdana, Geneva, Tahoma, sans-serif);
+    font-family: var(--font-body, Consolas, 'Roboto', sans-serif);
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading, Consolas, "Courier New", monospace);
+    font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+    letter-spacing: -0.01em;
   }
 
   /* Hide scrollbar but keep scroll functionality */
@@ -95,74 +96,136 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Figma: Porcelain #FBFCFC */
+    --background: 180 14.3% 98.6%;
+    /* Figma: Text #0D0D0D */
+    --foreground: 0 0% 5.1%;
+
+    /* Figma: Pure White #FFFFFF */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 5.1%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 172 88% 20%;
+    --popover-foreground: 0 0% 5.1%;
+
+    /* Figma: Tangerine #F18F01 */
+    --primary: 35.5 99.2% 47.5%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Figma: rgba(0,0,0,0.05) approx */
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 5.1%;
+
+    /* Figma: rgba(0,0,0,0.05) approx */
+    --muted: 0 0% 95%;
+    /* Figma: rgba(13,13,13,0.6) approx */
+    --muted-foreground: 0 0% 40%;
+
+    /* Figma: Danube #5998C5 */
+    --accent: 205 48.2% 56.1%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Keep existing destructive red */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Figma: rgba(13,13,13,0.15) approx */
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+
+    /* Figma: Tangerine for focus ring */
+    --ring: 35.5 99.2% 47.5%;
+
+    /* Chart colors from brand palette */
+    --chart-1: 35.5 99.2% 47.5%;
+    --chart-2: 205 48.2% 56.1%;
+    --chart-3: 174.5 60% 10.8%;
+    --chart-4: 0 0% 93.3%;
+    --chart-5: 180 14.3% 98.6%;
+
+    /* CRITICAL: Global radius = 12px */
+    --radius: 0.75rem;
+
+    /* Sidebar: mirror card tokens */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 5.1%;
+    --sidebar-primary: 35.5 99.2% 47.5%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 5.1%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 35.5 99.2% 47.5%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 199 89% 48%;
+    /* Figma: Firefly #0B2C29 */
+    --background: 174.5 60% 10.8%;
+    --foreground: 0 0% 100%;
+
+    /* Figma: Firefly for cards in dark mode */
+    --card: 174.5 60% 10.8%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 174.5 60% 10.8%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Figma: Tangerine (same in dark) */
+    --primary: 35.5 99.2% 47.5%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+
+    /* Figma: rgba(255,255,255,0.15) approx */
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 20%;
+    /* Figma: rgba(255,255,255,0.6) approx */
+    --muted-foreground: 0 0% 65%;
+
+    /* Figma: Danube (same in dark) */
+    --accent: 205 48.2% 56.1%;
+    --accent-foreground: 0 0% 100%;
+
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Figma: rgba(255,255,255,0.2) approx */
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+
+    --ring: 35.5 99.2% 47.5%;
+
+    --chart-1: 35.5 99.2% 47.5%;
+    --chart-2: 205 48.2% 56.1%;
+    --chart-3: 180 14.3% 98.6%;
+    --chart-4: 0 0% 93.3%;
+    --chart-5: 174.5 60% 10.8%;
+
+    /* Sidebar: mirror dark card tokens */
+    --sidebar-background: 174.5 60% 10.8%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 35.5 99.2% 47.5%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 35.5 99.2% 47.5%;
+  }
+
+  /* Figma typography scale -- mobile-first, desktop at md (768px) */
+  h1 { font-size: 40px; line-height: 120%; }
+  h2 { font-size: 36px; line-height: 120%; }
+  h3 { font-size: 32px; line-height: 120%; }
+  h4 { font-size: 24px; line-height: 130%; }
+  h5 { font-size: 20px; line-height: 140%; }
+  h6 { font-size: 18px; line-height: 140%; }
+
+  @media (min-width: 768px) {
+    h1 { font-size: 72px; }
+    h2 { font-size: 52px; }
+    h3 { font-size: 44px; }
+    h4 { font-size: 36px; }
+    h5 { font-size: 28px; }
+    h6 { font-size: 22px; }
   }
 }
 
