@@ -1,38 +1,56 @@
 /* =========================================================
-   c1v Theme + Typography
-   Header font = Consolas
-   Body font   = Verdana
+   c1v Brand System — Figma Design Tokens
+   Fonts: Space Grotesk (headings), Consolas (body, Roboto fallback)
+   Palette: Firefly, Porcelain, Tangerine, Danube
+   Source: Figma file g5lP1TizFUIvqb86hsAjaL
    ========================================================= */
 
-/* Base typography */
 :root {
-  --font-heading: Consolas, "Courier New", monospace;
-  --font-body: Verdana, Geneva, Tahoma, sans-serif;
+  /* Fonts — 2-font system: Space Grotesk headings, Consolas body (Roboto fallback) */
+  --font-heading: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  --font-body: Consolas, var(--font-roboto), 'Roboto', sans-serif;
 
-  /* sensible defaults */
-  --radius: 10px;
+  /* Button shadows — defined here, referenced by components via var() */
+  --shadow-button-primary: 0px 1px 2px rgba(13,13,13,0.05), inset 0px 32px 24px rgba(255,255,255,0.05), inset 0px 2px 1px rgba(255,255,255,0.25), inset 0px 0px 0px 1px rgba(13,13,13,0.15), inset 0px -2px 1px rgba(0,0,0,0.2);
+  --shadow-button-secondary: 0px 1px 2px rgba(13,13,13,0.05), inset 0px 0px 0px 1px rgba(13,13,13,0.05), inset 0px -2px 1px rgba(13,13,13,0.05);
 
-  /* Light theme (default) */
-  --bg-primary: #DDEBEA;
-  --bg-secondary: #E6E9EE;
-  --text-primary: #010E0D;
-  --accent: #CA8652;
+  /* Figma Color Palette */
+  --color-firefly: #0B2C29;
+  --color-porcelain: #FBFCFC;
+  --color-tangerine: #F18F01;
+  --color-danube: #5998C5;
 
-  --text-muted: rgba(31, 41, 55, 0.70);
-  --border: rgba(31, 41, 55, 0.12);
-  --shadow: 0 10px 30px rgba(17, 24, 39, 0.10);
+  /* Semantic tokens — Light mode */
+  --bg-primary: var(--color-porcelain);
+  --bg-secondary: #FFFFFF;
+  --text-primary: #0D0D0D;
+  --accent: var(--color-tangerine);
+  --text-muted: rgba(13, 13, 13, 0.6);
+  --border: rgba(13, 13, 13, 0.15);
+  --shadow: 0 1px 2px rgba(13, 13, 13, 0.05);
+
+  /* Radius tokens from Figma */
+  --radius: 12px;
+  --radius-button: 12px;
+  --radius-input: 12px;
+  --radius-card: 12px;
+  --radius-tag: 6px;
+  --radius-tab-container: 10px;
+  --radius-tab-active: 8px;
+  --radius-checkbox: 4px;
+  --radius-radio: 100px;
+  --radius-toggle: 500px;
 }
 
 /* Dark theme - uses .dark class (Tailwind convention) */
 .dark {
-  --bg-primary: #010E0D;
-  --bg-secondary: #0E275E;
+  --bg-primary: var(--color-firefly);
+  --bg-secondary: var(--color-firefly);
   --text-primary: #FFFFFF;
-  --accent: #CA8652;
-
-  --text-muted: rgba(255, 255, 255, 0.72);
-  --border: rgba(255, 255, 255, 0.12);
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --accent: var(--color-tangerine);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --border: rgba(255, 255, 255, 0.2);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Global defaults */
@@ -54,7 +72,7 @@ body {
 h1, h2, h3, h4, h5, h6,
 .heading, .title {
   font-family: var(--font-heading);
-  letter-spacing: 0.2px;
+  letter-spacing: -0.01em;
   margin: 0 0 0.6rem 0;
 }
 
@@ -75,44 +93,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Primary buttons get white text */
-.button, .btn {
-  font-family: var(--font-heading);
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid transparent;
-  border-radius: calc(var(--radius) - 2px);
-  padding: 10px 14px;
-  cursor: pointer;
-}
-
-.button.secondary, .btn.secondary {
-  background: transparent;
-  border-color: var(--border);
-  color: var(--text-primary);
-}
-
-/* Fix dropdown menu text visibility */
-[data-slot="dropdown-menu-content"] {
-  background: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border) !important;
-}
-
-[data-slot="dropdown-menu-item"] {
-  color: var(--text-primary) !important;
-}
-
-[data-slot="dropdown-menu-item"]:hover,
-[data-slot="dropdown-menu-item"]:focus {
-  background: var(--accent) !important;
-  color: #fff !important;
-}
-
-[data-slot="dropdown-menu-item"] svg {
-  color: currentColor !important;
-}
-
 /* Forms */
 input, textarea, select {
   font-family: var(--font-body);
@@ -130,7 +110,6 @@ input::placeholder, textarea::placeholder {
 
 /* Utility */
 .muted { color: var(--text-muted); }
-.border { border: 1px solid var(--border); }
 
 /* Mobile-optimized form inputs */
 input, textarea, select {
