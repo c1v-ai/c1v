@@ -1,6 +1,7 @@
 'use client';
 
 import React, { type FormEvent, type ReactNode, useRef, useEffect, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { type Message, useChat } from 'ai/react';
 import { toast } from 'sonner';
 import { ChatMessageBubble } from './chat-message-bubble';
@@ -211,6 +212,7 @@ export function ChatWindow({
   projectId,
   chatOptions = {},
 }: ChatWindowProps) {
+  const router = useRouter();
   const [currentPhase, setCurrentPhase] = useState<ArtifactPhase | null>(null);
   const [currentNode, setCurrentNode] = useState<string | null>(null);
 
@@ -222,6 +224,13 @@ export function ChatWindow({
     body: chatOptions.body,
     streamMode: 'text',
     onResponse: (response) => {
+      if (response.status === 402) {
+        toast.error('Free credits used up', {
+          description: 'Upgrade your plan to continue using AI features.',
+          action: { label: 'Upgrade', onClick: () => router.push('/pricing') },
+        });
+        return;
+      }
       const phase = response.headers.get('X-Current-Phase') as ArtifactPhase | null;
       if (phase) setCurrentPhase(phase);
     },

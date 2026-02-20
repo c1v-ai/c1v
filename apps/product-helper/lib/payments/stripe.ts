@@ -134,14 +134,18 @@ export async function handleSubscriptionChange(
       stripeSubscriptionId: subscriptionId,
       stripeProductId: plan?.product as string,
       planName: (plan?.product as Stripe.Product).name,
-      subscriptionStatus: status
+      subscriptionStatus: status,
+      creditsUsed: 0,
+      creditLimit: 999999,
     });
   } else if (status === 'canceled' || status === 'unpaid') {
     await updateTeamSubscription(team.id, {
       stripeSubscriptionId: null,
       stripeProductId: null,
       planName: null,
-      subscriptionStatus: status
+      subscriptionStatus: status,
+      creditsUsed: 0,
+      creditLimit: 2500,
     });
   }
 }

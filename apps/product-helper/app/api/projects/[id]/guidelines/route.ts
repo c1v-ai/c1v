@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withProjectAuth } from '@/lib/api/with-project-auth';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -59,6 +60,15 @@ export const GET = withProjectAuth(
  */
 export const POST = withProjectAuth(
   async (req, { team, projectId }) => {
+    // Credit check
+    const creditResult = await checkAndDeductCredits(team.id, 100);
+    if (!creditResult.allowed) {
+      return NextResponse.json(
+        { error: 'credit_limit_reached', creditsUsed: creditResult.creditsUsed, creditLimit: creditResult.creditLimit },
+        { status: 402 }
+      );
+    }
+
     // Verify project exists and belongs to team
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.teamId, team.id)),

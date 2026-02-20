@@ -15,7 +15,7 @@ AI-native PRD generation tool that teaches systems engineering methodology while
 - **UI:** Tailwind CSS 4 + Radix UI + shadcn/ui + Lucide icons
 - **Diagrams:** Mermaid.js for context/use-case/architecture diagrams
 - **Testing:** Jest (456 unit tests) + Playwright (E2E)
-- **Payments:** Stripe integration
+- **Payments:** Stripe integration + credit-based usage gating
 - **MCP:** JSON-RPC 2.0 server with 17 tools for IDE integration
 
 ## Architecture
@@ -68,12 +68,19 @@ lib/
 - **Tests:** Co-located `__tests__/` directories next to source files
 - **LLM provider:** Anthropic Claude via `@langchain/anthropic` (not OpenAI)
 
+### Credit System (`lib/db/queries.ts`)
+- `checkAndDeductCredits(teamId, amount)` — atomic check-and-deduct with race-safe WHERE clause
+- Free tier: 2,500 credits (Quick Start=1250, chat=5, regen=100)
+- Paid tier: 999,999 credits (effectively unlimited)
+- Credits reset on subscription change (active→0/999999, canceled→0/2500)
+- 402 responses handled in Quick Start dialog (upgrade prompt) and chat (toast with upgrade link)
+
 ## Active Work
 
-**Phase 12: Educational Content Integration**
-- Enriching knowledge banks with systems engineering course material
-- Building UI components for thinking states, tooltips, chat intros
-- Key files being edited: `01-CONTEXT-DIAGRAM.md`, `02-USE-CASE-DIAGRAM.md`
+**Credit System:** Deployed (2026-02-19)
+- Schema: `teams.credits_used`, `teams.credit_limit`
+- Gates: quick-start (1250), chat (5), api-spec/tech-stack/infrastructure/guidelines/stories (100 each)
+- Frontend: 402 → upgrade dialog (Quick Start) / toast (chat)
 
 ## Planning
 

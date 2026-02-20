@@ -96,6 +96,10 @@ export function ProgressCards({
         );
 
         if (!response.ok) {
+          if (response.status === 402) {
+            onError?.('credit_limit_reached');
+            return;
+          }
           const errorText = await response.text().catch(() => 'Unknown error');
           onError?.(errorText || `Server error: ${response.status}`);
           return;

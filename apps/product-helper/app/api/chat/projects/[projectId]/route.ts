@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { StreamingTextResponse } from 'ai';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { getUser, getTeamForUser, checkAndDeductCredits } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, artifacts, type NewConversation, type NewArtifact } from '@/lib/db/schema';
@@ -78,6 +78,20 @@ export async function POST(
           status: 404,
           headers: { 'Content-Type': 'application/json' }
         }
+      );
+    }
+
+    // Credit check
+    const creditResult = await checkAndDeductCredits(team.id, 5);
+    if (!creditResult.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'credit_limit_reached',
+          message: 'You\'ve used all your free credits. Upgrade to continue.',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        }),
+        { status: 402, headers: { 'Content-Type': 'application/json' } }
       );
     }
 

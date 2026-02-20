@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, ArrowRight } from 'lucide-react';
+import { Zap, ArrowRight, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -385,6 +385,52 @@ function ErrorPhase({
   errorMessage: string;
   onRetry: () => void;
 }) {
+  const router = useRouter();
+  const isCreditLimit = errorMessage === 'credit_limit_reached';
+
+  if (isCreditLimit) {
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>Free Credits Used Up</DialogTitle>
+          <DialogDescription>
+            You&apos;ve used all your free credits. Upgrade your plan to
+            continue generating PRDs.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div
+          className="rounded-md border p-4"
+          style={{
+            backgroundColor: 'hsl(var(--primary) / 0.05)',
+            borderColor: 'hsl(var(--primary) / 0.2)',
+          }}
+        >
+          <p
+            className="text-sm"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Upgrade to get unlimited AI generation, priority support, and more.
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button
+            onClick={() => router.push('/pricing')}
+            className="gap-2"
+            style={{
+              backgroundColor: 'hsl(var(--primary))',
+              color: '#FFFFFF',
+            }}
+          >
+            <Crown className="h-4 w-4" />
+            Upgrade
+          </Button>
+        </DialogFooter>
+      </>
+    );
+  }
+
   return (
     <>
       <DialogHeader>
