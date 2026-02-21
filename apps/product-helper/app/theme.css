@@ -17,7 +17,8 @@
   /* Figma Color Palette */
   --color-firefly: #0B2C29;
   --color-porcelain: #FBFCFC;
-  --color-tangerine: #FDF3E5;
+  --color-tangerine: #F18F01;
+  --color-tangerine-light: #FDF3E5;
   --color-danube: #5998C5;
 
   /* Semantic tokens — Light mode */
@@ -84,9 +85,8 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: var(--shadow);
 }
 
-/* Links + accents */
+/* Links — no global color override; components use Tailwind classes */
 a {
-  color: var(--accent);
   text-decoration: none;
 }
 a:hover {
