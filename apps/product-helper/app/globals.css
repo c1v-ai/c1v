@@ -108,9 +108,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 5.1%;
 
-    /* Figma: Tangerine #FDF3E5 */
-    --primary: 35 85.2% 94.5%;
-    /* Dark text on light-cream primary bg */
+    /* Figma: Tangerine step 1 #FCE8CC */
+    --primary: 33 93% 89.4%;
+    /* Dark text on warm-cream primary bg */
     --primary-foreground: 174 60% 10.8%;
 
     /* Figma: rgba(0,0,0,0.05) approx */
@@ -135,10 +135,10 @@
     --input: 0 0% 88%;
 
     /* Figma: Tangerine for focus ring */
-    --ring: 35 85.2% 94.5%;
+    --ring: 33 93% 89.4%;
 
     /* Chart colors from brand palette */
-    --chart-1: 35 85.2% 94.5%;
+    --chart-1: 33 93% 89.4%;
     --chart-2: 205 48.2% 56.1%;
     --chart-3: 174.5 60% 10.8%;
     --chart-4: 0 0% 93.3%;
@@ -150,12 +150,12 @@
     /* Sidebar: mirror card tokens */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 5.1%;
-    --sidebar-primary: 35 85.2% 94.5%;
+    --sidebar-primary: 33 93% 89.4%;
     --sidebar-primary-foreground: 174 60% 10.8%;
     --sidebar-accent: 0 0% 95%;
     --sidebar-accent-foreground: 0 0% 5.1%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 35 85.2% 94.5%;
+    --sidebar-ring: 33 93% 89.4%;
   }
 
   .dark {
@@ -170,9 +170,9 @@
     --popover: 174.5 60% 10.8%;
     --popover-foreground: 0 0% 100%;
 
-    /* Figma: Tangerine (same in dark) */
-    --primary: 35 85.2% 94.5%;
-    /* Dark text on light-cream primary bg (same in dark) */
+    /* Figma: Tangerine step 1 #FCE8CC (same in dark) */
+    --primary: 33 93% 89.4%;
+    /* Dark text on warm-cream primary bg (same in dark) */
     --primary-foreground: 174 60% 10.8%;
 
     /* Figma: rgba(255,255,255,0.15) approx */
@@ -194,9 +194,9 @@
     --border: 0 0% 25%;
     --input: 0 0% 25%;
 
-    --ring: 35 85.2% 94.5%;
+    --ring: 33 93% 89.4%;
 
-    --chart-1: 35 85.2% 94.5%;
+    --chart-1: 33 93% 89.4%;
     --chart-2: 205 48.2% 56.1%;
     --chart-3: 180 14.3% 98.6%;
     --chart-4: 0 0% 93.3%;
@@ -205,12 +205,12 @@
     /* Sidebar: mirror dark card tokens */
     --sidebar-background: 174.5 60% 10.8%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 35 85.2% 94.5%;
+    --sidebar-primary: 33 93% 89.4%;
     --sidebar-primary-foreground: 174 60% 10.8%;
     --sidebar-accent: 0 0% 20%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 35 85.2% 94.5%;
+    --sidebar-ring: 33 93% 89.4%;
   }
 
   /* Figma typography scale -- mobile-first, desktop at md (768px) */
