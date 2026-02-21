@@ -122,17 +122,14 @@ function CollapsibleCard({
         <CollapsibleTrigger asChild>
           <CardHeader className="cursor-pointer select-none">
             <div className="flex items-center gap-2">
-              <Icon className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-              <CardTitle
-                className="text-lg flex-1"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
+              <Icon className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg flex-1">
                 {title}
               </CardTitle>
               {isOpen ? (
-                <ChevronDown className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
           </CardHeader>
@@ -187,29 +184,17 @@ function NamingConventionsTable({ naming }: { naming: NamingConventions }) {
   }
 
   return (
-    <div
-      className="overflow-x-auto rounded-lg border"
-      style={{ borderColor: 'var(--border)' }}
-    >
-      <table className="w-full text-sm" style={{ fontFamily: 'var(--font-body)' }}>
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-sm">
         <thead>
-          <tr style={{ backgroundColor: 'var(--bg-secondary)' }}>
-            <th
-              className="text-left px-4 py-2.5 font-semibold"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+          <tr className="bg-muted">
+            <th className="text-left px-4 py-2.5 font-semibold text-foreground">
               Element
             </th>
-            <th
-              className="text-left px-4 py-2.5 font-semibold"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <th className="text-left px-4 py-2.5 font-semibold text-foreground">
               Convention
             </th>
-            <th
-              className="text-left px-4 py-2.5 font-semibold"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <th className="text-left px-4 py-2.5 font-semibold text-foreground">
               Example
             </th>
           </tr>
@@ -218,10 +203,9 @@ function NamingConventionsTable({ naming }: { naming: NamingConventions }) {
           {rows.map((row) => (
             <tr
               key={row.element}
-              className="border-t"
-              style={{ borderColor: 'var(--border)' }}
+              className="border-t border-border"
             >
-              <td className="px-4 py-2.5 capitalize" style={{ color: 'var(--text-primary)' }}>
+              <td className="px-4 py-2.5 capitalize text-foreground">
                 {row.element}
               </td>
               <td className="px-4 py-2.5">
@@ -229,7 +213,7 @@ function NamingConventionsTable({ naming }: { naming: NamingConventions }) {
                   {formatNamingStyle(row.convention)}
                 </Badge>
               </td>
-              <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
+              <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
                 {row.example}
               </td>
             </tr>
@@ -248,26 +232,19 @@ function PatternsCard({ patterns }: { patterns: DesignPattern[] }) {
       {patterns.map((pattern, index) => (
         <div
           key={pattern.name + index}
-          className="rounded-lg border p-4"
-          style={{ borderColor: 'var(--border)' }}
+          className="rounded-lg border border-border p-4"
         >
-          <h5
-            className="font-semibold mb-1"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <h5 className="font-semibold mb-1 text-foreground">
             {pattern.name}
           </h5>
-          <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mb-2 text-muted-foreground">
             {pattern.description}
           </p>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs text-muted-foreground">
             <span className="font-semibold">When:</span> {pattern.when}
           </p>
           {pattern.example && (
-            <pre
-              className="mt-2 rounded p-3 text-xs font-mono overflow-x-auto"
-              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-            >
+            <pre className="mt-2 rounded p-3 text-xs font-mono overflow-x-auto bg-muted text-foreground">
               {pattern.example}
             </pre>
           )}
@@ -285,23 +262,19 @@ function ForbiddenPatternsCard({ forbidden }: { forbidden: ForbiddenPattern[] })
       {forbidden.map((pattern, index) => (
         <div
           key={pattern.name + index}
-          className="rounded-lg border p-4"
-          style={{ borderColor: 'var(--border)' }}
+          className="rounded-lg border border-border p-4"
         >
           <div className="flex items-start gap-2 mb-1">
-            <ShieldAlert className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--destructive, #ef4444)' }} />
-            <h5
-              className="font-semibold"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <ShieldAlert className="h-4 w-4 mt-0.5 flex-shrink-0 text-destructive" />
+            <h5 className="font-semibold text-foreground">
               {pattern.name}
             </h5>
           </div>
-          <p className="text-sm mb-1 ml-6" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mb-1 ml-6 text-muted-foreground">
             {pattern.reason}
           </p>
           {pattern.alternative && (
-            <p className="text-xs ml-6" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs ml-6 text-muted-foreground">
               <span className="font-semibold">Alternative:</span> {pattern.alternative}
             </p>
           )}
@@ -335,7 +308,7 @@ function LintingCard({ linting }: { linting: LintConfig }) {
 
       {linting.extends && linting.extends.length > 0 && (
         <div>
-          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+          <span className="text-xs font-semibold text-muted-foreground">
             Extends:
           </span>
           <div className="flex flex-wrap gap-1.5 mt-1">
@@ -350,24 +323,21 @@ function LintingCard({ linting }: { linting: LintConfig }) {
 
       {linting.rules.length > 0 && (
         <div>
-          <span className="text-xs font-semibold mb-2 block" style={{ color: 'var(--text-muted)' }}>
+          <span className="text-xs font-semibold mb-2 block text-muted-foreground">
             Rules:
           </span>
-          <div
-            className="overflow-x-auto rounded-lg border"
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ backgroundColor: 'var(--bg-secondary)' }}>
-                  <th className="text-left px-4 py-2 font-semibold text-xs" style={{ color: 'var(--text-primary)' }}>Rule</th>
-                  <th className="text-left px-4 py-2 font-semibold text-xs" style={{ color: 'var(--text-primary)' }}>Level</th>
+                <tr className="bg-muted">
+                  <th className="text-left px-4 py-2 font-semibold text-xs text-foreground">Rule</th>
+                  <th className="text-left px-4 py-2 font-semibold text-xs text-foreground">Level</th>
                 </tr>
               </thead>
               <tbody>
                 {linting.rules.map((rule, i) => (
-                  <tr key={rule.name + i} className="border-t" style={{ borderColor: 'var(--border)' }}>
-                    <td className="px-4 py-2 font-mono text-xs" style={{ color: 'var(--text-primary)' }}>{rule.name}</td>
+                  <tr key={rule.name + i} className="border-t border-border">
+                    <td className="px-4 py-2 font-mono text-xs text-foreground">{rule.name}</td>
                     <td className="px-4 py-2">
                       <Badge
                         variant="outline"
@@ -386,7 +356,7 @@ function LintingCard({ linting }: { linting: LintConfig }) {
 
       {linting.ignorePatterns && linting.ignorePatterns.length > 0 && (
         <div>
-          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+          <span className="text-xs font-semibold text-muted-foreground">
             Ignored:
           </span>
           <div className="flex flex-wrap gap-1.5 mt-1">
@@ -419,17 +389,16 @@ function TestingCard({ testing }: { testing: TestingStrategy }) {
 
       {testing.types.length > 0 && (
         <div>
-          <span className="text-xs font-semibold mb-2 block" style={{ color: 'var(--text-muted)' }}>
+          <span className="text-xs font-semibold mb-2 block text-muted-foreground">
             Test Types:
           </span>
           <div className="space-y-2">
             {testing.types.map((testType, i) => (
               <div
                 key={testType.type + i}
-                className="flex items-center gap-2 rounded-lg border px-3 py-2"
-                style={{ borderColor: 'var(--border)' }}
+                className="flex items-center gap-2 rounded-lg border border-border px-3 py-2"
               >
-                <span className="text-sm capitalize flex-1" style={{ color: 'var(--text-primary)' }}>
+                <span className="text-sm capitalize flex-1 text-foreground">
                   {testType.type}
                 </span>
                 <Badge variant="outline" className="text-xs">
@@ -447,7 +416,7 @@ function TestingCard({ testing }: { testing: TestingStrategy }) {
       )}
 
       <div>
-        <span className="text-xs font-semibold mb-1 block" style={{ color: 'var(--text-muted)' }}>
+        <span className="text-xs font-semibold mb-1 block text-muted-foreground">
           Patterns:
         </span>
         <div className="flex flex-wrap gap-2">
@@ -461,7 +430,7 @@ function TestingCard({ testing }: { testing: TestingStrategy }) {
       </div>
 
       <div>
-        <span className="text-xs font-semibold mb-1 block" style={{ color: 'var(--text-muted)' }}>
+        <span className="text-xs font-semibold mb-1 block text-muted-foreground">
           CI:
         </span>
         <div className="flex flex-wrap gap-2">
@@ -480,14 +449,8 @@ function TestingCard({ testing }: { testing: TestingStrategy }) {
 function DocumentationCard({ documentation }: { documentation: DocStrategy }) {
   return (
     <div className="space-y-4">
-      <div
-        className="rounded-lg border p-4"
-        style={{ borderColor: 'var(--border)' }}
-      >
-        <h5
-          className="font-semibold mb-2"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+      <div className="rounded-lg border border-border p-4">
+        <h5 className="font-semibold mb-2 text-foreground">
           Code Comments
         </h5>
         <div className="flex flex-wrap gap-2">
@@ -500,14 +463,8 @@ function DocumentationCard({ documentation }: { documentation: DocStrategy }) {
         </div>
       </div>
 
-      <div
-        className="rounded-lg border p-4"
-        style={{ borderColor: 'var(--border)' }}
-      >
-        <h5
-          className="font-semibold mb-2"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+      <div className="rounded-lg border border-border p-4">
+        <h5 className="font-semibold mb-2 text-foreground">
           API Documentation
         </h5>
         <div className="flex flex-wrap gap-2">
@@ -523,14 +480,8 @@ function DocumentationCard({ documentation }: { documentation: DocStrategy }) {
       </div>
 
       {documentation.readme.required && (
-        <div
-          className="rounded-lg border p-4"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          <h5
-            className="font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+        <div className="rounded-lg border border-border p-4">
+          <h5 className="font-semibold mb-2 text-foreground">
             README Sections
           </h5>
           <div className="flex flex-wrap gap-1.5">
@@ -544,14 +495,8 @@ function DocumentationCard({ documentation }: { documentation: DocStrategy }) {
       )}
 
       {documentation.changelog.enabled && (
-        <div
-          className="rounded-lg border p-4"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          <h5
-            className="font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+        <div className="rounded-lg border border-border p-4">
+          <h5 className="font-semibold mb-2 text-foreground">
             Changelog
           </h5>
           <div className="flex flex-wrap gap-2">
@@ -568,14 +513,8 @@ function DocumentationCard({ documentation }: { documentation: DocStrategy }) {
       )}
 
       {documentation.adr?.enabled && (
-        <div
-          className="rounded-lg border p-4"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          <h5
-            className="font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+        <div className="rounded-lg border border-border p-4">
+          <h5 className="font-semibold mb-2 text-foreground">
             Architecture Decision Records
           </h5>
           <div className="flex flex-wrap gap-2">
@@ -606,23 +545,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <BookOpen
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Guidelines Generated Yet
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -650,13 +580,10 @@ export function GuidelinesSection({ project }: GuidelinesSectionProps) {
     <div className="space-y-6">
       {/* Section Header */}
       <div>
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-1 text-foreground">
           Coding Guidelines
         </h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           Naming conventions, design patterns, linting rules, testing strategy, and documentation standards.
         </p>
       </div>

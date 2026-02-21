@@ -138,10 +138,9 @@ function StoryRow({ story }: { story: UserStoryData }) {
     <>
       <tr
         className={cn(
-          'border-b transition-colors',
+          'border-b border-border transition-colors',
           hasCriteria && 'cursor-pointer hover:bg-muted/50'
         )}
-        style={{ borderColor: 'var(--border)' }}
         onClick={toggleExpand}
         role={hasCriteria ? 'button' : undefined}
         tabIndex={hasCriteria ? 0 : undefined}
@@ -153,38 +152,32 @@ function StoryRow({ story }: { story: UserStoryData }) {
         }}
         aria-expanded={hasCriteria ? expanded : undefined}
       >
-        <td
-          className="py-3 px-4 text-xs font-mono hidden sm:table-cell"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <td className="py-3 px-4 text-xs font-mono hidden sm:table-cell text-muted-foreground">
           {formatStoryId(story.id)}
         </td>
         <td className="py-3 px-4">
           <div className="flex items-center gap-2">
             {hasCriteria ? (
               expanded ? (
-                <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               ) : (
-                <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               )
             ) : (
               <span className="w-4" />
             )}
-            <span
-              className="font-medium text-sm"
-              style={{ color: 'var(--text-primary)' }}
-            >
+            <span className="font-medium text-sm text-foreground">
               {story.title}
             </span>
           </div>
         </td>
-        <td className="py-3 px-4 text-sm hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
+        <td className="py-3 px-4 text-sm hidden sm:table-cell text-muted-foreground">
           {story.actor}
         </td>
         <td className="py-3 px-4 hidden md:table-cell">
           {getPriorityBadge(story.priority)}
         </td>
-        <td className="py-3 px-4 text-sm hidden lg:table-cell" style={{ color: 'var(--text-muted)' }}>
+        <td className="py-3 px-4 text-sm hidden lg:table-cell text-muted-foreground">
           {story.estimatedEffort}
         </td>
         <td className="py-3 px-4">
@@ -197,24 +190,17 @@ function StoryRow({ story }: { story: UserStoryData }) {
         <tr>
           <td
             colSpan={6}
-            className="px-4 pb-4 pt-1"
-            style={{ backgroundColor: 'var(--bg-secondary)' }}
+            className="px-4 pb-4 pt-1 bg-muted"
           >
             <div className="pl-10">
-              <p
-                className="text-xs font-semibold mb-2"
-                style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-heading)' }}
-              >
+              <p className="text-xs font-semibold mb-2 text-muted-foreground">
                 Acceptance Criteria
               </p>
               <ul className="space-y-1.5">
                 {criteria.map((criterion, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2
-                      className="h-3.5 w-3.5 mt-0.5 flex-shrink-0"
-                      style={{ color: 'var(--accent)' }}
-                    />
-                    <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                    <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-primary" />
+                    <span className="text-sm text-foreground">
                       {typeof criterion === 'string' ? criterion : JSON.stringify(criterion)}
                     </span>
                   </li>
@@ -238,10 +224,7 @@ function StoryGroup({
   return (
     <Card>
       <CardHeader>
-        <CardTitle
-          className="text-lg"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+        <CardTitle className="text-lg">
           {epicName}
         </CardTitle>
         <CardDescription>{stories.length} {stories.length === 1 ? 'story' : 'stories'}</CardDescription>
@@ -250,44 +233,23 @@ function StoryGroup({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr
-                className="border-b"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                <th
-                  className="text-left py-2 px-4 font-semibold hidden sm:table-cell"
-                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                >
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-4 font-semibold hidden sm:table-cell text-foreground">
                   ID
                 </th>
-                <th
-                  className="text-left py-2 px-4 font-semibold"
-                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                >
+                <th className="text-left py-2 px-4 font-semibold text-foreground">
                   Title
                 </th>
-                <th
-                  className="text-left py-2 px-4 font-semibold hidden sm:table-cell"
-                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                >
+                <th className="text-left py-2 px-4 font-semibold hidden sm:table-cell text-foreground">
                   Actor
                 </th>
-                <th
-                  className="text-left py-2 px-4 font-semibold hidden md:table-cell"
-                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                >
+                <th className="text-left py-2 px-4 font-semibold hidden md:table-cell text-foreground">
                   Priority
                 </th>
-                <th
-                  className="text-left py-2 px-4 font-semibold hidden lg:table-cell"
-                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                >
+                <th className="text-left py-2 px-4 font-semibold hidden lg:table-cell text-foreground">
                   Effort
                 </th>
-                <th
-                  className="text-left py-2 px-4 font-semibold"
-                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                >
+                <th className="text-left py-2 px-4 font-semibold text-foreground">
                   Status
                 </th>
               </tr>
@@ -318,23 +280,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <BookOpen
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No User Stories
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -382,17 +335,11 @@ export function UserStoriesSection({ project }: UserStoriesSectionProps) {
       {/* Section Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2
-            className="text-2xl font-bold mb-1"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <h2 className="text-2xl font-bold mb-1 text-foreground">
             User Stories
           </h2>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            <span
-              className="font-medium"
-              style={{ color: 'var(--text-primary)' }}
-            >
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
               {doneCount}/{stories.length}
             </span>
             {' '}completed &middot;{' '}
