@@ -6,6 +6,7 @@ import {
   getUser,
   updateTeamSubscription
 } from '@/lib/db/queries';
+import { PLAN_LIMITS, resolvePlanTier } from '@/lib/constants';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -38,9 +39,6 @@ export async function createCheckoutSession({
     customer: team.stripeCustomerId || undefined,
     client_reference_id: user.id.toString(),
     allow_promotion_codes: true,
-    subscription_data: {
-      trial_period_days: 7
-    }
   });
 
   redirect(session.url!);
@@ -122,7 +120,6 @@ export async function handleSubscriptionChange(
   const status = subscription.status;
 
   const team = await getTeamByStripeCustomerId(customerId);
-
   if (!team) {
     console.error('Team not found for Stripe customer:', customerId);
     return;
@@ -130,13 +127,28 @@ export async function handleSubscriptionChange(
 
   if (status === 'active' || status === 'trialing') {
     const plan = subscription.items.data[0]?.plan;
+    let planName: string | null = null;
+
+    if (plan?.product) {
+      if (typeof plan.product === 'string') {
+        const product = await stripe.products.retrieve(plan.product);
+        planName = product.name;
+      } else {
+        planName = (plan.product as Stripe.Product).name ?? null;
+      }
+    }
+
+    const tier = resolvePlanTier(planName);
+    const limits = PLAN_LIMITS[tier];
+
     await updateTeamSubscription(team.id, {
       stripeSubscriptionId: subscriptionId,
-      stripeProductId: plan?.product as string,
-      planName: (plan?.product as Stripe.Product).name,
+      stripeProductId: typeof plan?.product === 'string' ? plan.product : (plan?.product as Stripe.Product)?.id,
+      planName,
       subscriptionStatus: status,
       creditsUsed: 0,
-      creditLimit: 999999,
+      creditLimit: limits.creditLimit,
+      teamMemberLimit: limits.teamMemberLimit,
     });
   } else if (status === 'canceled' || status === 'unpaid') {
     await updateTeamSubscription(team.id, {
@@ -145,7 +157,8 @@ export async function handleSubscriptionChange(
       planName: null,
       subscriptionStatus: status,
       creditsUsed: 0,
-      creditLimit: 2500,
+      creditLimit: PLAN_LIMITS.free.creditLimit,
+      teamMemberLimit: PLAN_LIMITS.free.teamMemberLimit,
     });
   }
 }

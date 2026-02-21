@@ -56,10 +56,10 @@ export function ExtractedDataDisplay({
         <CardContent className="pt-6">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">💬</div>
-            <p className="text-lg mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
+            <p className="text-lg mb-2" >
               No data extracted yet
             </p>
-            <p className="text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+            <p className="text-sm text-muted-foreground">
               Chat with the AI to gather requirements. Data will be automatically extracted every 5 messages.
             </p>
           </div>
@@ -75,17 +75,17 @@ export function ExtractedDataDisplay({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle >
                 Extracted PRD Data
               </CardTitle>
-              <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+              <CardDescription >
                 {lastExtractedAt && (
                   <>Last updated: {new Date(lastExtractedAt).toLocaleString()}</>
                 )}
               </CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+              <div className="text-3xl font-bold" >
                 {completeness}%
               </div>
               <div className="text-sm text-muted-foreground">Complete</div>
@@ -133,12 +133,12 @@ export function ExtractedDataDisplay({
               <Card key={index}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+                    <CardTitle className="text-lg" >
                       {actor.name}
                     </CardTitle>
                     <Badge variant="outline">{actor.role}</Badge>
                   </div>
-                  <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+                  <CardDescription >
                     {actor.description}
                   </CardDescription>
                 </CardHeader>
@@ -173,11 +173,11 @@ export function ExtractedDataDisplay({
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="secondary">{useCase.id}</Badge>
-                        <CardTitle className="text-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+                        <CardTitle className="text-lg" >
                           {useCase.name}
                         </CardTitle>
                       </div>
-                      <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+                      <CardDescription >
                         <span className="font-semibold">Actor:</span> {useCase.actor}
                       </CardDescription>
                     </div>
@@ -235,7 +235,7 @@ export function ExtractedDataDisplay({
         <TabsContent value="boundaries" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle >
                 Internal Components
               </CardTitle>
               <CardDescription>Components within the system boundary</CardDescription>
@@ -257,7 +257,7 @@ export function ExtractedDataDisplay({
 
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle >
                 External Systems
               </CardTitle>
               <CardDescription>External services and integrations</CardDescription>
@@ -286,7 +286,7 @@ export function ExtractedDataDisplay({
             dataEntities.map((entity, index) => (
               <Card key={index}>
                 <CardHeader>
-                  <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+                  <CardTitle >
                     {entity.name}
                   </CardTitle>
                 </CardHeader>

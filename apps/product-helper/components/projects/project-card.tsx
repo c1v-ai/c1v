@@ -88,10 +88,7 @@ export function ProjectCard({ project, onDelete, onEdit }: ProjectCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <FileText className="h-5 w-5 text-accent flex-shrink-0" />
-              <h3
-                className="font-bold text-lg truncate"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
+              <h3 className="font-bold text-lg truncate">
                 {project.name}
               </h3>
             </div>
@@ -154,7 +151,6 @@ export function ProjectCard({ project, onDelete, onEdit }: ProjectCardProps) {
               "line-clamp-2", // 2 lines on mobile
               "md:line-clamp-3" // 3 lines on desktop
             )}
-            style={{ fontFamily: 'var(--font-body)' }}
           >
             {visionPreview}
           </p>

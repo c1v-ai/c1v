@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 
 function EditFormSkeleton() {
   return (
-    <div className="h-96 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+    <div className="h-96 bg-muted rounded-lg animate-pulse" />
   );
 }
 
@@ -45,16 +45,10 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
             </Link>
           </Button>
 
-          <h1
-            className="text-2xl lg:text-3xl font-bold mb-2"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">
             Edit Project
           </h1>
-          <p
-            className="text-muted-foreground"
-            style={{ fontFamily: 'var(--font-body)' }}
-          >
+          <p className="text-muted-foreground">
             Update your project details
           </p>
         </div>

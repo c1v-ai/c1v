@@ -122,11 +122,8 @@ function SchemaTableCard({ table }: { table: SchemaTable }) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Table2 className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-          <CardTitle
-            className="text-lg font-mono"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <Table2 className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg font-mono">
             {table.name}
           </CardTitle>
         </div>
@@ -140,26 +137,14 @@ function SchemaTableCard({ table }: { table: SchemaTable }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr
-                  className="border-b"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  <th
-                    className="text-left py-2 px-3 font-semibold"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 px-3 font-semibold text-foreground">
                     Column
                   </th>
-                  <th
-                    className="text-left py-2 px-3 font-semibold"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
+                  <th className="text-left py-2 px-3 font-semibold text-foreground">
                     Type
                   </th>
-                  <th
-                    className="text-left py-2 px-3 font-semibold hidden sm:table-cell"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
+                  <th className="text-left py-2 px-3 font-semibold hidden sm:table-cell text-foreground">
                     Constraints
                   </th>
                 </tr>
@@ -177,21 +162,14 @@ function SchemaTableCard({ table }: { table: SchemaTable }) {
                   return (
                     <tr
                       key={col.name + i}
-                      className="border-b last:border-b-0"
-                      style={{ borderColor: 'var(--border)' }}
+                      className="border-b border-border last:border-b-0"
                     >
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-1.5">
                           {col.primaryKey && (
-                            <Key
-                              className="h-3.5 w-3.5 flex-shrink-0"
-                              style={{ color: 'var(--accent)' }}
-                            />
+                            <Key className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
                           )}
-                          <span
-                            className="font-mono text-sm"
-                            style={{ color: 'var(--text-primary)' }}
-                          >
+                          <span className="font-mono text-sm text-foreground">
                             {col.name}
                           </span>
                         </div>
@@ -224,21 +202,17 @@ function SchemaTableCard({ table }: { table: SchemaTable }) {
         {/* Table-level relationships */}
         {table.relationships && table.relationships.length > 0 && (
           <div>
-            <h4
-              className="text-sm font-semibold mb-2"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <h4 className="text-sm font-semibold mb-2 text-foreground">
               Relationships
             </h4>
             <div className="space-y-1.5">
               {table.relationships.map((rel, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 p-2 rounded-md text-sm"
-                  style={{ backgroundColor: 'var(--bg-secondary)' }}
+                  className="flex items-center gap-2 p-2 rounded-md text-sm bg-muted"
                 >
-                  <Link2 className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
-                  <span style={{ color: 'var(--text-primary)' }}>
+                  <Link2 className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+                  <span className="text-foreground">
                     {rel.to || rel.target || 'Unknown'}
                   </span>
                   {rel.type && (
@@ -247,7 +221,7 @@ function SchemaTableCard({ table }: { table: SchemaTable }) {
                     </Badge>
                   )}
                   {rel.description && (
-                    <span style={{ color: 'var(--text-muted)' }}>
+                    <span className="text-muted-foreground">
                       -- {rel.description}
                     </span>
                   )}
@@ -266,22 +240,16 @@ function ClassDiagramCard({ mermaid }: { mermaid: string }) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <GitBranch className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-          <CardTitle
-            className="text-lg"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <GitBranch className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg">
             Class Diagram
           </CardTitle>
         </div>
         <CardDescription>Entity relationships visualized as a class diagram</CardDescription>
       </CardHeader>
       <CardContent>
-        <div
-          className="rounded-lg border p-4 overflow-x-auto"
-          style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}
-        >
-          <pre className="text-sm font-mono whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+        <div className="rounded-lg border border-border p-4 overflow-x-auto bg-muted">
+          <pre className="text-sm font-mono whitespace-pre-wrap text-foreground">
             {mermaid}
           </pre>
         </div>
@@ -295,11 +263,8 @@ function GlobalRelationshipsCard({ relationships }: { relationships: SchemaRelat
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Link2 className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-          <CardTitle
-            className="text-lg"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <Link2 className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg">
             Table Relationships
           </CardTitle>
         </div>
@@ -313,14 +278,13 @@ function GlobalRelationshipsCard({ relationships }: { relationships: SchemaRelat
             return (
               <div
                 key={i}
-                className="flex items-center gap-2 p-3 rounded-md text-sm"
-                style={{ backgroundColor: 'var(--bg-secondary)' }}
+                className="flex items-center gap-2 p-3 rounded-md text-sm bg-muted"
               >
-                <span className="font-mono font-medium" style={{ color: 'var(--text-primary)' }}>
+                <span className="font-mono font-medium text-foreground">
                   {from}
                 </span>
-                <ArrowRight className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />
-                <span className="font-mono font-medium" style={{ color: 'var(--text-primary)' }}>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-mono font-medium text-foreground">
                   {to}
                 </span>
                 {rel.type && (
@@ -351,23 +315,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Database
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Database className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Database Schema
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -410,13 +365,10 @@ export function SchemaSection({ project }: SchemaSectionProps) {
     <div className="space-y-6">
       {/* Section Header */}
       <div>
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-1 text-foreground">
           Database Schema
         </h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           Tables, columns, constraints, and relationships for your database model.
         </p>
       </div>

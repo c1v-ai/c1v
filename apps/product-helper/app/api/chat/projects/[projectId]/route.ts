@@ -116,6 +116,22 @@ export async function POST(
       );
     }
 
+    // Credit gate: Chat costs 5 credits per message
+    const creditResult = await checkAndDeductCredits(team.id, 5);
+    if (!creditResult.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'Credit limit reached',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        }),
+        {
+          status: 402,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Parse project ID
     const { projectId: projectIdStr } = await params;
     const projectId = parseInt(projectIdStr, 10);

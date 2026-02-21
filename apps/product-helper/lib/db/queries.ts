@@ -3,6 +3,7 @@ import { db } from './drizzle';
 import { activityLogs, teamMembers, teams, users } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
+import { resolvePlanTier, PLAN_LIMITS } from '@/lib/constants';
 
 export async function getUser() {
   const sessionCookie = (await cookies()).get('session');
@@ -55,6 +56,7 @@ export async function updateTeamSubscription(
     subscriptionStatus: string;
     creditsUsed?: number;
     creditLimit?: number;
+    teamMemberLimit?: number;
   }
 ) {
   await db
@@ -142,8 +144,10 @@ export async function checkAndDeductCredits(
 
   if (!team) return { allowed: false, creditsUsed: 0, creditLimit: 0 };
 
-  // Paid subscribers: always allow, track for analytics
-  if (team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing') {
+  const tier = resolvePlanTier(team.planName);
+
+  // Plus tier with active sub: unlimited — always allow, track for analytics
+  if (tier === 'plus' && (team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing')) {
     await db.update(teams).set({
       creditsUsed: sql`${teams.creditsUsed} + ${amount}`,
       updatedAt: new Date(),
@@ -151,14 +155,15 @@ export async function checkAndDeductCredits(
     return { allowed: true, creditsUsed: team.creditsUsed + amount, creditLimit: team.creditLimit };
   }
 
-  // Free tier: atomic check-and-deduct (race-safe)
+  // Free & Base: atomic check-and-deduct with 10% grace
+  const grace = PLAN_LIMITS[tier].creditGrace;
   const result = await db.update(teams).set({
     creditsUsed: sql`${teams.creditsUsed} + ${amount}`,
     updatedAt: new Date(),
   }).where(
     and(
       eq(teams.id, teamId),
-      sql`${teams.creditsUsed} + ${amount} <= ${teams.creditLimit}`
+      sql`${teams.creditsUsed} + ${amount} <= ${grace}`
     )
   ).returning({
     creditsUsed: teams.creditsUsed,

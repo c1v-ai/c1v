@@ -52,24 +52,10 @@ export function ExplorerNode({
       className={cn(
         'group flex items-center gap-2 h-8 pr-3 rounded-md text-sm cursor-pointer select-none transition-colors',
         isActive
-          ? 'font-medium'
-          : 'hover:opacity-100'
+          ? 'font-medium bg-accent/10 text-accent'
+          : 'text-muted-foreground hover:bg-muted'
       )}
-      style={{
-        paddingLeft: `${paddingLeft}px`,
-        backgroundColor: isActive ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : undefined,
-        color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-      }}
-      onMouseEnter={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = '';
-        }
-      }}
+      style={{ paddingLeft: `${paddingLeft}px` }}
     >
       {/* Chevron for expandable nodes */}
       {isExpandable ? (
@@ -85,10 +71,9 @@ export function ExplorerNode({
         >
           <ChevronRight
             className={cn(
-              'h-3.5 w-3.5 transition-transform duration-150',
+              'h-3.5 w-3.5 transition-transform duration-150 text-muted-foreground',
               isExpanded && 'rotate-90'
             )}
-            style={{ color: 'var(--text-muted)' }}
           />
         </button>
       ) : (
@@ -97,8 +82,10 @@ export function ExplorerNode({
 
       {/* Section icon */}
       <Icon
-        className="h-4 w-4 shrink-0"
-        style={{ color: isActive ? 'var(--accent)' : 'var(--text-muted)' }}
+        className={cn(
+          'h-4 w-4 shrink-0',
+          isActive ? 'text-accent' : 'text-muted-foreground'
+        )}
       />
 
       {/* Label */}
@@ -109,16 +96,7 @@ export function ExplorerNode({
         <Link
           href={addHref}
           onClick={(e) => e.stopPropagation()}
-          className="w-5 h-5 rounded flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: 'var(--text-muted)' }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-            e.currentTarget.style.color = 'var(--accent)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '';
-            e.currentTarget.style.color = 'var(--text-muted)';
-          }}
+          className="w-5 h-5 rounded flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:bg-muted hover:text-accent"
           aria-label={`Add to ${label}`}
           title={`Add to ${label}`}
         >
@@ -142,13 +120,7 @@ export function ExplorerNode({
 
       {/* Count badge */}
       {typeof count === 'number' && count > 0 && (
-        <span
-          className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium shrink-0"
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            color: 'var(--text-muted)',
-          }}
-        >
+        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium shrink-0 bg-muted text-muted-foreground">
           {count}
         </span>
       )}
@@ -156,12 +128,10 @@ export function ExplorerNode({
       {/* Data status indicator dot */}
       {typeof hasData === 'boolean' && (
         <span
-          className="w-1.5 h-1.5 rounded-full shrink-0"
-          style={{
-            backgroundColor: hasData
-              ? '#22c55e'
-              : 'color-mix(in srgb, var(--text-muted) 40%, transparent)',
-          }}
+          className={cn(
+            'w-1.5 h-1.5 rounded-full shrink-0',
+            hasData ? 'bg-green-500' : 'bg-muted-foreground/40'
+          )}
           aria-label={hasData ? 'Has data' : 'No data'}
         />
       )}

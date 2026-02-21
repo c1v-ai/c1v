@@ -12,7 +12,7 @@
 
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -188,7 +188,7 @@ function EndpointRow({ endpoint }: { endpoint: ApiEndpoint }) {
   })();
 
   return (
-    <div className="border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
+    <div className="border-b border-border last:border-b-0">
       <div
         className={cn(
           'flex items-center gap-3 py-3 px-4',
@@ -207,35 +207,29 @@ function EndpointRow({ endpoint }: { endpoint: ApiEndpoint }) {
       >
         {hasDetails ? (
           expanded ? (
-            <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+            <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
           ) : (
-            <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+            <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
           )
         ) : (
           <span className="w-4 flex-shrink-0" />
         )}
         {getMethodBadge(endpoint.method)}
-        <span className="font-mono text-sm" style={{ color: 'var(--text-primary)' }}>
+        <span className="font-mono text-sm text-foreground">
           {endpoint.path}
         </span>
         {(endpoint.description || endpoint.summary) && (
-          <span
-            className="text-sm hidden md:inline truncate"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <span className="text-sm hidden md:inline truncate text-muted-foreground">
             -- {endpoint.description || endpoint.summary}
           </span>
         )}
       </div>
 
       {expanded && hasDetails && (
-        <div
-          className="px-4 pb-4 pt-1 ml-8 space-y-3"
-          style={{ backgroundColor: 'var(--bg-secondary)' }}
-        >
+        <div className="px-4 pb-4 pt-1 ml-8 space-y-3 bg-muted">
           {/* Description */}
           {(endpoint.description || endpoint.summary) && (
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm text-muted-foreground">
               {endpoint.description || endpoint.summary}
             </p>
           )}
@@ -243,37 +237,34 @@ function EndpointRow({ endpoint }: { endpoint: ApiEndpoint }) {
           {/* Parameters */}
           {endpoint.parameters && endpoint.parameters.length > 0 && (
             <div>
-              <h5
-                className="text-xs font-semibold mb-2"
-                style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-heading)' }}
-              >
+              <h5 className="text-xs font-semibold mb-2 text-muted-foreground">
                 Parameters
               </h5>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                      <th className="text-left py-1 px-2 font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-1 px-2 font-semibold text-foreground">
                         Name
                       </th>
-                      <th className="text-left py-1 px-2 font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <th className="text-left py-1 px-2 font-semibold text-foreground">
                         In
                       </th>
-                      <th className="text-left py-1 px-2 font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <th className="text-left py-1 px-2 font-semibold text-foreground">
                         Type
                       </th>
-                      <th className="text-left py-1 px-2 font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <th className="text-left py-1 px-2 font-semibold text-foreground">
                         Required
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {endpoint.parameters.map((param, i) => (
-                      <tr key={param.name + i} className="border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
-                        <td className="py-1 px-2 font-mono" style={{ color: 'var(--text-primary)' }}>
+                      <tr key={param.name + i} className="border-b border-border last:border-b-0">
+                        <td className="py-1 px-2 font-mono text-foreground">
                           {param.name}
                         </td>
-                        <td className="py-1 px-2" style={{ color: 'var(--text-muted)' }}>
+                        <td className="py-1 px-2 text-muted-foreground">
                           {param.in || '-'}
                         </td>
                         <td className="py-1 px-2">
@@ -289,7 +280,7 @@ function EndpointRow({ endpoint }: { endpoint: ApiEndpoint }) {
                               required
                             </Badge>
                           ) : (
-                            <span style={{ color: 'var(--text-muted)' }}>optional</span>
+                            <span className="text-muted-foreground">optional</span>
                           )}
                         </td>
                       </tr>
@@ -303,10 +294,7 @@ function EndpointRow({ endpoint }: { endpoint: ApiEndpoint }) {
           {/* Responses */}
           {responsesArray.length > 0 && (
             <div>
-              <h5
-                className="text-xs font-semibold mb-2"
-                style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-heading)' }}
-              >
+              <h5 className="text-xs font-semibold mb-2 text-muted-foreground">
                 Responses
               </h5>
               <div className="space-y-1">
@@ -318,7 +306,7 @@ function EndpointRow({ endpoint }: { endpoint: ApiEndpoint }) {
                     <Badge variant="outline" className="font-mono text-xs">
                       {String(resp.status ?? '200')}
                     </Badge>
-                    <span style={{ color: 'var(--text-muted)' }}>
+                    <span className="text-muted-foreground">
                       {resp.description || 'Success'}
                     </span>
                   </div>
@@ -344,11 +332,8 @@ function EndpointGroupCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-            <CardTitle
-              className="text-lg"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
+            <Globe className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">
               {groupName}
             </CardTitle>
           </div>
@@ -380,23 +365,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Globe
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Globe className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No API Specification
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -434,13 +410,10 @@ export function ApiSpecSection({ project }: ApiSpecSectionProps) {
       <div>
         <div className="flex items-start justify-between">
           <div>
-            <h2
-              className="text-2xl font-bold mb-1"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <h2 className="text-2xl font-bold mb-1 text-foreground">
               API Specification
             </h2>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm text-muted-foreground">
               {endpoints.length} {endpoints.length === 1 ? 'endpoint' : 'endpoints'} across{' '}
               {grouped.size} {grouped.size === 1 ? 'group' : 'groups'}.
               {apiSpec.info?.version && (

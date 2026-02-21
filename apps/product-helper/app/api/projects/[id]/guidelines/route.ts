@@ -10,6 +10,7 @@ import {
   type GuidelinesContext,
 } from '@/lib/langchain/agents/guidelines-agent';
 import type { CodingGuidelines, TechStackModel } from '@/lib/db/schema/v2-types';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * GET /api/projects/[id]/guidelines
@@ -79,6 +80,19 @@ export const POST = withProjectAuth(
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    // Credit gate: Guidelines generation costs 100 credits
+    const creditResult = await checkAndDeductCredits(team.id, 100);
+    if (!creditResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Credit limit reached',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        },
+        { status: 402 }
+      );
     }
 
     // Check if tech stack exists - required for generating guidelines

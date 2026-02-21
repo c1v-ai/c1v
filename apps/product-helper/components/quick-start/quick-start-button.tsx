@@ -96,10 +96,6 @@ export function QuickStartButton({
         onClick={() => setOpen(true)}
         size="lg"
         className="gap-2"
-        style={{
-          backgroundColor: 'hsl(var(--primary))',
-          color: '#FFFFFF',
-        }}
       >
         <Zap className="h-4 w-4" />
         Quick Start
@@ -193,18 +189,14 @@ function InputPhase({
           rows={3}
           maxLength={MAX_LENGTH}
           className={cn(
-            'w-full resize-none rounded-md border p-3 outline-none',
-            'text-base', // 16px prevents iOS zoom
+            'w-full resize-none rounded-xl p-3 outline-none',
+            'text-base text-foreground', // 16px prevents iOS zoom
+            'bg-black/5 dark:bg-white/15',
+            'border border-[rgba(13,13,13,0.15)] dark:border-[rgba(255,255,255,0.2)]',
+            'placeholder:text-[rgba(13,13,13,0.6)] dark:placeholder:text-[rgba(255,255,255,0.6)]',
             'focus:ring-2 focus:ring-offset-1',
             'transition-shadow'
           )}
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            borderColor: 'var(--border)',
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-body)',
-            fontSize: '16px',
-          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && isValid) {
               e.preventDefault();
@@ -218,10 +210,10 @@ function InputPhase({
           <p
             className={cn(
               'text-xs',
+              charCount === 0 && 'text-muted-foreground',
               charCount > 0 && charCount < MIN_LENGTH && 'text-amber-500',
               charCount > MAX_LENGTH && 'text-red-500'
             )}
-            style={{ color: charCount === 0 ? 'var(--text-muted)' : undefined }}
           >
             {charCount}/{MAX_LENGTH}
             {charCount > 0 && charCount < MIN_LENGTH && (
@@ -238,10 +230,6 @@ function InputPhase({
           onClick={onGenerate}
           disabled={!isValid}
           className="gap-2"
-          style={{
-            backgroundColor: isValid ? 'hsl(var(--primary))' : undefined,
-            color: isValid ? '#FFFFFF' : undefined,
-          }}
         >
           <Zap className="h-4 w-4" />
           Generate
@@ -271,13 +259,7 @@ function GeneratingPhase({
         </DialogDescription>
       </DialogHeader>
 
-      <div
-        className="rounded-md border p-4"
-        style={{
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--border)',
-        }}
-      >
+      <div className="rounded-xl border border-border p-4 bg-card">
         <ProgressCards
           projectId={projectId}
           userInput={userInput}
@@ -307,51 +289,26 @@ function CompletePhase({
         </DialogDescription>
       </DialogHeader>
 
-      <div
-        className="rounded-md border p-4 space-y-3"
-        style={{
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--border)',
-        }}
-      >
+      <div className="rounded-xl border border-border p-4 space-y-3 bg-card">
         <div className="flex items-center gap-2">
-          <span
-            className="text-sm font-medium"
-            style={{
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-heading)',
-            }}
-          >
+          <span className="text-sm font-medium text-foreground">
             Completeness
           </span>
-          <span
-            className="ml-auto text-sm font-bold"
-            style={{ color: 'hsl(var(--chart-2))' }}
-          >
+          <span className="ml-auto text-sm font-bold text-green-600 dark:text-green-500">
             {result.completeness}%
           </span>
         </div>
 
         {result.artifactsGenerated.length > 0 && (
           <div>
-            <p
-              className="text-xs mb-1"
-              style={{
-                color: 'var(--text-muted)',
-                fontFamily: 'var(--font-heading)',
-              }}
-            >
+            <p className="text-xs mb-1 text-muted-foreground">
               Artifacts generated
             </p>
             <div className="flex flex-wrap gap-1.5">
               {result.artifactsGenerated.map((artifact) => (
                 <span
                   key={artifact}
-                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  style={{
-                    backgroundColor: 'hsl(var(--primary) / 0.1)',
-                    color: 'hsl(var(--primary))',
-                  }}
+                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary"
                 >
                   {artifact}
                 </span>
@@ -365,10 +322,6 @@ function CompletePhase({
         <Button
           onClick={onViewPRD}
           className="gap-2"
-          style={{
-            backgroundColor: 'hsl(var(--primary))',
-            color: '#FFFFFF',
-          }}
         >
           View PRD
           <ArrowRight className="h-4 w-4" />
@@ -441,17 +394,8 @@ function ErrorPhase({
         </DialogDescription>
       </DialogHeader>
 
-      <div
-        className="rounded-md border p-4"
-        style={{
-          backgroundColor: 'hsl(var(--destructive) / 0.05)',
-          borderColor: 'hsl(var(--destructive) / 0.2)',
-        }}
-      >
-        <p
-          className="text-sm"
-          style={{ color: 'hsl(var(--destructive))' }}
-        >
+      <div className="rounded-xl border border-destructive/20 p-4 bg-destructive/5">
+        <p className="text-sm text-destructive">
           {errorMessage}
         </p>
       </div>

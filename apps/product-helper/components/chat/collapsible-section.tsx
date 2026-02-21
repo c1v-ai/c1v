@@ -58,38 +58,24 @@ export function CollapsibleSection({
             'group flex w-full items-center gap-2 rounded-md px-2 py-2 text-left',
             'transition-colors duration-150',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-            'hover:bg-[var(--bg-secondary)]'
+            'hover:bg-muted text-foreground'
           )}
-          style={{
-            color: 'var(--text-primary)',
-          }}
           aria-expanded={open}
         >
           {/* Icon */}
           <Icon
-            className="h-4 w-4 flex-shrink-0"
-            style={{ color: 'var(--text-muted)' }}
+            className="h-4 w-4 flex-shrink-0 text-muted-foreground"
             aria-hidden="true"
           />
 
           {/* Title */}
-          <span
-            className="flex-1 text-sm font-medium"
-            style={{ color: 'var(--text-primary)' }}
-          >
+          <span className="flex-1 text-sm font-medium text-foreground">
             {title}
           </span>
 
           {/* Count Badge */}
           {typeof count === 'number' && (
-            <span
-              className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border)',
-              }}
-            >
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium bg-muted text-muted-foreground border border-border">
               {count}
             </span>
           )}
@@ -97,10 +83,9 @@ export function CollapsibleSection({
           {/* Chevron */}
           <ChevronDown
             className={cn(
-              'h-4 w-4 flex-shrink-0 transition-transform duration-200',
+              'h-4 w-4 flex-shrink-0 transition-transform duration-200 text-muted-foreground',
               'group-data-[state=open]:rotate-180'
             )}
-            style={{ color: 'var(--text-muted)' }}
             aria-hidden="true"
           />
         </button>

@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 import { updateAccount } from '@/app/(login)/actions';
-import { User } from '@/lib/db/schema';
+import { customerPortalAction } from '@/lib/payments/actions';
+import { User, TeamDataWithMembers } from '@/lib/db/schema';
 import useSWR from 'swr';
 import { Suspense } from 'react';
+import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -61,6 +63,67 @@ function AccountForm({
   );
 }
 
+function UsagePlanCard() {
+  const { data: team } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
+
+  if (!team) return null;
+
+  const isPaid = team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing';
+  const usagePercent = team.creditLimit > 0
+    ? Math.min(100, (team.creditsUsed / team.creditLimit) * 100)
+    : 0;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Zap className="h-5 w-5" />
+          Usage & Plan
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-muted-foreground">Plan</Label>
+          <span className="text-sm font-medium">
+            {isPaid ? (team.planName || 'Pro') : 'Free'}
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-muted-foreground">Credits used</Label>
+            <span className="text-sm font-medium">
+              {isPaid
+                ? 'Unlimited'
+                : `${team.creditsUsed.toLocaleString()} / ${team.creditLimit.toLocaleString()}`}
+            </span>
+          </div>
+          {!isPaid && (
+            <div className="w-full h-2 rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-orange-500 transition-all"
+                style={{ width: `${usagePercent}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        {isPaid ? (
+          <form action={customerPortalAction}>
+            <Button type="submit" variant="outline" className="w-full">
+              Manage Subscription
+            </Button>
+          </form>
+        ) : (
+          <Button asChild className="w-full">
+            <Link href="/pricing">Upgrade</Link>
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function AccountFormWithData({ state }: { state: ActionState }) {
   const { data: user } = useSWR<User>('/api/user', fetcher);
   return (
@@ -79,8 +142,8 @@ export default function GeneralPage() {
   );
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium text-gray-900 mb-6">
+    <section className="flex-1 p-4 lg:p-8 space-y-6">
+      <h1 className="text-lg lg:text-2xl font-medium text-foreground mb-6">
         General Settings
       </h1>
 
@@ -94,14 +157,13 @@ export default function GeneralPage() {
               <AccountFormWithData state={state} />
             </Suspense>
             {state.error && (
-              <p className="text-red-500 text-sm">{state.error}</p>
+              <p className="text-destructive text-sm">{state.error}</p>
             )}
             {state.success && (
-              <p className="text-green-500 text-sm">{state.success}</p>
+              <p className="text-green-600 dark:text-green-400 text-sm">{state.success}</p>
             )}
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white"
               disabled={isPending}
             >
               {isPending ? (
@@ -116,6 +178,10 @@ export default function GeneralPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Suspense fallback={null}>
+        <UsagePlanCard />
+      </Suspense>
     </section>
   );
 }

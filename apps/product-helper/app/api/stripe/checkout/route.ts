@@ -6,6 +6,7 @@ import { getUser } from '@/lib/db/queries';
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/payments/stripe';
 import Stripe from 'stripe';
+import { PLAN_LIMITS, resolvePlanTier } from '@/lib/constants';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -83,14 +84,21 @@ export async function GET(request: NextRequest) {
       throw new Error('User is not associated with any team.');
     }
 
+    const productName = (plan.product as Stripe.Product).name;
+    const tier = resolvePlanTier(productName);
+    const limits = PLAN_LIMITS[tier];
+
     await db
       .update(teams)
       .set({
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
         stripeProductId: productId,
-        planName: (plan.product as Stripe.Product).name,
+        planName: productName,
         subscriptionStatus: subscription.status,
+        creditLimit: limits.creditLimit,
+        teamMemberLimit: limits.teamMemberLimit,
+        creditsUsed: 0,
         updatedAt: new Date(),
       })
       .where(eq(teams.id, userTeam[0].teamId));

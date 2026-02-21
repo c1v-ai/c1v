@@ -17,22 +17,16 @@ export function ProjectHeaderCompact() {
   const { projectName, projectStatus } = useProjectChat();
 
   return (
-    <div
-      className="flex items-center gap-3 px-4 py-2 border-b flex-shrink-0"
-      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-primary)' }}
-    >
+    <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-background flex-shrink-0">
       <Link
         href="/home"
-        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-[var(--bg-secondary)] transition-colors"
+        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors"
         aria-label="Back to projects"
       >
-        <ArrowLeft className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+        <ArrowLeft className="h-4 w-4 text-muted-foreground" />
       </Link>
 
-      <h1
-        className="text-sm font-semibold truncate"
-        style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-      >
+      <h1 className="text-sm font-semibold truncate text-foreground">
         {projectName}
       </h1>
       {projectStatus && (

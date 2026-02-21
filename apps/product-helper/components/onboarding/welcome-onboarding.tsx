@@ -87,22 +87,10 @@ export function WelcomeOnboarding({ sidebar }: WelcomeOnboardingProps) {
         <div className="max-w-3xl mx-auto px-4 py-8 lg:py-12">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1
-              className="text-2xl lg:text-3xl font-bold mb-3"
-              style={{
-                fontFamily: 'var(--font-heading)',
-                color: 'var(--text-primary)'
-              }}
-            >
+            <h1 className="text-2xl lg:text-3xl font-bold mb-3 text-foreground">
               Start your product requirements
             </h1>
-            <p
-              className="text-base max-w-xl mx-auto"
-              style={{
-                fontFamily: 'var(--font-body)',
-                color: 'var(--text-muted)'
-              }}
-            >
+            <p className="text-base max-w-xl mx-auto text-muted-foreground">
               Define the structure, decisions, and tradeoffs before you write code.
             </p>
           </div>

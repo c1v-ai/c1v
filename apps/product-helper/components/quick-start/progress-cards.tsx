@@ -213,24 +213,17 @@ export function ProgressCards({
             <p
               className={cn(
                 'text-sm font-medium leading-tight',
-                step.status === 'pending' && 'opacity-50'
+                step.status === 'pending' && 'opacity-50',
+                step.status === 'error' ? 'text-destructive' : 'text-foreground'
               )}
-              style={{
-                color:
-                  step.status === 'error'
-                    ? 'hsl(var(--destructive))'
-                    : 'var(--text-primary)',
-                fontFamily: 'var(--font-heading)',
-              }}
             >
               {step.title}
             </p>
             <p
               className={cn(
-                'text-xs leading-snug mt-0.5',
+                'text-xs leading-snug mt-0.5 text-muted-foreground',
                 step.status === 'pending' && 'opacity-40'
               )}
-              style={{ color: 'var(--text-muted)' }}
             >
               {step.message || step.description}
             </p>
@@ -252,24 +245,21 @@ function StepIcon({ status }: { status: StepStatus }) {
     case 'running':
       return (
         <Loader2
-          className={cn(baseClass, 'h-4 w-4 animate-spin')}
-          style={{ color: 'hsl(var(--primary))' }}
+          className={cn(baseClass, 'h-4 w-4 animate-spin text-primary')}
           aria-hidden="true"
         />
       );
     case 'complete':
       return (
         <CheckCircle
-          className={cn(baseClass, 'h-4 w-4')}
-          style={{ color: 'hsl(var(--chart-2))' }}
+          className={cn(baseClass, 'h-4 w-4 text-green-600 dark:text-green-500')}
           aria-hidden="true"
         />
       );
     case 'error':
       return (
         <AlertCircle
-          className={cn(baseClass, 'h-4 w-4')}
-          style={{ color: 'hsl(var(--destructive))' }}
+          className={cn(baseClass, 'h-4 w-4 text-destructive')}
           aria-hidden="true"
         />
       );
@@ -277,8 +267,7 @@ function StepIcon({ status }: { status: StepStatus }) {
     default:
       return (
         <Circle
-          className={cn(baseClass, 'h-4 w-4 opacity-30')}
-          style={{ color: 'var(--text-muted)' }}
+          className={cn(baseClass, 'h-4 w-4 opacity-30 text-muted-foreground')}
           aria-hidden="true"
         />
       );

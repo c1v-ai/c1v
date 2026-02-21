@@ -21,37 +21,24 @@ export function ProjectsSidebar({ projects }: ProjectsSidebarProps) {
   };
 
   return (
-    <aside
-      className="w-64 border-r flex-shrink-0 h-full overflow-y-auto hidden lg:block"
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderColor: 'var(--border)'
-      }}
-    >
+    <aside className="w-64 border-r flex-shrink-0 h-full overflow-y-auto hidden lg:block bg-background">
       <div className="p-4">
         {/* MY PROJECTS Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--text-muted)' }}
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               My Projects
             </h3>
             <Link
               href="/home"
-              className="text-xs hover:underline"
-              style={{ color: 'var(--accent)' }}
+              className="text-xs hover:underline text-accent"
             >
               View all
             </Link>
           </div>
 
           {projects.length === 0 ? (
-            <p
-              className="text-sm"
-              style={{ color: 'var(--text-muted)' }}
-            >
+            <p className="text-sm text-muted-foreground">
               No projects yet
             </p>
           ) : (
@@ -60,18 +47,9 @@ export function ProjectsSidebar({ projects }: ProjectsSidebarProps) {
                 <li key={project.id}>
                   <Link
                     href={`/projects/${project.id}/chat`}
-                    className="flex items-center gap-2 px-2 py-2 rounded-md text-sm transition-colors hover:bg-opacity-10"
-                    style={{
-                      color: 'var(--text-primary)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
+                    className="flex items-center gap-2 px-2 py-2 rounded-md text-sm text-foreground transition-colors hover:bg-muted"
                   >
-                    <FolderOpen className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                    <FolderOpen className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate">{truncateName(project.name)}</span>
                   </Link>
                 </li>
@@ -83,24 +61,17 @@ export function ProjectsSidebar({ projects }: ProjectsSidebarProps) {
         {/* COLLABORATING ON Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--text-muted)' }}
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Collaborating On
             </h3>
             <Link
               href="/home"
-              className="text-xs hover:underline"
-              style={{ color: 'var(--accent)' }}
+              className="text-xs hover:underline text-accent"
             >
               View all
             </Link>
           </div>
-          <p
-            className="text-sm"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm text-muted-foreground">
             No shared projects
           </p>
         </div>

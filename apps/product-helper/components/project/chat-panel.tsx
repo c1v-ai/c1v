@@ -14,23 +14,14 @@ function ProjectEmptyState({ projectName }: { projectName: string }) {
         🤖
       </div>
       <div className="max-w-md">
-        <h2
-          className="text-2xl font-bold mb-3"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-3">
           Welcome to {projectName}
         </h2>
-        <p
-          className="text-base leading-relaxed mb-4"
-          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}
-        >
+        <p className="text-base leading-relaxed mb-4 text-muted-foreground">
           I'll help you define requirements for this project through a conversational approach.
           Let's start by discussing your vision and identifying the key actors and use cases.
         </p>
-        <div
-          className="text-left text-sm space-y-2"
-          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}
-        >
+        <div className="text-left text-sm space-y-2 text-muted-foreground">
           <p>I'll guide you through:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>Identifying actors (users, systems, external entities)</li>
@@ -40,10 +31,7 @@ function ProjectEmptyState({ projectName }: { projectName: string }) {
           </ul>
         </div>
       </div>
-      <p
-        className="text-sm"
-        style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}
-      >
+      <p className="text-sm text-muted-foreground">
         Start by sharing your thoughts or answering my questions
       </p>
     </div>
@@ -73,20 +61,19 @@ export function ChatPanel({ className }: { className?: string }) {
   if (chatPanelCollapsed) {
     return (
       <aside
-        className={cn('flex-col items-center w-12 border-l flex-shrink-0 pt-3', className)}
-        style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
+        className={cn('flex-col items-center w-12 border-l border-border flex-shrink-0 pt-3 bg-background', className)}
       >
         <button
           type="button"
           onClick={toggleChatPanel}
           aria-label="Expand chat panel"
-          className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-[var(--bg-secondary)] transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted transition-colors"
         >
-          <PanelRightOpen className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+          <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
         </button>
         <div className="mt-2 flex flex-col items-center gap-1">
-          <MessageSquare className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">
             {messages.length}
           </span>
         </div>
@@ -96,31 +83,17 @@ export function ChatPanel({ className }: { className?: string }) {
 
   return (
     <aside
-      className={cn('flex-col w-[400px] border-l flex-shrink-0 h-full', className)}
-      style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
+      className={cn('flex-col w-[400px] border-l border-border flex-shrink-0 h-full bg-background', className)}
     >
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-4 py-2 border-b flex-shrink-0"
-        style={{ borderColor: 'var(--border)' }}
-      >
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-          <span
-            className="text-sm font-semibold"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold text-foreground">
             Chat
           </span>
           {messages.length > 0 && (
-            <span
-              className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border)',
-              }}
-            >
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium bg-muted text-muted-foreground border border-border">
               {messages.length}
             </span>
           )}
@@ -129,9 +102,9 @@ export function ChatPanel({ className }: { className?: string }) {
           type="button"
           onClick={toggleChatPanel}
           aria-label="Collapse chat panel"
-          className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-[var(--bg-secondary)] transition-colors"
+          className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-muted transition-colors"
         >
-          <PanelRightClose className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+          <PanelRightClose className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 

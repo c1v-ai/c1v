@@ -17,11 +17,7 @@ export function ExplorerSidebar({ projectId, data }: ExplorerSidebarProps) {
 
   return (
     <aside
-      className="hidden md:flex flex-col w-64 shrink-0 h-full border-r"
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderColor: 'var(--border)',
-      }}
+      className="hidden md:flex flex-col w-64 shrink-0 h-full border-r bg-background"
       aria-label="Project explorer"
     >
       <ExplorerHeader

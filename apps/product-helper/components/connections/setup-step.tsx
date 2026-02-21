@@ -23,7 +23,6 @@ export function SetupStep({ stepNumber, title, subtitle, children, className }: 
         <div className="flex-1 min-w-0">
           <h2
             className="text-lg font-semibold"
-            style={{ fontFamily: 'var(--font-heading)' }}
           >
             Step {stepNumber}: {title}
           </h2>

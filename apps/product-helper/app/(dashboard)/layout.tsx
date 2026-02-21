@@ -3,18 +3,19 @@
 import Link from 'next/link';
 import { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut, MessageSquare, FolderOpen } from 'lucide-react';
+import { CircleIcon, Home, LogOut, MessageSquare, FolderOpen, Zap } from 'lucide-react';
 import { ModeToggle } from '@/components/theme/mode-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { signOut } from '@/app/(login)/actions';
 import { useRouter } from 'next/navigation';
-import { User } from '@/lib/db/schema';
+import { User, TeamDataWithMembers } from '@/lib/db/schema';
 import useSWR, { mutate } from 'swr';
 import { BottomNav } from '@/components/navigation/bottom-nav';
 import { MobileMenu } from '@/components/navigation/mobile-menu';
@@ -43,8 +44,7 @@ function UserMenu() {
       <>
         <Link
           href="/pricing"
-          className="text-sm font-medium"
-          style={{ color: 'var(--text-primary)' }}
+          className="text-sm font-medium text-foreground"
         >
           Pricing
         </Link>
@@ -87,6 +87,7 @@ function UserMenu() {
             <span>Chat</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <form action={handleSignOut} className="w-full">
           <button type="submit" className="flex w-full">
             <DropdownMenuItem className="w-full flex-1 cursor-pointer">
@@ -100,18 +101,48 @@ function UserMenu() {
   );
 }
 
+function CreditsIndicator() {
+  const { data: team } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
+
+  if (!team) return null;
+
+  const isPaid = team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing';
+
+  return (
+    <Link
+      href={isPaid ? '/dashboard' : '/pricing'}
+      className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <Zap className="h-3.5 w-3.5" />
+      <span>
+        {isPaid
+          ? `${team.planName || 'Pro'} — Unlimited`
+          : `${team.creditsUsed.toLocaleString()} / ${team.creditLimit.toLocaleString()}`}
+      </span>
+      {!isPaid && (
+        <div className="w-12 h-[3px] rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-orange-500"
+            style={{ width: `${Math.min(100, (team.creditsUsed / team.creditLimit) * 100)}%` }}
+          />
+        </div>
+      )}
+    </Link>
+  );
+}
+
 function Header() {
   const { data: user } = useSWR<User>('/api/user', fetcher);
 
   return (
-    <header className="border-b" style={{ borderColor: 'var(--border)' }}>
+    <header className="border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         {/* Mobile menu button - only visible on mobile */}
         <div className="flex items-center gap-2">
           {user && <MobileMenu />}
           <Link href="/" className="flex items-center">
-            <CircleIcon className="h-6 w-6 text-orange-500" />
-            <span className="ml-2 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Product Helper</span>
+            <CircleIcon className="h-6 w-6 text-primary" />
+            <span className="ml-2 text-xl font-semibold text-foreground">Product Helper</span>
           </Link>
         </div>
 
@@ -120,8 +151,7 @@ function Header() {
           <nav className="hidden md:flex items-center space-x-6">
             <Link
               href="/home"
-              className="text-sm font-medium flex items-center gap-2 group"
-              style={{ color: 'var(--text-primary)' }}
+              className="text-sm font-medium flex items-center gap-2 group text-foreground"
             >
               <Home className="h-4 w-4" />
               <span>Home</span>
@@ -135,16 +165,14 @@ function Header() {
             </Link>
             <Link
               href="/home"
-              className="text-sm font-medium flex items-center gap-2"
-              style={{ color: 'var(--text-primary)' }}
+              className="text-sm font-medium flex items-center gap-2 text-foreground"
             >
               <FolderOpen className="h-4 w-4" />
               Projects
             </Link>
             <Link
               href="/chat"
-              className="text-sm font-medium flex items-center gap-2"
-              style={{ color: 'var(--text-primary)' }}
+              className="text-sm font-medium flex items-center gap-2 text-foreground"
             >
               <MessageSquare className="h-4 w-4" />
               Chat
@@ -153,6 +181,11 @@ function Header() {
         )}
 
         <div className="flex items-center space-x-4">
+          {user && (
+            <Suspense fallback={null}>
+              <CreditsIndicator />
+            </Suspense>
+          )}
           <ModeToggle />
           <Suspense fallback={<div className="h-9" />}>
             <UserMenu />
@@ -165,7 +198,7 @@ function Header() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <section className="flex flex-col h-screen">
+    <section className="flex flex-col h-screen bg-background">
       <DashboardShortcuts />
       <Header />
       {/* Main content area - pb-16 on mobile for fixed bottom nav (64px) */}

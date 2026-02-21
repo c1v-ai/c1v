@@ -57,10 +57,10 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
       {/* Project Information Section */}
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+          <CardTitle>
             Project Information
           </CardTitle>
-          <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+          <CardDescription>
             Update your project details and status
           </CardDescription>
         </CardHeader>
@@ -71,7 +71,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
             {/* Project Name */}
             <div className="space-y-2">
               <Label htmlFor="name">
-                Project Name <span className="text-red-500">*</span>
+                Project Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
@@ -82,14 +82,13 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
                 required
                 maxLength={255}
                 disabled={isUpdating}
-                style={{ fontFamily: 'var(--font-body)' }}
-              />
+                              />
             </div>
 
             {/* Vision Statement */}
             <div className="space-y-2">
               <Label htmlFor="vision">
-                Vision Statement <span className="text-red-500">*</span>
+                Vision Statement <span className="text-destructive">*</span>
               </Label>
               <textarea
                 id="vision"
@@ -102,8 +101,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
                 disabled={isUpdating}
                 rows={6}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                style={{ fontFamily: 'var(--font-body)' }}
-              />
+                              />
               <p className="text-xs text-muted-foreground">
                 Minimum 10 characters, maximum 5000 characters
               </p>
@@ -124,8 +122,8 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
                     key={option.value}
                     className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       selectedStatus === option.value
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/5'
-                        : 'border-[var(--border)] hover:border-[var(--accent)]/50'
+                        ? 'border-accent bg-accent/5'
+                        : 'border-border hover:border-accent/50'
                     }`}
                     onClick={() => !isUpdating && setSelectedStatus(option.value)}
                   >
@@ -138,8 +136,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
                       <Label
                         htmlFor={`status-${option.value}`}
                         className="cursor-pointer font-medium"
-                        style={{ fontFamily: 'var(--font-heading)' }}
-                      >
+                                              >
                         {option.label}
                       </Label>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -179,11 +176,6 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
               <Button
                 type="submit"
                 disabled={isUpdating}
-                style={{
-                  backgroundColor: 'var(--accent)',
-                  color: '#FFFFFF',
-                }}
-                className="hover:opacity-90"
               >
                 {isUpdating ? (
                   <>
@@ -209,26 +201,21 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
             <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
             <CardTitle
               className="text-red-600 dark:text-red-400"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
+                          >
               Danger Zone
             </CardTitle>
           </div>
-          <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+          <CardDescription>
             Irreversible and destructive actions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Archive Project */}
-          <div
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border"
-            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}
-          >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-border bg-muted">
             <div className="flex-1">
               <h4
                 className="font-medium mb-1"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
+                              >
                 Archive Project
               </h4>
               <p className="text-sm text-muted-foreground">
@@ -275,15 +262,11 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
           </div>
 
           {/* Delete Project */}
-          <div
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-red-200 dark:border-red-800"
-            style={{ backgroundColor: 'rgba(239, 68, 68, 0.05)' }}
-          >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-destructive/50 bg-destructive/5">
             <div className="flex-1">
               <h4
                 className="font-medium mb-1 text-red-700 dark:text-red-400"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
+                              >
                 Delete Project
               </h4>
               <p className="text-sm text-muted-foreground">

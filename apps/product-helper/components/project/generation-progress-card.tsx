@@ -129,33 +129,24 @@ export function GenerationProgressCard() {
       )}
       style={{
         backgroundColor: isComplete
-          ? 'color-mix(in srgb, var(--accent) 8%, var(--bg-primary))'
-          : 'color-mix(in srgb, var(--accent) 12%, var(--bg-primary))',
+          ? 'color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--background)))'
+          : 'color-mix(in srgb, hsl(var(--primary)) 12%, hsl(var(--background)))',
         borderColor: isComplete
-          ? 'color-mix(in srgb, var(--accent) 20%, var(--border))'
-          : 'color-mix(in srgb, var(--accent) 30%, var(--border))',
+          ? 'color-mix(in srgb, hsl(var(--primary)) 20%, hsl(var(--border)))'
+          : 'color-mix(in srgb, hsl(var(--primary)) 30%, hsl(var(--border)))',
       }}
     >
       {/* Top row: icon + title + badge */}
       <div className="flex items-center gap-2.5">
         {isComplete ? (
-          <CheckCircle2
-            className="h-5 w-5 flex-shrink-0"
-            style={{ color: 'var(--accent)' }}
-          />
+          <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-primary" />
         ) : (
-          <Loader2
-            className="h-5 w-5 flex-shrink-0 animate-spin"
-            style={{ color: 'var(--accent)' }}
-          />
+          <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-primary" />
         )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span
-              className="text-sm font-semibold truncate"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <span className="text-sm font-semibold truncate text-foreground">
               {title}
             </span>
             <span
@@ -174,21 +165,18 @@ export function GenerationProgressCard() {
 
       {/* Stage + time estimate */}
       <div className="mt-2 flex items-baseline justify-between text-xs">
-        <span style={{ color: 'var(--text-muted)' }}>
+        <span className="text-muted-foreground">
           Stage {stage.index}/{stage.total}: {stage.label}
         </span>
         {!isComplete && (
-          <span
-            className="flex items-center gap-1 tabular-nums shrink-0"
-            style={{ color: 'var(--accent)' }}
-          >
+          <span className="flex items-center gap-1 tabular-nums shrink-0 text-primary">
             <Sparkles className="h-3 w-3" />
             {formatElapsed(elapsed)}
           </span>
         )}
       </div>
       {!isComplete && (
-        <p className="mt-0.5 text-right" style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+        <p className="mt-0.5 text-right text-muted-foreground text-[10px]">
           may take 3 - 5 min
         </p>
       )}
@@ -196,17 +184,14 @@ export function GenerationProgressCard() {
       {/* Progress bar */}
       <div
         className="mt-2.5 h-1.5 w-full rounded-full overflow-hidden"
-        style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 15%, var(--bg-secondary))' }}
+        style={{ backgroundColor: 'color-mix(in srgb, hsl(var(--primary)) 15%, hsl(var(--muted)))' }}
       >
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500 ease-out',
             !isComplete && 'animate-pulse'
           )}
-          style={{
-            width: `${stage.progress}%`,
-            backgroundColor: 'var(--accent)',
-          }}
+          style={{ width: `${stage.progress}%` }}
         />
       </div>
 

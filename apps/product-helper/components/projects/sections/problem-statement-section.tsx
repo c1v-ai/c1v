@@ -56,23 +56,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <AlertTriangle
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <AlertTriangle className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Problem Statement
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -100,13 +91,10 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
     <div className="space-y-6">
       {/* Section Header */}
       <div>
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-1 text-foreground">
           Problem Statement
         </h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           The core problem this project aims to solve.
         </p>
       </div>
@@ -114,10 +102,10 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
       {/* Summary */}
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>Summary</CardTitle>
+          <CardTitle>Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-sm leading-relaxed text-foreground">
             {data.summary}
           </p>
         </CardContent>
@@ -127,11 +115,11 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
       {data.context && (
         <Card>
           <CardHeader>
-            <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>Context</CardTitle>
+            <CardTitle>Context</CardTitle>
             <CardDescription>Background and context of the problem</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+            <p className="text-sm leading-relaxed text-foreground">
               {data.context}
             </p>
           </CardContent>
@@ -142,11 +130,11 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
       {data.impact && (
         <Card>
           <CardHeader>
-            <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>Business Impact</CardTitle>
+            <CardTitle>Business Impact</CardTitle>
             <CardDescription>What happens if this problem is not solved</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+            <p className="text-sm leading-relaxed text-foreground">
               {data.impact}
             </p>
           </CardContent>
@@ -157,7 +145,7 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
       {data.goals && data.goals.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>Solution Goals</CardTitle>
+            <CardTitle>Solution Goals</CardTitle>
             <CardDescription>What the solution should achieve</CardDescription>
           </CardHeader>
           <CardContent>
@@ -168,7 +156,7 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
                   variant="secondary"
                   className="flex items-center gap-1.5 px-3 py-1.5"
                 >
-                  <Target className="h-3 w-3" style={{ color: 'var(--accent)' }} />
+                  <Target className="h-3 w-3 text-primary" />
                   <span className="text-sm">{goal}</span>
                 </Badge>
               ))}

@@ -10,8 +10,7 @@ function DiagramsSkeleton() {
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-96 rounded-lg animate-pulse"
-          style={{ backgroundColor: 'var(--bg-secondary)' }}
+          className="h-96 rounded-lg animate-pulse bg-muted"
         />
       ))}
     </div>

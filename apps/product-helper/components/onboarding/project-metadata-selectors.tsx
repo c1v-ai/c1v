@@ -87,10 +87,7 @@ interface ChipGroupProps {
 function ChipGroup({ label, options, selected, onSelect, disabled = false }: ChipGroupProps) {
   return (
     <div>
-      <p
-        className="text-xs font-medium mb-2"
-        style={{ color: 'var(--text-muted)' }}
-      >
+      <p className="text-xs font-medium mb-2 text-muted-foreground">
         {label}
       </p>
       <div className="flex flex-wrap gap-1.5">
@@ -104,33 +101,17 @@ function ChipGroup({ label, options, selected, onSelect, disabled = false }: Chi
               type="button"
               onClick={() => onSelect(isSelected ? '' : option.value)}
               disabled={disabled}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-primary)',
-                borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
-                color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
-              }}
-              onMouseEnter={(e) => {
-                if (!disabled && !isSelected) {
-                  e.currentTarget.style.borderColor = 'var(--accent)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
-                }
-              }}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                isSelected
+                  ? 'bg-accent text-accent-foreground border-accent'
+                  : 'bg-background text-muted-foreground border-border hover:border-accent hover:bg-card'
+              }`}
               aria-pressed={isSelected}
             >
               <Icon className="h-3.5 w-3.5 flex-shrink-0" />
               <span>{option.label}</span>
               {option.detail && (
-                <span
-                  className="opacity-70"
-                  style={{ fontSize: '0.65rem' }}
-                >
+                <span className="opacity-70 text-[0.65rem]">
                   {option.detail}
                 </span>
               )}
@@ -173,41 +154,34 @@ export function ProjectMetadataSelectors({
   const selectionCount = [projectType, projectStage, userRole, budget].filter(Boolean).length;
 
   return (
-    <div
-      className="rounded-xl border overflow-hidden"
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderColor: 'var(--border)',
-      }}
-    >
+    <div className="rounded-xl border overflow-hidden bg-background">
       {/* Toggle Header */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors"
-        style={{ color: 'var(--text-secondary)' }}
+        className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors text-muted-foreground"
         disabled={disabled}
         aria-expanded={isExpanded}
         aria-controls="metadata-selectors-content"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+          <span className="text-sm font-medium text-foreground">
             Project details
           </span>
           <span
-            className="text-xs px-1.5 py-0.5 rounded-full"
-            style={{
-              backgroundColor: hasSelections ? 'var(--accent)' : 'var(--bg-secondary)',
-              color: hasSelections ? '#FFFFFF' : 'var(--text-muted)',
-            }}
+            className={`text-xs px-1.5 py-0.5 rounded-full ${
+              hasSelections
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-muted text-muted-foreground'
+            }`}
           >
             {hasSelections ? `${selectionCount}/4` : 'optional'}
           </span>
         </div>
         {isExpanded ? (
-          <ChevronUp className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         )}
       </button>
 
@@ -216,7 +190,6 @@ export function ProjectMetadataSelectors({
         <div
           id="metadata-selectors-content"
           className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t"
-          style={{ borderColor: 'var(--border)' }}
         >
           <div className="pt-4">
             <ChipGroup

@@ -5,6 +5,7 @@ import { db } from '@/lib/db/drizzle';
 import { projects, userStories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { generateUserStories, prepareStoriesForInsert, type UserStoriesContext } from '@/lib/langchain/agents/user-stories-agent';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * GET /api/projects/[id]/stories

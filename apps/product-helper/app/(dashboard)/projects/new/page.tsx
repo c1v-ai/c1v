@@ -15,16 +15,10 @@ export default function NewProjectPage() {
             </Link>
           </Button>
 
-          <h1
-            className="text-2xl lg:text-3xl font-bold mb-2"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">
             Create New Project
           </h1>
-          <p
-            className="text-muted-foreground"
-            style={{ fontFamily: 'var(--font-body)' }}
-          >
+          <p className="text-muted-foreground">
             Start a new PRD project by providing a name and vision statement
           </p>
         </div>

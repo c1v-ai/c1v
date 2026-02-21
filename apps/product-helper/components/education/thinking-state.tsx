@@ -39,38 +39,27 @@ export function ThinkingState({ messages, className }: ThinkingStateProps) {
   return (
     <div
       className={cn(
-        'flex items-start gap-3 rounded-lg border px-4 py-3',
+        'flex items-start gap-3 rounded-lg border px-4 py-3 bg-card',
         className,
       )}
-      style={{
-        backgroundColor: 'var(--bg-secondary)',
-        borderColor: 'var(--border)',
-      }}
       role="status"
       aria-live="polite"
       aria-label="AI is processing"
     >
       {/* Pulsing dot indicator */}
       <span
-        className="mt-1.5 block h-2.5 w-2.5 flex-shrink-0 rounded-full animate-pulse"
-        style={{ backgroundColor: 'var(--accent)' }}
+        className="mt-1.5 block h-2.5 w-2.5 flex-shrink-0 rounded-full animate-pulse bg-accent"
         aria-hidden="true"
       />
 
       <div className="min-w-0 flex-1">
         {/* Headline */}
-        <p
-          className="text-sm font-medium leading-snug"
-          style={{ color: 'var(--text-primary)' }}
-        >
+        <p className="text-sm font-medium leading-snug text-foreground">
           {currentMessage.headline}
         </p>
 
         {/* Educational tip */}
-        <p
-          className="mt-1 text-xs leading-relaxed"
-          style={{ color: 'var(--text-secondary, var(--muted-foreground))' }}
-        >
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           {currentMessage.tip}
         </p>
       </div>

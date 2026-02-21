@@ -10,7 +10,7 @@
  */
 
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -141,11 +141,8 @@ function TechCategoryCard({
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Icon className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-          <CardTitle
-            className="text-lg"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <Icon className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg">
             {formatCategoryName(category)}
           </CardTitle>
         </div>
@@ -159,28 +156,21 @@ function TechCategoryCard({
             return (
               <div
                 key={techName + index}
-                className="rounded-lg border p-4"
-                style={{ borderColor: 'var(--border)' }}
+                className="rounded-lg border border-border p-4"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <h5
-                    className="font-semibold"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                  <h5 className="font-semibold text-foreground">
                     {techName}
                   </h5>
                 </div>
                 {reason && (
-                  <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
+                  <p className="text-sm mb-3 text-muted-foreground">
                     {reason}
                   </p>
                 )}
                 {choice.alternatives && choice.alternatives.length > 0 && (
                   <div>
-                    <span
-                      className="text-xs font-semibold"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
+                    <span className="text-xs font-semibold text-muted-foreground">
                       Alternatives:
                     </span>
                     <div className="flex flex-wrap gap-1.5 mt-1">
@@ -215,23 +205,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Layers
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Layers className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Tech Stack Recommendations
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -293,13 +274,10 @@ export function TechStackSection({ project }: TechStackSectionProps) {
     <div className="space-y-6">
       {/* Section Header */}
       <div>
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-1 text-foreground">
           Tech Stack
         </h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           Technology recommendations organized by category with rationale and alternatives.
         </p>
       </div>

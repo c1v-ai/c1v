@@ -26,13 +26,9 @@ export function TooltipTerm({ term, definition, className }: TooltipTermProps) {
         <TooltipPrimitive.Trigger asChild>
           <span
             className={cn(
-              'cursor-help border-b border-dotted',
+              'cursor-help border-b border-dotted border-accent',
               className,
             )}
-            style={{
-              borderColor: 'var(--accent)',
-              color: 'inherit',
-            }}
             tabIndex={0}
             role="term"
           >
@@ -49,21 +45,12 @@ export function TooltipTerm({ term, definition, className }: TooltipTermProps) {
               'data-[side=left]:slide-in-from-right-2',
               'data-[side=right]:slide-in-from-left-2',
               'data-[side=top]:slide-in-from-bottom-2',
+              'bg-popover text-popover-foreground border',
             )}
-            style={{
-              backgroundColor: 'var(--bg-primary, hsl(var(--popover)))',
-              color: 'var(--text-primary, hsl(var(--popover-foreground)))',
-              border: '1px solid var(--border)',
-            }}
             sideOffset={6}
           >
             {definition}
-            <TooltipPrimitive.Arrow
-              className="fill-current"
-              style={{
-                color: 'var(--border)',
-              }}
-            />
+            <TooltipPrimitive.Arrow className="fill-border" />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

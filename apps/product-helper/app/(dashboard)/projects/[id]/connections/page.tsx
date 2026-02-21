@@ -32,10 +32,7 @@ async function ConnectionsContent({ projectId }: { projectId: number }) {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1
-          className="text-2xl font-bold flex items-center gap-2"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+        <h1 className="text-2xl font-bold flex items-center gap-2">
           <Plug className="h-6 w-6" />
           Connections
         </h1>

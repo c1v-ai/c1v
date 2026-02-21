@@ -352,12 +352,7 @@ export function DiagramViewer({
                   Show raw mermaid syntax
                 </summary>
                 <pre
-                  className="mt-2 p-3 rounded text-xs overflow-x-auto"
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border)',
-                  }}
+                  className="mt-2 p-3 rounded text-xs overflow-x-auto font-mono bg-card border"
                 >
                   {syntax}
                 </pre>
@@ -374,9 +369,9 @@ export function DiagramViewer({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            {title && <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>{title}</CardTitle>}
+            {title && <CardTitle>{title}</CardTitle>}
             {description && (
-              <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+              <CardDescription>
                 {description}
               </CardDescription>
             )}
@@ -475,24 +470,10 @@ export function DiagramViewer({
           {/* Code pane (D06) */}
           {showCode && (
             <div className="border rounded-lg overflow-hidden">
-              <div
-                className="px-3 py-2 text-xs font-semibold border-b"
-                style={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  borderColor: 'var(--border)',
-                  color: 'var(--text-muted)',
-                }}
-              >
+              <div className="px-3 py-2 text-xs font-semibold border-b bg-card text-muted-foreground">
                 Mermaid Source
               </div>
-              <pre
-                className="p-4 text-xs overflow-auto max-h-[500px]"
-                style={{
-                  fontFamily: 'ui-monospace, monospace',
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                }}
-              >
+              <pre className="p-4 text-xs overflow-auto max-h-[500px] font-mono bg-card text-foreground">
                 {syntax}
               </pre>
             </div>
@@ -582,14 +563,11 @@ function FullscreenOverlay({
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col"
-      style={{ backgroundColor: 'var(--bg-primary)' }}
-    >
-      <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="flex items-center justify-between p-4 border-b">
         <div>
           {title && (
-            <h3 className="font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+            <h3 className="font-semibold text-foreground">
               {title}
             </h3>
           )}
@@ -656,10 +634,10 @@ export function DiagramGrid({ diagrams }: DiagramGridProps) {
         <CardContent className="pt-6">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📊</div>
-            <p className="text-lg mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
+            <p className="text-lg mb-2">
               No diagrams available
             </p>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-body)' }}>
+            <p className="text-sm text-muted-foreground">
               Complete the chat to gather requirements, then diagrams will be generated automatically.
             </p>
           </div>

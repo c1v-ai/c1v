@@ -85,23 +85,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Users
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Target Users
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -136,14 +127,11 @@ function ActorCard({ actor }: { actor: Actor }) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className="h-10 w-10 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--accent)', opacity: 0.1 }}
-            >
-              <User className="h-5 w-5" style={{ color: 'var(--accent)' }} />
+            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-primary/10">
+              <User className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-base" style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle className="text-base">
                 {actor.name}
               </CardTitle>
               <CardDescription className="text-sm">{actor.role}</CardDescription>
@@ -156,22 +144,22 @@ function ActorCard({ actor }: { actor: Actor }) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Description */}
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           {actor.description}
         </p>
 
         {/* Demographics */}
         {actor.demographics && (
-          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Demographics: </span>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Demographics: </span>
             {actor.demographics}
           </div>
         )}
 
         {/* Usage Context */}
         {actor.usageContext && (
-          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Usage: </span>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Usage: </span>
             {actor.usageContext}
           </div>
         )}
@@ -179,14 +167,14 @@ function ActorCard({ actor }: { actor: Actor }) {
         {/* Goals */}
         {actor.goals && actor.goals.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
-              <Target className="h-3.5 w-3.5" style={{ color: 'var(--accent)' }} />
+            <h4 className="text-sm font-medium mb-2 flex items-center gap-1.5 text-foreground">
+              <Target className="h-3.5 w-3.5 text-primary" />
               Goals
             </h4>
-            <ul className="space-y-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <ul className="space-y-1 text-sm text-muted-foreground">
               {actor.goals.map((goal, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--accent)' }} />
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 bg-primary" />
                   {goal}
                 </li>
               ))}
@@ -197,11 +185,11 @@ function ActorCard({ actor }: { actor: Actor }) {
         {/* Pain Points */}
         {actor.painPoints && actor.painPoints.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+            <h4 className="text-sm font-medium mb-2 flex items-center gap-1.5 text-foreground">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
               Pain Points
             </h4>
-            <ul className="space-y-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <ul className="space-y-1 text-sm text-muted-foreground">
               {actor.painPoints.map((pain, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 bg-amber-500" />
@@ -232,13 +220,10 @@ export function ActorsSection({ project, compact = false }: ActorsSectionProps) 
       {/* Section Header - only show if not compact */}
       {!compact && (
         <div>
-          <h2
-            className="text-2xl font-bold mb-1"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <h2 className="text-2xl font-bold mb-1 text-foreground">
             Target Users
           </h2>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm text-muted-foreground">
             {actors.length} {actors.length === 1 ? 'persona' : 'personas'} identified for this product.
           </p>
         </div>

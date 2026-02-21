@@ -10,7 +10,7 @@ function LayoutLoadingSkeleton() {
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" style={{ color: 'var(--accent)' }} />
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-accent" />
         <p className="text-muted-foreground">Loading project...</p>
       </div>
     </div>

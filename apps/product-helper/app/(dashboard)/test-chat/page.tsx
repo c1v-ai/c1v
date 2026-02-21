@@ -9,23 +9,11 @@ export default function TestChatPage() {
   return (
     <div className="relative flex h-[calc(100vh-4rem)] w-full flex-col">
       {/* Page Header */}
-      <div
-        className="border-b px-6 py-4"
-        style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+      <div className="border-b px-6 py-4 bg-background">
+        <h1 className="text-2xl font-bold">
           Chat Test
         </h1>
-        <p
-          className="mt-1 text-sm"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="mt-1 text-sm text-muted-foreground">
           Testing the chat UI components with AI streaming
         </p>
       </div>

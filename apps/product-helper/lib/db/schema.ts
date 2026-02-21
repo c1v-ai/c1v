@@ -34,6 +34,7 @@ export const teams = pgTable('teams', {
   subscriptionStatus: varchar('subscription_status', { length: 20 }),
   creditsUsed: integer('credits_used').notNull().default(0),
   creditLimit: integer('credit_limit').notNull().default(2500),
+  teamMemberLimit: integer('team_member_limit').notNull().default(2),
 });
 
 export const teamMembers = pgTable('team_members', {

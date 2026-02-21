@@ -263,37 +263,27 @@ export function PipelinePage({
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-          <h1
-            className="text-lg font-semibold"
-            style={{ color: 'var(--text-primary)' }}
-          >
+          <Sparkles className="w-5 h-5 text-accent" />
+          <h1 className="text-lg font-semibold text-foreground">
             Generation Pipeline
           </h1>
         </div>
-        <p
-          className="text-sm"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="text-sm text-muted-foreground">
           Generate artifacts step by step. Core PRD artifacts are created through the chat intake. Technical artifacts can be triggered here.
         </p>
       </div>
 
       {/* Progress Bar */}
       <div>
-        <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex justify-between text-xs mb-1 text-muted-foreground">
           <span>Overall Progress</span>
           <span>{coreCompleted + techCompleted} / {coreStages.length + techStages.length} stages</span>
         </div>
-        <div
-          className="h-2 rounded-full overflow-hidden"
-          style={{ backgroundColor: 'var(--bg-secondary)' }}
-        >
+        <div className="h-2 rounded-full overflow-hidden bg-muted">
           <div
-            className="h-full rounded-full transition-all duration-500"
+            className="h-full rounded-full transition-all duration-500 bg-accent"
             style={{
               width: `${((coreCompleted + techCompleted) / (coreStages.length + techStages.length)) * 100}%`,
-              backgroundColor: 'var(--accent)',
             }}
           />
         </div>
@@ -301,16 +291,10 @@ export function PipelinePage({
 
       {/* Core PRD Artifacts */}
       <section>
-        <h2
-          className="text-sm font-medium mb-3"
-          style={{ color: 'var(--text-primary)' }}
-        >
+        <h2 className="text-sm font-medium mb-3 text-foreground">
           Core PRD Artifacts ({coreCompleted}/{coreStages.length})
         </h2>
-        <p
-          className="text-xs mb-4"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="text-xs mb-4 text-muted-foreground">
           Generated through the chat-based intake flow. Use the chat panel to generate these.
         </p>
         <div className="grid gap-3">
@@ -329,16 +313,10 @@ export function PipelinePage({
 
       {/* Technical Artifacts */}
       <section>
-        <h2
-          className="text-sm font-medium mb-3"
-          style={{ color: 'var(--text-primary)' }}
-        >
+        <h2 className="text-sm font-medium mb-3 text-foreground">
           Technical Artifacts ({techCompleted}/{techStages.length})
         </h2>
-        <p
-          className="text-xs mb-4"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="text-xs mb-4 text-muted-foreground">
           AI-generated technical specifications based on your PRD data. Each uses AI tokens.
         </p>
         <div className="grid gap-3">
