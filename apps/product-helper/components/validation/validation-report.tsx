@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, AlertCircle, Loader2, Play } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { ValidationResult } from '@/lib/validation/types';
 
 interface ValidationReportProps {
@@ -66,17 +67,16 @@ export function ValidationReport({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle>
                 PRD-SPEC Validation
               </CardTitle>
-              <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+              <CardDescription>
                 Validate project against PRD-SPEC-PRD-95-V1 specification
               </CardDescription>
             </div>
             <Button
               onClick={handleRunValidation}
               disabled={isValidating}
-              style={{ backgroundColor: 'var(--accent)' }}
             >
               {isValidating ? (
                 <>
@@ -100,17 +100,17 @@ export function ValidationReport({
           {/* Overall Score */}
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle>
                 Overall Score
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-4xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <div className="text-4xl font-bold text-foreground">
                     {validationResult.overallScore}%
                   </div>
-                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <div className="text-sm text-muted-foreground">
                     {validationResult.passedChecks} of {validationResult.totalChecks} checks passed
                   </div>
                 </div>
@@ -124,13 +124,13 @@ export function ValidationReport({
                   {validationResult.passed ? 'PASSED' : 'INCOMPLETE'}
                 </Badge>
               </div>
-              <div className="mt-4 h-2 w-full rounded-full bg-gray-200">
+              <div className="mt-4 h-2 w-full rounded-full bg-muted">
                 <div
-                  className="h-2 rounded-full transition-all"
-                  style={{
-                    width: `${validationResult.overallScore}%`,
-                    backgroundColor: validationResult.passed ? '#10b981' : '#f59e0b',
-                  }}
+                  className={cn(
+                    'h-2 rounded-full transition-all',
+                    validationResult.passed ? 'bg-green-500' : 'bg-yellow-500'
+                  )}
+                  style={{ width: `${validationResult.overallScore}%` }}
                 />
               </div>
             </CardContent>
@@ -139,10 +139,10 @@ export function ValidationReport({
           {/* Hard Gates */}
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+              <CardTitle>
                 Hard Gates (10 Required)
               </CardTitle>
-              <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+              <CardDescription>
                 Mandatory validation checks from PRD-SPEC specification
               </CardDescription>
             </CardHeader>
@@ -151,8 +151,7 @@ export function ValidationReport({
                 {validationResult.hardGates.map((gate) => (
                   <div
                     key={gate.gate}
-                    className="rounded-lg border p-4"
-                    style={{ borderColor: 'var(--border)' }}
+                    className="rounded-lg border border-border p-4"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
@@ -162,15 +161,14 @@ export function ValidationReport({
                           <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
                         )}
                         <div>
-                          <div className="font-medium" style={{ fontFamily: 'var(--font-heading)' }}>
+                          <div className="font-medium text-foreground">
                             {gate.gate.replace(/_/g, ' ').toUpperCase()}
                           </div>
                           <div className="mt-2 space-y-2">
                             {gate.checks.map((check) => (
                               <div
                                 key={check.id}
-                                className="flex items-start gap-2 text-sm"
-                                style={{ color: 'var(--text-muted)' }}
+                                className="flex items-start gap-2 text-sm text-muted-foreground"
                               >
                                 {check.passed ? (
                                   <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -196,10 +194,7 @@ export function ValidationReport({
           {validationResult.errors.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle
-                  className="text-red-600"
-                  style={{ fontFamily: 'var(--font-heading)' }}
-                >
+                <CardTitle className="text-red-600">
                   Errors ({validationResult.errors.length})
                 </CardTitle>
               </CardHeader>
@@ -209,7 +204,6 @@ export function ValidationReport({
                     <li
                       key={index}
                       className="text-sm text-red-600"
-                      style={{ fontFamily: 'var(--font-body)' }}
                     >
                       {error}
                     </li>
@@ -223,10 +217,7 @@ export function ValidationReport({
           {validationResult.warnings.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle
-                  className="text-yellow-600"
-                  style={{ fontFamily: 'var(--font-heading)' }}
-                >
+                <CardTitle className="text-yellow-600">
                   Warnings ({validationResult.warnings.length})
                 </CardTitle>
               </CardHeader>
@@ -236,7 +227,6 @@ export function ValidationReport({
                     <li
                       key={index}
                       className="text-sm text-yellow-600"
-                      style={{ fontFamily: 'var(--font-body)' }}
                     >
                       {warning}
                     </li>
@@ -250,10 +240,10 @@ export function ValidationReport({
           {validationResult.artifacts.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+                <CardTitle>
                   Artifacts
                 </CardTitle>
-                <CardDescription style={{ fontFamily: 'var(--font-body)' }}>
+                <CardDescription>
                   Diagram and document validation
                 </CardDescription>
               </CardHeader>
@@ -262,13 +252,9 @@ export function ValidationReport({
                   {validationResult.artifacts.map((artifact) => (
                     <div
                       key={artifact.artifactType}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                      style={{ borderColor: 'var(--border)' }}
+                      className="flex items-center justify-between rounded-lg border border-border p-3"
                     >
-                      <span
-                        className="text-sm"
-                        style={{ fontFamily: 'var(--font-body)' }}
-                      >
+                      <span className="text-sm text-foreground">
                         {artifact.artifactType.replace(/_/g, ' ').toUpperCase()}
                       </span>
                       {artifact.present ? (
@@ -291,16 +277,10 @@ export function ValidationReport({
           <CardContent className="pt-6">
             <div className="text-center py-8">
               <div className="text-6xl mb-4">📋</div>
-              <p
-                className="text-lg mb-2"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
+              <p className="text-lg mb-2 text-foreground">
                 No validation results yet
               </p>
-              <p
-                className="text-sm"
-                style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}
-              >
+              <p className="text-sm text-muted-foreground">
                 Click "Run Validation" to validate this project against PRD-SPEC-PRD-95-V1
               </p>
             </div>

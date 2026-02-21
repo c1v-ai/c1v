@@ -28,12 +28,11 @@ export function MobileChatSheet() {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed bottom-20 right-4 z-50 rounded-full shadow-lg border"
-          style={{ backgroundColor: 'var(--accent)', borderColor: 'var(--accent)' }}
+          className="fixed bottom-20 right-4 z-50 rounded-full shadow-lg border border-accent bg-accent"
         >
           <MessageSquare className="h-5 w-5 text-white" />
           {messages.length > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
+            <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold text-white">
               {messages.length}
             </span>
           )}
@@ -41,15 +40,9 @@ export function MobileChatSheet() {
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:w-[400px] p-0 flex flex-col">
         {/* Header */}
-        <div
-          className="flex items-center gap-2 px-4 py-3 border-b flex-shrink-0"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          <MessageSquare className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-          <span
-            className="text-sm font-semibold"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border flex-shrink-0">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold text-foreground">
             Chat - {projectName}
           </span>
         </div>

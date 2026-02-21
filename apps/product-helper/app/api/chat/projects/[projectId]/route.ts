@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { StreamingTextResponse } from 'ai';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { getUser, getTeamForUser, checkAndDeductCredits } from '@/lib/db/queries';
 import { streamingLLM } from '@/lib/langchain/config';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, artifacts, type NewConversation, type NewArtifact } from '@/lib/db/schema';
@@ -98,6 +98,22 @@ export async function POST(
             'X-RateLimit-Remaining': String(rateLimitResult.remaining),
             'X-RateLimit-Reset': String(rateLimitResult.resetAt),
           }
+        }
+      );
+    }
+
+    // Credit gate: Chat costs 5 credits per message
+    const creditResult = await checkAndDeductCredits(team.id, 5);
+    if (!creditResult.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'Credit limit reached',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        }),
+        {
+          status: 402,
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }

@@ -31,8 +31,7 @@ export function MobileExplorer({ projectId, data }: MobileExplorerProps) {
       <Button
         variant="default"
         size="icon"
-        className="fixed bottom-20 right-4 z-40 md:hidden rounded-full shadow-lg w-12 h-12"
-        style={{ backgroundColor: 'var(--accent)' }}
+        className="fixed bottom-20 right-4 z-40 md:hidden rounded-full shadow-lg w-12 h-12 bg-accent text-accent-foreground"
         onClick={() => setOpen(true)}
         aria-label="Open project navigator"
       >

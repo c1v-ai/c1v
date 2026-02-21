@@ -92,7 +92,7 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+        <CardTitle>
           {mode === 'create' ? 'Create New Project' : 'Edit Project'}
         </CardTitle>
       </CardHeader>
@@ -115,7 +115,6 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
               required
               maxLength={255}
               disabled={isPending}
-              style={{ fontFamily: 'var(--font-body)' }}
             />
             <p className="text-xs text-muted-foreground">
               A clear, concise name for your product
@@ -137,7 +136,6 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
               disabled={isPending}
               rows={8}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ fontFamily: 'var(--font-body)' }}
             />
             <p className="text-xs text-muted-foreground">
               Minimum 10 characters, maximum 5000 characters
@@ -251,11 +249,7 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
             <Button
               type="submit"
               disabled={isPending}
-              style={{
-                backgroundColor: 'var(--accent)',
-                color: '#FFFFFF',
-              }}
-              className="hover:opacity-90"
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
               {isPending ? (
                 <>

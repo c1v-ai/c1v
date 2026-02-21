@@ -43,17 +43,14 @@ export default function AccountPage() {
   return (
     <section className="flex-1 p-4 pb-20 md:pb-8 overflow-y-auto">
       <div className="max-w-2xl mx-auto space-y-6">
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+        <h1 className="text-2xl font-bold">
           Account
         </h1>
 
         {/* Profile Card */}
         <Card>
           <CardHeader>
-            <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+            <CardTitle>
               Profile
             </CardTitle>
             <CardDescription>
@@ -69,7 +66,7 @@ export default function AccountPage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                <p className="font-medium text-foreground">
                   {user?.name || 'No name set'}
                 </p>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -90,7 +87,7 @@ export default function AccountPage() {
         {/* Preferences Card */}
         <Card>
           <CardHeader>
-            <CardTitle style={{ fontFamily: 'var(--font-heading)' }}>
+            <CardTitle>
               Preferences
             </CardTitle>
             <CardDescription>

@@ -218,13 +218,10 @@ export function PRDOverview({
       {/* Header with status badges */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1
-            className="text-2xl font-bold"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <h1 className="text-2xl font-bold text-foreground">
             Product Requirements
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-1 text-muted-foreground">
             Requirements overview for {projectName}
           </p>
         </div>
@@ -254,11 +251,8 @@ export function PRDOverview({
             <AccordionItem key={section.id} value={section.id}>
               <AccordionTrigger className="hover:no-underline">
                 <div className="flex items-center gap-3">
-                  <Icon className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-                  <span
-                    className="font-medium"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                  <Icon className="h-5 w-5 text-accent" />
+                  <span className="font-medium text-foreground">
                     {section.title}
                   </span>
                   {count !== null && count > 0 && (
@@ -279,10 +273,7 @@ export function PRDOverview({
       </Accordion>
 
       {/* Footer with metadata */}
-      <div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-4 border-t text-sm"
-        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-      >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-4 border-t border-border text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <Calendar className="h-4 w-4" />
           <span>Generated: {formatDate(generatedAt)}</span>

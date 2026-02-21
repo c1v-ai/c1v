@@ -41,21 +41,11 @@ export function ExplorerHeader({ projectName, status }: ExplorerHeaderProps) {
   const config = statusConfig[status] ?? statusConfig.intake;
 
   return (
-    <div
-      className="px-3 py-3 border-b shrink-0"
-      style={{ borderColor: 'var(--border)' }}
-    >
+    <div className="px-3 py-3 border-b shrink-0">
       {/* Back to projects */}
       <Link
         href="/home"
-        className="inline-flex items-center gap-1.5 text-xs font-medium mb-2 transition-colors no-underline"
-        style={{ color: 'var(--text-muted)' }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = 'var(--text-primary)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = 'var(--text-muted)';
-        }}
+        className="inline-flex items-center gap-1.5 text-xs font-medium mb-2 transition-colors no-underline text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-3 w-3" />
         All Projects
@@ -64,11 +54,7 @@ export function ExplorerHeader({ projectName, status }: ExplorerHeaderProps) {
       {/* Project name and status */}
       <div className="flex items-center gap-2">
         <h2
-          className="text-sm font-semibold truncate flex-1"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            color: 'var(--text-primary)',
-          }}
+          className="text-sm font-semibold truncate flex-1 text-foreground"
           title={projectName}
         >
           {projectName}

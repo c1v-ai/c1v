@@ -95,23 +95,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Layers
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Layers className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Scope Defined
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -193,13 +184,10 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
       {/* Section Header - only show if not compact */}
       {!compact && (
         <div>
-          <h2
-            className="text-2xl font-bold mb-1"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <h2 className="text-2xl font-bold mb-1 text-foreground">
             Scope
           </h2>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm text-muted-foreground">
             {useCases.length} {useCases.length === 1 ? 'use case' : 'use cases'} defining the project scope.
           </p>
         </div>
@@ -214,14 +202,14 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <CardTitle className="text-base" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <CardTitle className="text-base">
                     In Scope
                   </CardTitle>
                 </div>
                 <CardDescription>Features and deliverables included</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                <ul className="space-y-2 text-sm text-muted-foreground">
                   {boundaries.inScope.map((item, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 bg-green-500" />
@@ -239,14 +227,14 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-5 w-5 text-gray-500" />
-                  <CardTitle className="text-base" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <CardTitle className="text-base">
                     Out of Scope
                   </CardTitle>
                 </div>
                 <CardDescription>Explicitly excluded from this release</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                <ul className="space-y-2 text-sm text-muted-foreground">
                   {boundaries.outOfScope.map((item, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 bg-gray-400" />
@@ -265,8 +253,8 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Layers className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-              <CardTitle className="text-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+              <Layers className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">
                 Use Cases
               </CardTitle>
             </div>
@@ -278,23 +266,14 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                    <th
-                      className="text-left py-3 px-4 font-semibold"
-                      style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                    >
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 font-semibold text-foreground">
                       Priority
                     </th>
-                    <th
-                      className="text-left py-3 px-4 font-semibold"
-                      style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                    >
+                    <th className="text-left py-3 px-4 font-semibold text-foreground">
                       Use Case
                     </th>
-                    <th
-                      className="text-left py-3 px-4 font-semibold hidden md:table-cell"
-                      style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                    >
+                    <th className="text-left py-3 px-4 font-semibold hidden md:table-cell text-foreground">
                       Actor
                     </th>
                   </tr>
@@ -304,22 +283,18 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
                     cases.map((uc, index) => (
                       <tr
                         key={`${priority}-${index}`}
-                        className="border-b last:border-b-0 hover:bg-muted/50 transition-colors"
-                        style={{ borderColor: 'var(--border)' }}
+                        className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors"
                       >
                         <td className="py-3 px-4">
                           <PriorityBadge priority={priority} />
                         </td>
                         <td className="py-3 px-4">
                           <div>
-                            <span
-                              className="font-medium"
-                              style={{ color: 'var(--text-primary)' }}
-                            >
+                            <span className="font-medium text-foreground">
                               {uc.name}
                             </span>
                             {uc.description && (
-                              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                              <p className="text-xs mt-1 text-muted-foreground">
                                 {uc.description}
                               </p>
                             )}
@@ -327,7 +302,7 @@ export function ScopeSection({ project, compact = false }: ScopeSectionProps) {
                         </td>
                         <td className="py-3 px-4 hidden md:table-cell">
                           {uc.actor && (
-                            <div className="flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
                               <Users className="h-3.5 w-3.5" />
                               {uc.actor}
                             </div>

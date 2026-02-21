@@ -46,22 +46,7 @@ export function QuickStartChips({
           key={chip.label}
           onClick={() => onSelect(chip.prompt)}
           disabled={disabled}
-          className="px-4 py-2 rounded-full text-sm font-medium border transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: 'var(--bg-primary)',
-            borderColor: 'var(--border)',
-            color: 'var(--text-primary)',
-          }}
-          onMouseEnter={(e) => {
-            if (!disabled) {
-              e.currentTarget.style.borderColor = 'var(--accent)';
-              e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
-            e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
-          }}
+          className="px-4 py-2 rounded-full text-sm font-medium border transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-background text-foreground hover:border-accent hover:bg-card"
         >
           {chip.label}
         </button>

@@ -6,8 +6,8 @@ import { TechStackSection } from '@/components/projects/sections/tech-stack-sect
 function SectionSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-8 w-48 rounded animate-pulse" style={{ backgroundColor: 'var(--bg-secondary)' }} />
-      <div className="h-64 rounded animate-pulse" style={{ backgroundColor: 'var(--bg-secondary)' }} />
+      <div className="h-8 w-48 rounded animate-pulse bg-muted" />
+      <div className="h-64 rounded animate-pulse bg-muted" />
     </div>
   );
 }

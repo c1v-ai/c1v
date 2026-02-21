@@ -7,12 +7,10 @@ function DataSkeleton() {
   return (
     <div className="space-y-6">
       <div
-        className="h-32 rounded-lg animate-pulse"
-        style={{ backgroundColor: 'var(--bg-secondary)' }}
+        className="h-32 rounded-lg animate-pulse bg-muted"
       />
       <div
-        className="h-64 rounded-lg animate-pulse"
-        style={{ backgroundColor: 'var(--bg-secondary)' }}
+        className="h-64 rounded-lg animate-pulse bg-muted"
       />
     </div>
   );

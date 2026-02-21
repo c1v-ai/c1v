@@ -26,19 +26,13 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
             <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
-              <h1
-                className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
-                style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-              >
+              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
                 Create PRDs
-                <span className="block" style={{ color: 'var(--accent)' }}>
+                <span className="block text-accent">
                   with AI Assistance
                 </span>
               </h1>
-              <p
-                className="mt-3 text-base sm:mt-5 sm:text-xl lg:text-lg xl:text-xl"
-                style={{ fontFamily: 'var(--font-body)', color: 'var(--text-muted)' }}
-              >
+              <p className="mt-3 text-base text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
                 Product Helper transforms your product ideas into engineering-quality
                 PRD documents through conversational AI. Define requirements, generate
                 diagrams, and validate against PRD-SPEC standards.
@@ -47,8 +41,7 @@ function LandingPage() {
                 <Button
                   asChild
                   size="lg"
-                  className="text-lg rounded-full"
-                  style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
+                  className="text-lg rounded-full bg-accent text-accent-foreground hover:bg-accent/90"
                 >
                   <Link href="/sign-up">
                     Get Started Free
@@ -66,55 +59,43 @@ function LandingPage() {
               </div>
             </div>
             <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-              <div
-                className="rounded-xl p-6 shadow-xl"
-                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
-              >
+              <div className="rounded-xl p-6 shadow-xl bg-card border">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--accent)' }}
-                    >
-                      <Sparkles className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-accent">
+                      <Sparkles className="w-5 h-5 text-accent-foreground" />
                     </div>
                     <div>
-                      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <p className="font-semibold text-foreground">
                         AI-Powered PRD Generation
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-sm text-muted-foreground">
                         Conversational requirements gathering
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--accent)' }}
-                    >
-                      <FileText className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-accent">
+                      <FileText className="w-5 h-5 text-accent-foreground" />
                     </div>
                     <div>
-                      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <p className="font-semibold text-foreground">
                         Auto-Generated Diagrams
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-sm text-muted-foreground">
                         Context, Use Case, Class diagrams
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--accent)' }}
-                    >
-                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-accent">
+                      <CheckCircle2 className="w-5 h-5 text-accent-foreground" />
                     </div>
                     <div>
-                      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <p className="font-semibold text-foreground">
                         PRD-SPEC Validation
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-sm text-muted-foreground">
                         95% quality threshold enforcement
                       </p>
                     </div>
@@ -126,21 +107,18 @@ function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 w-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      <section className="py-16 w-full bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-3 lg:gap-8">
             <div>
-              <div
-                className="flex items-center justify-center h-12 w-12 rounded-md text-white"
-                style={{ backgroundColor: 'var(--accent)' }}
-              >
+              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-accent text-accent-foreground">
                 <MessageSquare className="h-6 w-6" />
               </div>
               <div className="mt-5">
-                <h2 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                <h2 className="text-lg font-medium text-foreground">
                   Conversational Intake
                 </h2>
-                <p className="mt-2 text-base" style={{ color: 'var(--text-muted)' }}>
+                <p className="mt-2 text-base text-muted-foreground">
                   Chat with AI to define your product vision, actors, use cases,
                   and system boundaries naturally.
                 </p>
@@ -148,17 +126,14 @@ function LandingPage() {
             </div>
 
             <div className="mt-10 lg:mt-0">
-              <div
-                className="flex items-center justify-center h-12 w-12 rounded-md text-white"
-                style={{ backgroundColor: 'var(--accent)' }}
-              >
+              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-accent text-accent-foreground">
                 <TrendingUp className="h-6 w-6" />
               </div>
               <div className="mt-5">
-                <h2 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                <h2 className="text-lg font-medium text-foreground">
                   Real-time Validation
                 </h2>
-                <p className="mt-2 text-base" style={{ color: 'var(--text-muted)' }}>
+                <p className="mt-2 text-base text-muted-foreground">
                   Track completeness as you build. See validation scores
                   update live against 10 hard gates.
                 </p>
@@ -166,17 +141,14 @@ function LandingPage() {
             </div>
 
             <div className="mt-10 lg:mt-0">
-              <div
-                className="flex items-center justify-center h-12 w-12 rounded-md text-white"
-                style={{ backgroundColor: 'var(--accent)' }}
-              >
+              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-accent text-accent-foreground">
                 <FileText className="h-6 w-6" />
               </div>
               <div className="mt-5">
-                <h2 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                <h2 className="text-lg font-medium text-foreground">
                   Export Ready
                 </h2>
-                <p className="mt-2 text-base" style={{ color: 'var(--text-muted)' }}>
+                <p className="mt-2 text-base text-muted-foreground">
                   Export your PRD as Markdown with embedded Mermaid diagrams,
                   ready for engineering handoff.
                 </p>
@@ -194,13 +166,13 @@ function DashboardSkeleton() {
   return (
     <section className="flex-1 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-8" />
+        <div className="h-8 w-48 bg-muted rounded animate-pulse mb-8" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+            <div key={i} className="h-32 bg-muted rounded-lg animate-pulse" />
           ))}
         </div>
-        <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
+        <div className="h-64 bg-muted rounded-lg animate-pulse" />
       </div>
     </section>
   );
@@ -221,19 +193,16 @@ function StatsCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+        <Icon className="h-4 w-4 text-accent" />
       </CardHeader>
       <CardContent>
-        <div
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-        >
+        <div className="text-2xl font-bold text-foreground">
           {value}
         </div>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs text-muted-foreground">
           {description}
         </p>
       </CardContent>
@@ -263,20 +232,14 @@ function RecentProjectCard({
 
   return (
     <Link href={`/projects/${project.id}`} className="block">
-      <div
-        className="flex items-center justify-between p-4 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
-      >
+      <div className="flex items-center justify-between p-4 rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-card border">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5" style={{ color: 'var(--accent)' }} />
+          <FileText className="h-5 w-5 text-accent" />
           <div>
-            <p
-              className="font-medium"
-              style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-            >
+            <p className="font-medium text-foreground">
               {project.name}
             </p>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm text-muted-foreground">
               Score: {project.validationScore || 0}%
             </p>
           </div>
@@ -321,14 +284,11 @@ async function DashboardContent() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1
-            className="text-2xl lg:text-3xl font-bold mb-2"
-            style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-          >
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-foreground">
             Welcome back{user.name ? `, ${user.name}` : ''}!
           </h1>
-          <p style={{ fontFamily: 'var(--font-body)', color: 'var(--text-muted)' }}>
-            Here's an overview of your PRD projects
+          <p className="text-muted-foreground">
+            Here&apos;s an overview of your PRD projects
           </p>
         </div>
 
@@ -363,9 +323,7 @@ async function DashboardContent() {
         {/* Quick Actions */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle
-              style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-            >
+            <CardTitle>
               Quick Actions
             </CardTitle>
           </CardHeader>
@@ -373,7 +331,7 @@ async function DashboardContent() {
             <div className="flex flex-wrap gap-4">
               <Button
                 asChild
-                style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
                 <Link href="/home">
                   <FolderPlus className="mr-2 h-4 w-4" />
@@ -401,9 +359,7 @@ async function DashboardContent() {
         {/* Recent Projects */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle
-              style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
-            >
+            <CardTitle>
               Recent Projects
             </CardTitle>
             <Button asChild variant="ghost" size="sm">
@@ -416,22 +372,16 @@ async function DashboardContent() {
           <CardContent>
             {recentProjects.length === 0 ? (
               <div className="text-center py-8">
-                <FolderPlus
-                  className="w-12 h-12 mx-auto mb-4"
-                  style={{ color: 'var(--text-muted)' }}
-                />
-                <p
-                  className="text-lg font-medium mb-2"
-                  style={{ color: 'var(--text-primary)' }}
-                >
+                <FolderPlus className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-lg font-medium mb-2 text-foreground">
                   No projects yet
                 </p>
-                <p className="mb-4" style={{ color: 'var(--text-muted)' }}>
+                <p className="mb-4 text-muted-foreground">
                   Create your first PRD project to get started
                 </p>
                 <Button
                   asChild
-                  style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90"
                 >
                   <Link href="/home">
                     <FolderPlus className="mr-2 h-4 w-4" />

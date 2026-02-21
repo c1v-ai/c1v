@@ -9,23 +9,11 @@ export default function ChatPage() {
   return (
     <div className="relative flex h-[calc(100vh-4rem)] w-full flex-col">
       {/* Page Header */}
-      <div
-        className="border-b px-6 py-4"
-        style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+      <div className="border-b px-6 py-4 bg-background">
+        <h1 className="text-2xl font-bold">
           AI Assistant
         </h1>
-        <p
-          className="mt-1 text-sm"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="mt-1 text-sm text-muted-foreground">
           Get help with creating your Product Requirements Documents
         </p>
       </div>
@@ -57,23 +45,14 @@ function PRDEmptyState() {
         🤖
       </div>
       <div className="max-w-md">
-        <h2
-          className="text-2xl font-bold mb-3"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-3">
           AI-Powered PRD Assistant
         </h2>
-        <p
-          className="text-base leading-relaxed mb-4"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="text-base leading-relaxed mb-4 text-muted-foreground">
           I can help you create comprehensive Product Requirements Documents through conversation.
         </p>
-        <div
-          className="text-left text-sm space-y-2"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          <p>💬 Ask me to help with:</p>
+        <div className="text-left text-sm space-y-2 text-muted-foreground">
+          <p>Ask me to help with:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>Defining actors and use cases</li>
             <li>Clarifying requirements</li>
@@ -83,10 +62,7 @@ function PRDEmptyState() {
           </ul>
         </div>
       </div>
-      <p
-        className="text-sm"
-        style={{ color: 'var(--text-muted)' }}
-      >
+      <p className="text-sm text-muted-foreground">
         Start by describing your product vision or asking a question
       </p>
     </div>

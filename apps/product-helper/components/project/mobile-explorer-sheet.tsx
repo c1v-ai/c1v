@@ -34,16 +34,12 @@ function StatusIndicator({ hasData, isNew }: { hasData: boolean; isNew: boolean 
   if (hasData) {
     return (
       <CheckCircle2
-        className={cn('h-3 w-3 ml-auto shrink-0', isNew && 'animate-pulse')}
-        style={{ color: 'var(--success, #22c55e)' }}
+        className={cn('h-3 w-3 ml-auto shrink-0 text-green-500', isNew && 'animate-pulse')}
       />
     );
   }
   return (
-    <Circle
-      className="h-3 w-3 ml-auto shrink-0"
-      style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-    />
+    <Circle className="h-3 w-3 ml-auto shrink-0 text-muted-foreground opacity-40" />
   );
 }
 
@@ -73,8 +69,8 @@ function MobileNavItem({
         <div
           className={cn(
             'flex items-center w-full rounded-md text-sm font-medium transition-colors',
-            'hover:bg-[var(--bg-secondary)]',
-            active && !item.href ? 'bg-[var(--bg-secondary)]' : ''
+            'hover:bg-muted',
+            active && !item.href ? 'bg-muted' : ''
           )}
           style={{ paddingLeft: `${8 + depth * 12}px` }}
         >
@@ -83,20 +79,21 @@ function MobileNavItem({
             <Link
               href={item.href}
               onClick={onNavigate}
-              className="flex items-center gap-2 flex-1 py-2"
-              style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}
+              className={cn(
+                'flex items-center gap-2 flex-1 py-2',
+                active ? 'text-accent' : 'text-foreground'
+              )}
             >
-              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span>{item.name}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-2 flex-1 py-2 text-left"
-              style={{ color: 'var(--text-primary)' }}
+              className="flex items-center gap-2 flex-1 py-2 text-left text-foreground"
             >
-              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span>{item.name}</span>
             </button>
           )}
@@ -104,13 +101,13 @@ function MobileNavItem({
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="p-2 mr-1 rounded hover:bg-[var(--bg-primary)]"
+            className="p-2 mr-1 rounded hover:bg-background"
             aria-label={expanded ? 'Collapse section' : 'Expand section'}
           >
             {expanded ? (
-              <ChevronUp className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
         </div>
@@ -144,12 +141,9 @@ function MobileNavItem({
       onClick={onNavigate}
       className={cn(
         'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors',
-        active ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'
+        active ? 'bg-muted text-accent' : 'hover:bg-muted text-foreground'
       )}
-      style={{
-        paddingLeft: `${8 + depth * 12}px`,
-        color: active ? 'var(--accent)' : 'var(--text-primary)'
-      }}
+      style={{ paddingLeft: `${8 + depth * 12}px` }}
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
       <span className="flex-1">{item.name}</span>
@@ -214,8 +208,7 @@ export function MobileExplorerSheet() {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed bottom-20 left-4 z-50 rounded-full shadow-lg border"
-          style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
+          className="fixed bottom-20 left-4 z-50 rounded-full shadow-lg border border-border bg-background"
         >
           <PanelLeft className="h-5 w-5" />
         </Button>
@@ -236,34 +229,34 @@ export function MobileExplorerSheet() {
         </nav>
 
         {/* Separator */}
-        <div className="border-t mx-3" style={{ borderColor: 'var(--border)' }} />
+        <div className="border-t border-border mx-3" />
 
         {/* Empty state message */}
         {completeness === 0 && (
           <div className="flex flex-col items-center justify-center px-4 py-4 text-center">
-            <Sparkles className="h-6 w-6 mb-2" style={{ color: 'var(--text-muted)' }} />
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            <Sparkles className="h-6 w-6 mb-2 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">
               Start chatting to build your PRD
             </p>
           </div>
         )}
 
         {/* Completeness */}
-        <div className="px-3 py-3 border-t mt-auto" style={{ borderColor: 'var(--border)' }}>
+        <div className="px-3 py-3 border-t border-border mt-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium uppercase" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-xs font-medium uppercase text-muted-foreground">
               Completeness
             </span>
-            <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <span className="text-sm font-semibold tabular-nums text-foreground">
               {completeness}%
             </span>
           </div>
-          <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          <div className="h-2 w-full rounded-full overflow-hidden bg-muted">
             <div
               className="h-full rounded-full transition-all duration-500 ease-out"
               style={{
                 width: `${completeness}%`,
-                backgroundColor: completeness >= 75 ? 'var(--success, #22c55e)' : 'var(--accent)',
+                backgroundColor: completeness >= 75 ? '#22c55e' : 'hsl(var(--accent))',
               }}
             />
           </div>

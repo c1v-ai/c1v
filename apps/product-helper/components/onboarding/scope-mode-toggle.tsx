@@ -10,22 +10,16 @@ interface ScopeModeToggleProps {
 
 export function ScopeModeToggle({ mode, onChange, disabled = false }: ScopeModeToggleProps) {
   return (
-    <div
-      className="inline-flex rounded-lg p-1"
-      style={{
-        backgroundColor: 'var(--bg-secondary)',
-        border: '1px solid var(--border)'
-      }}
-    >
+    <div className="inline-flex rounded-lg p-1 bg-card border">
       <button
         type="button"
         onClick={() => onChange('defined')}
         disabled={disabled}
-        className="px-5 py-2.5 rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          backgroundColor: mode === 'defined' ? 'var(--accent)' : 'transparent',
-          color: mode === 'defined' ? '#FFFFFF' : 'var(--text-secondary)',
-        }}
+        className={`px-5 py-2.5 rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+          mode === 'defined'
+            ? 'bg-accent text-accent-foreground'
+            : 'bg-transparent text-muted-foreground'
+        }`}
       >
         I have a defined scope
       </button>
@@ -33,11 +27,11 @@ export function ScopeModeToggle({ mode, onChange, disabled = false }: ScopeModeT
         type="button"
         onClick={() => onChange('help')}
         disabled={disabled}
-        className="px-5 py-2.5 rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          backgroundColor: mode === 'help' ? 'var(--accent)' : 'transparent',
-          color: mode === 'help' ? '#FFFFFF' : 'var(--text-secondary)',
-        }}
+        className={`px-5 py-2.5 rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+          mode === 'help'
+            ? 'bg-accent text-accent-foreground'
+            : 'bg-transparent text-muted-foreground'
+        }`}
       >
         Help me scope
       </button>

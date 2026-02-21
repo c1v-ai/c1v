@@ -10,6 +10,7 @@ import {
   type ScaleRequirements,
 } from '@/lib/langchain/agents/infrastructure-agent';
 import type { InfrastructureSpec, TechStackModel } from '@/lib/db/schema/v2-types';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * GET /api/projects/[id]/infrastructure
@@ -80,6 +81,19 @@ export const POST = withProjectAuth(
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
+      );
+    }
+
+    // Credit gate: Infrastructure generation costs 100 credits
+    const creditResult = await checkAndDeductCredits(team.id, 100);
+    if (!creditResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Credit limit reached',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        },
+        { status: 402 }
       );
     }
 

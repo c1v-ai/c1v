@@ -34,56 +34,31 @@ export function BuildingInput({
   return (
     <div className="w-full">
       {/* Label */}
-      <label
-        className="block text-sm font-medium mb-2"
-        style={{ color: 'var(--text-primary)' }}
-      >
+      <label className="block text-sm font-medium mb-2 text-foreground">
         What are you building?
       </label>
 
       {/* Input Card */}
-      <div
-        className="rounded-xl border p-4"
-        style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderColor: 'var(--border)'
-        }}
-      >
-        {/* Credits Badge (optional - can be removed if not using credits system) */}
-        {/* <div className="flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
-            <Tag className="h-3 w-3" />
-            1,050 credits
-          </span>
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-            Free
-          </span>
-        </div> */}
-
+      <div className="rounded-xl border p-4 bg-background">
         {/* Textarea */}
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={placeholder}
           rows={4}
-          className="w-full resize-none bg-transparent border-0 focus:outline-none focus:ring-0 text-base"
-          style={{
-            color: 'var(--text-primary)',
-          }}
+          className="w-full resize-none bg-transparent border-0 focus:outline-none focus:ring-0 text-base text-foreground"
           disabled={isPending}
         />
 
         {/* Footer with Create from scratch link and CTA */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between mt-4 pt-4 border-t">
           <button
             type="button"
             onClick={() => {
               setDescription('');
               onSubmit('');
             }}
-            className="text-sm hover:underline"
-            style={{ color: 'var(--text-muted)' }}
+            className="text-sm hover:underline text-muted-foreground"
             disabled={isPending}
           >
             Create from scratch
@@ -92,11 +67,7 @@ export function BuildingInput({
           <Button
             onClick={handleSubmit}
             disabled={isPending}
-            className="px-6 py-2 rounded-lg font-medium flex items-center gap-2"
-            style={{
-              backgroundColor: 'var(--accent)',
-              color: '#FFFFFF',
-            }}
+            className="px-6 py-2 rounded-lg font-medium flex items-center gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
           >
             {isPending ? (
               <>
@@ -106,7 +77,7 @@ export function BuildingInput({
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                Let's get building
+                Let&apos;s get building
                 <ArrowRight className="h-4 w-4" />
               </>
             )}

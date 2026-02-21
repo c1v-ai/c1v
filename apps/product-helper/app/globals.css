@@ -77,7 +77,7 @@
 
 @layer utilities {
   body {
-    font-family: var(--font-body, Consolas, 'Roboto', sans-serif);
+    font-family: var(--font-body, Consolas, monospace);
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading, 'Space Grotesk', sans-serif);
@@ -108,9 +108,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 5.1%;
 
-    /* Figma: Tangerine #F18F01 */
-    --primary: 35.5 99.2% 47.5%;
-    --primary-foreground: 0 0% 100%;
+    /* Figma: Tangerine #FDF3E5 */
+    --primary: 35 85.2% 94.5%;
+    /* Dark text on light-cream primary bg */
+    --primary-foreground: 174 60% 10.8%;
 
     /* Figma: rgba(0,0,0,0.05) approx */
     --secondary: 0 0% 95%;
@@ -134,10 +135,10 @@
     --input: 0 0% 88%;
 
     /* Figma: Tangerine for focus ring */
-    --ring: 35.5 99.2% 47.5%;
+    --ring: 35 85.2% 94.5%;
 
     /* Chart colors from brand palette */
-    --chart-1: 35.5 99.2% 47.5%;
+    --chart-1: 35 85.2% 94.5%;
     --chart-2: 205 48.2% 56.1%;
     --chart-3: 174.5 60% 10.8%;
     --chart-4: 0 0% 93.3%;
@@ -149,12 +150,12 @@
     /* Sidebar: mirror card tokens */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 5.1%;
-    --sidebar-primary: 35.5 99.2% 47.5%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 35 85.2% 94.5%;
+    --sidebar-primary-foreground: 174 60% 10.8%;
     --sidebar-accent: 0 0% 95%;
     --sidebar-accent-foreground: 0 0% 5.1%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 35.5 99.2% 47.5%;
+    --sidebar-ring: 35 85.2% 94.5%;
   }
 
   .dark {
@@ -170,8 +171,9 @@
     --popover-foreground: 0 0% 100%;
 
     /* Figma: Tangerine (same in dark) */
-    --primary: 35.5 99.2% 47.5%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 35 85.2% 94.5%;
+    /* Dark text on light-cream primary bg (same in dark) */
+    --primary-foreground: 174 60% 10.8%;
 
     /* Figma: rgba(255,255,255,0.15) approx */
     --secondary: 0 0% 20%;
@@ -192,9 +194,9 @@
     --border: 0 0% 25%;
     --input: 0 0% 25%;
 
-    --ring: 35.5 99.2% 47.5%;
+    --ring: 35 85.2% 94.5%;
 
-    --chart-1: 35.5 99.2% 47.5%;
+    --chart-1: 35 85.2% 94.5%;
     --chart-2: 205 48.2% 56.1%;
     --chart-3: 180 14.3% 98.6%;
     --chart-4: 0 0% 93.3%;
@@ -203,12 +205,12 @@
     /* Sidebar: mirror dark card tokens */
     --sidebar-background: 174.5 60% 10.8%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 35.5 99.2% 47.5%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 35 85.2% 94.5%;
+    --sidebar-primary-foreground: 174 60% 10.8%;
     --sidebar-accent: 0 0% 20%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 35.5 99.2% 47.5%;
+    --sidebar-ring: 35 85.2% 94.5%;
   }
 
   /* Figma typography scale -- mobile-first, desktop at md (768px) */

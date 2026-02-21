@@ -30,28 +30,18 @@ export function ExplorerProgress({ completeness, hasData }: ExplorerProgressProp
   const totalSections = JOURNEY_SECTIONS.length;
 
   return (
-    <div
-      className="px-3 py-3 border-t shrink-0"
-      style={{ borderColor: 'var(--border)' }}
-    >
+    <div className="px-3 py-3 border-t shrink-0">
       {/* Overall completeness */}
       <div className="flex items-center justify-between mb-1.5">
-        <span
-          className="text-[11px] font-medium"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <span className="text-[11px] font-medium text-muted-foreground">
           Completeness
         </span>
-        <span
-          className="text-[11px] font-semibold tabular-nums"
-          style={{ color: 'var(--text-primary)' }}
-        >
+        <span className="text-[11px] font-semibold tabular-nums text-foreground">
           {percent}%
         </span>
       </div>
       <div
-        className="h-1.5 rounded-full overflow-hidden"
-        style={{ backgroundColor: 'var(--bg-secondary)' }}
+        className="h-1.5 rounded-full overflow-hidden bg-muted"
         role="progressbar"
         aria-valuenow={percent}
         aria-valuemin={0}
@@ -67,7 +57,7 @@ export function ExplorerProgress({ completeness, hasData }: ExplorerProgressProp
                 ? '#22c55e'
                 : percent >= 40
                   ? '#eab308'
-                  : 'var(--accent)',
+                  : 'hsl(var(--accent))',
           }}
         />
       </div>
@@ -75,16 +65,10 @@ export function ExplorerProgress({ completeness, hasData }: ExplorerProgressProp
       {/* Section journey */}
       <div className="mt-3">
         <div className="flex items-center justify-between mb-1.5">
-          <span
-            className="text-[11px] font-medium"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <span className="text-[11px] font-medium text-muted-foreground">
             Sections
           </span>
-          <span
-            className="text-[11px] font-semibold tabular-nums"
-            style={{ color: 'var(--text-primary)' }}
-          >
+          <span className="text-[11px] font-semibold tabular-nums text-foreground">
             {completedCount}/{totalSections}
           </span>
         </div>
@@ -94,12 +78,7 @@ export function ExplorerProgress({ completeness, hasData }: ExplorerProgressProp
             return (
               <div
                 key={section.key}
-                className="h-1.5 flex-1 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: done
-                    ? '#22c55e'
-                    : 'var(--bg-secondary)',
-                }}
+                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${done ? 'bg-green-500' : 'bg-muted'}`}
                 title={`${section.label}: ${done ? 'Complete' : 'Pending'}`}
                 aria-label={`${section.label}: ${done ? 'Complete' : 'Pending'}`}
               />

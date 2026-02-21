@@ -7,19 +7,16 @@ function GenerateSkeleton() {
   return (
     <div className="space-y-6">
       <div
-        className="h-16 rounded-lg animate-pulse"
-        style={{ backgroundColor: 'var(--bg-secondary)' }}
+        className="h-16 rounded-lg animate-pulse bg-muted"
       />
       <div
-        className="h-2 rounded-full animate-pulse"
-        style={{ backgroundColor: 'var(--bg-secondary)' }}
+        className="h-2 rounded-full animate-pulse bg-muted"
       />
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="h-24 rounded-lg animate-pulse"
-          style={{ backgroundColor: 'var(--bg-secondary)' }}
-        />
+          className="h-24 rounded-lg animate-pulse bg-muted"
+          />
       ))}
     </div>
   );

@@ -9,8 +9,8 @@ import { ProjectSettingsForm } from './settings-form';
 function SettingsSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
-      <div className="h-48 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+      <div className="h-64 bg-muted rounded-lg animate-pulse" />
+      <div className="h-48 bg-muted rounded-lg animate-pulse" />
     </div>
   );
 }
@@ -49,18 +49,12 @@ export default async function ProjectSettingsPage({ params }: SettingsPageProps)
           </Button>
 
           <div className="flex items-center gap-3 mb-2">
-            <Settings className="h-6 w-6" style={{ color: 'var(--accent)' }} />
-            <h1
-              className="text-2xl lg:text-3xl font-bold"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
+            <Settings className="h-6 w-6 text-accent" />
+            <h1 className="text-2xl lg:text-3xl font-bold">
               Project Settings
             </h1>
           </div>
-          <p
-            className="text-muted-foreground"
-            style={{ fontFamily: 'var(--font-body)' }}
-          >
+          <p className="text-muted-foreground">
             Manage your project configuration and settings
           </p>
         </div>

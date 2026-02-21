@@ -4,6 +4,7 @@ import { db } from '@/lib/db/drizzle';
 import { projects, userStories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { generateUserStories, prepareStoriesForInsert, type UserStoriesContext } from '@/lib/langchain/agents/user-stories-agent';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * GET /api/projects/[id]/stories
@@ -91,6 +92,19 @@ export const POST = withProjectAuth(
 
     // Option 1: Generate stories from use cases
     if (body.generate === true) {
+      // Credit gate: Story generation costs 100 credits
+      const creditResult = await checkAndDeductCredits(team.id, 100);
+      if (!creditResult.allowed) {
+        return NextResponse.json(
+          {
+            error: 'Credit limit reached',
+            creditsUsed: creditResult.creditsUsed,
+            creditLimit: creditResult.creditLimit,
+          },
+          { status: 402 }
+        );
+      }
+
       const data = project.projectData;
       if (!data) {
         return NextResponse.json(

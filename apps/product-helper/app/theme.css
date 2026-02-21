@@ -1,14 +1,14 @@
 /* =========================================================
    c1v Brand System — Figma Design Tokens
-   Fonts: Space Grotesk (headings), Consolas (body, Roboto fallback)
+   Fonts: Space Grotesk (headings), Consolas (body)
    Palette: Firefly, Porcelain, Tangerine, Danube
    Source: Figma file g5lP1TizFUIvqb86hsAjaL
    ========================================================= */
 
 :root {
-  /* Fonts — 2-font system: Space Grotesk headings, Consolas body (Roboto fallback) */
+  /* Fonts — 2-font system: Space Grotesk headings, Consolas body */
   --font-heading: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
-  --font-body: Consolas, var(--font-roboto), 'Roboto', sans-serif;
+  --font-body: Consolas, monospace;
 
   /* Button shadows — defined here, referenced by components via var() */
   --shadow-button-primary: 0px 1px 2px rgba(13,13,13,0.05), inset 0px 32px 24px rgba(255,255,255,0.05), inset 0px 2px 1px rgba(255,255,255,0.25), inset 0px 0px 0px 1px rgba(13,13,13,0.15), inset 0px -2px 1px rgba(0,0,0,0.2);
@@ -17,7 +17,7 @@
   /* Figma Color Palette */
   --color-firefly: #0B2C29;
   --color-porcelain: #FBFCFC;
-  --color-tangerine: #F18F01;
+  --color-tangerine: #FDF3E5;
   --color-danube: #5998C5;
 
   /* Semantic tokens — Light mode */

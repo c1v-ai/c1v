@@ -136,23 +136,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Shield
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Non-Functional Requirements
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -231,13 +222,10 @@ export function NfrSection({ project }: NfrSectionProps) {
     <div className="space-y-6">
       {/* Section Header */}
       <div>
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-1 text-foreground">
           Non-Functional Requirements
         </h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           {nfrs.length} {nfrs.length === 1 ? 'requirement' : 'requirements'} across{' '}
           {grouped.size} {grouped.size === 1 ? 'category' : 'categories'}.
         </p>
@@ -247,8 +235,8 @@ export function NfrSection({ project }: NfrSectionProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-            <CardTitle className="text-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+            <Shield className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">
               Quality Attributes
             </CardTitle>
           </div>
@@ -260,35 +248,20 @@ export function NfrSection({ project }: NfrSectionProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                  <th
-                    className="text-left py-3 px-4 font-semibold"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
                     Category
                   </th>
-                  <th
-                    className="text-left py-3 px-4 font-semibold"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
                     Requirement
                   </th>
-                  <th
-                    className="text-left py-3 px-4 font-semibold hidden md:table-cell"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                  <th className="text-left py-3 px-4 font-semibold hidden md:table-cell text-foreground">
                     Metric
                   </th>
-                  <th
-                    className="text-left py-3 px-4 font-semibold hidden lg:table-cell"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                  <th className="text-left py-3 px-4 font-semibold hidden lg:table-cell text-foreground">
                     Target
                   </th>
-                  <th
-                    className="text-left py-3 px-4 font-semibold"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
                     Priority
                   </th>
                 </tr>
@@ -298,28 +271,18 @@ export function NfrSection({ project }: NfrSectionProps) {
                   items.map((nfr, index) => (
                     <tr
                       key={`${category}-${index}`}
-                      className="border-b last:border-b-0 hover:bg-muted/50 transition-colors"
-                      style={{ borderColor: 'var(--border)' }}
+                      className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors"
                     >
                       <td className="py-3 px-4">
                         <CategoryBadge category={nfr.category} />
                       </td>
-                      <td
-                        className="py-3 px-4 font-medium"
-                        style={{ color: 'var(--text-primary)' }}
-                      >
+                      <td className="py-3 px-4 font-medium text-foreground">
                         {nfr.requirement}
                       </td>
-                      <td
-                        className="py-3 px-4 hidden md:table-cell"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
+                      <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">
                         {nfr.metric || '\u2014'}
                       </td>
-                      <td
-                        className="py-3 px-4 hidden lg:table-cell"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
+                      <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">
                         {nfr.target || '\u2014'}
                       </td>
                       <td className="py-3 px-4">

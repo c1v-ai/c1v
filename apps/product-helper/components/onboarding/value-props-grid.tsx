@@ -38,24 +38,15 @@ const VALUE_PROPS: ValueProp[] = [
 
 export function ValuePropsGrid() {
   return (
-    <div
-      className="rounded-xl border p-6"
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderColor: 'var(--border)'
-      }}
-    >
-      <h3
-        className="text-lg font-semibold mb-6"
-        style={{ color: 'var(--text-primary)' }}
-      >
+    <div className="rounded-xl border p-6 bg-background">
+      <h3 className="text-lg font-semibold mb-6 text-foreground">
         What Product Helper will generate
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {VALUE_PROPS.map((prop) => (
           <div key={prop.title} className="flex items-start gap-4">
-            {/* Icon container */}
+            {/* Icon container - dynamic color must stay inline */}
             <div
               className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
               style={{
@@ -68,16 +59,10 @@ export function ValuePropsGrid() {
 
             {/* Text content */}
             <div>
-              <h4
-                className="font-medium text-sm mb-1"
-                style={{ color: 'var(--text-primary)' }}
-              >
+              <h4 className="font-medium text-sm mb-1 text-foreground">
                 {prop.title}
               </h4>
-              <p
-                className="text-sm"
-                style={{ color: 'var(--text-muted)' }}
-              >
+              <p className="text-sm text-muted-foreground">
                 {prop.description}
               </p>
             </div>

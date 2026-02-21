@@ -9,6 +9,7 @@ import {
   type QuickStartStep,
   type StepStatus,
 } from '@/lib/langchain/quick-start/orchestrator';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * Allow long-running generation (up to 2 minutes)
@@ -86,6 +87,19 @@ export const POST = withProjectAuth(
     }
 
     const { userInput } = parseResult.data;
+
+    // Credit gate: Quick Start costs 1250 credits
+    const creditResult = await checkAndDeductCredits(team.id, 1250);
+    if (!creditResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Credit limit reached',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        },
+        { status: 402 }
+      );
+    }
 
     // Create SSE stream
     const encoder = new TextEncoder();
