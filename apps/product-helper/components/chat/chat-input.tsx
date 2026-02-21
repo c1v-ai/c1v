@@ -80,11 +80,7 @@ export function ChatInput({
       className={cn('flex w-full flex-col', className)}
     >
       <div
-        className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-lg border"
-        style={{
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--border)',
-        }}
+        className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-xl bg-black/5 dark:bg-white/15 border border-[rgba(13,13,13,0.15)] dark:border-[rgba(255,255,255,0.2)]"
       >
         {/* Textarea Field - Mobile optimized */}
         <textarea
@@ -99,17 +95,12 @@ export function ChatInput({
           enterKeyHint="send"
           className={cn(
             "border-none bg-transparent p-4 outline-none",
-            "text-base", // 16px - prevents iOS zoom on focus
+            "text-base text-foreground", // 16px - prevents iOS zoom on focus
+            "placeholder:text-[rgba(13,13,13,0.6)] dark:placeholder:text-[rgba(255,255,255,0.6)]",
             "min-h-[44px]", // Touch target minimum
-            "resize-none" // Prevent resize handle on mobile
+            "resize-none", // Prevent resize handle on mobile
+            "max-h-[200px] overflow-auto"
           )}
-          style={{
-            fontFamily: 'var(--font-body)',
-            color: 'var(--text-primary)',
-            fontSize: '16px', // Explicit to prevent iOS zoom
-            maxHeight: '200px',
-            overflow: 'auto',
-          }}
           autoFocus
         />
 
@@ -128,12 +119,9 @@ export function ChatInput({
               className={cn(
                 "gap-2",
                 "min-h-[44px] min-w-[44px]", // Touch target minimum
-                "tap-highlight-none" // Remove tap highlight on mobile
+                "tap-highlight-none", // Remove tap highlight on mobile
+                "bg-primary text-primary-foreground rounded-xl"
               )}
-              style={{
-                backgroundColor: 'var(--accent)',
-                color: '#FFFFFF',
-              }}
             >
               {loading ? (
                 <>

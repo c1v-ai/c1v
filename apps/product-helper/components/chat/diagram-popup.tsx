@@ -53,18 +53,9 @@ export function DiagramPopup({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="max-w-4xl w-[90vw] max-h-[90vh] overflow-hidden flex flex-col"
-        style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderColor: 'var(--border)',
-        }}
       >
         <DialogHeader>
-          <DialogTitle
-            style={{
-              fontFamily: 'var(--font-heading)',
-              color: 'var(--text-primary)',
-            }}
-          >
+          <DialogTitle>
             {displayTitle}
           </DialogTitle>
         </DialogHeader>
