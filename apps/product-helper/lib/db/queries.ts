@@ -1,8 +1,9 @@
-import { desc, and, eq, isNull } from 'drizzle-orm';
+import { desc, and, eq, isNull, sql } from 'drizzle-orm';
 import { db } from './drizzle';
 import { activityLogs, teamMembers, teams, users } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
+import { resolvePlanTier, PLAN_LIMITS } from '@/lib/constants';
 
 export async function getUser() {
   const sessionCookie = (await cookies()).get('session');
@@ -53,6 +54,9 @@ export async function updateTeamSubscription(
     stripeProductId: string | null;
     planName: string | null;
     subscriptionStatus: string;
+    creditsUsed?: number;
+    creditLimit?: number;
+    teamMemberLimit?: number;
   }
 ) {
   await db
@@ -127,4 +131,55 @@ export async function getTeamForUser() {
   });
 
   return result?.team || null;
+}
+
+export async function checkAndDeductCredits(
+  teamId: number,
+  amount: number
+): Promise<{ allowed: boolean; creditsUsed: number; creditLimit: number }> {
+  const team = await db.query.teams.findFirst({
+    where: eq(teams.id, teamId),
+    columns: { creditsUsed: true, creditLimit: true, subscriptionStatus: true, planName: true },
+  });
+
+  if (!team) return { allowed: false, creditsUsed: 0, creditLimit: 0 };
+
+  const tier = resolvePlanTier(team.planName);
+
+  // Plus tier with active sub: unlimited — always allow, track for analytics
+  if (tier === 'plus' && (team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing')) {
+    await db.update(teams).set({
+      creditsUsed: sql`${teams.creditsUsed} + ${amount}`,
+      updatedAt: new Date(),
+    }).where(eq(teams.id, teamId));
+    return { allowed: true, creditsUsed: team.creditsUsed + amount, creditLimit: team.creditLimit };
+  }
+
+  // Free & Base: atomic check-and-deduct with 10% grace
+  const grace = PLAN_LIMITS[tier].creditGrace;
+  const result = await db.update(teams).set({
+    creditsUsed: sql`${teams.creditsUsed} + ${amount}`,
+    updatedAt: new Date(),
+  }).where(
+    and(
+      eq(teams.id, teamId),
+      sql`${teams.creditsUsed} + ${amount} <= ${grace}`
+    )
+  ).returning({
+    creditsUsed: teams.creditsUsed,
+    creditLimit: teams.creditLimit,
+  });
+
+  if (result.length === 0) {
+    return { allowed: false, creditsUsed: team.creditsUsed, creditLimit: team.creditLimit };
+  }
+
+  return { allowed: true, creditsUsed: result[0].creditsUsed, creditLimit: result[0].creditLimit };
+}
+
+export async function getTeamCredits(teamId: number) {
+  return db.query.teams.findFirst({
+    where: eq(teams.id, teamId),
+    columns: { creditsUsed: true, creditLimit: true, subscriptionStatus: true },
+  });
 }
