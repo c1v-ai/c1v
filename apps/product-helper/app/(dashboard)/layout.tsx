@@ -31,7 +31,6 @@ function DashboardShortcuts() {
 function UserMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: user } = useSWR<User>('/api/user', fetcher);
-  const { data: team } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
   const router = useRouter();
 
   async function handleSignOut() {
@@ -89,34 +88,6 @@ function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {team && (
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link
-              href={team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing' ? '/dashboard' : '/pricing'}
-              className="flex w-full flex-col gap-1.5 py-2"
-            >
-              <div className="flex w-full items-center justify-between">
-                <div className="flex items-center">
-                  <Zap className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing'
-                      ? `${team.planName || 'Pro'} — Unlimited`
-                      : `${team.creditsUsed.toLocaleString()} / ${team.creditLimit.toLocaleString()}`}
-                  </span>
-                </div>
-              </div>
-              {team.subscriptionStatus !== 'active' && team.subscriptionStatus !== 'trialing' && (
-                <div className="w-full h-[2px] rounded-full bg-muted ml-6 mr-2">
-                  <div
-                    className="h-full rounded-full bg-orange-500"
-                    style={{ width: `${Math.min(100, (team.creditsUsed / team.creditLimit) * 100)}%` }}
-                  />
-                </div>
-              )}
-            </Link>
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator />
         <form action={handleSignOut} className="w-full">
           <button type="submit" className="flex w-full">
             <DropdownMenuItem className="w-full flex-1 cursor-pointer">
@@ -127,6 +98,36 @@ function UserMenu() {
         </form>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function CreditsIndicator() {
+  const { data: team } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
+
+  if (!team) return null;
+
+  const isPaid = team.subscriptionStatus === 'active' || team.subscriptionStatus === 'trialing';
+
+  return (
+    <Link
+      href={isPaid ? '/dashboard' : '/pricing'}
+      className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <Zap className="h-3.5 w-3.5" />
+      <span>
+        {isPaid
+          ? `${team.planName || 'Pro'} — Unlimited`
+          : `${team.creditsUsed.toLocaleString()} / ${team.creditLimit.toLocaleString()}`}
+      </span>
+      {!isPaid && (
+        <div className="w-12 h-[3px] rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-orange-500"
+            style={{ width: `${Math.min(100, (team.creditsUsed / team.creditLimit) * 100)}%` }}
+          />
+        </div>
+      )}
+    </Link>
   );
 }
 
@@ -180,6 +181,11 @@ function Header() {
         )}
 
         <div className="flex items-center space-x-4">
+          {user && (
+            <Suspense fallback={null}>
+              <CreditsIndicator />
+            </Suspense>
+          )}
           <ModeToggle />
           <Suspense fallback={<div className="h-9" />}>
             <UserMenu />
