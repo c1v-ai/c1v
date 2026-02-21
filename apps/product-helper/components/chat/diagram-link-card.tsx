@@ -104,60 +104,32 @@ export function DiagramLinkCard({
       type="button"
       onClick={onViewClick}
       className={cn(
-        'group flex w-full items-center gap-3 rounded-lg p-3 text-left transition-all duration-200',
+        'group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all duration-200',
+        'bg-card border border-border',
+        'hover:border-primary hover:shadow-[0_2px_8px_rgba(241,143,1,0.15)]',
         'hover:scale-[1.01] active:scale-[0.99]',
         className
       )}
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        border: '1px solid var(--border)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--accent)';
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 107, 53, 0.15)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border)';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
     >
       {/* Icon Container */}
-      <div
-        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md transition-colors duration-200"
-        style={{
-          backgroundColor: 'var(--bg-secondary)',
-        }}
-      >
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md transition-colors duration-200 bg-muted">
         <IconComponent
-          className="h-5 w-5 transition-colors duration-200 group-hover:scale-110"
-          style={{ color: 'var(--accent)' }}
+          className="h-5 w-5 transition-colors duration-200 group-hover:scale-110 text-primary"
         />
       </div>
 
       {/* Text Content */}
       <div className="flex-1 min-w-0">
-        <div
-          className="text-sm font-semibold"
-          style={{
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-heading)',
-          }}
-        >
+        <div className="text-sm font-semibold text-foreground">
           {diagramInfo.title}
         </div>
-        <div
-          className="text-xs mt-0.5"
-          style={{ color: 'var(--text-secondary)' }}
-        >
+        <div className="text-xs mt-0.5 text-muted-foreground">
           Click to open diagram viewer
         </div>
       </div>
 
       {/* Arrow Icon */}
-      <div
-        className="flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1"
-        style={{ color: 'var(--text-secondary)' }}
-      >
+      <div className="flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1 text-muted-foreground">
         <ChevronRight className="h-5 w-5" />
       </div>
     </button>

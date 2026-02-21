@@ -115,21 +115,18 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
         h1: ({ node, ...props }) => (
           <h1
             className="text-2xl font-bold mt-6 mb-4"
-            style={{ fontFamily: 'var(--font-heading)' }}
             {...props}
           />
         ),
         h2: ({ node, ...props }) => (
           <h2
             className="text-xl font-bold mt-5 mb-3"
-            style={{ fontFamily: 'var(--font-heading)' }}
             {...props}
           />
         ),
         h3: ({ node, ...props }) => (
           <h3
             className="text-lg font-bold mt-4 mb-2"
-            style={{ fontFamily: 'var(--font-heading)' }}
             {...props}
           />
         ),
@@ -179,12 +176,7 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
           if (inline) {
             return (
               <code
-                className="px-1.5 py-0.5 rounded text-sm"
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--border)',
-                }}
+                className="px-1.5 py-0.5 rounded text-sm bg-muted border border-border"
                 {...props}
               >
                 {children}
@@ -193,12 +185,7 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
           }
           return (
             <code
-              className="block p-3 rounded my-3 text-sm overflow-x-auto"
-              style={{
-                fontFamily: 'var(--font-heading)',
-                backgroundColor: 'var(--bg-secondary)',
-                border: '1px solid var(--border)',
-              }}
+              className="block p-3 rounded-lg my-3 text-sm overflow-x-auto bg-muted border border-border"
               {...props}
             >
               {children}
@@ -222,8 +209,7 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
         // Links
         a: ({ node, ...props }) => (
           <a
-            className="underline hover:opacity-80 transition-opacity"
-            style={{ color: 'var(--accent)' }}
+            className="text-primary hover:underline transition-opacity"
             target="_blank"
             rel="noopener noreferrer"
             {...props}
@@ -233,11 +219,7 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
         // Blockquotes
         blockquote: ({ node, ...props }) => (
           <blockquote
-            className="border-l-4 pl-4 py-2 my-3 italic"
-            style={{
-              borderColor: 'var(--accent)',
-              color: 'var(--text-muted)',
-            }}
+            className="border-l-4 border-primary pl-4 py-2 my-3 italic text-muted-foreground"
             {...props}
           />
         ),
@@ -246,29 +228,26 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
         table: ({ node, ...props }) => (
           <div className="overflow-x-auto my-3">
             <table
-              className="min-w-full border"
-              style={{ borderColor: 'var(--border)' }}
+              className="min-w-full border border-border"
               {...props}
             />
           </div>
         ),
         thead: ({ node, ...props }) => (
           <thead
-            style={{ backgroundColor: 'var(--bg-secondary)' }}
+            className="bg-muted"
             {...props}
           />
         ),
         th: ({ node, ...props }) => (
           <th
-            className="px-4 py-2 text-left font-bold border"
-            style={{ borderColor: 'var(--border)' }}
+            className="px-4 py-2 text-left font-bold border border-border"
             {...props}
           />
         ),
         td: ({ node, ...props }) => (
           <td
-            className="px-4 py-2 border"
-            style={{ borderColor: 'var(--border)' }}
+            className="px-4 py-2 border border-border"
             {...props}
           />
         ),
@@ -276,8 +255,7 @@ export function MarkdownRenderer({ content, onDiagramClick, currentPhase }: Mark
         // Horizontal rule
         hr: ({ node, ...props }) => (
           <hr
-            className="my-6"
-            style={{ borderColor: 'var(--border)' }}
+            className="my-6 border-border"
             {...props}
           />
         ),

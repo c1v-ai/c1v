@@ -2,7 +2,7 @@
 
 import crypto from 'crypto';
 import { z } from 'zod';
-import { and, eq, sql, isNull, lt } from 'drizzle-orm';
+import { and, count, eq, sql, isNull, lt } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import {
   User,
@@ -29,6 +29,7 @@ import {
   validatedAction,
   validatedActionWithUser
 } from '@/lib/auth/middleware';
+import { isUnlimitedMembers } from '@/lib/constants';
 
 async function logActivity(
   teamId: number | null | undefined,
@@ -454,6 +455,26 @@ export const inviteTeamMember = validatedActionWithUser(
 
     if (existingInvitation.length > 0) {
       return { error: 'An invitation has already been sent to this email' };
+    }
+
+    // Check team member limit
+    const [{ memberCount }] = await db
+      .select({ memberCount: count() })
+      .from(teamMembers)
+      .where(eq(teamMembers.teamId, userWithTeam.teamId));
+
+    const [currentTeam] = await db
+      .select({ teamMemberLimit: teams.teamMemberLimit })
+      .from(teams)
+      .where(eq(teams.id, userWithTeam.teamId))
+      .limit(1);
+
+    const limit = currentTeam?.teamMemberLimit ?? 2;
+
+    if (!isUnlimitedMembers(limit) && memberCount >= limit) {
+      return {
+        error: `Your plan allows up to ${limit} team member${limit === 1 ? '' : 's'}. Upgrade to add more.`
+      };
     }
 
     // Create a new invitation

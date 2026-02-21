@@ -51,25 +51,16 @@ const backendItems: PipelineItem[] = [
 function StatusIcon({ ready, isGenerating }: { ready: boolean; isGenerating: boolean }) {
   if (ready) {
     return (
-      <CheckCircle2
-        className="h-4 w-4 shrink-0"
-        style={{ color: 'var(--success, #22c55e)' }}
-      />
+      <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
     );
   }
   if (isGenerating) {
     return (
-      <Loader2
-        className="h-4 w-4 shrink-0 animate-spin"
-        style={{ color: 'var(--accent)' }}
-      />
+      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
     );
   }
   return (
-    <Circle
-      className="h-4 w-4 shrink-0"
-      style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-    />
+    <Circle className="h-4 w-4 shrink-0 text-muted-foreground opacity-40" />
   );
 }
 
@@ -88,10 +79,7 @@ function PipelineGroup({
 }) {
   return (
     <div>
-      <h4
-        className="text-sm font-semibold mb-2"
-        style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-      >
+      <h4 className="text-sm font-semibold mb-2 text-foreground">
         {title}
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -103,11 +91,10 @@ function PipelineGroup({
             <Link
               key={item.dataKey}
               href={`/projects/${projectId}${item.href}`}
-              className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-[var(--bg-secondary)]"
-              style={{ borderColor: 'var(--border)' }}
+              className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted"
             >
-              <Icon className="h-4 w-4 shrink-0" style={{ color: 'var(--text-muted)' }} />
-              <span className="flex-1 text-sm" style={{ color: 'var(--text-primary)' }}>
+              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="flex-1 text-sm text-foreground">
                 {item.name}
               </span>
               <StatusIcon ready={ready} isGenerating={!ready && isGenerating} />
@@ -130,10 +117,7 @@ export function ArtifactPipeline({ projectId }: { projectId: number }) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <h3
-          className="text-lg font-semibold mb-4"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
           Artifact Pipeline
         </h3>
         <div className="space-y-5">

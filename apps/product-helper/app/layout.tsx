@@ -1,11 +1,26 @@
 import './theme.css';
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
+import { Space_Grotesk, Roboto } from 'next/font/google';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 import { Toaster } from 'sonner';
 import { ServiceWorkerRegister } from '@/components/sw-register';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
+
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-roboto',
+  display: 'swap',
+});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -32,6 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      className={`${spaceGrotesk.variable} ${roboto.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-[100dvh]">

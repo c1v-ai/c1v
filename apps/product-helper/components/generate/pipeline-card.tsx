@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // ============================================================
 // Types
@@ -61,20 +62,14 @@ function ApprovalGate({
   onCancel: () => void;
 }) {
   return (
-    <div
-      className="mt-3 rounded-md border p-3"
-      style={{
-        borderColor: 'var(--accent)',
-        backgroundColor: 'color-mix(in srgb, var(--accent) 5%, transparent)',
-      }}
-    >
+    <div className="mt-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
       <div className="flex items-start gap-2">
-        <ShieldCheck className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
+        <ShieldCheck className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
         <div className="flex-1">
-          <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-xs font-medium text-foreground">
             {isRegenerate ? 'Confirm Regeneration' : 'Approval Required'}
           </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs mt-1 text-muted-foreground">
             {isRegenerate
               ? `This will regenerate "${stageName}" using AI. The existing output will be replaced.`
               : `Generate "${stageName}" using AI? This will consume tokens and may take a moment.`}
@@ -82,19 +77,13 @@ function ApprovalGate({
           <div className="flex gap-2 mt-2">
             <button
               onClick={onApprove}
-              className="text-xs px-3 py-1.5 rounded-md font-medium transition-colors"
-              style={{ backgroundColor: 'var(--accent)', color: 'white' }}
+              className="text-xs px-3 py-1.5 rounded-xl font-medium transition-colors bg-primary text-primary-foreground"
             >
               {isRegenerate ? 'Regenerate' : 'Approve & Generate'}
             </button>
             <button
               onClick={onCancel}
-              className="text-xs px-3 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1"
-              style={{
-                backgroundColor: 'transparent',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border)',
-              }}
+              className="text-xs px-3 py-1.5 rounded-xl font-medium transition-colors flex items-center gap-1 bg-transparent text-muted-foreground border border-border"
             >
               <X className="w-3 h-3" />
               Cancel
@@ -151,21 +140,21 @@ export function PipelineCard({
 
   const statusIcon = () => {
     if (isLoading) {
-      return <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--accent)' }} />;
+      return <Loader2 className="w-5 h-5 animate-spin text-primary" />;
     }
     switch (stage.status) {
       case 'completed':
-        return <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--success, #22c55e)' }} />;
+        return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-500" />;
       case 'ready':
-        return <Circle className="w-5 h-5" style={{ color: 'var(--accent)' }} />;
+        return <Circle className="w-5 h-5 text-primary" />;
       case 'in_progress':
-        return <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--accent)' }} />;
+        return <Loader2 className="w-5 h-5 animate-spin text-primary" />;
       case 'locked':
-        return <Lock className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />;
+        return <Lock className="w-5 h-5 text-muted-foreground" />;
       case 'error':
-        return <AlertCircle className="w-5 h-5" style={{ color: 'var(--error, #ef4444)' }} />;
+        return <AlertCircle className="w-5 h-5 text-destructive" />;
       default:
-        return <Circle className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />;
+        return <Circle className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -174,63 +163,41 @@ export function PipelineCard({
 
   return (
     <div
-      className="rounded-lg border p-4 transition-colors"
-      style={{
-        backgroundColor: 'var(--bg-secondary)',
-        borderColor: stage.status === 'ready' ? 'var(--accent)' : 'var(--border)',
-        opacity: stage.status === 'locked' ? 0.6 : 1,
-      }}
+      className={cn(
+        "rounded-xl border p-4 transition-colors bg-card",
+        stage.status === 'ready' ? 'border-primary' : 'border-border',
+        stage.status === 'locked' && 'opacity-60',
+      )}
     >
       <div className="flex items-start gap-3">
         <div className="mt-0.5">{statusIcon()}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <h3
-              className="font-medium text-sm"
-              style={{ color: 'var(--text-primary)' }}
-            >
+            <h3 className="font-medium text-sm text-foreground">
               {stage.name}
             </h3>
             {stage.status === 'completed' && stage.reviewStatus === 'approved' && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: '#dcfce7', color: '#166534' }}
-              >
+              <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                 Approved
               </span>
             )}
             {stage.status === 'completed' && stage.reviewStatus === 'awaiting-review' && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: '#fef3c7', color: '#92400e' }}
-              >
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                 Awaiting Review
               </span>
             )}
             {stage.status === 'completed' && (!stage.reviewStatus || stage.reviewStatus === 'draft') && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: 'var(--success, #22c55e)',
-                  color: 'white',
-                }}
-              >
+              <span className="text-xs px-2 py-0.5 rounded-full bg-green-500 text-white">
                 Done
               </span>
             )}
           </div>
-          <p
-            className="text-xs mt-1"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-xs mt-1 text-muted-foreground">
             {stage.description}
           </p>
 
           {error && (
-            <p
-              className="text-xs mt-2"
-              style={{ color: 'var(--error, #ef4444)' }}
-            >
+            <p className="text-xs mt-2 text-destructive">
               {error}
             </p>
           )}
@@ -251,11 +218,7 @@ export function PipelineCard({
               {isActionable && !isLoading && (
                 <button
                   onClick={() => handleRequestAction('generate')}
-                  className="text-xs px-3 py-1.5 rounded-md font-medium transition-colors"
-                  style={{
-                    backgroundColor: 'var(--accent)',
-                    color: 'white',
-                  }}
+                  className="text-xs px-3 py-1.5 rounded-xl font-medium transition-colors bg-primary text-primary-foreground"
                 >
                   Generate
                 </button>
@@ -263,12 +226,7 @@ export function PipelineCard({
               {isRegeneratable && !isLoading && (
                 <button
                   onClick={() => handleRequestAction('regenerate')}
-                  className="text-xs px-3 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1"
-                  style={{
-                    backgroundColor: 'transparent',
-                    color: 'var(--text-muted)',
-                    border: '1px solid var(--border)',
-                  }}
+                  className="text-xs px-3 py-1.5 rounded-xl font-medium transition-colors flex items-center gap-1 bg-transparent text-muted-foreground border border-border"
                 >
                   <RefreshCw className="w-3 h-3" />
                   Regenerate
@@ -277,22 +235,14 @@ export function PipelineCard({
               {isRegeneratable && !isLoading && stage.reviewStatus !== 'approved' && onReviewStatusChange && (
                 <button
                   onClick={() => onReviewStatusChange(stage.id, 'approved')}
-                  className="text-xs px-3 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1"
-                  style={{
-                    backgroundColor: 'transparent',
-                    color: '#166534',
-                    border: '1px solid #bbf7d0',
-                  }}
+                  className="text-xs px-3 py-1.5 rounded-xl font-medium transition-colors flex items-center gap-1 bg-transparent text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700"
                 >
                   <CheckCircle2 className="w-3 h-3" />
                   Approve
                 </button>
               )}
               {stage.status === 'locked' && (
-                <span
-                  className="text-xs"
-                  style={{ color: 'var(--text-muted)' }}
-                >
+                <span className="text-xs text-muted-foreground">
                   Complete {stage.dependsOn.join(', ')} first
                 </span>
               )}

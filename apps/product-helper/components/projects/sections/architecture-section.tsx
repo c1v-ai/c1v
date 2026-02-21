@@ -20,7 +20,6 @@ import {
   GitBranch,
   Link2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,11 +93,8 @@ function EntityDetailCard({ entity }: { entity: DataEntity }) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Boxes className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-          <CardTitle
-            className="text-lg"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <Boxes className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg">
             {entity.name}
           </CardTitle>
         </div>
@@ -107,37 +103,22 @@ function EntityDetailCard({ entity }: { entity: DataEntity }) {
         {/* Attributes */}
         {attributes.length > 0 && (
           <div>
-            <h4
-              className="text-sm font-semibold mb-3"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <h4 className="text-sm font-semibold mb-3 text-foreground">
               Attributes
             </h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr
-                    className="border-b"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <th
-                      className="text-left py-2 px-3 font-semibold"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 font-semibold text-foreground">
                       Name
                     </th>
                     {isStructuredAttribute(attributes[0]) && (
                       <>
-                        <th
-                          className="text-left py-2 px-3 font-semibold"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
+                        <th className="text-left py-2 px-3 font-semibold text-foreground">
                           Type
                         </th>
-                        <th
-                          className="text-left py-2 px-3 font-semibold hidden sm:table-cell"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
+                        <th className="text-left py-2 px-3 font-semibold hidden sm:table-cell text-foreground">
                           Constraints
                         </th>
                       </>
@@ -148,12 +129,11 @@ function EntityDetailCard({ entity }: { entity: DataEntity }) {
                   {attributes.map((attr, i) => (
                     <tr
                       key={i}
-                      className="border-b last:border-b-0"
-                      style={{ borderColor: 'var(--border)' }}
+                      className="border-b border-border last:border-b-0"
                     >
                       {isStructuredAttribute(attr) ? (
                         <>
-                          <td className="py-2 px-3 font-mono text-sm" style={{ color: 'var(--text-primary)' }}>
+                          <td className="py-2 px-3 font-mono text-sm text-foreground">
                             {attr.name}
                           </td>
                           <td className="py-2 px-3">
@@ -161,15 +141,12 @@ function EntityDetailCard({ entity }: { entity: DataEntity }) {
                               {attr.type}
                             </Badge>
                           </td>
-                          <td
-                            className="py-2 px-3 hidden sm:table-cell"
-                            style={{ color: 'var(--text-muted)' }}
-                          >
+                          <td className="py-2 px-3 hidden sm:table-cell text-muted-foreground">
                             {attr.constraints || '-'}
                           </td>
                         </>
                       ) : (
-                        <td className="py-2 px-3" style={{ color: 'var(--text-primary)' }}>
+                        <td className="py-2 px-3 text-foreground">
                           {attr}
                         </td>
                       )}
@@ -184,24 +161,20 @@ function EntityDetailCard({ entity }: { entity: DataEntity }) {
         {/* Relationships */}
         {relationships.length > 0 && (
           <div>
-            <h4
-              className="text-sm font-semibold mb-3"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-            >
+            <h4 className="text-sm font-semibold mb-3 text-foreground">
               Relationships
             </h4>
             <div className="space-y-2">
               {relationships.map((rel, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2 p-2 rounded-md"
-                  style={{ backgroundColor: 'var(--bg-secondary)' }}
+                  className="flex items-start gap-2 p-2 rounded-md bg-muted"
                 >
-                  <Link2 className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
+                  <Link2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
                   {isStructuredRelationship(rel) ? (
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
+                        <span className="font-medium text-sm text-foreground">
                           {rel.target}
                         </span>
                         <Badge variant="outline" className="text-xs">
@@ -209,13 +182,13 @@ function EntityDetailCard({ entity }: { entity: DataEntity }) {
                         </Badge>
                       </div>
                       {rel.description && (
-                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-xs mt-1 text-muted-foreground">
                           {rel.description}
                         </p>
                       )}
                     </div>
                   ) : (
-                    <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                    <span className="text-sm text-foreground">
                       {rel}
                     </span>
                   )}
@@ -234,22 +207,16 @@ function ContextDiagramCard({ mermaid }: { mermaid: string }) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <GitBranch className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-          <CardTitle
-            className="text-lg"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
+          <GitBranch className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg">
             Context Diagram
           </CardTitle>
         </div>
         <CardDescription>System boundary with actors and external entities</CardDescription>
       </CardHeader>
       <CardContent>
-        <div
-          className="rounded-lg border p-4 overflow-x-auto"
-          style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}
-        >
-          <pre className="text-sm font-mono whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+        <div className="rounded-lg border border-border p-4 overflow-x-auto bg-muted">
+          <pre className="text-sm font-mono whitespace-pre-wrap text-foreground">
             {mermaid}
           </pre>
         </div>
@@ -272,23 +239,14 @@ function EmptyState({ projectId, status }: { projectId: number; status: string }
     <Card>
       <CardContent className="pt-6">
         <div className="text-center py-16">
-          <Boxes
-            className="h-16 w-16 mx-auto mb-4"
-            style={{ color: 'var(--text-muted)', opacity: 0.4 }}
-          />
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <Boxes className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             No Architecture Data
           </h3>
-          <p
-            className="text-sm mb-6 max-w-md mx-auto"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
             {message}
           </p>
-          <Button asChild style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}>
+          <Button asChild>
             <Link href={`/projects/${projectId}/chat`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
@@ -327,13 +285,10 @@ export function ArchitectureSection({ project }: ArchitectureSectionProps) {
     <div className="space-y-6">
       {/* Section Header */}
       <div>
-        <h2
-          className="text-2xl font-bold mb-1"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-1 text-foreground">
           Architecture
         </h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm text-muted-foreground">
           Detailed data model and system context diagram for your project.
         </p>
       </div>

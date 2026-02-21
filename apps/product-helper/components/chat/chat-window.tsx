@@ -144,12 +144,11 @@ export function ChatLayout({ content, footer, messageCount = 0 }: ChatLayoutProp
       {/* Fixed footer with input - mobile optimized */}
       <div
         className={cn(
-          "flex-shrink-0 border-t bg-[var(--bg-primary)]",
+          "flex-shrink-0 border-t border-border bg-background",
           "px-3 pt-2", // Horizontal and top padding
           "md:px-4", // Desktop: more horizontal padding
           "chat-footer-safe" // Combined: visual + BottomNav clearance + safe area
         )}
-        style={{ borderColor: 'var(--border)' }}
       >
         {showScrollButton && (
           <Button
@@ -158,13 +157,10 @@ export function ChatLayout({ content, footer, messageCount = 0 }: ChatLayoutProp
             className={cn(
               "mx-auto mb-2 gap-2 flex",
               "min-h-[44px]", // Touch target
-              "tap-highlight-none"
+              "tap-highlight-none",
+              "bg-background border-border"
             )}
             onClick={() => scrollToBottom('smooth')}
-            style={{
-              backgroundColor: 'var(--bg-primary)',
-              borderColor: 'var(--border)',
-            }}
           >
             <ArrowDown className="h-4 w-4" />
             <span>Scroll to bottom</span>
@@ -336,13 +332,10 @@ export function DefaultEmptyState() {
         🤖
       </div>
       <div>
-        <h2
-          className="text-2xl font-bold mb-2"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
+        <h2 className="text-2xl font-bold mb-2">
           Start a conversation
         </h2>
-        <p style={{ color: 'var(--text-muted)' }}>
+        <p className="text-muted-foreground">
           Ask me anything to get started!
         </p>
       </div>
