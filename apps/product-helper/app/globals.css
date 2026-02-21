@@ -98,15 +98,15 @@
   :root {
     /* Figma: Porcelain #FBFCFC */
     --background: 180 14.3% 98.6%;
-    /* Figma: Text #0D0D0D */
-    --foreground: 0 0% 5.1%;
+    /* Firefly green #0B2C29 */
+    --foreground: 174.5 60% 10.8%;
 
     /* Figma: Pure White #FFFFFF */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 5.1%;
+    --card-foreground: 174.5 60% 10.8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5.1%;
+    --popover-foreground: 174.5 60% 10.8%;
 
     /* Figma: Tangerine step 1 #FCE8CC */
     --primary: 33 93% 89.4%;
@@ -115,12 +115,12 @@
 
     /* Figma: rgba(0,0,0,0.05) approx */
     --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 5.1%;
+    --secondary-foreground: 174.5 60% 10.8%;
 
     /* Figma: rgba(0,0,0,0.05) approx */
     --muted: 0 0% 95%;
-    /* Figma: rgba(13,13,13,0.6) approx */
-    --muted-foreground: 0 0% 40%;
+    /* Firefly green at ~50% opacity */
+    --muted-foreground: 174 30% 35%;
 
     /* Figma: Danube #5998C5 */
     --accent: 205 48.2% 56.1%;
@@ -149,11 +149,11 @@
 
     /* Sidebar: mirror card tokens */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 5.1%;
+    --sidebar-foreground: 174.5 60% 10.8%;
     --sidebar-primary: 33 93% 89.4%;
     --sidebar-primary-foreground: 174 60% 10.8%;
     --sidebar-accent: 0 0% 95%;
-    --sidebar-accent-foreground: 0 0% 5.1%;
+    --sidebar-accent-foreground: 174.5 60% 10.8%;
     --sidebar-border: 0 0% 88%;
     --sidebar-ring: 33 93% 89.4%;
   }
@@ -180,8 +180,8 @@
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 20%;
-    /* Figma: rgba(255,255,255,0.6) approx */
-    --muted-foreground: 0 0% 65%;
+    /* Porcelain-tinted muted text for readability on Firefly */
+    --muted-foreground: 174 15% 75%;
 
     /* Figma: Danube (same in dark) */
     --accent: 205 48.2% 56.1%;

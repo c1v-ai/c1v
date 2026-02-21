@@ -24,7 +24,7 @@
   /* Semantic tokens — Light mode (c1v- prefix avoids shadcn HSL var collisions) */
   --bg-primary: var(--color-porcelain);
   --bg-secondary: #FFFFFF;
-  --text-primary: #0D0D0D;
+  --text-primary: #0B2C29;
   --c1v-accent: var(--color-tangerine);
   --text-muted: rgba(13, 13, 13, 0.6);
   --c1v-border: rgba(13, 13, 13, 0.15);
