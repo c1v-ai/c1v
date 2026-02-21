@@ -34,48 +34,42 @@ function StatusIndicator({ hasData, isNew, isGenerating }: { hasData: boolean; i
   if (hasData) {
     return (
       <CheckCircle2
-        className={cn('h-3 w-3 ml-auto shrink-0', isNew && 'animate-pulse')}
-        style={{ color: 'var(--success, #22c55e)' }}
+        className={cn('h-3 w-3 ml-auto shrink-0 text-green-500', isNew && 'animate-pulse')}
       />
     );
   }
   if (isGenerating) {
     return (
       <Loader2
-        className="h-3 w-3 ml-auto shrink-0 animate-spin"
-        style={{ color: 'var(--accent)' }}
+        className="h-3 w-3 ml-auto shrink-0 animate-spin text-accent"
       />
     );
   }
   return (
     <Circle
-      className="h-3 w-3 ml-auto shrink-0"
-      style={{ color: 'var(--text-muted)', opacity: 0.4 }}
+      className="h-3 w-3 ml-auto shrink-0 text-muted-foreground opacity-40"
     />
   );
 }
 
 function CompletenessBar({ percentage }: { percentage: number }) {
   return (
-    <div className="px-3 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+    <div className="px-3 py-3 border-t border-sidebar-border">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium uppercase" style={{ color: 'var(--text-muted)' }}>
+        <span className="text-xs font-medium uppercase text-muted-foreground">
           Completeness
         </span>
-        <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+        <span className="text-sm font-semibold tabular-nums text-sidebar-foreground">
           {percentage}%
         </span>
       </div>
-      <div
-        className="h-2 w-full rounded-full overflow-hidden"
-        style={{ backgroundColor: 'var(--bg-secondary)' }}
-      >
+      <div className="h-2 w-full rounded-full overflow-hidden bg-muted">
         <div
-          className="h-full rounded-full transition-all duration-500 ease-out"
-          style={{
-            width: `${percentage}%`,
-            backgroundColor: percentage >= 75 ? 'var(--success, #22c55e)' : 'var(--accent)',
-          }}
+          className={cn(
+            'h-full rounded-full transition-all duration-500 ease-out',
+            percentage >= 75 ? 'bg-green-500' : 'bg-primary'
+          )}
+          style={{ width: `${percentage}%` }}
         />
       </div>
     </div>
@@ -108,8 +102,8 @@ function NavItemComponent({
         <div
           className={cn(
             'flex items-center w-full rounded-md text-sm font-medium transition-colors',
-            'hover:bg-[var(--bg-secondary)]',
-            active && !item.href ? 'bg-[var(--bg-secondary)]' : ''
+            'hover:bg-sidebar-accent',
+            active && !item.href ? 'bg-sidebar-accent' : ''
           )}
           style={{ paddingLeft: `${8 + depth * 12}px` }}
         >
@@ -117,20 +111,21 @@ function NavItemComponent({
           {item.href ? (
             <Link
               href={item.href}
-              className="flex items-center gap-2 flex-1 py-1.5"
-              style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}
+              className={cn(
+                'flex items-center gap-2 flex-1 py-1.5',
+                active ? 'text-accent' : 'text-sidebar-foreground'
+              )}
             >
-              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span>{item.name}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-2 flex-1 py-1.5 text-left"
-              style={{ color: 'var(--text-primary)' }}
+              className="flex items-center gap-2 flex-1 py-1.5 text-left text-sidebar-foreground"
             >
-              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+              <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span>{item.name}</span>
             </button>
           )}
@@ -138,13 +133,13 @@ function NavItemComponent({
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="p-1.5 mr-1 rounded hover:bg-[var(--bg-primary)]"
+            className="p-1.5 mr-1 rounded hover:bg-sidebar"
             aria-label={expanded ? 'Collapse section' : 'Expand section'}
           >
             {expanded ? (
-              <ChevronUp className="h-3 w-3" style={{ color: 'var(--text-muted)' }} />
+              <ChevronUp className="h-3 w-3 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-3 w-3" style={{ color: 'var(--text-muted)' }} />
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
             )}
           </button>
         </div>
@@ -177,12 +172,9 @@ function NavItemComponent({
       href={item.href!}
       className={cn(
         'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors',
-        active ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'
+        active ? 'bg-sidebar-accent text-accent' : 'hover:bg-sidebar-accent text-sidebar-foreground'
       )}
-      style={{
-        paddingLeft: `${8 + depth * 12}px`,
-        color: active ? 'var(--accent)' : 'var(--text-primary)'
-      }}
+      style={{ paddingLeft: `${8 + depth * 12}px` }}
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
       <span className="flex-1">{item.name}</span>
@@ -282,11 +274,10 @@ export function ExplorerSidebar({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        'relative flex-col h-full border-r transition-all duration-300 ease-in-out flex-shrink-0',
+        'relative flex-col h-full border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out flex-shrink-0',
         explorerCollapsed ? 'w-14' : 'w-64',
         className
       )}
-      style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
     >
       {/* Collapse Toggle */}
       <button
@@ -295,15 +286,14 @@ export function ExplorerSidebar({ className }: { className?: string }) {
         aria-label={explorerCollapsed ? 'Expand explorer' : 'Collapse explorer'}
         className={cn(
           'absolute -right-3 top-4 z-10 flex h-6 w-6 items-center justify-center rounded-full',
-          'border shadow-sm transition-colors duration-150',
-          'hover:bg-[var(--bg-secondary)]'
+          'border border-border shadow-sm transition-colors duration-150',
+          'bg-sidebar hover:bg-sidebar-accent'
         )}
-        style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
       >
         {explorerCollapsed ? (
-          <ChevronRight className="h-3 w-3" style={{ color: 'var(--text-muted)' }} />
+          <ChevronRight className="h-3 w-3 text-muted-foreground" />
         ) : (
-          <ChevronLeft className="h-3 w-3" style={{ color: 'var(--text-muted)' }} />
+          <ChevronLeft className="h-3 w-3 text-muted-foreground" />
         )}
       </button>
 
@@ -322,11 +312,11 @@ export function ExplorerSidebar({ className }: { className?: string }) {
                 title={item.name}
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
-                  active ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'
+                  active ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent'
                 )}
               >
                 <Icon
-                  className={cn('h-4 w-4', active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]')}
+                  className={cn('h-4 w-4', active ? 'text-accent' : 'text-muted-foreground')}
                 />
               </Link>
             ) : (
@@ -335,11 +325,11 @@ export function ExplorerSidebar({ className }: { className?: string }) {
                 title={item.name}
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-md',
-                  active ? 'bg-[var(--bg-secondary)]' : ''
+                  active ? 'bg-sidebar-accent' : ''
                 )}
               >
                 <Icon
-                  className={cn('h-4 w-4', active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]')}
+                  className={cn('h-4 w-4', active ? 'text-accent' : 'text-muted-foreground')}
                 />
               </div>
             );
@@ -365,8 +355,8 @@ export function ExplorerSidebar({ className }: { className?: string }) {
           {/* Empty state message */}
           {completeness === 0 && (
             <div className="flex flex-col items-center justify-center px-4 py-4 text-center">
-              <Sparkles className="h-6 w-6 mb-2" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              <Sparkles className="h-6 w-6 mb-2 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
                 Start chatting to build your PRD
               </p>
             </div>
