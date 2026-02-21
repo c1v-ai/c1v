@@ -42,6 +42,7 @@ import type { APISpecGenerationContext } from '@/lib/types/api-specification';
 import { generateInfrastructureSpec, type InfrastructureContext } from '@/lib/langchain/agents/infrastructure-agent';
 import { generateCodingGuidelines, type GuidelinesContext } from '@/lib/langchain/agents/guidelines-agent';
 import { userStories } from '@/lib/db/schema';
+import type { KBProjectContext } from '@/lib/education/reference-data/types';
 
 // ============================================================
 // Types
@@ -755,6 +756,42 @@ async function triggerPostIntakeGeneration(
 ): Promise<string> {
   console.log(`[POST_INTAKE] Starting post-intake generation for project ${projectId}`);
 
+  // Query project onboarding metadata and map to KBProjectContext
+  let projectContext: Partial<KBProjectContext> = {};
+  try {
+    const project = await db.query.projects.findFirst({
+      where: eq(projects.id, projectId),
+      columns: { projectType: true, projectStage: true, budget: true },
+    });
+    if (project) {
+      const typeMap: Record<string, KBProjectContext['projectType']> = {
+        saas: 'saas', marketplace: 'marketplace', mobile: 'mobile',
+        'api-platform': 'api-platform', 'ai-product': 'ai-product',
+        'e-commerce': 'e-commerce', 'internal-tool': 'internal-tool',
+        'open-source': 'open-source',
+      };
+      const stageMap: Record<string, KBProjectContext['stage']> = {
+        idea: 'idea', prototype: 'mvp', mvp: 'mvp', growth: 'growth', mature: 'mature',
+      };
+      const budgetMap: Record<string, KBProjectContext['budget']> = {
+        'bootstrap': 'bootstrap', 'seed': 'seed', 'series-a': 'series-a',
+        'enterprise': 'enterprise', '$0-$100': 'bootstrap', '$100-$1K': 'seed',
+        '$1K-$10K': 'series-a', '$10K+': 'enterprise',
+      };
+      if (project.projectType && typeMap[project.projectType]) {
+        projectContext.projectType = typeMap[project.projectType];
+      }
+      if (project.projectStage && stageMap[project.projectStage]) {
+        projectContext.stage = stageMap[project.projectStage];
+      }
+      if (project.budget && budgetMap[project.budget]) {
+        projectContext.budget = budgetMap[project.budget];
+      }
+    }
+  } catch (error) {
+    console.warn('[POST_INTAKE] Failed to load project context, using generic:', error);
+  }
+
   const actors = extractedData.actors ?? [];
   const useCases = extractedData.useCases ?? [];
   let dataEntities = extractedData.dataEntities ?? [];
@@ -1005,6 +1042,7 @@ async function triggerPostIntakeGeneration(
     projectVision: enrichedVision,
     useCases: useCases.map((uc, i) => ({ name: uc.name, description: enrichedUseCaseDescriptions[i] })),
     dataEntities: dataEntities.map(e => ({ name: e.name })),
+    projectContext,
   };
 
   const userStoriesCtx: UserStoriesContext = {
@@ -1025,6 +1063,7 @@ async function triggerPostIntakeGeneration(
       name: a.name,
       role: a.role,
     })),
+    projectContext,
   };
 
   const schemaCtx: SchemaExtractionContext = {
@@ -1036,6 +1075,7 @@ async function triggerPostIntakeGeneration(
       relationships: e.relationships ?? [],
     })),
     useCases: useCases.map((uc, i) => ({ name: uc.name, description: enrichedUseCaseDescriptions[i] })),
+    projectContext,
   };
 
   const apiSpecCtx: APISpecGenerationContext = {
@@ -1054,11 +1094,13 @@ async function triggerPostIntakeGeneration(
       attributes: e.attributes ?? [],
       relationships: e.relationships ?? [],
     })),
+    projectContext,
   };
 
   const infraCtx: InfrastructureContext = {
     projectName,
     projectDescription: enrichedVision,
+    projectContext,
   };
 
   // Phase 1: Run 5 generators in parallel
@@ -1079,6 +1121,7 @@ async function triggerPostIntakeGeneration(
     const guidelinesCtx: GuidelinesContext = {
       projectName,
       techStack: techStackResult.value,
+      projectContext,
     };
     [guidelinesResult] = await Promise.allSettled([generateCodingGuidelines(guidelinesCtx)]);
   } else {

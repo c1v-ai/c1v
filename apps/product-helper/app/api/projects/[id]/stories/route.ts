@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withProjectAuth } from '@/lib/api/with-project-auth';
+import { checkAndDeductCredits } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { projects, userStories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -92,15 +93,11 @@ export const POST = withProjectAuth(
 
     // Option 1: Generate stories from use cases
     if (body.generate === true) {
-      // Credit gate: Story generation costs 100 credits
+      // Credit check — only for AI generation, not manual story creation
       const creditResult = await checkAndDeductCredits(team.id, 100);
       if (!creditResult.allowed) {
         return NextResponse.json(
-          {
-            error: 'Credit limit reached',
-            creditsUsed: creditResult.creditsUsed,
-            creditLimit: creditResult.creditLimit,
-          },
+          { error: 'credit_limit_reached', creditsUsed: creditResult.creditsUsed, creditLimit: creditResult.creditLimit },
           { status: 402 }
         );
       }

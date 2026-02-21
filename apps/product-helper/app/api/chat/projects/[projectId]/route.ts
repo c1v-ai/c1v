@@ -81,6 +81,20 @@ export async function POST(
       );
     }
 
+    // Credit check
+    const creditResult = await checkAndDeductCredits(team.id, 5);
+    if (!creditResult.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'credit_limit_reached',
+          message: 'You\'ve used all your free credits. Upgrade to continue.',
+          creditsUsed: creditResult.creditsUsed,
+          creditLimit: creditResult.creditLimit,
+        }),
+        { status: 402, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Rate limit check: 100 requests per minute per user (uses shared rate-limit config)
     const rateLimitKey = `chat-user-${user.id}`;
     const rateLimitResult = checkRateLimit(rateLimitKey);

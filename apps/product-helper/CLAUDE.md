@@ -76,6 +76,13 @@ lib/
 - **Tests:** Co-located `__tests__/` directories next to source files
 - **LLM provider:** Anthropic Claude via `@langchain/anthropic` (not OpenAI)
 
+### Credit System (`lib/db/queries.ts`)
+- `checkAndDeductCredits(teamId, amount)` — atomic check-and-deduct with race-safe WHERE clause
+- Free tier: 2,500 credits (Quick Start=1250, chat=5, regen=100)
+- Paid tier: 999,999 credits (effectively unlimited)
+- Credits reset on subscription change (active→0/999999, canceled→0/2500)
+- 402 responses handled in Quick Start dialog (upgrade prompt) and chat (toast with upgrade link)
+
 ## Active Work
 
 **Credit System:** Deployed (2026-02-19)

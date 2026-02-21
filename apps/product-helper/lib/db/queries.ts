@@ -139,7 +139,7 @@ export async function checkAndDeductCredits(
 ): Promise<{ allowed: boolean; creditsUsed: number; creditLimit: number }> {
   const team = await db.query.teams.findFirst({
     where: eq(teams.id, teamId),
-    columns: { creditsUsed: true, creditLimit: true, subscriptionStatus: true, planName: true },
+    columns: { creditsUsed: true, creditLimit: true, subscriptionStatus: true },
   });
 
   if (!team) return { allowed: false, creditsUsed: 0, creditLimit: 0 };
