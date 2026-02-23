@@ -16,7 +16,6 @@ import type {
   APISpecification,
   APISpecGenerationContext,
 } from '@/lib/types/api-specification';
-import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * GET /api/projects/[id]/api-spec
@@ -133,19 +132,6 @@ export const POST = withProjectAuth(
       return NextResponse.json(
         { error: 'No project data available. Complete the intake process first.' },
         { status: 400 }
-      );
-    }
-
-    // Credit gate: API spec generation costs 100 credits
-    const creditResult = await checkAndDeductCredits(team.id, 100);
-    if (!creditResult.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Credit limit reached',
-          creditsUsed: creditResult.creditsUsed,
-          creditLimit: creditResult.creditLimit,
-        },
-        { status: 402 }
       );
     }
 

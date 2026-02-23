@@ -6,7 +6,6 @@ import { projects, projectData } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { recommendTechStack, validateTechStack, type TechStackContext } from '@/lib/langchain/agents/tech-stack-agent';
 import type { TechStackModel } from '@/lib/db/schema/v2-types';
-import { checkAndDeductCredits } from '@/lib/db/queries';
 
 /**
  * GET /api/projects/[id]/tech-stack
@@ -96,19 +95,6 @@ export const POST = withProjectAuth(
       }
     } catch {
       // No body or invalid JSON - use defaults
-    }
-
-    // Credit gate: Tech stack generation costs 100 credits
-    const creditResult = await checkAndDeductCredits(team.id, 100);
-    if (!creditResult.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Credit limit reached',
-          creditsUsed: creditResult.creditsUsed,
-          creditLimit: creditResult.creditLimit,
-        },
-        { status: 402 }
-      );
     }
 
     // Build context from project data
