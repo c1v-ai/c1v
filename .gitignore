@@ -64,3 +64,18 @@ claudedocs/
 UX-Comparison-Product-Helper-vs-Epic-Dev.md
 CURRENT-STATUS.md
 CURRENT-STATE.md
+
+# Design exports and reference docs (local only)
+prd-c1v-front-end/
+prd-c1v.zip
+reload-*.png
+docs/architecture/
+apps/product-helper/docs/architecture/
+apps/product-helper/REVIEW-2026-02-16.md
+apps/product-helper/docs/plans/
+apps/product-helper/Build Product Requirements Templates and Docs/
+URLS-to-data-schemas.md
+apps/product-helper/My system is a Platform.docx
+
+# Playwright MCP logs
+.playwright-mcp/
