@@ -45,18 +45,30 @@ AI-native PRD generation tool that teaches systems engineering methodology while
 ### Key Directories
 ```
 app/
-  (dashboard)/          # Authenticated pages (projects, connections, welcome)
-  (login)/              # Auth pages (sign-in, sign-up)
+  (marketing)/          # Public landing page (shipped Feb 22, 2026)
+  (dashboard)/          # Authenticated pages (home, projects, connections, chat)
+  (login)/              # Auth pages (sign-in, sign-up, forgot/reset password)
   api/                  # Route handlers (chat, mcp, projects, stripe, team, user)
-components/             # React components by domain
+components/
+  marketing/            # Landing page (9 components: hero, pricing, etc.)
+  chat/                 # Chat UI (window, input, bubble, markdown)
+  project/              # Project detail (chat panel, explorer, header)
+  projects/             # Project list (card, form, prd-overview)
+  connections/          # IDE/GitHub integration setup
+  onboarding/           # Welcome flow + quick start
+  education/            # Tooltips, thinking state
+  diagrams/             # Mermaid diagram viewer
+  ui/                   # shadcn/ui base components
 lib/
   auth/                 # JWT session management
   db/                   # Drizzle schema, migrations, queries
-  langchain/            # Agents, config, schemas, tools
-  mcp/                  # MCP server, tools (core/generators/unique), auth
-  education/            # Educational content types and data
+  langchain/            # Agents, graphs, quick-start orchestrator
+  mcp/                  # MCP server, tools, auth, rate limiting
+  education/            # Reference data (industry, budget, market patterns)
   diagrams/             # Mermaid diagram generators
+  payments/             # Stripe client + server actions
   validation/           # PRD validation rules
+  email/                # Resend email client + templates
 ```
 
 ### Credit System (`lib/db/queries.ts`)
@@ -75,27 +87,13 @@ lib/
 - **Env validation:** `lib/config/env.ts` - requires `POSTGRES_URL`, `AUTH_SECRET`, `ANTHROPIC_API_KEY`
 - **Tests:** Co-located `__tests__/` directories next to source files
 - **LLM provider:** Anthropic Claude via `@langchain/anthropic` (not OpenAI)
+- **Route groups:** `(marketing)` = public, `(dashboard)` = authenticated, `(login)` = auth flows
 
-### Credit System (`lib/db/queries.ts`)
-- `checkAndDeductCredits(teamId, amount)` — atomic check-and-deduct with race-safe WHERE clause
-- Free tier: 2,500 credits (Quick Start=1250, chat=5, regen=100)
-- Paid tier: 999,999 credits (effectively unlimited)
-- Credits reset on subscription change (active→0/999999, canceled→0/2500)
-- 402 responses handled in Quick Start dialog (upgrade prompt) and chat (toast with upgrade link)
+## Deployed Features
 
-## Active Work
-
-**Credit System:** Deployed (2026-02-19)
-- Schema: `teams.credits_used`, `teams.credit_limit`
-- Gates: quick-start (1250), chat (5), api-spec/tech-stack/infrastructure/guidelines/stories (100 each)
-- Frontend: 402 → upgrade dialog (Quick Start) / toast (chat)
-
-**Tier Enforcement:** In progress (2026-02-20)
-- Per-tier limits: Free (2,500 credits, 2 members), Base (5,000, 2), Plus (unlimited)
-- Plan: `~/.claude/plans/fizzy-bubbling-wreath.md`
-
-## Planning
-
-- `.planning/STATE.md` - Current project state and phase progress
-- `.planning/phases/` - Phase-specific plans and deliverables
-- `.planning/phases/12-project-explorer/knowledge-banks/` - Educational knowledge banks (6 files)
+- **Marketing Landing Page** (Feb 22, 2026) — 9 components, framer-motion animations, public at `/`
+- **Credit System** (Feb 19, 2026) — atomic check-and-deduct, 3 tiers (Free/Base/Plus), 10% grace
+- **Connections Page** (Feb 18, 2026) — IDE setup wizard, API key management, project file downloads
+- **MCP Server** — 17 tools for IDE integration (CLAUDE.md + SKILL.md export)
+- **Quick Start Pipeline** — SSE-streamed 5-step PRD generation from one sentence
+- **Stripe Billing** — checkout, webhooks, plan management (Free/Base/Plus tiers)

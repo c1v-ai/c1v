@@ -8,33 +8,21 @@
 
 ```
 c1v/
+├── apps/
+│   └── product-helper/      # PRD generation SaaS (live on Vercel)
+│       ├── app/
+│       │   ├── (marketing)/     # Public landing page
+│       │   ├── (dashboard)/     # Authenticated pages (home, projects, chat)
+│       │   ├── (login)/         # Sign-in, sign-up, password reset
+│       │   └── api/             # Route handlers (chat, mcp, projects, stripe)
+│       ├── components/          # React components by domain (72 files)
+│       └── lib/                 # Business logic (agents, db, mcp, education)
+├── packages/
+│   └── cleo-validator/      # Task state validation library
 ├── .claude/                 # Agent instructions & MCP configuration
-│   ├── instructions.md      # Master agent instructions
-│   ├── mcp-servers.json     # MCP server configuration
-│   └── teams/               # Team-specific agent instructions
-│       ├── platform-engineering.md
-│       ├── frontend.md
-│       ├── ai-agents.md
-│       ├── data-infrastructure.md
-│       ├── product-planning.md
-│       └── quality-docs.md
 ├── .github/
 │   └── workflows/           # CI/CD pipelines
-│       ├── test.yml         # Automated testing
-│       ├── documentation.yml # Doc validation
-│       └── release.yml      # Version management
-├── apps/
-│   ├── product-helper/      # PRD generation SaaS (launching first)
-│   ├── langchain-nextjs-template/  # Template (will be merged)
-│   └── saas-starter/        # Template (will be merged)
-├── packages/
-│   └── config/              # Shared configurations (coming soon)
-├── docs/
-│   ├── architecture/        # Architecture Decision Records (ADRs)
-│   ├── guides/              # Development guides
-│   │   └── testing-standards.md
-│   └── templates/           # Documentation templates
-│       └── ADR-template.md
+├── docs/                    # Development guides
 └── scripts/                 # Utility scripts
 ```
 
@@ -110,34 +98,35 @@ See [MCP configuration](./.claude/mcp-servers.json) for setup details.
 
 ## 📦 Apps
 
-### Product Helper (Launching Q1 2026)
+### Product Helper (Live)
 
 **AI-powered PRD generation SaaS** that transforms conversational input into engineering-quality Product Requirements Documents with validated diagrams and artifacts.
 
 **Core Features:**
-- 🤖 **Conversational Intake** - Natural language interface with AI agents
-- ✅ **PRD-SPEC Validation** - 95% quality threshold with 10 hard gates
-- 📊 **Diagram Generation** - Context, Use Case, Class, Sequence, Activity diagrams
-- 📝 **Requirements Extraction** - Automated artifact generation from conversations
-- 📤 **Multi-Format Export** - Markdown, PDF, Notion integration
-- 🎨 **Custom Theming** - Light/dark modes with brand customization
+- Conversational Intake — chat-based PRD creation with AI agents
+- Quick Start Pipeline — SSE-streamed 5-step PRD generation from one sentence
+- PRD-SPEC Validation — 95% quality threshold with 10 hard gates
+- Diagram Generation — Context, Use Case, Class, Sequence, Activity diagrams (Mermaid)
+- MCP Server — 17 tools for IDE integration (CLAUDE.md + SKILL.md export)
+- Credit-Based Billing — Stripe, 3 tiers (Free/Base/Plus)
+- Marketing Landing Page — 9 animated components, framer-motion
 
 **Tech Stack:**
-- **Frontend:** Next.js 15, React 19, Tailwind CSS 4.0, shadcn/ui
-- **AI/ML:** LangChain.js 0.3, LangGraph 0.2, Vercel AI SDK 3.1
+- **Frontend:** Next.js 15.5.9, React 19.1, Tailwind CSS 4.1, shadcn/ui, framer-motion 12
+- **AI/Agents:** LangChain.js 0.3.26, LangGraph 0.2.60, `@langchain/anthropic` 0.3.14
+- **LLM:** Anthropic Claude (via `@langchain/anthropic`)
 - **Backend:** Next.js App Router (RSC), Server Actions
-- **Database:** PostgreSQL 16, Drizzle ORM 0.43
-- **Auth:** Clerk (NextAuth.js alternative)
-- **Payments:** Stripe 18.1
-- **LLM:** OpenAI GPT-4 Turbo
-- **Validation:** Zod 3.23, TypeScript 5.8 strict mode
-- **Testing:** Vitest, React Testing Library, Playwright
+- **Database:** PostgreSQL via Drizzle ORM 0.43.1, hosted on Supabase
+- **Auth:** Custom JWT (jose 6.1) + bcryptjs
+- **Payments:** Stripe 18.5 + credit-based usage gating
+- **Validation:** Zod 3.25, TypeScript 5.9 strict mode
+- **Testing:** Jest 30 + Playwright 1.57
+- **Email:** Resend 6.7
 
-**Custom Theme:**
-- Typography: Consolas (headings), Verdana (body)
-- Color Palette: Teal/Dark Teal with high contrast
-- Design System: CSS custom properties with light/dark support
-- Located at: `/apps/product-helper/src/styles/theme.css`
+**Brand:**
+- Typography: Space Grotesk (headings), Consolas (body)
+- Colors: Firefly #0B2C29 (dark bg), Porcelain #FBFCFC (light bg), Tangerine #F18F01 (accent)
+- Dark/light mode via CSS custom properties
 
 ## 🛠️ Development
 
@@ -283,7 +272,7 @@ STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
 # AI
-OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ## 📚 Documentation
