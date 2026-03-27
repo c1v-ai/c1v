@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
+import { cleanSequenceDiagramSyntax, validateMermaidSyntax } from '@/lib/diagrams/generators';
 import { renderDiagramSvg, type DiagramTheme } from '@/lib/diagrams/beautiful-mermaid';
 
 export interface DiagramViewerProps {
@@ -101,22 +101,11 @@ export function DiagramViewer({
       );
     }
 
-    // Basic validation - check for common mermaid diagram declarations
-    // Skip init directives (%%{init: ...}%%) and comments (%% ...) before checking
-    const syntaxLines = cleanedSyntax.trim().split('\n');
-    const firstContentLine = syntaxLines
-      .find(line => {
-        const t = line.trim();
-        return t.length > 0 && !t.startsWith('%%');
-      })
-      ?.trim()
-      .toLowerCase() ?? '';
-    const validStartPatterns = ['graph', 'flowchart', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'gantt', 'pie', 'journey'];
-    const hasValidStart = validStartPatterns.some(p => firstContentLine.startsWith(p));
-
-    if (!hasValidStart) {
+    // Structural validation — covers all Mermaid diagram types including C4, init directives, etc.
+    const validation = validateMermaidSyntax(cleanedSyntax);
+    if (!validation.valid) {
       setIsRendering(false);
-      setError('Invalid diagram syntax. Expected mermaid diagram declaration.');
+      setError(validation.error || 'Invalid diagram syntax.');
       return;
     }
 

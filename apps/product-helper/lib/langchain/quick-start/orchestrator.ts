@@ -205,7 +205,7 @@ async function runParallelExtractions(
   onProgress?: ProgressCallback,
   projectContext?: Partial<KBProjectContext>,
 ): Promise<{
-  extraction: AgentResult<ExtractionResult>;
+  extraction: AgentResult<ExtractionResult | null>;
   techStack: AgentResult<TechStackModel>;
   stories: AgentResult<GeneratedStory[]>;
   dbSchema: AgentResult<DatabaseSchemaModel>;
@@ -307,7 +307,7 @@ async function runParallelExtractions(
   ]);
 
   // Process results
-  const extraction = processSettledResult<ExtractionResult>(
+  const extraction = processSettledResult<ExtractionResult | null>(
     extractionResult, 'extraction', onProgress,
   );
   const techStack = processSettledResult<TechStackModel>(
@@ -358,7 +358,7 @@ function processSettledResult<T>(
 async function runValidation(
   projectId: number,
   synthesis: SynthesisResult,
-  extraction: AgentResult<ExtractionResult>,
+  extraction: AgentResult<ExtractionResult | null>,
   onProgress?: ProgressCallback,
 ): Promise<{
   validationScore: number;
@@ -466,7 +466,7 @@ async function runValidation(
  */
 async function generateArtifacts(
   synthesis: SynthesisResult,
-  extraction: AgentResult<ExtractionResult>,
+  extraction: AgentResult<ExtractionResult | null>,
   validationScore: number,
   onProgress?: ProgressCallback,
 ): Promise<string[]> {
@@ -612,7 +612,7 @@ function generateUseCaseDiagramMermaid(
 async function persistResults(
   config: QuickStartConfig,
   synthesis: SynthesisResult,
-  extraction: AgentResult<ExtractionResult>,
+  extraction: AgentResult<ExtractionResult | null>,
   techStack: AgentResult<TechStackModel>,
   stories: AgentResult<GeneratedStory[]>,
   dbSchema: AgentResult<DatabaseSchemaModel>,
@@ -750,8 +750,21 @@ async function persistResults(
       });
     }
 
-    if (artifactData.length > 0) {
-      await db.insert(artifacts).values(artifactData);
+    // Filter out artifacts with invalid mermaid syntax
+    const { validateMermaidSyntax } = await import('@/lib/diagrams/generators');
+    const validArtifacts = artifactData.filter(a => {
+      const mermaid = (a.content as any)?.mermaid;
+      if (!mermaid) return false;
+      const validation = validateMermaidSyntax(mermaid);
+      if (!validation.valid) {
+        console.warn(`[Quick Start] Skipping invalid ${a.type} diagram: ${validation.error}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validArtifacts.length > 0) {
+      await db.insert(artifacts).values(validArtifacts);
     }
 
     // 5. Save the original user input as a conversation entry

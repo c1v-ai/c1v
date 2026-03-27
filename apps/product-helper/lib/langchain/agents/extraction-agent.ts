@@ -45,7 +45,7 @@ export async function extractProjectData(
   conversationHistory: string,
   projectName: string,
   projectVision: string
-): Promise<ExtractionResult> {
+): Promise<ExtractionResult | null> {
   try {
     // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
     // This is needed because conversation history may contain JSON-like content with { and }
@@ -69,16 +69,8 @@ export async function extractProjectData(
   } catch (error) {
     console.error('Extraction error:', error);
 
-    // Return empty structure on failure
-    return {
-      actors: [],
-      useCases: [],
-      systemBoundaries: {
-        internal: [],
-        external: [],
-      },
-      dataEntities: [],
-    };
+    // Return null on failure — callers should preserve existing state
+    return null;
   }
 }
 
@@ -114,13 +106,13 @@ function validateExtractionQuality(
   }
 
   // Check goals/metrics
-  if (!result.goalsMetrics || result.goalsMetrics.length < 3) {
-    issues.push(`goalsMetrics has ${result.goalsMetrics?.length ?? 0} items (need 3+)`);
+  if (result.goalsMetrics.length < 3) {
+    issues.push(`goalsMetrics has ${result.goalsMetrics.length} items (need 3+)`);
   }
 
   // Check NFRs
-  if (!result.nonFunctionalRequirements || result.nonFunctionalRequirements.length < 3) {
-    issues.push(`nonFunctionalRequirements has ${result.nonFunctionalRequirements?.length ?? 0} items (need 3+)`);
+  if (result.nonFunctionalRequirements.length < 3) {
+    issues.push(`nonFunctionalRequirements has ${result.nonFunctionalRequirements.length} items (need 3+)`);
   } else {
     // Check category diversity
     const categories = new Set(result.nonFunctionalRequirements.map(n => n.category));
@@ -208,17 +200,15 @@ export function calculateCompleteness(extraction: ExtractionResult): number {
 
   // Problem statement: 10 points
   const ps = extraction.problemStatement;
-  if (ps) {
-    const hasFullStatement = ps.summary && ps.context && ps.impact && (ps.goals?.length ?? 0) >= 2;
-    if (hasFullStatement) {
-      score += 10;
-    } else if (ps.summary) {
-      score += 5;
-    }
+  const hasFullStatement = ps.summary && ps.context && ps.impact && ps.goals.length >= 2;
+  if (hasFullStatement) {
+    score += 10;
+  } else if (ps.summary) {
+    score += 5;
   }
 
   // Goals/Metrics: 15 points
-  const goalsCount = extraction.goalsMetrics?.length ?? 0;
+  const goalsCount = extraction.goalsMetrics.length;
   if (goalsCount >= 3) {
     score += 15;
   } else if (goalsCount >= 2) {
@@ -228,9 +218,9 @@ export function calculateCompleteness(extraction: ExtractionResult): number {
   }
 
   // Non-functional requirements: 10 points (by category diversity)
-  const nfrCount = extraction.nonFunctionalRequirements?.length ?? 0;
+  const nfrCount = extraction.nonFunctionalRequirements.length;
   if (nfrCount > 0) {
-    const categories = new Set(extraction.nonFunctionalRequirements!.map(n => n.category));
+    const categories = new Set(extraction.nonFunctionalRequirements.map(n => n.category));
     if (categories.size >= 3) {
       score += 10;
     } else if (categories.size >= 2) {
@@ -288,14 +278,20 @@ export function mergeExtractionData(
     entityMap.set(entity.name, entity);
   });
 
-  // Merge problem statement (newer data takes priority)
-  const problemStatement = newData.problemStatement ?? existing.problemStatement;
+  // Merge problem statement (newer takes priority if it has meaningful content)
+  const problemStatement = newData.problemStatement.summary
+    ? newData.problemStatement
+    : existing.problemStatement;
 
-  // Merge goals/metrics (newer data takes priority)
-  const goalsMetrics = newData.goalsMetrics ?? existing.goalsMetrics;
+  // Merge goals/metrics (newer takes priority if non-empty)
+  const goalsMetrics = newData.goalsMetrics.length > 0
+    ? newData.goalsMetrics
+    : existing.goalsMetrics;
 
-  // Merge non-functional requirements (newer data takes priority)
-  const nonFunctionalRequirements = newData.nonFunctionalRequirements ?? existing.nonFunctionalRequirements;
+  // Merge non-functional requirements (newer takes priority if non-empty)
+  const nonFunctionalRequirements = newData.nonFunctionalRequirements.length > 0
+    ? newData.nonFunctionalRequirements
+    : existing.nonFunctionalRequirements;
 
   // Merge system boundaries scope fields
   const inScopeSet = new Set([

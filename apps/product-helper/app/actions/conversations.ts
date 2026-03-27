@@ -5,7 +5,7 @@ import { conversations, projects, projectData, artifacts, type NewConversation, 
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { extractProjectData, calculateCompleteness, mergeExtractionData } from '@/lib/langchain/agents/extraction-agent';
-import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
+import { cleanSequenceDiagramSyntax, validateMermaidSyntax } from '@/lib/diagrams/generators';
 
 /**
  * Extract mermaid code blocks from content
@@ -79,6 +79,14 @@ export async function saveAssistantMessage(
       for (const mermaidSyntax of mermaidBlocks) {
         // Clean invalid syntax from sequence diagrams (remove classDef/class statements)
         const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
+
+        // Validate before storage — skip invalid diagrams
+        const validation = validateMermaidSyntax(cleanedSyntax);
+        if (!validation.valid) {
+          console.warn(`[Diagrams] Skipping invalid diagram: ${validation.error}`);
+          continue;
+        }
+
         const diagramType = detectDiagramType(cleanedSyntax);
         const newArtifact: NewArtifact = {
           projectId,
@@ -123,6 +131,12 @@ export async function saveAssistantMessage(
           project.vision
         );
 
+        // If extraction failed, skip update to preserve existing data
+        if (!extraction) {
+          console.warn(`[Extraction] Failed for project ${projectId} — preserving existing data`);
+          return { success: true };
+        }
+
         // Load existing data for merging
         const existingData = await db.query.projectData.findFirst({
           where: eq(projectData.projectId, projectId),
@@ -136,6 +150,9 @@ export async function saveAssistantMessage(
                 useCases: (existingData.useCases as any) || [],
                 systemBoundaries: (existingData.systemBoundaries as any) || { internal: [], external: [] },
                 dataEntities: (existingData.dataEntities as any) || [],
+                problemStatement: (existingData.problemStatement as any) || { summary: '', context: '', impact: '', goals: [] },
+                goalsMetrics: (existingData.goalsMetrics as any) || [],
+                nonFunctionalRequirements: (existingData.nonFunctionalRequirements as any) || [],
               },
               extraction
             )

@@ -21,6 +21,9 @@ describe('calculateCompleteness', () => {
     useCases: [],
     systemBoundaries: { internal: [], external: [] },
     dataEntities: [],
+    problemStatement: { summary: '', context: '', impact: '', goals: [] },
+    goalsMetrics: [],
+    nonFunctionalRequirements: [],
   };
 
   it('returns 0 for empty extraction', () => {
@@ -161,18 +164,26 @@ describe('calculateCompleteness', () => {
 });
 
 describe('mergeExtractionData', () => {
+  const mergeBase = {
+    problemStatement: { summary: '', context: '', impact: '', goals: [] as string[] },
+    goalsMetrics: [] as any[],
+    nonFunctionalRequirements: [] as any[],
+  };
+
   it('merges actors by name (newer wins)', () => {
     const existing: ExtractionResult = {
       actors: [{ name: 'User', role: 'Old Role', description: 'Old desc' }],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
       dataEntities: [],
+      ...mergeBase,
     };
     const newData: ExtractionResult = {
       actors: [{ name: 'User', role: 'New Role', description: 'New desc' }],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
       dataEntities: [],
+      ...mergeBase,
     };
 
     const merged = mergeExtractionData(existing, newData);
@@ -182,6 +193,7 @@ describe('mergeExtractionData', () => {
 
   it('preserves problem statement when new extraction is empty', () => {
     const existing: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
@@ -189,19 +201,20 @@ describe('mergeExtractionData', () => {
       problemStatement: { summary: 'Existing', context: 'ctx', impact: 'imp', goals: ['g1'] },
     };
     const newData: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
       dataEntities: [],
-      // No problemStatement
     };
 
     const merged = mergeExtractionData(existing, newData);
-    expect(merged.problemStatement?.summary).toBe('Existing');
+    expect(merged.problemStatement.summary).toBe('Existing');
   });
 
   it('replaces problem statement when new extraction has it', () => {
     const existing: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
@@ -209,6 +222,7 @@ describe('mergeExtractionData', () => {
       problemStatement: { summary: 'Old', context: 'ctx', impact: 'imp', goals: ['g1'] },
     };
     const newData: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
@@ -217,17 +231,19 @@ describe('mergeExtractionData', () => {
     };
 
     const merged = mergeExtractionData(existing, newData);
-    expect(merged.problemStatement?.summary).toBe('New');
+    expect(merged.problemStatement.summary).toBe('New');
   });
 
   it('merges use cases by id (newer wins)', () => {
     const existing: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [{ id: 'UC1', name: 'Old', description: 'Old desc', actor: 'User' }],
       systemBoundaries: { internal: [], external: [] },
       dataEntities: [],
     };
     const newData: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [{ id: 'UC1', name: 'New', description: 'New desc', actor: 'User' }],
       systemBoundaries: { internal: [], external: [] },
@@ -241,12 +257,14 @@ describe('mergeExtractionData', () => {
 
   it('unions system boundaries without duplicates', () => {
     const existing: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: ['Auth'], external: ['Email'] },
       dataEntities: [],
     };
     const newData: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: ['Auth', 'DB'], external: ['SMS'] },
@@ -264,6 +282,7 @@ describe('mergeExtractionData', () => {
 
   it('preserves NFRs when new extraction is empty', () => {
     const existing: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
@@ -273,6 +292,7 @@ describe('mergeExtractionData', () => {
       ],
     };
     const newData: ExtractionResult = {
+      ...mergeBase,
       actors: [],
       useCases: [],
       systemBoundaries: { internal: [], external: [] },

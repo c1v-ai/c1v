@@ -646,9 +646,15 @@ export const extractionSchema = z.object({
   dataEntities: z.array(dataEntitySchema).default([]).describe('Core data objects in the system (lightweight for extraction)'),
 
   // Epic.dev parity sections
-  problemStatement: problemStatementSchema.optional().describe('Problem statement with target audience'),
-  goalsMetrics: z.array(goalMetricSchema).optional().describe('Goals with measurable success criteria and baselines'),
-  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema).optional().describe('Non-functional requirements'),
+  problemStatement: problemStatementSchema.default({ summary: '', context: '', impact: '', goals: [] }).describe('Problem statement with target audience'),
+  goalsMetrics: z.array(goalMetricSchema).default([]).describe('Goals with measurable success criteria and baselines'),
+  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema).default([]).describe('Non-functional requirements'),
+
+  // System Design Steps 3-6 (populated by dedicated agents after Steps 1-2 complete)
+  ffbd: ffbdSchema.optional().describe('Functional Flow Block Diagram (Step 3)'),
+  decisionMatrix: decisionMatrixSchema.optional().describe('Decision Matrix / Performance Assessment (Step 4)'),
+  qfd: qfdSchema.optional().describe('QFD House of Quality (Step 5)'),
+  interfaces: interfacesSchema.optional().describe('Interface definitions: DFD, N2 chart, interface matrix (Step 6)'),
 });
 
 export type ExtractionResult = z.infer<typeof extractionSchema>;
@@ -816,6 +822,241 @@ export const activityDiagramSpecSchema = z.object({
 });
 
 export type ActivityDiagramSpec = z.infer<typeof activityDiagramSpecSchema>;
+
+// ============================================================
+// System Design Steps 3-6 Schemas
+// ============================================================
+
+// --- Step 3: Functional Flow Block Diagram (FFBD) ---
+
+/**
+ * FFBD Gate Type
+ * Logic gates used in functional flow block diagrams
+ */
+export const ffbdGateTypeSchema = z.enum(['none', 'AND', 'OR', 'IT']);
+export type FfbdGateType = z.infer<typeof ffbdGateTypeSchema>;
+
+/**
+ * FFBD Block Schema
+ * Represents a single function block in an FFBD
+ */
+export const ffbdBlockSchema = z.object({
+  id: z.string().describe('Hierarchical function ID (e.g., "F.1", "F.1.1", "F.4.6")'),
+  name: z.string().describe('Functional name using verb phrases (e.g., "Onboard Organization", "Predict Heat Strain")'),
+  parentId: z.string().optional().describe('Parent block ID for decomposed blocks (e.g., "F.1" for F.1.1)'),
+  gateType: ffbdGateTypeSchema.optional().describe('Logic gate type: AND (parallel), OR (alternative), IT (iteration)'),
+  gateCondition: z.string().optional().describe('Condition for gate (e.g., "outdoor/indoor", "data fresh < 15 min")'),
+  isCoreValue: z.boolean().optional().describe('Whether this is a core value function (marked with star)'),
+  description: z.string().optional().describe('Brief description of what this function does'),
+});
+
+export type FfbdBlock = z.infer<typeof ffbdBlockSchema>;
+
+/**
+ * FFBD Connection Type
+ */
+export const ffbdConnectionTypeSchema = z.enum(['sequence', 'AND', 'OR', 'IT']);
+
+/**
+ * FFBD Connection Schema
+ * Represents a flow connection between blocks
+ */
+export const ffbdConnectionSchema = z.object({
+  from: z.string().describe('Source block ID'),
+  to: z.string().describe('Target block ID'),
+  gateType: ffbdConnectionTypeSchema.optional().describe('Type of connection flow'),
+  condition: z.string().optional().describe('Condition label on the connection arrow'),
+});
+
+export type FfbdConnection = z.infer<typeof ffbdConnectionSchema>;
+
+/**
+ * Complete FFBD Schema
+ * Functional Flow Block Diagram with top-level and decomposed blocks
+ */
+export const ffbdSchema = z.object({
+  topLevelBlocks: z.array(ffbdBlockSchema).describe('Top-level function blocks (F.1 through F.N)'),
+  decomposedBlocks: z.array(ffbdBlockSchema).default([]).describe('Decomposed sub-function blocks (F.1.1 through F.N.M)'),
+  connections: z.array(ffbdConnectionSchema).default([]).describe('Flow connections between blocks'),
+});
+
+export type Ffbd = z.infer<typeof ffbdSchema>;
+
+// --- Step 4: Decision Matrix (Performance Assessment) ---
+
+/**
+ * Performance Criterion Schema
+ * A single measurable criterion for evaluating design alternatives
+ */
+export const performanceCriterionSchema = z.object({
+  id: z.string().describe('Criterion ID (e.g., "PC-01")'),
+  name: z.string().describe('Criterion name (e.g., "Core Temperature Prediction Accuracy")'),
+  unit: z.string().describe('Measurement unit (e.g., "degrees C (MAE)", "ms", "%")'),
+  weight: z.number().describe('Relative importance weight (0.0-1.0, all weights sum to 1.0)'),
+  minAcceptable: z.string().optional().describe('Minimum acceptable value'),
+  targetValue: z.string().optional().describe('Target/ideal value'),
+  measurementMethod: z.string().optional().describe('How this criterion is measured'),
+});
+
+export type PerformanceCriterion = z.infer<typeof performanceCriterionSchema>;
+
+/**
+ * Design Alternative Schema
+ * An option being evaluated in the decision matrix
+ */
+export const designAlternativeSchema = z.object({
+  id: z.string().describe('Alternative ID (e.g., "ALT-01")'),
+  name: z.string().describe('Alternative name (e.g., "Cloud-native microservices")'),
+  scores: z.record(z.string(), z.number()).describe('Criterion ID to normalized score (0.0-1.0) mapping'),
+  weightedTotal: z.number().optional().describe('Weighted total score'),
+});
+
+export type DesignAlternative = z.infer<typeof designAlternativeSchema>;
+
+/**
+ * Complete Decision Matrix Schema
+ */
+export const decisionMatrixSchema = z.object({
+  criteria: z.array(performanceCriterionSchema).describe('Performance criteria with weights'),
+  alternatives: z.array(designAlternativeSchema).describe('Design alternatives with scores'),
+  recommendation: z.string().optional().describe('Recommended alternative with rationale'),
+});
+
+export type DecisionMatrix = z.infer<typeof decisionMatrixSchema>;
+
+// --- Step 5: QFD / House of Quality ---
+
+/**
+ * Customer Need Schema
+ */
+export const customerNeedSchema = z.object({
+  id: z.string().describe('Need ID (e.g., "CN-01")'),
+  name: z.string().describe('Customer need statement (e.g., "Accurate heat prediction")'),
+  relativeImportance: z.number().describe('Relative importance weight (0.0-1.0)'),
+});
+
+export type CustomerNeed = z.infer<typeof customerNeedSchema>;
+
+/**
+ * Direction of Improvement for engineering characteristics
+ */
+export const directionOfImprovementSchema = z.enum(['higher', 'lower', 'target']);
+
+/**
+ * Engineering Characteristic Schema
+ */
+export const engineeringCharSchema = z.object({
+  id: z.string().describe('Characteristic ID (e.g., "EC-01")'),
+  name: z.string().describe('Engineering characteristic name (e.g., "Core Temperature Prediction Accuracy (MAE)")'),
+  unit: z.string().describe('Measurement unit (e.g., "°C", "sec", "%", "count")'),
+  directionOfImprovement: directionOfImprovementSchema.describe('Whether higher, lower, or a specific target is better'),
+  designTarget: z.string().describe('Target value (e.g., "≤ 0.3", "≥ 99.9%", "≤ 500ms")'),
+  technicalDifficulty: z.number().optional().describe('Technical difficulty score (1-5, 5=hardest)'),
+  estimatedCost: z.number().optional().describe('Estimated cost score (1-5, 5=most expensive)'),
+});
+
+export type EngineeringChar = z.infer<typeof engineeringCharSchema>;
+
+/**
+ * QFD Relationship Strength
+ */
+export const qfdRelationshipStrengthSchema = z.enum(['strong', 'moderate', 'weak']);
+
+/**
+ * QFD Relationship Schema (center matrix)
+ */
+export const qfdRelationshipSchema = z.object({
+  needId: z.string().describe('Customer need ID'),
+  charId: z.string().describe('Engineering characteristic ID'),
+  strength: qfdRelationshipStrengthSchema.describe('Relationship strength: strong(9), moderate(3), weak(1)'),
+});
+
+export type QfdRelationship = z.infer<typeof qfdRelationshipSchema>;
+
+/**
+ * QFD Roof Correlation
+ */
+export const qfdCorrelationSchema = z.enum(['strong-positive', 'positive', 'negative', 'strong-negative']);
+
+/**
+ * QFD Roof Entry Schema (engineering characteristic interrelationships)
+ */
+export const qfdRoofEntrySchema = z.object({
+  charId1: z.string().describe('First engineering characteristic ID'),
+  charId2: z.string().describe('Second engineering characteristic ID'),
+  correlation: qfdCorrelationSchema.describe('Correlation type between the two characteristics'),
+});
+
+export type QfdRoofEntry = z.infer<typeof qfdRoofEntrySchema>;
+
+/**
+ * QFD Competitor Schema
+ */
+export const qfdCompetitorSchema = z.object({
+  name: z.string().describe('Competitor name'),
+  scores: z.record(z.string(), z.number()).describe('Customer need ID to perception score (1-5) mapping'),
+});
+
+export type QfdCompetitor = z.infer<typeof qfdCompetitorSchema>;
+
+/**
+ * Complete QFD / House of Quality Schema
+ */
+export const qfdSchema = z.object({
+  customerNeeds: z.array(customerNeedSchema).describe('Customer needs with importance weights (left side)'),
+  engineeringCharacteristics: z.array(engineeringCharSchema).describe('Engineering characteristics with targets (bottom)'),
+  relationships: z.array(qfdRelationshipSchema).default([]).describe('Need-to-characteristic relationships (center matrix)'),
+  roof: z.array(qfdRoofEntrySchema).default([]).describe('Engineering characteristic correlations (roof triangle)'),
+  competitors: z.array(qfdCompetitorSchema).default([]).describe('Competitive analysis scores (right side / back porch)'),
+});
+
+export type Qfd = z.infer<typeof qfdSchema>;
+
+// --- Step 6: Interfaces (DFD, N2 Chart, Sequence Diagrams, Interface Matrix) ---
+
+/**
+ * Subsystem Schema
+ */
+export const subsystemSchema = z.object({
+  id: z.string().describe('Subsystem ID (e.g., "SS1")'),
+  name: z.string().describe('Subsystem name (e.g., "Prediction Engine")'),
+  description: z.string().describe('What this subsystem does'),
+  allocatedFunctions: z.array(z.string()).default([]).describe('FFBD block IDs allocated to this subsystem'),
+});
+
+export type Subsystem = z.infer<typeof subsystemSchema>;
+
+/**
+ * Interface Category
+ */
+export const interfaceCategorySchema = z.enum(['system-flow', 'critical', 'auth', 'audit']);
+
+/**
+ * Interface Specification Schema
+ */
+export const interfaceSpecSchema = z.object({
+  id: z.string().describe('Interface ID (e.g., "IF-01")'),
+  name: z.string().describe('Interface name (e.g., "Worker Prediction Request")'),
+  source: z.string().describe('Source subsystem ID'),
+  destination: z.string().describe('Destination subsystem ID'),
+  dataPayload: z.string().describe('Data exchanged (e.g., "activity, clothing, profile ID")'),
+  protocol: z.string().optional().describe('Communication protocol (e.g., "REST API", "WebSocket", "Event")'),
+  frequency: z.string().optional().describe('How often this interface is used (e.g., "Per prediction", "On change")'),
+  category: interfaceCategorySchema.optional().describe('Interface category for color-coding'),
+});
+
+export type InterfaceSpec = z.infer<typeof interfaceSpecSchema>;
+
+/**
+ * Complete Interfaces Schema (DFD + N2 + Interface Matrix data)
+ */
+export const interfacesSchema = z.object({
+  subsystems: z.array(subsystemSchema).describe('System subsystems'),
+  interfaces: z.array(interfaceSpecSchema).describe('Interface specifications'),
+  n2Chart: z.record(z.string(), z.record(z.string(), z.string())).default({}).describe('N2 chart: from-subsystem -> to-subsystem -> payload description'),
+});
+
+export type Interfaces = z.infer<typeof interfacesSchema>;
 
 // ============================================================
 // Validation Schemas

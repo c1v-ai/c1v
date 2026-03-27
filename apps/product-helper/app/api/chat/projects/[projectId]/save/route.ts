@@ -185,6 +185,26 @@ export async function POST(
         project.vision
       );
 
+      // If extraction failed, preserve existing data and skip merge
+      if (!extraction) {
+        console.warn(`[Extraction] Failed for project ${projectId} — preserving existing data`);
+        // Still save the message but don't update extraction data
+        return NextResponse.json({
+          success: true,
+          completeness: project.projectData
+            ? calculateCompleteness({
+                actors: (project.projectData.actors as ExtractionResult['actors']) || [],
+                useCases: (project.projectData.useCases as ExtractionResult['useCases']) || [],
+                systemBoundaries: (project.projectData.systemBoundaries as ExtractionResult['systemBoundaries']) || { internal: [], external: [] },
+                dataEntities: (project.projectData.dataEntities as ExtractionResult['dataEntities']) || [],
+                problemStatement: (project.projectData.problemStatement as ExtractionResult['problemStatement']) || { summary: '', context: '', impact: '', goals: [] },
+                goalsMetrics: (project.projectData.goalsMetrics as ExtractionResult['goalsMetrics']) || [],
+                nonFunctionalRequirements: (project.projectData.nonFunctionalRequirements as ExtractionResult['nonFunctionalRequirements']) || [],
+              })
+            : 0,
+        });
+      }
+
       // 16. Merge with existing data if available
       const existingData = project.projectData;
       const mergedData = existingData
@@ -194,8 +214,9 @@ export async function POST(
               useCases: (existingData.useCases as ExtractionResult['useCases']) || [],
               systemBoundaries: (existingData.systemBoundaries as ExtractionResult['systemBoundaries']) || { internal: [], external: [] },
               dataEntities: (existingData.dataEntities as ExtractionResult['dataEntities']) || [],
-              problemStatement: (existingData.problemStatement as ExtractionResult['problemStatement']) || undefined,
-              nonFunctionalRequirements: (existingData.nonFunctionalRequirements as ExtractionResult['nonFunctionalRequirements']) || undefined,
+              problemStatement: (existingData.problemStatement as ExtractionResult['problemStatement']) || { summary: '', context: '', impact: '', goals: [] },
+              goalsMetrics: (existingData.goalsMetrics as ExtractionResult['goalsMetrics']) || [],
+              nonFunctionalRequirements: (existingData.nonFunctionalRequirements as ExtractionResult['nonFunctionalRequirements']) || [],
             },
             extraction
           )

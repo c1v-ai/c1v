@@ -163,6 +163,9 @@ export function createDefaultExtractionResult(): ExtractionResult {
     useCases: [],
     systemBoundaries: { internal: [], external: [] },
     dataEntities: [],
+    problemStatement: { summary: '', context: '', impact: '', goals: [] },
+    goalsMetrics: [],
+    nonFunctionalRequirements: [],
   };
 }
 

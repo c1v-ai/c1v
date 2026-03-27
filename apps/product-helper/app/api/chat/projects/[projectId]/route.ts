@@ -6,7 +6,7 @@ import { streamingLLM } from '@/lib/langchain/config';
 import { db } from '@/lib/db/drizzle';
 import { projects, conversations, artifacts, type NewConversation, type NewArtifact } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
-import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
+import { cleanSequenceDiagramSyntax, validateMermaidSyntax } from '@/lib/diagrams/generators';
 import {
   processWithLangGraph,
   streamWithLangGraph,
@@ -369,6 +369,14 @@ Keep response under 3 sentences unless generating a diagram.`;
             const mermaidBlocks = extractMermaidBlocks(fullResponse);
             for (const mermaidSyntax of mermaidBlocks) {
               const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
+
+              // Validate before storage — skip invalid diagrams
+              const validation = validateMermaidSyntax(cleanedSyntax);
+              if (!validation.valid) {
+                console.warn(`[Legacy Chat] Skipping invalid diagram: ${validation.error}`);
+                continue;
+              }
+
               const diagramType = detectDiagramType(cleanedSyntax);
               const newArtifact: NewArtifact = {
                 projectId,

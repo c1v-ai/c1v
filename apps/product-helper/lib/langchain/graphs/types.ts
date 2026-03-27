@@ -27,7 +27,16 @@ export type ArtifactPhase =
   | 'ucbd'
   | 'requirements_table'
   | 'constants_table'
-  | 'sysml_activity_diagram';
+  | 'sysml_activity_diagram'
+  // System Design Steps 3-6
+  | 'ffbd_top_level'
+  | 'ffbd_decomposed'
+  | 'decision_matrix'
+  | 'qfd_house_of_quality'
+  | 'data_flow_diagram'
+  | 'n2_chart'
+  | 'sequence_diagrams'
+  | 'interface_matrix';
 
 /**
  * Array of artifact phases in order for iteration
@@ -40,6 +49,15 @@ export const ARTIFACT_PHASE_SEQUENCE: ArtifactPhase[] = [
   'requirements_table',
   'constants_table',
   'sysml_activity_diagram',
+  // System Design Steps 3-6
+  'ffbd_top_level',
+  'ffbd_decomposed',
+  'decision_matrix',
+  'qfd_house_of_quality',
+  'data_flow_diagram',
+  'n2_chart',
+  'sequence_diagrams',
+  'interface_matrix',
 ];
 
 // ============================================================
@@ -101,6 +119,15 @@ export interface ArtifactReadiness {
   requirements_table: boolean;
   constants_table: boolean;
   sysml_activity_diagram: boolean;
+  // System Design Steps 3-6
+  ffbd_top_level: boolean;
+  ffbd_decomposed: boolean;
+  decision_matrix: boolean;
+  qfd_house_of_quality: boolean;
+  data_flow_diagram: boolean;
+  n2_chart: boolean;
+  sequence_diagrams: boolean;
+  interface_matrix: boolean;
 }
 
 // ============================================================
@@ -150,6 +177,10 @@ export function createDefaultStepCompletionStatus(): Record<KnowledgeBankStep, S
     'ucbd',
     'functional-requirements',
     'sysml-activity-diagram',
+    'ffbd',
+    'decision-matrix',
+    'qfd-house-of-quality',
+    'interfaces',
   ];
   const status: Partial<Record<KnowledgeBankStep, StepStatus>> = {};
   for (const step of steps) {
@@ -197,6 +228,39 @@ export const ARTIFACT_THRESHOLDS: Record<ArtifactPhase, {
   sysml_activity_diagram: {
     minimumScore: 90,
     description: 'Activity flow with decision points',
+  },
+  // System Design Steps 3-6
+  ffbd_top_level: {
+    minimumScore: 60,
+    description: 'Top-level functional decomposition from use cases',
+  },
+  ffbd_decomposed: {
+    minimumScore: 65,
+    description: 'Decomposed sub-functions with logic gates',
+  },
+  decision_matrix: {
+    minimumScore: 70,
+    description: 'Weighted performance criteria with scored alternatives',
+  },
+  qfd_house_of_quality: {
+    minimumScore: 75,
+    description: 'Customer needs mapped to engineering characteristics',
+  },
+  data_flow_diagram: {
+    minimumScore: 80,
+    description: 'Subsystem data flows with labeled interfaces',
+  },
+  n2_chart: {
+    minimumScore: 85,
+    description: 'Subsystem-to-subsystem interface matrix',
+  },
+  sequence_diagrams: {
+    minimumScore: 85,
+    description: 'Use case sequence flows with interface IDs',
+  },
+  interface_matrix: {
+    minimumScore: 90,
+    description: 'Complete interface specifications per subsystem',
   },
 };
 
@@ -456,6 +520,9 @@ export function createInitialState(
     useCases: [],
     systemBoundaries: { internal: [], external: [] },
     dataEntities: [],
+    problemStatement: { summary: '', context: '', impact: '', goals: [] },
+    goalsMetrics: [],
+    nonFunctionalRequirements: [],
   };
 
   const generatedArtifacts = existingData?.generatedArtifacts ?? [];
@@ -567,6 +634,16 @@ export function computeArtifactReadiness(data: ExtractionResult): ArtifactReadin
 
     // Activity Diagram: 3+ workflow steps from use cases
     sysml_activity_diagram: hasMinUseCases,
+
+    // System Design Steps 3-6 (require Steps 1-2 artifacts first)
+    ffbd_top_level: hasFiveUseCases && hasBothBoundaries,
+    ffbd_decomposed: hasFiveUseCases && hasBothBoundaries,
+    decision_matrix: hasFiveUseCases,
+    qfd_house_of_quality: hasFiveUseCases,
+    data_flow_diagram: hasFiveUseCases && hasBothBoundaries,
+    n2_chart: hasFiveUseCases && hasBothBoundaries,
+    sequence_diagrams: hasFiveUseCases && hasBothBoundaries,
+    interface_matrix: hasFiveUseCases && hasBothBoundaries,
   };
 }
 
@@ -591,7 +668,7 @@ export function determineCurrentPhase(generated: ArtifactPhase[]): ArtifactPhase
   }
 
   // All complete - return last phase
-  return 'sysml_activity_diagram';
+  return 'interface_matrix';
 }
 
 /**
@@ -693,6 +770,15 @@ export function phaseToKBStep(phase: ArtifactPhase): KnowledgeBankStep {
     requirements_table: 'functional-requirements',
     constants_table: 'functional-requirements',
     sysml_activity_diagram: 'sysml-activity-diagram',
+    // System Design Steps 3-6
+    ffbd_top_level: 'ffbd',
+    ffbd_decomposed: 'ffbd',
+    decision_matrix: 'decision-matrix',
+    qfd_house_of_quality: 'qfd-house-of-quality',
+    data_flow_diagram: 'interfaces',
+    n2_chart: 'interfaces',
+    sequence_diagrams: 'interfaces',
+    interface_matrix: 'interfaces',
   };
   return mapping[phase];
 }

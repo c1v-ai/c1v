@@ -60,16 +60,7 @@ export const POST = withProjectAuth(
       );
     }
 
-    // Credit check — before any AI generation
-    const creditResult = await checkAndDeductCredits(team.id, 1250);
-    if (!creditResult.allowed) {
-      return NextResponse.json(
-        { error: 'credit_limit_reached', creditsUsed: creditResult.creditsUsed, creditLimit: creditResult.creditLimit },
-        { status: 402 }
-      );
-    }
-
-    // Validate input
+    // Validate input first — before deducting credits
     let body;
     try {
       body = await req.json();
@@ -92,6 +83,15 @@ export const POST = withProjectAuth(
           })),
         },
         { status: 400 }
+      );
+    }
+
+    // Credit check — after validation, before AI generation
+    const creditResult = await checkAndDeductCredits(team.id, 1250);
+    if (!creditResult.allowed) {
+      return NextResponse.json(
+        { error: 'credit_limit_reached', creditsUsed: creditResult.creditsUsed, creditLimit: creditResult.creditLimit },
+        { status: 402 }
       );
     }
 

@@ -24,7 +24,7 @@ import {
 import { db } from '@/lib/db/drizzle';
 import { conversations, projectData, artifacts, projects, type NewArtifact } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { cleanSequenceDiagramSyntax } from '@/lib/diagrams/generators';
+import { cleanSequenceDiagramSyntax, validateMermaidSyntax } from '@/lib/diagrams/generators';
 import {
   getIntakeGraph,
   createInitialState,
@@ -619,6 +619,13 @@ async function saveMermaidDiagrams(projectId: number, content: string): Promise<
       for (const mermaidSyntax of mermaidBlocks) {
         const cleanedSyntax = cleanSequenceDiagramSyntax(mermaidSyntax);
 
+        // Validate before storage — skip invalid diagrams
+        const validation = validateMermaidSyntax(cleanedSyntax);
+        if (!validation.valid) {
+          console.warn(`[LangGraph Diagrams] Skipping invalid diagram: ${validation.error}`);
+          continue;
+        }
+
         const diagramType = detectDiagramType(cleanedSyntax);
         const newArtifact: NewArtifact = {
           projectId,
@@ -645,6 +652,9 @@ function parseExistingData(data: ProjectContext['projectData']): ExtractionResul
       useCases: [],
       systemBoundaries: { internal: [], external: [] },
       dataEntities: [],
+      problemStatement: { summary: '', context: '', impact: '', goals: [] },
+      goalsMetrics: [],
+      nonFunctionalRequirements: [],
     };
   }
 
@@ -658,6 +668,9 @@ function parseExistingData(data: ProjectContext['projectData']): ExtractionResul
         ? (data.systemBoundaries as { internal: string[]; external: string[] })
         : { internal: [], external: [] },
     dataEntities: Array.isArray(data.dataEntities) ? data.dataEntities : [],
+    problemStatement: ((data as any).problemStatement as ExtractionResult['problemStatement']) || { summary: '', context: '', impact: '', goals: [] },
+    goalsMetrics: ((data as any).goalsMetrics as ExtractionResult['goalsMetrics']) || [],
+    nonFunctionalRequirements: ((data as any).nonFunctionalRequirements as ExtractionResult['nonFunctionalRequirements']) || [],
   };
 }
 

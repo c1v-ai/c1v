@@ -72,7 +72,6 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return {
       error: 'Invalid email or password. Please try again.',
       email,
-      password
     };
   }
 
@@ -87,7 +86,6 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return {
       error: 'Invalid email or password. Please try again.',
       email,
-      password
     };
   }
 
@@ -192,7 +190,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
         .where(eq(teams.id, teamId))
         .limit(1);
     } else {
-      return { error: 'Invalid or expired invitation.', email, password };
+      return { error: 'Invalid or expired invitation.', email };
     }
   } else {
     // Create a new team if there's no invitation
@@ -239,9 +237,11 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 });
 
 export async function signOut() {
-  const user = (await getUser()) as User;
-  const userWithTeam = await getUserWithTeam(user.id);
-  await logActivity(userWithTeam?.teamId, user.id, ActivityType.SIGN_OUT);
+  const user = await getUser();
+  if (user) {
+    const userWithTeam = await getUserWithTeam(user.id);
+    await logActivity(userWithTeam?.teamId, user.id, ActivityType.SIGN_OUT);
+  }
   (await cookies()).delete('session');
 }
 
@@ -368,6 +368,18 @@ export const updateAccount = validatedActionWithUser(
   updateAccountSchema,
   async (data, _, user) => {
     const { name, email } = data;
+
+    // Check email uniqueness if email is changing
+    if (email !== user.email) {
+      const existing = await db.query.users.findFirst({
+        where: eq(users.email, email),
+        columns: { id: true },
+      });
+      if (existing) {
+        return { error: 'This email is already in use by another account.' };
+      }
+    }
+
     const userWithTeam = await getUserWithTeam(user.id);
 
     await Promise.all([

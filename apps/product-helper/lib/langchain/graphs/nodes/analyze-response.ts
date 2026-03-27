@@ -167,70 +167,13 @@ Determine the user's intent and extract any mentioned entities (or INFER if conf
 If the message contains stop triggers along with other info, prioritize STOP_TRIGGER intent.
 `);
 
-    // Merge quick extractions into state if present
-    let updatedData = state.extractedData;
-    if (analysis.extractedEntities) {
-      const { actors, useCases, externalSystems, scopeItems } = analysis.extractedEntities;
-
-      // Quick-add actors if detected
-      if (actors?.length) {
-        const existingActorNames = new Set(updatedData.actors.map(a => a.name.toLowerCase()));
-        const newActors = actors
-          .filter((name: string) => !existingActorNames.has(name.toLowerCase()))
-          .map((name: string) => ({
-            name,
-            role: 'To be determined',
-            description: `Actor mentioned: ${name}`,
-          }));
-
-        if (newActors.length > 0) {
-          updatedData = {
-            ...updatedData,
-            actors: [...updatedData.actors, ...newActors],
-          };
-        }
-      }
-
-      // Quick-add external systems if detected
-      if (externalSystems?.length) {
-        const existingExternal = new Set(
-          updatedData.systemBoundaries.external.map(s => s.toLowerCase())
-        );
-        const newExternal = externalSystems.filter(
-          (s: string) => !existingExternal.has(s.toLowerCase())
-        );
-
-        if (newExternal.length > 0) {
-          updatedData = {
-            ...updatedData,
-            systemBoundaries: {
-              ...updatedData.systemBoundaries,
-              external: [...updatedData.systemBoundaries.external, ...newExternal],
-            },
-          };
-        }
-      }
-
-      // Quick-add scope items if detected
-      if (scopeItems?.length) {
-        const existingInternal = new Set(
-          updatedData.systemBoundaries.internal.map(s => s.toLowerCase())
-        );
-        const newInternal = scopeItems.filter(
-          (s: string) => !existingInternal.has(s.toLowerCase())
-        );
-
-        if (newInternal.length > 0) {
-          updatedData = {
-            ...updatedData,
-            systemBoundaries: {
-              ...updatedData.systemBoundaries,
-              internal: [...updatedData.systemBoundaries.internal, ...newInternal],
-            },
-          };
-        }
-      }
-    }
+    // Note: Quick entity extraction from analyze-response is intentionally NOT merged
+    // into extractedData. The deep extraction agent (extract-data node) is the single
+    // authoritative writer for extractedData. Shallow stubs (e.g. actors with "To be
+    // determined" roles) were previously written here and would survive merge when the
+    // deep extractor didn't return the same actor name, polluting the data with stubs.
+    // The extractedEntities from intent analysis are still available in the LLM output
+    // for debugging but no longer mutate state.
 
     // Determine final intent (prioritize stop trigger if detected)
     const finalIntent: UserIntent = analysis.stopTriggerDetected
@@ -239,7 +182,6 @@ If the message contains stop triggers along with other info, prioritize STOP_TRI
 
     return {
       lastIntent: finalIntent,
-      extractedData: updatedData,
       turnCount: state.turnCount + 1,
     };
   } catch (error) {

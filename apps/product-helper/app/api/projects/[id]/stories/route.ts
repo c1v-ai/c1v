@@ -16,8 +16,10 @@ export const GET = withProjectAuth(
     const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get('status');
     const epic = searchParams.get('epic');
-    const sortBy = searchParams.get('sortBy') || 'order';
-    const sortOrder = searchParams.get('sortOrder') || 'asc';
+    const SORTABLE_FIELDS = ['order', 'priority', 'status', 'title', 'epic', 'createdAt', 'updatedAt'] as const;
+    const rawSortBy = searchParams.get('sortBy') || 'order';
+    const sortBy = SORTABLE_FIELDS.includes(rawSortBy as any) ? rawSortBy : 'order';
+    const sortOrder = searchParams.get('sortOrder') === 'desc' ? 'desc' : 'asc';
 
     // Build query
     const query = db.select()

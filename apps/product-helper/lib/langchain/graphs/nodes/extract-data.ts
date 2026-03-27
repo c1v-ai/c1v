@@ -86,6 +86,16 @@ export async function extractData(
       state.projectVision
     );
 
+    // If extraction failed, preserve existing state
+    if (!newExtraction) {
+      console.warn(`[EXTRACT_DEBUG] Extraction returned null — preserving existing state`);
+      return {
+        extractedData: state.extractedData,
+        completeness: calculateCompleteness(state.extractedData),
+        artifactReadiness: computeArtifactReadiness(state.extractedData),
+      };
+    }
+
     // [EXTRACT_DEBUG] After extraction
     console.log(`[EXTRACT_DEBUG] Extraction returned - actors: ${newExtraction.actors?.length ?? 0}, useCases: ${newExtraction.useCases?.length ?? 0}`);
 

@@ -2033,3 +2033,78 @@ export function generateDiagram(
       return 'graph TD\n  NoData["Unknown diagram type"]';
   }
 }
+
+// ============================================================
+// Mermaid Syntax Validation
+// ============================================================
+
+/** Valid Mermaid diagram type declarations */
+const VALID_DIAGRAM_TYPES = [
+  /^graph\s+(TD|TB|BT|RL|LR)\b/,
+  /^flowchart\s+(TD|TB|BT|RL|LR)\b/,
+  /^sequenceDiagram\b/,
+  /^classDiagram\b/,
+  /^stateDiagram(-v2)?\b/,
+  /^erDiagram\b/,
+  /^gantt\b/,
+  /^pie\b/,
+  /^mindmap\b/,
+  /^C4Context\b/,
+  /^C4Container\b/,
+  /^C4Component\b/,
+  /^C4Deployment\b/,
+  /^gitGraph\b/,
+  /^journey\b/,
+  /^quadrantChart\b/,
+  /^xychart-beta\b/,
+  /^block-beta\b/,
+  /^sankey-beta\b/,
+  /^packet-beta\b/,
+  /^architecture-beta\b/,
+];
+
+export interface MermaidValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+/**
+ * Validate Mermaid diagram syntax before storage.
+ * Performs structural checks that catch common LLM-generated errors
+ * without requiring a full Mermaid parser/DOM.
+ *
+ * @param syntax - Raw Mermaid diagram syntax
+ * @returns Validation result with error message if invalid
+ */
+export function validateMermaidSyntax(syntax: string): MermaidValidationResult {
+  if (!syntax || !syntax.trim()) {
+    return { valid: false, error: 'Empty diagram syntax' };
+  }
+
+  const trimmed = syntax.trim();
+
+  // Strip %%{init: ...}%% directives to find the real diagram type
+  const withoutDirectives = trimmed.replace(/%%\{[^}]*\}%%\s*/g, '').trim();
+
+  // Skip comment-only lines at the top
+  const lines = withoutDirectives.split('\n');
+  const firstContentLine = lines.find(l => l.trim() && !l.trim().startsWith('%%'));
+
+  if (!firstContentLine) {
+    return { valid: false, error: 'No diagram content found (only comments/directives)' };
+  }
+
+  // Check for valid diagram type declaration
+  const hasValidType = VALID_DIAGRAM_TYPES.some(pattern => pattern.test(firstContentLine.trim()));
+  if (!hasValidType) {
+    return { valid: false, error: `Invalid diagram type declaration: "${firstContentLine.trim().substring(0, 50)}"` };
+  }
+
+  // Check for content beyond the type declaration (at least 2 non-empty lines)
+  const contentLines = lines.filter(l => l.trim() && !l.trim().startsWith('%%'));
+  if (contentLines.length < 2) {
+    return { valid: false, error: 'Diagram has type declaration but no content' };
+  }
+
+  return { valid: true };
+}

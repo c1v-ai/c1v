@@ -58,10 +58,10 @@ export function renderDiagramAscii(
 }
 
 /**
- * Check if beautiful-mermaid can parse the syntax
- * Use this for validation before rendering
+ * Check if beautiful-mermaid can parse and render the syntax
+ * Use this for full render validation (slower than structural check)
  */
-export async function validateMermaidSyntax(syntax: string): Promise<boolean> {
+export async function canRenderMermaid(syntax: string): Promise<boolean> {
   try {
     // Attempt to render - will throw if invalid
     await renderMermaid(syntax, DIAGRAM_THEMES.light);
