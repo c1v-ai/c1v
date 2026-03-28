@@ -201,7 +201,7 @@ export async function processWithLangGraph(
     // 4. Invoke the LangGraph state machine
     const graph = getIntakeGraph();
     const result = await graph.invoke(state, {
-      recursionLimit: 20,
+      recursionLimit: 50,
     });
 
     // [STATE_DEBUG] Graph invocation complete
@@ -403,7 +403,7 @@ export async function streamWithLangGraph(
       try {
         // Use graph.stream for intermediate state updates
         const eventStream = await graph.stream(state, {
-          recursionLimit: 20,
+          recursionLimit: 50,
         });
 
         // Track generated artifacts across all chunks
@@ -671,6 +671,11 @@ function parseExistingData(data: ProjectContext['projectData']): ExtractionResul
     problemStatement: ((data as any).problemStatement as ExtractionResult['problemStatement']) || { summary: '', context: '', impact: '', goals: [] },
     goalsMetrics: ((data as any).goalsMetrics as ExtractionResult['goalsMetrics']) || [],
     nonFunctionalRequirements: ((data as any).nonFunctionalRequirements as ExtractionResult['nonFunctionalRequirements']) || [],
+    // Restore Steps 3-6 data from intakeState on cold start
+    ffbd: (data as any).intakeState?.extractedData?.ffbd,
+    decisionMatrix: (data as any).intakeState?.extractedData?.decisionMatrix,
+    qfd: (data as any).intakeState?.extractedData?.qfd,
+    interfaces: (data as any).intakeState?.extractedData?.interfaces,
   };
 }
 
@@ -719,6 +724,8 @@ async function updateProjectDataFromState(
         updateData.goalsMetrics = extractedData.goalsMetrics;
       }
       updateData.lastExtractedAt = new Date();
+      // Write full extractedData to intakeState so explorer + system design pages can read it
+      updateData.intakeState = { extractedData: state.extractedData };
     }
 
     if (completeness !== undefined) {
