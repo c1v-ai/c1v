@@ -109,6 +109,38 @@ Constants should include:
 - End node (bullseye)
 Use: flowchart TD syntax with clear labels and proper decision notation`,
   },
+  ffbd_top_level: {
+    type: 'ffbd',
+    instructions: 'Generate a top-level Functional Flow Block Diagram showing F.1 through F.N with logic gates (AND/OR/IT).',
+  },
+  ffbd_decomposed: {
+    type: 'ffbd',
+    instructions: 'Generate decomposed FFBDs for each top-level function showing sub-functions with logic gates.',
+  },
+  decision_matrix: {
+    type: 'table',
+    instructions: 'Generate a weighted decision matrix with performance criteria, alternatives, and scored totals.',
+  },
+  qfd_house_of_quality: {
+    type: 'table',
+    instructions: 'Generate a House of Quality matrix with customer needs, engineering characteristics, relationships, and design targets.',
+  },
+  data_flow_diagram: {
+    type: 'dfd',
+    instructions: 'Generate a Data Flow Diagram showing subsystems as boxes with labeled data flow arrows.',
+  },
+  n2_chart: {
+    type: 'table',
+    instructions: 'Generate an N-squared chart showing subsystem-to-subsystem interface payloads.',
+  },
+  sequence_diagrams: {
+    type: 'sequence',
+    instructions: 'Generate sequence diagrams for each primary use case with subsystem participants and interface IDs.',
+  },
+  interface_matrix: {
+    type: 'table',
+    instructions: 'Generate an interface matrix listing all interface specifications per subsystem.',
+  },
 };
 
 // ============================================================

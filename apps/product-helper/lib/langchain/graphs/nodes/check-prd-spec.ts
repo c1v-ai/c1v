@@ -66,6 +66,46 @@ export const ARTIFACT_THRESHOLDS: Record<ArtifactPhase, {
     requiredGates: [],
     description: 'Activity flow with decision points',
   },
+  ffbd_top_level: {
+    minimumScore: 60,
+    requiredGates: ['HG-FFBD-1'],
+    description: 'Top-level functional decomposition from use cases',
+  },
+  ffbd_decomposed: {
+    minimumScore: 65,
+    requiredGates: ['HG-FFBD-2'],
+    description: 'Decomposed sub-functions with logic gates',
+  },
+  decision_matrix: {
+    minimumScore: 70,
+    requiredGates: ['HG-DM-1'],
+    description: 'Weighted performance criteria with scored alternatives',
+  },
+  qfd_house_of_quality: {
+    minimumScore: 75,
+    requiredGates: ['HG-QFD-1'],
+    description: 'Customer needs mapped to engineering characteristics',
+  },
+  data_flow_diagram: {
+    minimumScore: 80,
+    requiredGates: ['HG-IF-1'],
+    description: 'Subsystem data flows with labeled interfaces',
+  },
+  n2_chart: {
+    minimumScore: 85,
+    requiredGates: ['HG-IF-2'],
+    description: 'Subsystem-to-subsystem interface matrix',
+  },
+  sequence_diagrams: {
+    minimumScore: 85,
+    requiredGates: ['HG-IF-3'],
+    description: 'Use case sequence flows with interface IDs',
+  },
+  interface_matrix: {
+    minimumScore: 90,
+    requiredGates: ['HG-IF-4'],
+    description: 'Complete interface specifications per subsystem',
+  },
 };
 
 /**

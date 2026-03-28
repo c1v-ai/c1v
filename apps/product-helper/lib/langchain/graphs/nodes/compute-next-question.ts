@@ -97,6 +97,65 @@ const PHASE_REQUIREMENTS: Record<ArtifactPhase, {
       'In {useCase}, are there any decision points or branches?',
     ],
   },
+  ffbd_top_level: {
+    required: ['use cases', 'system boundaries'],
+    questions: [
+      'What are the main functions your system performs end-to-end?',
+      'Which functions can run in parallel?',
+      'Are there any iterative/repeating processes?',
+    ],
+  },
+  ffbd_decomposed: {
+    required: ['top-level FFBD'],
+    questions: [
+      'Can you break down each top-level function into smaller steps?',
+      'What decision points exist within each function?',
+    ],
+  },
+  decision_matrix: {
+    required: ['requirements', 'FFBD'],
+    questions: [
+      'What performance criteria matter most for your system?',
+      'What design alternatives are you considering?',
+      'How would you weight importance across criteria?',
+    ],
+  },
+  qfd_house_of_quality: {
+    required: ['customer needs', 'performance criteria'],
+    questions: [
+      'What do your customers care about most?',
+      'What engineering characteristics can you measure?',
+      'Who are your main competitors?',
+    ],
+  },
+  data_flow_diagram: {
+    required: ['FFBD', 'subsystems'],
+    questions: [
+      'How would you group functions into subsystems?',
+      'What data flows between subsystems?',
+    ],
+  },
+  n2_chart: {
+    required: ['subsystems', 'data flows'],
+    questions: [
+      'What exact data does each subsystem send to others?',
+      'Which interfaces are most critical?',
+    ],
+  },
+  sequence_diagrams: {
+    required: ['N2 chart', 'use cases'],
+    questions: [
+      'What is the step-by-step message flow for each use case?',
+      'Which subsystems participate in each use case?',
+    ],
+  },
+  interface_matrix: {
+    required: ['all interface specs'],
+    questions: [
+      'What protocol does each interface use?',
+      'What are the data formats and frequencies?',
+    ],
+  },
 };
 
 // ============================================================

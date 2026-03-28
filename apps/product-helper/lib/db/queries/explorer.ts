@@ -38,6 +38,11 @@ export type ExplorerData = {
     hasProblemStatement: boolean;
     hasGoalsMetrics: boolean;
     hasNfr: boolean;
+    // Steps 3-6 System Design
+    hasFfbd: boolean;
+    hasDecisionMatrix: boolean;
+    hasQfd: boolean;
+    hasInterfaces: boolean;
   };
 };
 
@@ -77,6 +82,7 @@ export async function getExplorerData(
           nonFunctionalRequirements: true,
           reviewStatus: true,
           completeness: true,
+          intakeState: true,
         },
       }),
       db
@@ -160,6 +166,10 @@ export async function getExplorerData(
     hasNonEmptyArray(infraObj?.sections) ||
     (infraObj !== null && hasJsonbData(dataResult?.infrastructureSpec));
 
+  // Extract Steps 3-6 data from intakeState.extractedData
+  const intakeState = asRecord(dataResult?.intakeState);
+  const extractedData = asRecord(intakeState?.extractedData);
+
   return {
     project: {
       id: projectResult.id,
@@ -190,6 +200,11 @@ export async function getExplorerData(
       hasProblemStatement: hasJsonbData(dataResult?.problemStatement),
       hasGoalsMetrics: hasJsonbData(dataResult?.goalsMetrics),
       hasNfr: hasJsonbData(dataResult?.nonFunctionalRequirements),
+      // Steps 3-6 System Design (stored in intakeState.extractedData)
+      hasFfbd: hasJsonbData(extractedData?.ffbd),
+      hasDecisionMatrix: hasJsonbData(extractedData?.decisionMatrix),
+      hasQfd: hasJsonbData(extractedData?.qfd),
+      hasInterfaces: hasJsonbData(extractedData?.interfaces),
     },
   };
 }

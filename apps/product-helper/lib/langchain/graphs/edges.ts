@@ -61,6 +61,7 @@ export type ValidationRouteTarget =
  */
 export type ArtifactRouteTarget =
   | 'check_prd_spec'       // Continue to next phase
+  | 'generate_ffbd'        // Core complete -> start Steps 3-6
   | '__end__';               // All artifacts complete
 
 // ============================================================
@@ -214,7 +215,7 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
   }
 
   // Check if all 6 core KB artifacts are already generated
-  const coreArtifacts = [
+  const coreArtifacts: ArtifactPhase[] = [
     'context_diagram',
     'use_case_diagram',
     'scope_tree',
@@ -223,12 +224,12 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
     'sysml_activity_diagram',
   ];
   const allCoreComplete = coreArtifacts.every(a =>
-    generatedArtifacts.includes(a as ArtifactPhase)
+    generatedArtifacts.includes(a)
   );
 
-  // If all core artifacts done, end intake — generation is separate
+  // If all core artifacts done, route to generate_artifact which will chain to Steps 3-6
   if (allCoreComplete) {
-    return '__end__';
+    return 'generate_artifact';
   }
 
   // Stop trigger: generate current phase if not already done
@@ -302,19 +303,14 @@ export function routeAfterValidation(state: IntakeState): ValidationRouteTarget 
 export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
   const { generatedArtifacts, isComplete } = state;
 
-  // All 7 PRD-SPEC artifacts generated
-  if (generatedArtifacts.length >= 7) {
-    return '__end__';
-  }
-
   // 95%+ validation achieved
   if (isComplete) {
     return '__end__';
   }
 
   // All 6 core KB artifacts generated (context, use case, scope, ucbd, requirements, sysml)
-  // End the intake graph — tech generation is handled by separate API routes
-  const coreArtifacts = [
+  // Chain into Steps 3-6 (FFBD → Decision Matrix → QFD → Interfaces)
+  const coreArtifacts: ArtifactPhase[] = [
     'context_diagram',
     'use_case_diagram',
     'scope_tree',
@@ -323,14 +319,81 @@ export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
     'sysml_activity_diagram',
   ];
   const allCoreComplete = coreArtifacts.every(a =>
-    generatedArtifacts.includes(a as ArtifactPhase)
+    generatedArtifacts.includes(a)
   );
   if (allCoreComplete) {
-    return '__end__';
+    // If Steps 3-6 are also all done, end
+    const step3to6Artifacts: ArtifactPhase[] = [
+      'ffbd_top_level',
+      'ffbd_decomposed',
+      'decision_matrix',
+      'qfd_house_of_quality',
+      'data_flow_diagram',
+      'n2_chart',
+      'sequence_diagrams',
+      'interface_matrix',
+    ];
+    const allStep3to6Complete = step3to6Artifacts.every(a =>
+      generatedArtifacts.includes(a)
+    );
+    if (allStep3to6Complete) {
+      return '__end__';
+    }
+
+    // Start Steps 3-6 chain with FFBD
+    return 'generate_ffbd';
   }
 
-  // Continue to next phase - validate and possibly generate more
+  // Continue to next core phase - validate and possibly generate more
   return 'check_prd_spec';
+}
+
+// ============================================================
+// Steps 3-6 Chain Routing
+// ============================================================
+
+/**
+ * Routing targets from generate_ffbd node
+ */
+export type FFBDRouteTarget = 'generate_decision_matrix' | '__end__';
+
+/**
+ * Routing targets from generate_decision_matrix node
+ */
+export type DecisionMatrixRouteTarget = 'generate_qfd' | '__end__';
+
+/**
+ * Routing targets from generate_qfd node
+ */
+export type QFDRouteTarget = 'generate_interfaces' | '__end__';
+
+/**
+ * Routing targets from generate_interfaces node
+ */
+export type InterfacesRouteTarget = '__end__';
+
+/**
+ * Route after FFBD generation -> Decision Matrix
+ */
+export function routeAfterFFBD(state: IntakeState): FFBDRouteTarget {
+  if (state.error) return '__end__';
+  return 'generate_decision_matrix';
+}
+
+/**
+ * Route after Decision Matrix generation -> QFD
+ */
+export function routeAfterDecisionMatrix(state: IntakeState): DecisionMatrixRouteTarget {
+  if (state.error) return '__end__';
+  return 'generate_qfd';
+}
+
+/**
+ * Route after QFD generation -> Interfaces
+ */
+export function routeAfterQFD(state: IntakeState): QFDRouteTarget {
+  if (state.error) return '__end__';
+  return 'generate_interfaces';
 }
 
 // ============================================================
@@ -355,6 +418,14 @@ function getPhaseThreshold(phase: ArtifactPhase): number {
     requirements_table: 75,
     constants_table: 85,
     sysml_activity_diagram: 90,
+    ffbd_top_level: 60,
+    ffbd_decomposed: 65,
+    decision_matrix: 70,
+    qfd_house_of_quality: 75,
+    data_flow_diagram: 80,
+    n2_chart: 85,
+    sequence_diagrams: 85,
+    interface_matrix: 90,
   };
 
   return thresholds[phase] ?? 50;
@@ -406,8 +477,8 @@ export function shouldForceEnd(state: IntakeState): boolean {
     return true;
   }
 
-  // All artifacts already generated
-  if (state.generatedArtifacts.length >= 7) {
+  // All artifacts already generated (6 core + 8 Steps 3-6 = 14, plus constants = 15)
+  if (state.generatedArtifacts.length >= 15) {
     return true;
   }
 

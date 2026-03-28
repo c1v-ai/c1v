@@ -191,6 +191,26 @@ const INFERENCE_RULES: Record<KnowledgeBankStep, {
     minElements: 5,
     categories: ['use_case', 'requirement'],
   },
+  'ffbd': {
+    signals: ['functions', 'process', 'workflow', 'steps', 'parallel', 'sequence', 'iteration'],
+    minElements: 5,
+    categories: ['requirement' as any],
+  },
+  'decision-matrix': {
+    signals: ['performance', 'criteria', 'weight', 'score', 'alternative', 'comparison', 'evaluation'],
+    minElements: 3,
+    categories: ['constraint' as any],
+  },
+  'qfd-house-of-quality': {
+    signals: ['customer need', 'engineering', 'characteristic', 'competitor', 'target', 'quality'],
+    minElements: 3,
+    categories: ['requirement' as any],
+  },
+  'interfaces': {
+    signals: ['subsystem', 'interface', 'data flow', 'API', 'protocol', 'message', 'payload'],
+    minElements: 3,
+    categories: ['external_system' as any],
+  },
 };
 
 // ============================================================
@@ -226,6 +246,22 @@ const CONFIDENCE_THRESHOLDS: Record<KnowledgeBankStep, {
   'sysml-activity-diagram': {
     proposeGeneration: 80,
     weights: { actions: 30, decisions: 25, links: 25, completeness: 20 },
+  },
+  'ffbd': {
+    proposeGeneration: 80,
+    weights: { functions: 0.4, gates: 0.3, decomposition: 0.3 },
+  },
+  'decision-matrix': {
+    proposeGeneration: 80,
+    weights: { criteria: 0.3, weights: 0.3, alternatives: 0.2, scores: 0.2 },
+  },
+  'qfd-house-of-quality': {
+    proposeGeneration: 80,
+    weights: { needs: 0.25, characteristics: 0.25, relationships: 0.25, competitors: 0.25 },
+  },
+  'interfaces': {
+    proposeGeneration: 80,
+    weights: { subsystems: 0.3, interfaces: 0.3, n2Data: 0.2, sequences: 0.2 },
   },
 };
 

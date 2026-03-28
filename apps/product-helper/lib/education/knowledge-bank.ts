@@ -46,7 +46,12 @@ export type KnowledgeBankStep =
   | 'scope-tree'
   | 'ucbd'
   | 'functional-requirements'
-  | 'sysml-activity-diagram';
+  | 'sysml-activity-diagram'
+  // System Design Steps 3-6
+  | 'ffbd'
+  | 'decision-matrix'
+  | 'qfd-house-of-quality'
+  | 'interfaces';
 
 /** A complete knowledge bank entry for a single step. */
 export interface KnowledgeBankEntry {
@@ -652,6 +657,297 @@ export const sysmlValidationErrors: Record<string, ValidationError> = {
 };
 
 // ---------------------------------------------------------------------------
+// Data: FFBD (Step 3.1)
+// ---------------------------------------------------------------------------
+
+export const ffbdThinking: ThinkingMessage[] = [
+  {
+    headline: 'Decomposing your system into functions...',
+    tip: 'Functions describe WHAT the system does, not HOW it does it. "Cool a component" not "fan".',
+    duration: 4000,
+  },
+  {
+    headline: 'Identifying sequence, parallel, and iteration flows...',
+    tip: 'AND gates mean things happen simultaneously. IT gates mean loops. OR gates mean alternative paths.',
+    duration: 4000,
+  },
+  {
+    headline: 'Numbering function blocks hierarchically...',
+    tip: 'F.1 is top-level, F.1.1 is its first sub-function. This hierarchy IS your service architecture.',
+    duration: 4000,
+  },
+  {
+    headline: 'Checking for logic gate consistency...',
+    tip: 'Every AND/OR/IT gate must have matching open and close brackets — like parentheses in code.',
+    duration: 4000,
+  },
+  {
+    headline: 'Mapping core value functions...',
+    tip: 'The core value function is the ONE thing that makes your system worth building. Mark it with a star.',
+    duration: 5000,
+  },
+];
+
+export const ffbdTooltips: TooltipTerm[] = [
+  { term: 'Function Block', definition: 'A numbered box describing what the system does, not how it does it.' },
+  { term: 'AND Gate', definition: 'Parallel execution — all branches run simultaneously and rejoin.' },
+  { term: 'OR Gate', definition: 'Alternative paths — only one branch executes based on a condition.' },
+  { term: 'IT Gate', definition: 'Iteration loop — repeats until a termination condition is met.' },
+  { term: 'Decision Diamond', definition: 'A conditional branch point with labeled yes/no exit paths.' },
+  { term: 'Core Value Function', definition: 'The single function that delivers the primary value proposition.' },
+  { term: 'Functional Decomposition', definition: 'Breaking a top-level function into smaller sub-functions.' },
+  { term: 'Top-Level FFBD', definition: 'The highest abstraction showing F.1 through F.N in sequence.' },
+  { term: 'Hierarchical Numbering', definition: 'F.1, F.1.1, F.1.2 — each level adds a decimal for sub-functions.' },
+  { term: 'Termination Condition', definition: 'The condition that ends an IT (iteration) loop.' },
+];
+
+export const ffbdValidationErrors: Record<string, ValidationError> = {
+  structural_naming: {
+    error: "'{element}' uses structural naming instead of functional",
+    why: 'FFBD blocks must describe what the system DOES, not what component does it. "Database" is structural; "Store Prediction Result" is functional.',
+    fix: 'Rename to a verb phrase: "Store [what]", "Calculate [what]", "Validate [what]".',
+  },
+  unpaired_gate: {
+    error: "'{element}' has an opening gate without a matching close",
+    why: 'Logic gates work in pairs like parentheses. An unpaired gate makes the flow ambiguous.',
+    fix: 'Add the matching close gate where the parallel/alternative paths rejoin.',
+  },
+  missing_termination: {
+    error: "IT gate '{element}' has no termination condition",
+    why: 'An iteration loop without a stop condition runs forever — this is an infinite loop.',
+    fix: 'Add a termination condition label (e.g., "until all workers processed", "while data fresh < 15 min").',
+  },
+  too_many_blocks: {
+    error: "Function '{element}' has {count} sub-functions (recommended max: 10)",
+    why: 'More than 10 blocks at one level is hard to read and usually means the decomposition needs another level.',
+    fix: 'Group related sub-functions and create an intermediate decomposition level.',
+  },
+  no_core_value: {
+    error: 'No core value function identified in the FFBD',
+    why: 'Every system has one function that IS the product. Without marking it, priorities get lost.',
+    fix: 'Identify which function delivers the primary value proposition and mark it with isCoreValue.',
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Data: Decision Matrix (Step 4.1)
+// ---------------------------------------------------------------------------
+
+export const decisionMatrixThinking: ThinkingMessage[] = [
+  {
+    headline: 'Identifying performance criteria from your requirements...',
+    tip: 'Good criteria are measurable and solution-agnostic — they apply to ANY design option, not just yours.',
+    duration: 4000,
+  },
+  {
+    headline: 'Defining measurement scales for each criterion...',
+    tip: 'Every score needs defined conditions. "4 out of 5" means nothing without specifying what earns a 4.',
+    duration: 4000,
+  },
+  {
+    headline: 'Assigning importance weights...',
+    tip: 'Weights should be percentages summing to 100%. A criterion weighted at 5% barely affects the outcome.',
+    duration: 4000,
+  },
+  {
+    headline: 'Scoring alternatives against criteria...',
+    tip: 'Use the measurement scale you defined — objective data, not gut feeling. Can you defend this score?',
+    duration: 4000,
+  },
+  {
+    headline: 'Computing weighted totals and checking sensitivity...',
+    tip: 'If changing one weight by 5% flips the winner, your decision is fragile. Flag it for team review.',
+    duration: 5000,
+  },
+];
+
+export const decisionMatrixTooltips: TooltipTerm[] = [
+  { term: 'Performance Criterion', definition: 'A measurable property that matters to stakeholders (e.g., response time).' },
+  { term: 'Weight', definition: 'Relative importance of a criterion, expressed as a percentage summing to 100%.' },
+  { term: 'Normalized Score', definition: 'A raw measurement converted to a 0-1 scale for fair comparison.' },
+  { term: 'Weighted Score', definition: 'Normalized score multiplied by the criterion weight.' },
+  { term: 'Design Alternative', definition: 'A candidate solution being evaluated against criteria.' },
+  { term: 'Measurement Scale', definition: 'Defined conditions mapping real-world values to numeric scores.' },
+  { term: 'Sensitivity Analysis', definition: 'Testing how small weight changes affect which alternative wins.' },
+  { term: 'Direct Measure', definition: 'A criterion measured in its natural unit (seconds, dollars, percentage).' },
+  { term: 'Scaled Measure', definition: 'A subjective criterion converted to a numeric scale with defined levels.' },
+  { term: 'Pugh Matrix', definition: 'A decision matrix comparing alternatives against a baseline reference.' },
+  { term: 'Minimum Acceptable', definition: 'The threshold below which an alternative is automatically eliminated.' },
+  { term: 'Dominance', definition: 'When one alternative scores equal or better on ALL criteria — a clear winner.' },
+];
+
+export const decisionMatrixValidationErrors: Record<string, ValidationError> = {
+  features_as_criteria: {
+    error: "'{element}' looks like a feature, not a performance criterion",
+    why: 'Criteria measure HOW WELL something performs, not WHAT it does. "Has dark mode" is a feature; "User satisfaction score" is a criterion.',
+    fix: 'Rephrase as a measurable quality: speed, accuracy, cost, reliability, usability.',
+  },
+  weights_dont_sum: {
+    error: 'Criterion weights sum to {value}%, not 100%',
+    why: 'Weights must sum to 100% for the weighted scores to be meaningful.',
+    fix: 'Adjust weights so they total exactly 100%.',
+  },
+  undefined_scale: {
+    error: "Criterion '{element}' has no measurement scale defined",
+    why: 'Without defined scale conditions, scores are just opinions. What does "3 out of 5" actually mean?',
+    fix: 'Define what each score level means (e.g., 1 = >5s response, 3 = 1-2s, 5 = <200ms).',
+  },
+  no_minimum: {
+    error: "Criterion '{element}' has no minimum acceptable threshold",
+    why: 'Without a minimum, an alternative could score 0 on safety but still win on price.',
+    fix: 'Set a minimum threshold — alternatives scoring below it are automatically eliminated.',
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Data: QFD House of Quality (Step 5.1)
+// ---------------------------------------------------------------------------
+
+export const qfdThinking: ThinkingMessage[] = [
+  {
+    headline: 'Mapping customer needs to engineering characteristics...',
+    tip: 'Customer needs are WHAT users want. Engineering characteristics are the knobs you can actually turn.',
+    duration: 4000,
+  },
+  {
+    headline: 'Building the relationship matrix...',
+    tip: 'Strong (9), Moderate (3), Weak (1) — these numbers show how much each knob affects each need.',
+    duration: 4000,
+  },
+  {
+    headline: 'Analyzing the correlation roof...',
+    tip: 'The roof shows trade-offs: improving prediction accuracy might increase computation time. Plan for it.',
+    duration: 4000,
+  },
+  {
+    headline: 'Scoring against competitors...',
+    tip: 'Be honest. Low scores identify weaknesses early — better now than after launch.',
+    duration: 4000,
+  },
+  {
+    headline: 'Setting design targets with technical difficulty...',
+    tip: 'A target without a difficulty and cost estimate is just a wish. Make it actionable.',
+    duration: 5000,
+  },
+];
+
+export const qfdTooltips: TooltipTerm[] = [
+  { term: 'House of Quality', definition: 'The QFD matrix shaped like a house — needs, characteristics, and targets.' },
+  { term: 'Customer Need', definition: 'What the user wants, stated in their language (e.g., "accurate predictions").' },
+  { term: 'Engineering Characteristic', definition: 'A measurable system property you control (e.g., "MAE in degrees C").' },
+  { term: 'Relationship Strength', definition: 'How much a characteristic affects a need: strong (9), moderate (3), weak (1).' },
+  { term: 'Correlation Roof', definition: 'Triangle showing positive/negative trade-offs between characteristics.' },
+  { term: 'Design Target', definition: 'The specific value you aim for on each engineering characteristic.' },
+  { term: 'Relative Importance', definition: 'How much each customer need matters compared to others (sums to 1.0).' },
+  { term: 'Imputed Importance', definition: 'Calculated importance of a characteristic based on need weights and relationships.' },
+  { term: 'Back Porch', definition: 'The competitive analysis section on the right side of the House of Quality.' },
+  { term: 'Technical Difficulty', definition: 'How hard it is to achieve a design target (1=easy, 5=very hard).' },
+  { term: 'Direction of Improvement', definition: 'Whether higher, lower, or a specific target value is better.' },
+];
+
+export const qfdValidationErrors: Record<string, ValidationError> = {
+  no_competitors: {
+    error: 'House of Quality has no competitive analysis',
+    why: 'Without competitors, you cannot see where you are strong or weak. Every product has alternatives.',
+    fix: 'Add at least 2 competitors — include indirect alternatives (e.g., spreadsheets, manual process).',
+  },
+  orphan_characteristic: {
+    error: "Engineering characteristic '{element}' has no relationships to any customer need",
+    why: 'A characteristic with zero relationships does not affect any customer need. Why measure it?',
+    fix: 'Either add a relationship to a need, or remove the characteristic.',
+  },
+  missing_target: {
+    error: "Engineering characteristic '{element}' has no design target",
+    why: 'A characteristic without a target is unmeasurable. Teams cannot build toward an undefined goal.',
+    fix: 'Set a specific, measurable target value with units.',
+  },
+  weights_dont_sum: {
+    error: 'Customer need importance weights sum to {value}, not 1.0',
+    why: 'Weights must sum to 1.0 for imputed importance calculations to be valid.',
+    fix: 'Adjust importance weights so they total exactly 1.0.',
+  },
+  too_many_strongs: {
+    error: '{count}% of relationships are "strong" — likely inflated',
+    why: 'If everything is strongly related, the matrix does not differentiate. Typically <30% should be strong.',
+    fix: 'Review each "strong" relationship and downgrade to moderate or weak where appropriate.',
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Data: Interfaces (Step 6.1)
+// ---------------------------------------------------------------------------
+
+export const interfacesThinking: ThinkingMessage[] = [
+  {
+    headline: 'Decomposing your system into subsystems...',
+    tip: 'Subsystems are defined by FUNCTION, not by component. Group functions that work closely together.',
+    duration: 4000,
+  },
+  {
+    headline: 'Mapping data flows between subsystems...',
+    tip: 'Every arrow on the DFD is an API call, event, or message you will need to build.',
+    duration: 4000,
+  },
+  {
+    headline: 'Building the N-squared chart...',
+    tip: 'The N2 chart is your API contract matrix. Each cell says exactly what data crosses that boundary.',
+    duration: 4000,
+  },
+  {
+    headline: 'Generating sequence diagrams with interface IDs...',
+    tip: 'Each sequence diagram is an end-to-end integration test. IF-01 through IF-N tag every message.',
+    duration: 4000,
+  },
+  {
+    headline: 'Compiling the interface matrix...',
+    tip: 'The interface matrix is your OpenAPI spec + event schema registry. Every interface formally specified.',
+    duration: 5000,
+  },
+];
+
+export const interfacesTooltips: TooltipTerm[] = [
+  { term: 'Subsystem', definition: 'A group of related functions that together deliver a capability.' },
+  { term: 'Data Flow Diagram', definition: 'Shows subsystem boxes with labeled arrows for data exchanged.' },
+  { term: 'N2 Chart', definition: 'A matrix showing FROM (rows) x TO (columns) with payload in each cell.' },
+  { term: 'Interface Specification', definition: 'Formal definition: source, destination, data, protocol, frequency.' },
+  { term: 'Interface ID', definition: 'Unique identifier (IF-01) that tags an interface across all diagrams.' },
+  { term: 'Operational Interface', definition: 'How subsystems exchange data during normal operation.' },
+  { term: 'Design Interface', definition: 'Information needed for design (e.g., weight limits, size constraints).' },
+  { term: 'Interface Champion', definition: 'The person responsible for resolving disputes about interface specs.' },
+  { term: 'Sequence Diagram', definition: 'Time-ordered message flow between participants for one use case.' },
+  { term: 'System Boundary', definition: 'The dashed line separating internal subsystems from external entities.' },
+  { term: 'Interface Matrix', definition: 'Spreadsheet listing all interface specs with subsystem allocation.' },
+];
+
+export const interfacesValidationErrors: Record<string, ValidationError> = {
+  orphan_subsystem: {
+    error: "Subsystem '{element}' has no interfaces to any other subsystem",
+    why: 'A subsystem with zero interfaces is isolated — it cannot contribute to the system.',
+    fix: 'Either add interfaces connecting it, or merge it into another subsystem.',
+  },
+  missing_interface_id: {
+    error: "Interface between '{source}' and '{dest}' has no IF-ID assigned",
+    why: 'Without an ID, you cannot reference this interface in sequence diagrams or the interface matrix.',
+    fix: 'Assign a unique IF-ID (e.g., IF-01, IF-02) to every interface.',
+  },
+  unidirectional_only: {
+    error: "Subsystem '{element}' only sends data, never receives",
+    why: 'Most subsystems need to both send and receive. A send-only subsystem may be missing return interfaces.',
+    fix: 'Check if the subsystem needs acknowledgments, status responses, or configuration data.',
+  },
+  n2_mismatch: {
+    error: 'N2 chart cell ({from},{to}) does not match interface spec IF-{id}',
+    why: 'The N2 chart and interface specs must agree. Mismatches cause integration bugs.',
+    fix: 'Reconcile the N2 chart payload with the interface specification.',
+  },
+  no_sequence_diagram: {
+    error: "Use case '{element}' has no sequence diagram",
+    why: 'Every primary use case needs a sequence diagram showing how subsystems collaborate.',
+    fix: 'Create a sequence diagram with subsystem participants and IF-ID labels on each message.',
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Aggregated Lookup
 // ---------------------------------------------------------------------------
 
@@ -698,6 +994,35 @@ export const knowledgeBank: Record<KnowledgeBankStep, KnowledgeBankEntry> = {
     thinkingMessages: sysmlThinking,
     tooltipTerms: sysmlTooltips,
     validationErrors: sysmlValidationErrors,
+  },
+  // System Design Steps 3-6
+  'ffbd': {
+    step: 'ffbd',
+    label: 'Functional Flow Block Diagram',
+    thinkingMessages: ffbdThinking,
+    tooltipTerms: ffbdTooltips,
+    validationErrors: ffbdValidationErrors,
+  },
+  'decision-matrix': {
+    step: 'decision-matrix',
+    label: 'Decision Matrix',
+    thinkingMessages: decisionMatrixThinking,
+    tooltipTerms: decisionMatrixTooltips,
+    validationErrors: decisionMatrixValidationErrors,
+  },
+  'qfd-house-of-quality': {
+    step: 'qfd-house-of-quality',
+    label: 'House of Quality (QFD)',
+    thinkingMessages: qfdThinking,
+    tooltipTerms: qfdTooltips,
+    validationErrors: qfdValidationErrors,
+  },
+  'interfaces': {
+    step: 'interfaces',
+    label: 'Interface Definitions',
+    thinkingMessages: interfacesThinking,
+    tooltipTerms: interfacesTooltips,
+    validationErrors: interfacesValidationErrors,
   },
 };
 

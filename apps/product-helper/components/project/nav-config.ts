@@ -16,6 +16,10 @@ import {
   Target,
   BarChart3,
   Shield,
+  Workflow,
+  Scale,
+  Grid3X3,
+  Network,
 } from 'lucide-react';
 import type { DiagramType } from '@/lib/db/type-guards';
 
@@ -31,31 +35,50 @@ export interface NavItem {
 export function getProjectNavItems(projectId: number): NavItem[] {
   return [
     { name: 'Overview', href: `/projects/${projectId}`, icon: LayoutDashboard, exact: true },
+
+    // Steps 1-2: Scope & Requirements
     {
-      name: 'Product Requirements',
+      name: 'Scope & Requirements',
       href: `/projects/${projectId}/requirements`,
       icon: FileText,
       children: [
         { name: 'Problem Statement', href: `/projects/${projectId}/requirements/problem-statement`, icon: Target, dataKey: 'hasProblemStatement' },
         { name: 'Goals & Metrics', href: `/projects/${projectId}/requirements/goals-metrics`, icon: BarChart3, dataKey: 'hasGoalsMetrics' },
-        { name: 'Architecture Diagram', href: `/projects/${projectId}/requirements/architecture`, icon: Layers, dataKey: 'hasArchitecture' },
-        { name: 'Tech Stack', href: `/projects/${projectId}/requirements/tech-stack`, icon: Code, dataKey: 'hasTechStack' },
         { name: 'User Stories', href: `/projects/${projectId}/requirements/user-stories`, icon: BookOpen, dataKey: 'hasUserStories' },
         { name: 'System Overview', href: `/projects/${projectId}/requirements/system-overview`, icon: Users, dataKey: 'hasSystemOverview' },
         { name: 'Non-Functional Req.', href: `/projects/${projectId}/requirements/nfr`, icon: Shield, dataKey: 'hasNfr' },
       ],
     },
+
+    // Steps 3-6: System Architecture
     {
-      name: 'Backend',
+      name: 'System Architecture',
+      icon: Workflow,
+      children: [
+        { name: 'FFBD', href: `/projects/${projectId}/system-design/ffbd`, icon: Workflow, dataKey: 'hasFfbd' },
+        { name: 'Decision Matrix', href: `/projects/${projectId}/system-design/decision-matrix`, icon: Scale, dataKey: 'hasDecisionMatrix' },
+        { name: 'House of Quality', href: `/projects/${projectId}/system-design/qfd`, icon: Grid3X3, dataKey: 'hasQfd' },
+        { name: 'Interfaces', href: `/projects/${projectId}/system-design/interfaces`, icon: Network, dataKey: 'hasInterfaces' },
+      ],
+    },
+
+    // Diagrams: All visual artifacts across steps
+    { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch, dataKey: 'hasDiagrams' },
+
+    // Implementation: Generated AFTER interfaces are defined
+    {
+      name: 'Implementation',
       icon: Server,
       children: [
+        { name: 'Architecture Diagram', href: `/projects/${projectId}/requirements/architecture`, icon: Layers, dataKey: 'hasArchitecture' },
+        { name: 'Tech Stack', href: `/projects/${projectId}/requirements/tech-stack`, icon: Code, dataKey: 'hasTechStack' },
         { name: 'Database Schema', href: `/projects/${projectId}/backend/schema`, icon: Database, dataKey: 'hasSchema' },
         { name: 'API Specification', href: `/projects/${projectId}/backend/api-spec`, icon: Code, dataKey: 'hasApiSpec' },
         { name: 'Infrastructure', href: `/projects/${projectId}/backend/infrastructure`, icon: Cloud, dataKey: 'hasInfrastructure' },
         { name: 'Coding Guidelines', href: `/projects/${projectId}/backend/guidelines`, icon: FileText, dataKey: 'hasGuidelines' },
       ],
     },
-    { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch, dataKey: 'hasDiagrams' },
+
     { name: 'Generate', href: `/projects/${projectId}/generate`, icon: Sparkles },
     { name: 'Connections', href: `/projects/${projectId}/connections`, icon: Plug },
     { name: 'Settings', href: `/projects/${projectId}/settings`, icon: Settings },

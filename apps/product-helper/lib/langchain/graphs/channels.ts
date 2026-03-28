@@ -181,6 +181,14 @@ export function createDefaultArtifactReadiness(): ArtifactReadiness {
     requirements_table: false,
     constants_table: false,
     sysml_activity_diagram: false,
+    ffbd_top_level: false,
+    ffbd_decomposed: false,
+    decision_matrix: false,
+    qfd_house_of_quality: false,
+    data_flow_diagram: false,
+    n2_chart: false,
+    sequence_diagrams: false,
+    interface_matrix: false,
   };
 }
 

@@ -21,11 +21,17 @@ import {
   routeAfterExtraction,
   routeAfterValidation,
   routeAfterArtifact,
+  routeAfterFFBD,
+  routeAfterDecisionMatrix,
+  routeAfterQFD,
   shouldForceEnd,
   type AnalyzeRouteTarget,
   type ExtractRouteTarget,
   type ValidationRouteTarget,
   type ArtifactRouteTarget,
+  type FFBDRouteTarget,
+  type DecisionMatrixRouteTarget,
+  type QFDRouteTarget,
 } from './edges';
 
 /**
@@ -159,6 +165,46 @@ async function generateResponse(state: IntakeState): Promise<Partial<IntakeState
 }
 
 // ============================================================
+// Steps 3-6 Node Function Placeholders
+// ============================================================
+
+/**
+ * Generate FFBD Node (Step 3)
+ * Extracts Functional Flow Block Diagrams from conversation and extracted data
+ */
+async function generateFFBD(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateFFBD: generateFFBDImpl } = await import('./nodes/generate-ffbd');
+  return generateFFBDImpl(state);
+}
+
+/**
+ * Generate Decision Matrix Node (Step 4)
+ * Extracts performance criteria and design alternatives
+ */
+async function generateDecisionMatrix(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateDecisionMatrix: generateDecisionMatrixImpl } = await import('./nodes/generate-decision-matrix');
+  return generateDecisionMatrixImpl(state);
+}
+
+/**
+ * Generate QFD House of Quality Node (Step 5)
+ * Extracts customer needs, engineering characteristics, and relationships
+ */
+async function generateQFD(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateQFD: generateQFDImpl } = await import('./nodes/generate-qfd');
+  return generateQFDImpl(state);
+}
+
+/**
+ * Generate Interfaces Node (Step 6)
+ * Extracts subsystems, data flows, N2 chart, and sequence diagrams
+ */
+async function generateInterfaces(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateInterfaces: generateInterfacesImpl } = await import('./nodes/generate-interfaces');
+  return generateInterfacesImpl(state);
+}
+
+// ============================================================
 // State Annotation Definition
 // ============================================================
 
@@ -253,7 +299,11 @@ const IntakeStateAnnotation = Annotation.Root({
       return result;
     },
     default: () => {
-      const steps: KnowledgeBankStep[] = ['context-diagram', 'use-case-diagram', 'scope-tree', 'ucbd', 'functional-requirements', 'sysml-activity-diagram'];
+      const steps: KnowledgeBankStep[] = [
+        'context-diagram', 'use-case-diagram', 'scope-tree', 'ucbd', 'functional-requirements', 'sysml-activity-diagram',
+        // Steps 3-6
+        'ffbd', 'decision-matrix', 'qfd-house-of-quality', 'interfaces',
+      ];
       const status = {} as Record<KnowledgeBankStep, StepStatus>;
       for (const step of steps) {
         status[step] = { roundsAsked: 0, coveredTopics: [], confirmed: false, generationApproved: false };
@@ -322,6 +372,11 @@ export function buildIntakeGraph() {
     .addNode('check_prd_spec', checkPRDSpec)
     .addNode('generate_artifact', generateArtifact)
     .addNode('generate_response', generateResponse)
+    // Steps 3-6 nodes
+    .addNode('generate_ffbd', generateFFBD)
+    .addNode('generate_decision_matrix', generateDecisionMatrix)
+    .addNode('generate_qfd', generateQFD)
+    .addNode('generate_interfaces', generateInterfaces)
     // ============================================================
     // Add Entry Edge
     // ============================================================
@@ -347,12 +402,29 @@ export function buildIntakeGraph() {
       routeAfterValidation,
       ['generate_artifact', 'compute_next_question', END]
     )
-    // After artifact generation: continue or end
+    // After artifact generation: continue, chain to Steps 3-6, or end
     .addConditionalEdges(
       'generate_artifact',
       routeAfterArtifact,
-      ['check_prd_spec', END]
+      ['check_prd_spec', 'generate_ffbd', END]
     )
+    // Steps 3-6 chain: FFBD -> Decision Matrix -> QFD -> Interfaces -> END
+    .addConditionalEdges(
+      'generate_ffbd',
+      routeAfterFFBD,
+      ['generate_decision_matrix', END]
+    )
+    .addConditionalEdges(
+      'generate_decision_matrix',
+      routeAfterDecisionMatrix,
+      ['generate_qfd', END]
+    )
+    .addConditionalEdges(
+      'generate_qfd',
+      routeAfterQFD,
+      ['generate_interfaces', END]
+    )
+    .addEdge('generate_interfaces', END)
     // ============================================================
     // Add Simple Edges
     // ============================================================
@@ -437,7 +509,7 @@ export async function invokeIntakeGraph(
     maxIterations?: number;
   } = {}
 ): Promise<IntakeState> {
-  const { debug = false, maxIterations = 20 } = options;
+  const { debug = false, maxIterations = 50 } = options;
 
   // Check for force end conditions before invoking
   if (shouldForceEnd(state)) {
@@ -506,7 +578,7 @@ export async function* streamIntakeGraph(
 
   // Use LangGraph's streaming capability
   const stream = await graph.stream(state, {
-    recursionLimit: 20,
+    recursionLimit: 50,
   });
 
   for await (const chunk of stream) {

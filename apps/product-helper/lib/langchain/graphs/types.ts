@@ -636,14 +636,14 @@ export function computeArtifactReadiness(data: ExtractionResult): ArtifactReadin
     sysml_activity_diagram: hasMinUseCases,
 
     // System Design Steps 3-6 (require Steps 1-2 artifacts first)
-    ffbd_top_level: hasFiveUseCases && hasBothBoundaries,
-    ffbd_decomposed: hasFiveUseCases && hasBothBoundaries,
+    ffbd_top_level: hasFiveUseCases && hasInternal && hasExternal,
+    ffbd_decomposed: hasFiveUseCases && hasInternal && hasExternal,
     decision_matrix: hasFiveUseCases,
     qfd_house_of_quality: hasFiveUseCases,
-    data_flow_diagram: hasFiveUseCases && hasBothBoundaries,
-    n2_chart: hasFiveUseCases && hasBothBoundaries,
-    sequence_diagrams: hasFiveUseCases && hasBothBoundaries,
-    interface_matrix: hasFiveUseCases && hasBothBoundaries,
+    data_flow_diagram: hasFiveUseCases && hasInternal && hasExternal,
+    n2_chart: hasFiveUseCases && hasInternal && hasExternal,
+    sequence_diagrams: hasFiveUseCases && hasInternal && hasExternal,
+    interface_matrix: hasFiveUseCases && hasInternal && hasExternal,
   };
 }
 

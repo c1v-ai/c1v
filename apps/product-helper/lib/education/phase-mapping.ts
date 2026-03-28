@@ -32,6 +32,14 @@ const PHASE_TO_STEP: Record<ArtifactPhase, KnowledgeBankStep> = {
   requirements_table: 'functional-requirements',
   constants_table: 'functional-requirements', // fallback
   sysml_activity_diagram: 'sysml-activity-diagram',
+  ffbd_top_level: 'ffbd',
+  ffbd_decomposed: 'ffbd',
+  decision_matrix: 'decision-matrix',
+  qfd_house_of_quality: 'qfd-house-of-quality',
+  data_flow_diagram: 'interfaces',
+  n2_chart: 'interfaces',
+  sequence_diagrams: 'interfaces',
+  interface_matrix: 'interfaces',
 };
 
 /**
