@@ -1,0 +1,58 @@
+{
+  "Sheet1": [
+    {
+      "Constant Name": "SUFFICIENCY_TARGET_ARTIFACTS",
+      "Value": "{Context Diagram, Use Case Model, Scope Tree, UCBDs, Requirements}",
+      "Units": "N/A",
+      "Est/Final": "FINAL",
+      "Source": "Process definition",
+      "Used in Requirements": "OR.7, OR.11",
+      "Notes": "Set of artifacts used in intake sufficiency evaluation."
+    },
+    {
+      "Constant Name": "SUFFICIENCY_RULESET_ID",
+      "Value": "Sufficiency Rules v1 (TBD link)",
+      "Units": "N/A",
+      "Est/Final": "EST",
+      "Source": "Internal checklist",
+      "Used in Requirements": "OR.8, OR.13",
+      "Notes": "Checklist/rubric defining minimum thresholds for sufficiency."
+    },
+    {
+      "Constant Name": "INTAKE_QC_RULESET_ID",
+      "Value": "Intake QC Rules v1 (TBD link)",
+      "Units": "N/A",
+      "Est/Final": "EST",
+      "Source": "Internal checklist",
+      "Used in Requirements": "OR.17",
+      "Notes": "Rules for missing fields, contradictions, and vague terms."
+    },
+    {
+      "Constant Name": "CONTEXT_DIAGRAM_QC_RULESET_ID",
+      "Value": "Context Diagram QC Rules v1 (TBD link)",
+      "Units": "N/A",
+      "Est/Final": "EST",
+      "Source": "Cornell diagram rules",
+      "Used in Requirements": "OR.23",
+      "Notes": "Includes labeled arrows, single system box, external entities outside boundary."
+    },
+    {
+      "Constant Name": "UCD_QC_RULESET_ID",
+      "Value": "Use Case Diagram QC Rules v1 (TBD link)",
+      "Units": "N/A",
+      "Est/Final": "EST",
+      "Source": "Cornell diagram rules",
+      "Used in Requirements": "OR.31",
+      "Notes": "Includes valid include/extend usage, naming consistency, no orphan use cases."
+    },
+    {
+      "Constant Name": "UCBD_QC_RULESET_ID",
+      "Value": "UCBD QC Rules v1 (TBD link)",
+      "Units": "N/A",
+      "Est/Final": "EST",
+      "Source": "Cornell UCBD rules",
+      "Used in Requirements": "OR.40",
+      "Notes": "Includes chronological order, one flow per UCBD, ownership clarity."
+    }
+  ]
+}

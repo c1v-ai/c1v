@@ -79,3 +79,13 @@ apps/product-helper/My system is a Platform.docx
 
 # Playwright MCP logs
 .playwright-mcp/
+
+# Graphify outputs (local knowledge graph artifacts)
+graphify-out/
+
+# Cornell course coursework (kept local, not in repo)
+docs/CESYS524*
+docs/CESYS525*
+
+# Sandbox / parked experiments (safety net for future forks)
+_sandbox/
