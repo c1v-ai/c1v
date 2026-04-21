@@ -731,6 +731,9 @@ async function updateProjectDataFromState(
       if (extractedData.goalsMetrics) {
         updateData.goalsMetrics = extractedData.goalsMetrics;
       }
+      if (extractedData.nonFunctionalRequirements && extractedData.nonFunctionalRequirements.length > 0) {
+        updateData.nonFunctionalRequirements = extractedData.nonFunctionalRequirements;
+      }
       updateData.lastExtractedAt = new Date();
       // Write full extractedData to intakeState so explorer + system design pages can read it
       updateData.intakeState = { extractedData: state.extractedData };
