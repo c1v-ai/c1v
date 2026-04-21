@@ -1,0 +1,369 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "arrow_shortcuts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,2}$",
+            "description": "x-ui-surface=section:Shortcut Manager — shortcut label (A, B, …, Z; then AA, BB, … per methodology §6.3)."
+          },
+          "source_block_id": {
+            "type": "string",
+            "pattern": "^F\\.[0-9]+(\\.[0-9]+)*$",
+            "description": "x-ui-surface=section:Shortcut Manager — block id where the shortcut exits."
+          },
+          "dest_block_id": {
+            "type": "string",
+            "pattern": "^F\\.[0-9]+(\\.[0-9]+)*$",
+            "description": "x-ui-surface=section:Shortcut Manager — block id where the shortcut enters."
+          },
+          "diagram_scope": {
+            "type": "string",
+            "description": "x-ui-surface=section:Shortcut Manager — diagram identifier (shortcuts are within-diagram only per methodology §6.3)."
+          }
+        },
+        "required": [
+          "label",
+          "source_block_id",
+          "dest_block_id",
+          "diagram_scope"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Shortcut Manager — arrow shortcut (wormhole pair) replacing a long crossing arrow."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Shortcut Manager — all within-diagram arrow shortcuts."
+    },
+    "reference_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref_block_id": {
+            "type": "string",
+            "pattern": "^F\\.[0-9]+(\\.[0-9]+)* Ref$",
+            "description": "x-ui-surface=section:Reference Blocks — \"F.N Ref\" identifier pointing at another diagram."
+          },
+          "referenced_diagram_title": {
+            "type": "string",
+            "description": "x-ui-surface=section:Reference Blocks — target diagram title (must match the referenced block name exactly per methodology Mistake 3)."
+          },
+          "boundary_side": {
+            "type": "string",
+            "enum": [
+              "entry",
+              "exit"
+            ],
+            "description": "x-ui-surface=section:Reference Blocks — whether this ref appears at sub-diagram entry or exit."
+          }
+        },
+        "required": [
+          "ref_block_id",
+          "referenced_diagram_title",
+          "boundary_side"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Reference Blocks — cross-diagram pointer to a peer FFBD."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Reference Blocks — all cross-diagram reference blocks."
+    },
+    "cache_strategy": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string",
+          "enum": [
+            "cap_theorem",
+            "resiliency",
+            "caching",
+            "load_balancing",
+            "api_design",
+            "none",
+            "observability",
+            "maintainability",
+            "cdn_networking",
+            "message_queues",
+            "data_model",
+            "deployment_cicd"
+          ],
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB file this decision cites."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — why this decision maps to the numeric target."
+        },
+        "tradeoffs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — explicit trade-offs accepted (e.g., latency vs consistency)."
+        },
+        "alternatives_rejected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — alternatives considered and rejected, with one-line reason."
+        }
+      },
+      "required": [
+        "ref",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Cache Strategy — inserted cache-layer decision (ref: \"caching\"). NOT methodology-driven; schema insertion per plan §4.5.4 hotspot #1."
+    },
+    "cache_ttl_sec": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Cache Strategy — TTL value in seconds."
+        },
+        "unit": {
+          "type": "string",
+          "const": "seconds",
+          "description": "x-ui-surface=section:Cache Strategy — unit fixed to seconds for TTL arithmetic."
+        },
+        "math_derivation": {
+          "type": "object",
+          "properties": {
+            "formula": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+            },
+            "inputs": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "string"
+                ]
+              },
+              "default": {},
+              "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+            },
+            "kb_source": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+            },
+            "kb_section": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+            },
+            "result": {
+              "type": [
+                "number",
+                "string"
+              ],
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+            }
+          },
+          "required": [
+            "formula",
+            "kb_source"
+          ],
+          "additionalProperties": false,
+          "description": "x-ui-surface=section:Cache Strategy — required math derivation (kb_source: \"caching-system-design-kb.md\"). Formula cites cache invalidation pattern + data volatility."
+        }
+      },
+      "required": [
+        "value",
+        "unit",
+        "math_derivation"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Cache Strategy — cache TTL with required math derivation per §4.5.4 NUMERIC_ONLY gate."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "cache_strategy",
+    "cache_ttl_sec"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase6ShortcutsReferenceBlocks",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

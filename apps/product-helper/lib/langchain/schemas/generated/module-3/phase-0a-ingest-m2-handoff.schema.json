@@ -1,0 +1,521 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "system_name": {
+      "type": "string",
+      "description": "x-ui-surface=page-header — system name (from M2 Phase 0 intake_summary)."
+    },
+    "system_description": {
+      "type": "string",
+      "description": "x-ui-surface=page-header — one-sentence system description. GAP: no M2 source; ingest-time inference from Module 1 metadata or agent prompt."
+    },
+    "boundary": {
+      "type": "object",
+      "properties": {
+        "the_system": {
+          "type": "string",
+          "description": "x-ui-surface=section:FFBD > Boundary — the system name as the boundary label (derived from M2 Phase 0/3 context)."
+        },
+        "external_actors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "x-ui-surface=section:FFBD > Boundary — external actor name (sourced from M2 Phase 3 ucbdHeaderSchema.actor)."
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "human",
+                  "external_system"
+                ],
+                "description": "x-ui-surface=section:FFBD > Boundary — actor classification. GAP: M2 Phase 3 actor field is freeform; ingest-time inference fills this."
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:FFBD > Boundary — external actor crossing the system boundary (EFFBD data-block candidate)."
+          },
+          "default": [],
+          "description": "x-ui-surface=section:FFBD > Boundary — deduplicated actors across all UCs."
+        }
+      },
+      "required": [
+        "the_system"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:FFBD > Boundary — system boundary definition (the_system + external_actors[])."
+    },
+    "functions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "x-ui-surface=section:FFBD > Functions — snake_case_verb_object name (from M2 Phase 5 steps[].action, deduped via Phase 11 merged_from[])."
+          },
+          "description_hint": {
+            "type": "string",
+            "description": "x-ui-surface=section:FFBD > Functions — one-line intent (optional; derived from M2 Phase 5 notes or agent-generated)."
+          },
+          "source_requirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(UC[0-9]{2}|CC)\\.R[0-9]{2}$",
+              "description": "x-ui-surface=section:FFBD > Functions > Provenance — UC.R-qualified requirement id (from M2 Phase 6 req_id)."
+            },
+            "minItems": 1,
+            "description": "x-ui-surface=section:FFBD > Functions > Provenance — requirements that drive this function (from M2 Phase 6 rows[] where source_ucbd matches)."
+          },
+          "appears_in_use_cases": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(UC[0-9]{2}|CC)$",
+              "description": "x-ui-surface=section:FFBD > Functions — UC id where this function appears."
+            },
+            "minItems": 1,
+            "description": "x-ui-surface=section:FFBD > Functions — UCs where this function appears (from M2 Phase 11 merged_from[] dedup)."
+          }
+        },
+        "required": [
+          "name",
+          "source_requirements",
+          "appears_in_use_cases"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:FFBD > Functions — candidate functional-block seed for M3 FFBD."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:FFBD > Functions — full function-candidate set (from M2 Phase 5+6+11 composite)."
+    },
+    "use_case_flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "use_case_id": {
+            "type": "string",
+            "pattern": "^(UC[0-9]{2}|CC)$",
+            "description": "x-ui-surface=section:FFBD > Use Case Flows — UC identifier (from M2 Phase 3 uc_id)."
+          },
+          "use_case_name": {
+            "type": "string",
+            "description": "x-ui-surface=section:FFBD > Use Case Flows — UC human-facing name (from M2 Phase 3 uc_name)."
+          },
+          "function_sequence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "minItems": 1,
+            "description": "x-ui-surface=section:FFBD > Use Case Flows — ordered sequence of function names (from M2 Phase 5 steps[].action)."
+          },
+          "branching": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "after_function": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "x-ui-surface=section:FFBD > Use Case Flows — function after which the branch fires."
+                },
+                "branches": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "guard": {
+                        "type": "string",
+                        "description": "x-ui-surface=section:FFBD > Use Case Flows — guard condition label (from M2 Phase 5 alternate_branch)."
+                      },
+                      "next_function": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "description": "x-ui-surface=section:FFBD > Use Case Flows — snake_case function name the guard routes to."
+                      }
+                    },
+                    "required": [
+                      "guard",
+                      "next_function"
+                    ],
+                    "additionalProperties": false,
+                    "description": "x-ui-surface=section:FFBD > Use Case Flows — one branch in a branching point."
+                  },
+                  "minItems": 2,
+                  "description": "x-ui-surface=section:FFBD > Use Case Flows — ≥2 branches (guards + destinations)."
+                }
+              },
+              "required": [
+                "after_function",
+                "branches"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:FFBD > Use Case Flows — branching decision in the function sequence."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:FFBD > Use Case Flows — branching points along the sequence."
+          }
+        },
+        "required": [
+          "use_case_id",
+          "use_case_name",
+          "function_sequence"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:FFBD > Use Case Flows — one UC flow (function_sequence + branching)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:FFBD > Use Case Flows — per-UC ordered function sequences + branching (from M2 Phase 3+5 composite)."
+    },
+    "constants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "description": "x-ui-surface=section:FFBD > Constants — SCREAMING_SNAKE constant name (from M2 Phase 8 constant_name)."
+          },
+          "value": {
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "x-ui-surface=section:FFBD > Constants — constant value (from M2 Phase 8 value)."
+          },
+          "units": {
+            "type": "string",
+            "description": "x-ui-surface=section:FFBD > Constants — unit (from M2 Phase 8 unit)."
+          },
+          "estimate_final": {
+            "type": "string",
+            "enum": [
+              "Estimate",
+              "Final"
+            ],
+            "description": "x-ui-surface=section:FFBD > Constants — estimation status. GAP: not tracked in M2 Phase 8; ingest-time inference fills."
+          },
+          "owned_by": {
+            "type": "string",
+            "description": "x-ui-surface=section:FFBD > Constants — role responsible for the constant. GAP: not tracked in M2 Phase 8."
+          },
+          "affects_blocks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "x-ui-surface=section:FFBD > Constants — functional-block ids this constant labels (derived at ingest)."
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:FFBD > Constants — carried Module-2 constant (labels, budgets, targets)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:FFBD > Constants — carried performance-budget + capacity constants (from M2 Phase 8)."
+    },
+    "cross_cutting_concerns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "string",
+            "pattern": "^CC\\.R[0-9]{2}$",
+            "description": "x-ui-surface=section:FFBD > Cross-Cutting Concerns — CC.R index. GAP: not assigned in M2 Phase 3 CC rows; ingest-time assignment."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "x-ui-surface=section:FFBD > Cross-Cutting Concerns — snake_case concern name (from M2 Phase 3 uc_name where uc_id=CC)."
+          },
+          "description": {
+            "type": "string",
+            "description": "x-ui-surface=section:FFBD > Cross-Cutting Concerns — one-line description."
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:FFBD > Cross-Cutting Concerns — system-wide concern (policy, audit, auth, rate-limit, etc.)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:FFBD > Cross-Cutting Concerns — CC rows from M2 Phase 3."
+    },
+    "module_1_constraints_carried_forward": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "x-ui-surface=section:FFBD > Constraints — Module 1 design-space constraints (from M2 Phase 0 intake_summary extraction)."
+    },
+    "per_uc_checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "uc_id": {
+            "type": "string",
+            "pattern": "^(UC[0-9]{2}|CC)$",
+            "description": "x-ui-surface=internal:m2-handoff-ingester — UC id present in M2 Phase 12 operational_primitives."
+          },
+          "operational_primitives_present": {
+            "type": "boolean",
+            "description": "x-ui-surface=internal:m2-handoff-ingester — whether M2 phase-12-ffbd-handoff.ts emitted operational_primitives for this uc_id."
+          },
+          "cross_ref_pass": {
+            "type": "boolean",
+            "description": "x-ui-surface=internal:m2-handoff-ingester — whether this uc_id also appears in the composite use_case_flows[] (true = integrity check passes)."
+          }
+        },
+        "required": [
+          "uc_id",
+          "operational_primitives_present",
+          "cross_ref_pass"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:m2-handoff-ingester — per-UC cross-check between composite handoff and Phase 12 per-UC primitives."
+      },
+      "default": [],
+      "description": "x-ui-surface=internal:m2-handoff-ingester — Phase 12 per-UC operational_primitives cross-check results."
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total_functions": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Project Overview > Handoff Summary — deduped function count."
+        },
+        "total_use_cases": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Project Overview > Handoff Summary — UC count (excluding CC)."
+        },
+        "total_constants": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Project Overview > Handoff Summary — carried-constant count."
+        },
+        "total_cross_cutting": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Project Overview > Handoff Summary — cross-cutting concern count."
+        }
+      },
+      "required": [
+        "total_functions",
+        "total_use_cases",
+        "total_constants",
+        "total_cross_cutting"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Project Overview > Handoff Summary — aggregate counts for the ingested handoff."
+    },
+    "ready_for_m3_phase_1": {
+      "type": "boolean",
+      "description": "x-ui-surface=section:Project Overview > Handoff Summary — integrity gate: all cross-refs pass, no missing required fields, ready to begin M3 Phase 1."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "system_name",
+    "boundary",
+    "summary",
+    "ready_for_m3_phase_1"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase0aIngestM2Handoff",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
