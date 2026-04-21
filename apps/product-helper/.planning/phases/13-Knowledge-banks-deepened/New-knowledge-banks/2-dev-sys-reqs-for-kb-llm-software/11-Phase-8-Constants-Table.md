@@ -74,6 +74,42 @@ Use the same constant name. That's the point. If two latency requirements both s
 
 Separate constants, separate rationales, separate ownership.
 
+### Inline decision plays (Track 2)
+
+When you propose a constant whose *value* depends on a software-architecture trade-off, consult one of the decision plays below and record the choice in `software_arch_decision`.
+
+#### CAP decision play (for consistency-class constants)
+
+Use for any constant that gates user-visible data freshness or correctness — e.g., `READ_CONSISTENCY_MODE`, `LAST_WRITE_WINS_WINDOW_MS`, `REPLICATION_LAG_BUDGET_MS`. During a network partition you must choose one of two directions — you cannot have both. Source: `cap_theorem.md`.
+
+| Choice | Use when | Design implication | Typical tech |
+|--------|----------|-------------------|--------------|
+| **CP** (Consistency) | Stale data causes real harm — ticket booking, inventory, financial transactions, order books. | Route writes (and often reads) to a single primary; accept higher latency; accept brief unavailability during partitions. | PostgreSQL primary, Google Spanner, DynamoDB (strong mode). |
+| **AP** (Availability) | Stale data is tolerable for seconds — social feeds, profile data, content catalogs. | Multiple read replicas; eventual consistency via CDC or async replication; self-healing. | Cassandra, DynamoDB (multi-AZ), MongoDB replica sets, Redis Cluster. |
+
+Set `software_arch_decision.ref: "cap_theorem"`, `choice: "CP"` or `"AP"`. Write the rationale into the constant's `notes`.
+
+#### Availability-nines formula (for availability-class constants)
+
+Use for any constant expressing a reliability/availability target — e.g., `AVAILABILITY_TARGET`, `COMPONENT_AVAILABILITY_TARGET`, `MAX_PLANNED_DOWNTIME_MIN`. Source: `resilliency-patterns-kb.md` (+ `system-design-math-logic.md §9` once that canonical file is written; inline formulas here seed it).
+
+```
+A = MTBF / (MTBF + MTTR)                                  # single component
+Serial chain (dependent services):
+    A_total = A_1 × A_2 × ... × A_n                        # nines compound DOWN
+Parallel redundancy (independent replicas):
+    A_total = 1 − ∏(1 − A_i)  for i = 1..n                 # nines compound UP
+
+Monthly downtime budget (30-day month, rounded):
+    99.9%   = 43.2 min       99.95%  = 21.6 min
+    99.99%  = 4.32 min       99.999% = 25.9 sec
+(31-day month: 44.6 min / 22.3 min / 4.46 min / 26.7 sec.)
+```
+
+When the target is system-wide but the system has N dependent upstream services, back-solve per-component availability: if `AVAILABILITY_TARGET = 99.9%` and the request path crosses 3 serial services, each must hit ≈`99.967%` to compose.
+
+Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <serial|parallel|mixed>"`. Populate `math_derivation.formula` with the specific identity used and `math_derivation.inputs` with the numbers (e.g., `{ "n_serial": 3, "A_component": 0.99967 }`).
+
 ## Input Required
 
 - `requirements_table.json` from Phase 7 (the revised version)
