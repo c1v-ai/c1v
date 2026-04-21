@@ -1,0 +1,311 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18,
+          "description": "x-ui-surface=page-header — methodology phase number (0-18) per F13/4 Decision Matrix module."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header (M4-widened phase_number range 0-18)."
+    },
+    "weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "pattern": "^PC-[0-9]{2}$"
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Criterion Weights > Row — normalized weight (0-1; all weights sum to 1.0 ± epsilon)."
+          },
+          "math_derivation": {
+            "type": "object",
+            "properties": {
+              "formula": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                "default": {},
+                "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+              },
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+              },
+              "kb_section": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+              },
+              "result": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+              }
+            },
+            "required": [
+              "formula",
+              "kb_source"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Criterion Weights > Row > Math — **REQUIRED per master §4.5.4.** Formula + KB source must cite how the weight was derived (FMEA severity, AHP pairwise, budget allocation, etc.)."
+          },
+          "consensus_method": {
+            "type": "string",
+            "enum": [
+              "ahp_pairwise",
+              "direct_assignment",
+              "budget_allocation",
+              "delphi",
+              "fmea_derived",
+              "expert_override"
+            ],
+            "description": "x-ui-surface=section:Criterion Weights > Row — how team agreement on this weight was reached (drives M4 Phase 11 consensus math)."
+          },
+          "fmea_severity_linkage": {
+            "type": "object",
+            "properties": {
+              "failure_mode_id": {
+                "type": "string",
+                "description": "x-ui-surface=section:Criterion Weights > FMEA — M7 fills this with the FMEA failure-mode id. Placeholder in M4."
+              },
+              "severity_score": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "x-ui-surface=section:Criterion Weights > FMEA — 1-10 severity (M7 will populate)."
+              },
+              "frequency": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "x-ui-surface=section:Criterion Weights > FMEA — 1-10 frequency (M7 will populate)."
+              },
+              "detection_difficulty": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "x-ui-surface=section:Criterion Weights > FMEA — 1-10 detection difficulty (M7 will populate)."
+              },
+              "rpn": {
+                "type": "number",
+                "description": "x-ui-surface=section:Criterion Weights > FMEA — Risk Priority Number = severity × frequency × detection_difficulty (M7 will populate)."
+              }
+            },
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Criterion Weights > Row > FMEA — M7 populates; .optional() in M4 per plan decision #3."
+          }
+        },
+        "required": [
+          "criterion_id",
+          "weight",
+          "math_derivation",
+          "consensus_method"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Criterion Weights > Row — per-PC weight with required math_derivation."
+      },
+      "minItems": 6,
+      "maxItems": 10,
+      "description": "x-ui-surface=page:/projects/[id]/system-design/decision-matrix/weights — per-PC weights (6-10 matching Phase 3 count)."
+    },
+    "sum_check": {
+      "type": "number",
+      "description": "x-ui-surface=section:Criterion Weights > Validation — sum of all weights (must be 1.0 ± 0.01)."
+    },
+    "sum_tolerance": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 0.01,
+      "description": "x-ui-surface=internal:weight-sum-validator — epsilon for sum_check = 1.0 validation."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "weights",
+    "sum_check"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase10CriterionWeights",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

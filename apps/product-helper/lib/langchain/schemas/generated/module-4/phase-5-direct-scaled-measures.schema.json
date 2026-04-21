@@ -1,0 +1,372 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18,
+          "description": "x-ui-surface=page-header — methodology phase number (0-18) per F13/4 Decision Matrix module."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header (M4-widened phase_number range 0-18)."
+    },
+    "measures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "pattern": "^PC-[0-9]{2}$",
+            "description": "x-ui-surface=section:Direct/Scaled Measures > Row — PC this measure binds to (must match a PC-NN in M4 Phase 3 `criteria[]`)."
+          },
+          "measure_type": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "scaled"
+            ],
+            "description": "x-ui-surface=section:Direct/Scaled Measures > Row — must match M4 Phase 3 `measure_type` for the same criterion_id."
+          },
+          "direct_measure": {
+            "type": "object",
+            "properties": {
+              "formula": {
+                "type": "string",
+                "description": "x-ui-surface=section:Direct/Scaled Measures > Direct — measurement formula (e.g., \"p95 = sort(samples)[0.95 * n]\")."
+              },
+              "measurement_tool": {
+                "type": "string",
+                "description": "x-ui-surface=section:Direct/Scaled Measures > Direct — tool used to measure (e.g., \"k6\", \"Datadog APM\", \"custom load-gen\")."
+              },
+              "sample_size_min": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "x-ui-surface=section:Direct/Scaled Measures > Direct — minimum sample size for a valid measurement."
+              },
+              "math_derivation": {
+                "type": "object",
+                "properties": {
+                  "formula": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "number",
+                        "string"
+                      ]
+                    },
+                    "default": {},
+                    "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+                  },
+                  "kb_source": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+                  },
+                  "kb_section": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+                  },
+                  "result": {
+                    "type": [
+                      "number",
+                      "string"
+                    ],
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+                  }
+                },
+                "required": [
+                  "formula",
+                  "kb_source"
+                ],
+                "additionalProperties": false,
+                "description": "x-ui-surface=section:Direct/Scaled Measures > Direct > Math — derivation of the target from upstream constants (required so direct measures stay KB-grounded)."
+              }
+            },
+            "required": [
+              "formula",
+              "measurement_tool",
+              "math_derivation"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Direct/Scaled Measures > Row — populated when measure_type = \"direct\"."
+          },
+          "scaled_measure": {
+            "type": "object",
+            "properties": {
+              "anchors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "level": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors — rubric level (1 = worst, 5 = best; direction-aware)."
+                    },
+                    "value": {
+                      "type": [
+                        "number",
+                        "string"
+                      ],
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors — **REQUIRED numeric anchor per master §4.5.4 Step 5.** The measured value the scoring team uses to decide \"this option scores 3\". Must come from §10 Typical Constants or a domain KB."
+                    },
+                    "unit": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors — unit for the anchor value (must match the PC unit)."
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors — one-sentence reviewer description (e.g., \"Level 3: p95 latency between 100-250ms under expected load\")."
+                    },
+                    "kb_source": {
+                      "type": "string",
+                      "minLength": 3,
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors > Rationale — **REQUIRED citation per master §4.5.4 Step 5.** KB filename (e.g., \"api-design-sys-design-kb.md\") or \"§10-typical-constants\" for the industry benchmark that anchored this level."
+                    },
+                    "kb_section": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors > Rationale — optional anchor heading within the KB file (e.g., \"§p95-internal-latency-targets\")."
+                    },
+                    "kb_reference": {
+                      "type": "string",
+                      "enum": [
+                        "cap_theorem",
+                        "resiliency",
+                        "caching",
+                        "load_balancing",
+                        "api_design",
+                        "none",
+                        "observability",
+                        "maintainability",
+                        "cdn_networking",
+                        "message_queues",
+                        "data_model",
+                        "deployment_cicd"
+                      ],
+                      "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors > Rationale — optional enum match for the KB file (reuses M2 12-ref set when anchor cites a canonical KB)."
+                    }
+                  },
+                  "required": [
+                    "level",
+                    "value",
+                    "unit",
+                    "description",
+                    "kb_source"
+                  ],
+                  "additionalProperties": false,
+                  "description": "x-ui-surface=section:Direct/Scaled Measures > Anchors — one of 5 rubric levels for a scaled criterion (master §4.5.4 Step 5: numeric + KB-sourced)."
+                },
+                "minItems": 5,
+                "maxItems": 5,
+                "description": "x-ui-surface=section:Direct/Scaled Measures > Scaled — exactly 5 anchors (one per level 1-5)."
+              },
+              "anchor_monotonicity_check": {
+                "type": "boolean",
+                "default": true,
+                "description": "x-ui-surface=internal:rubric-validation — assert anchor values are monotonic in the PC direction. Validator sets this true at emission time; false indicates a pitfall flag for M4 Phase 4."
+              }
+            },
+            "required": [
+              "anchors"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Direct/Scaled Measures > Row — populated when measure_type = \"scaled\"."
+          }
+        },
+        "required": [
+          "criterion_id",
+          "measure_type"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Direct/Scaled Measures > Row — per-PC measure entry (direct formula OR scaled rubric)."
+      },
+      "minItems": 6,
+      "maxItems": 10,
+      "description": "x-ui-surface=page:/projects/[id]/system-design/decision-matrix/measures — one measure entry per PC (6-10 matching Phase 3 count)."
+    },
+    "kb_sources_cited": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "x-ui-surface=section:Direct/Scaled Measures > Provenance — deduplicated list of KB files cited across all anchors (enables quick review of methodology grounding)."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "measures",
+    "kb_sources_cited"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase5DirectScaledMeasures",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

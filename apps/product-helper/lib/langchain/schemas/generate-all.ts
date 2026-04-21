@@ -17,6 +17,7 @@ import {
 import { zodToStrictJsonSchema } from './zod-to-json';
 import { MODULE_2_PHASE_SCHEMAS } from './module-2';
 import { MODULE_3_PHASE_SCHEMAS } from './module-3';
+import { MODULE_4_PHASE_SCHEMAS } from './module-4';
 
 interface SchemaEntry {
   zodSchema: z.ZodType;
@@ -63,11 +64,13 @@ const SCHEMAS: SchemaEntry[] = [
 const OUTPUT_DIR = join(process.cwd(), 'lib/langchain/schemas/generated');
 const MODULE_2_OUTPUT_DIR = join(OUTPUT_DIR, 'module-2');
 const MODULE_3_OUTPUT_DIR = join(OUTPUT_DIR, 'module-3');
+const MODULE_4_OUTPUT_DIR = join(OUTPUT_DIR, 'module-4');
 
 function main(): void {
   mkdirSync(OUTPUT_DIR, { recursive: true });
   mkdirSync(MODULE_2_OUTPUT_DIR, { recursive: true });
   mkdirSync(MODULE_3_OUTPUT_DIR, { recursive: true });
+  mkdirSync(MODULE_4_OUTPUT_DIR, { recursive: true });
 
   // Legacy root-level schemas (pre-module-2)
   for (const { zodSchema, name, filename } of SCHEMAS) {
@@ -95,10 +98,22 @@ function main(): void {
     console.log(`✔ ${name.padEnd(30)} → module-3/${filename}`);
   }
 
+  // Module 4 phase schemas (Decision Matrix — full A-to-Z sweep, 14 phases)
+  for (const { zodSchema, name, slug } of MODULE_4_PHASE_SCHEMAS) {
+    const json = zodToStrictJsonSchema(zodSchema, name);
+    const filename = `${slug}.schema.json`;
+    const outputPath = join(MODULE_4_OUTPUT_DIR, filename);
+    writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+    console.log(`✔ ${name.padEnd(30)} → module-4/${filename}`);
+  }
+
   const total =
-    SCHEMAS.length + MODULE_2_PHASE_SCHEMAS.length + MODULE_3_PHASE_SCHEMAS.length;
+    SCHEMAS.length +
+    MODULE_2_PHASE_SCHEMAS.length +
+    MODULE_3_PHASE_SCHEMAS.length +
+    MODULE_4_PHASE_SCHEMAS.length;
   console.log(
-    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_2_PHASE_SCHEMAS.length} module-2 + ${MODULE_3_PHASE_SCHEMAS.length} module-3) → ${OUTPUT_DIR}`,
+    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_2_PHASE_SCHEMAS.length} module-2 + ${MODULE_3_PHASE_SCHEMAS.length} module-3 + ${MODULE_4_PHASE_SCHEMAS.length} module-4) → ${OUTPUT_DIR}`,
   );
 }
 
