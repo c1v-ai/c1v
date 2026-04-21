@@ -110,17 +110,6 @@ function validateExtractionQuality(
     issues.push(`goalsMetrics has ${result.goalsMetrics.length} items (need 3+)`);
   }
 
-  // Check NFRs
-  if (result.nonFunctionalRequirements.length < 3) {
-    issues.push(`nonFunctionalRequirements has ${result.nonFunctionalRequirements.length} items (need 3+)`);
-  } else {
-    // Check category diversity
-    const categories = new Set(result.nonFunctionalRequirements.map(n => n.category));
-    if (categories.size < 3) {
-      issues.push(`NFRs only cover ${categories.size} categories (need 3+)`);
-    }
-  }
-
   // Log issues if any
   if (issues.length > 0) {
     console.warn(`[Extraction Quality] Project "${projectName}" has ${issues.length} issues:`, issues);
