@@ -120,71 +120,33 @@ Example output:
 
 CRITICAL: Do NOT return empty array. Every project has goals - extract at least 3.
 
-### 8. Non-Functional Requirements (REQUIRED - minimum 3 categories)
-Extract non-functional requirements across: performance, security, scalability, reliability, usability, maintainability, compliance.
+### 8. Non-Functional Requirements (REQUIRED - minimum 5 items)
 
-For each NFR:
-- **category**: One of the 7 categories above
-- **requirement**: Specific statement (e.g., "Page load time under 3 seconds")
-- **metric**: How to measure (e.g., "Time to First Contentful Paint")
-- **target**: Specific value (e.g., "<3s")
+CRITICAL: nonFunctionalRequirements MUST contain at least 5 items by completeness 60%. Every system has NFRs - infer from vision, use cases, and problem domain. Do NOT return empty.
+
+Extract:
+- **category**: One of performance, security, scalability, reliability, usability, maintainability, compliance
+- **requirement**: Specific statement (e.g., "API response time under 200ms at 95th percentile")
+- **metric**: How to measure (e.g., "p99 API response latency")
+- **target**: Specific threshold (e.g., "<200ms", "99.9%", "10,000 concurrent users")
 - **priority**: critical, high, medium, or low
 
-PROJECT-TYPE INFERENCE RULES:
-Users rarely state NFRs explicitly. INFER them based on project type:
+INFERENCE RULES:
+1. If user mentions payments -> add PCI-DSS compliance NFR (critical priority)
+2. If user mentions real-time or live -> add latency NFR (<200ms p99, high priority)
+3. If user mentions healthcare or medical -> add HIPAA compliance NFR + audit logging NFR (both critical priority)
+4. If no domain mentioned -> add baseline NFRs: availability (99.9%), latency (<500ms p99), security (authN required)
 
-**SaaS / Web Application:**
-- Performance: "API response time under 200ms for 95th percentile"
-- Security: "All user data encrypted at rest (AES-256) and in transit (TLS 1.3)"
-- Scalability: "Support 10,000 concurrent users without degradation"
-- Reliability: "99.9% uptime (8.76 hours max downtime per year)"
-
-**E-commerce / Marketplace:**
-- Performance: "Checkout flow completes in under 3 seconds"
-- Security: "PCI-DSS compliant payment processing"
-- Reliability: "Zero data loss during payment transactions"
-- Usability: "Mobile-first design with touch-optimized controls"
-
-**Mobile Application:**
-- Performance: "App launch time under 2 seconds"
-- Usability: "Offline mode for core features"
-- Reliability: "Graceful degradation on poor network"
-- Security: "Biometric authentication option"
-
-**Data Platform / Analytics:**
-- Performance: "Query response under 5 seconds for datasets up to 1TB"
-- Scalability: "Handle 100GB daily data ingestion"
-- Security: "Role-based access control with audit logging"
-- Compliance: "Data retention policies per regulatory requirements"
-
-**API / Integration Platform:**
-- Performance: "99th percentile latency under 100ms"
-- Scalability: "Rate limiting at 1000 requests/minute per client"
-- Security: "API key rotation and OAuth 2.0 support"
-- Reliability: "Automatic failover with zero-downtime deployments"
-
-**Multi-user / Team System:**
-- Security: "Tenant data isolation in multi-tenant architecture"
-- Usability: "Admin can manage team permissions without engineering"
-- Compliance: "GDPR-compliant data export and deletion"
-
-REQUIRED COVERAGE:
-- MUST extract at least 3 NFRs from at least 3 different categories
-- ALWAYS include Security (every app handles user data)
-- ALWAYS include Performance (every app needs response time expectations)
-- Include Compliance if: healthcare (HIPAA), finance (SOC2), EU users (GDPR), payments (PCI-DSS)
-
-Example output for a "SaaS project management tool":
+Example output:
 [
-  {{ "category": "performance", "requirement": "Page load time under 3 seconds", "metric": "Time to First Contentful Paint", "target": "<3s", "priority": "high" }},
-  {{ "category": "security", "requirement": "All API endpoints require authentication", "metric": "Unauthorized access attempts blocked", "target": "100%", "priority": "critical" }},
-  {{ "category": "scalability", "requirement": "Support 10,000 concurrent users", "metric": "Concurrent active sessions without degradation", "target": "10,000", "priority": "high" }},
   {{ "category": "reliability", "requirement": "System uptime of 99.9%", "metric": "Monthly uptime percentage", "target": ">=99.9%", "priority": "critical" }},
-  {{ "category": "usability", "requirement": "Core workflows completable in under 3 clicks", "metric": "Average clicks to task completion", "target": "<=3", "priority": "medium" }},
-  {{ "category": "compliance", "requirement": "GDPR-compliant data handling", "metric": "Data subject requests fulfilled within 30 days", "target": "100%", "priority": "high" }}
+  {{ "category": "performance", "requirement": "API response time under 200ms at 95th percentile", "metric": "p99 API response latency", "target": "<200ms", "priority": "high" }},
+  {{ "category": "compliance", "requirement": "PCI-DSS compliant payment processing", "metric": "PCI-DSS audit pass rate", "target": "100%", "priority": "critical" }}
 ]
 
-CRITICAL: Do NOT return empty array. Every project has implicit NFRs - extract at least 3 from at least 3 categories.
+REQUIRED COVERAGE: 5+ NFRs spanning 4+ distinct categories. ALWAYS include reliability (availability) and security (authN). Add compliance when healthcare/finance/payments are mentioned. Add performance/latency when real-time or user-facing interactivity is mentioned.
+
+CRITICAL: Do NOT return empty or fewer than 5. Every system has NFRs - infer from vision, use cases, and problem domain.
 
 ## Calculate Artifact Readiness
 
@@ -224,7 +186,7 @@ Return structured JSON with:
 1. **Problem Statement**: REQUIRED. Infer from vision/actors/use cases if not stated.
 2. **Actor Goals & PainPoints**: REQUIRED for every actor. Infer from problem context.
 3. **Goals & Metrics**: REQUIRED minimum 3. Cover user experience, business value, technical performance.
-4. **Non-Functional Requirements**: REQUIRED minimum 3 categories. Infer from project type.
+4. **Non-Functional Requirements**: REQUIRED minimum 5 items across 4+ categories. Infer from vision, use cases, and domain.
 
 INFERENCE STRATEGY:
 - Vision statement is the primary inference source
