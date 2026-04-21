@@ -1,0 +1,145 @@
+{
+  "type": "object",
+  "properties": {
+    "topLevelBlocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Hierarchical function ID (e.g., \"F.1\", \"F.1.1\", \"F.4.6\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Functional name using verb phrases (e.g., \"Onboard Organization\", \"Predict Heat Strain\")"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent block ID for decomposed blocks (e.g., \"F.1\" for F.1.1)"
+          },
+          "gateType": {
+            "type": "string",
+            "enum": [
+              "none",
+              "AND",
+              "OR",
+              "IT"
+            ],
+            "description": "Logic gate type: AND (parallel), OR (alternative), IT (iteration)"
+          },
+          "gateCondition": {
+            "type": "string",
+            "description": "Condition for gate (e.g., \"outdoor/indoor\", \"data fresh < 15 min\")"
+          },
+          "isCoreValue": {
+            "type": "boolean",
+            "description": "Whether this is a core value function (marked with star)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of what this function does"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Top-level function blocks (F.1 through F.N)"
+    },
+    "decomposedBlocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Hierarchical function ID (e.g., \"F.1\", \"F.1.1\", \"F.4.6\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Functional name using verb phrases (e.g., \"Onboard Organization\", \"Predict Heat Strain\")"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent block ID for decomposed blocks (e.g., \"F.1\" for F.1.1)"
+          },
+          "gateType": {
+            "type": "string",
+            "enum": [
+              "none",
+              "AND",
+              "OR",
+              "IT"
+            ],
+            "description": "Logic gate type: AND (parallel), OR (alternative), IT (iteration)"
+          },
+          "gateCondition": {
+            "type": "string",
+            "description": "Condition for gate (e.g., \"outdoor/indoor\", \"data fresh < 15 min\")"
+          },
+          "isCoreValue": {
+            "type": "boolean",
+            "description": "Whether this is a core value function (marked with star)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of what this function does"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Decomposed sub-function blocks (F.1.1 through F.N.M)"
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source block ID"
+          },
+          "to": {
+            "type": "string",
+            "description": "Target block ID"
+          },
+          "gateType": {
+            "type": "string",
+            "enum": [
+              "sequence",
+              "AND",
+              "OR",
+              "IT"
+            ],
+            "description": "Type of connection flow"
+          },
+          "condition": {
+            "type": "string",
+            "description": "Condition label on the connection arrow"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Flow connections between blocks"
+    }
+  },
+  "required": [
+    "topLevelBlocks"
+  ],
+  "additionalProperties": false,
+  "title": "Ffbd",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

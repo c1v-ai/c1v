@@ -1,0 +1,94 @@
+{
+  "type": "object",
+  "properties": {
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Criterion ID (e.g., \"PC-01\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Criterion name (e.g., \"Core Temperature Prediction Accuracy\")"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Measurement unit (e.g., \"degrees C (MAE)\", \"ms\", \"%\")"
+          },
+          "weight": {
+            "type": "number",
+            "description": "Relative importance weight (0.0-1.0, all weights sum to 1.0)"
+          },
+          "minAcceptable": {
+            "type": "string",
+            "description": "Minimum acceptable value"
+          },
+          "targetValue": {
+            "type": "string",
+            "description": "Target/ideal value"
+          },
+          "measurementMethod": {
+            "type": "string",
+            "description": "How this criterion is measured"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "unit",
+          "weight"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Performance criteria with weights"
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Alternative ID (e.g., \"ALT-01\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Alternative name (e.g., \"Cloud-native microservices\")"
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Criterion ID to normalized score (0.0-1.0) mapping"
+          },
+          "weightedTotal": {
+            "type": "number",
+            "description": "Weighted total score"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "scores"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Design alternatives with scores"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Recommended alternative with rationale"
+    }
+  },
+  "required": [
+    "criteria",
+    "alternatives"
+  ],
+  "additionalProperties": false,
+  "title": "DecisionMatrix",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

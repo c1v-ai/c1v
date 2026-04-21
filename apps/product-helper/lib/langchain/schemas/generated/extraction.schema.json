@@ -1,0 +1,984 @@
+{
+  "type": "object",
+  "properties": {
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Persona name with descriptor (e.g., \"Sarah, The Health Conscious Professional\")"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role or job title (e.g., \"Marketing Manager\", \"Software Developer\")"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the persona and their context"
+          },
+          "demographics": {
+            "type": "string",
+            "description": "Age, background, profession details (e.g., \"35 years old, works in tech startup\")"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What this persona wants to achieve (2-5 specific goals)"
+          },
+          "painPoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Current frustrations and problems (2-5 pain points)"
+          },
+          "technicalProficiency": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "description": "Technical skill level: low, medium, or high"
+          },
+          "usageContext": {
+            "type": "string",
+            "description": "When/where/how they use the product (e.g., \"Uses app during commute and lunch breaks\")"
+          }
+        },
+        "required": [
+          "name",
+          "role",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "All actors/personas mentioned in the conversation"
+    },
+    "useCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier (e.g., \"UC1\", \"UC2\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name as verb phrase (e.g., \"Place Order\", \"View Dashboard\")"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of what happens in this use case"
+          },
+          "actor": {
+            "type": "string",
+            "description": "Name of the primary actor for this use case"
+          },
+          "preconditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Conditions that must be true before this use case"
+          },
+          "postconditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Conditions that are true after successful completion"
+          },
+          "trigger": {
+            "type": "string",
+            "description": "Event or action that initiates this use case"
+          },
+          "outcome": {
+            "type": "string",
+            "description": "Expected result or outcome of this use case"
+          },
+          "mainFlow": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stepNumber": {
+                  "type": "number",
+                  "description": "Step number in the flow sequence"
+                },
+                "actor": {
+                  "type": "string",
+                  "description": "Actor performing this step (user or system)"
+                },
+                "action": {
+                  "type": "string",
+                  "description": "Action taken in this step"
+                },
+                "systemResponse": {
+                  "type": "string",
+                  "description": "System response to the action (if applicable)"
+                }
+              },
+              "required": [
+                "stepNumber",
+                "actor",
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Main flow steps with actor, action, and system response"
+          },
+          "alternativeFlows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique identifier for the alternative flow (e.g., \"AF1\", \"EF1\")"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Name describing the alternative flow"
+                },
+                "branchPoint": {
+                  "type": "number",
+                  "description": "Step number in main flow where this branches off"
+                },
+                "condition": {
+                  "type": "string",
+                  "description": "Condition that triggers this alternative flow"
+                },
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "stepNumber": {
+                        "type": "number",
+                        "description": "Step number in the flow sequence"
+                      },
+                      "actor": {
+                        "type": "string",
+                        "description": "Actor performing this step (user or system)"
+                      },
+                      "action": {
+                        "type": "string",
+                        "description": "Action taken in this step"
+                      },
+                      "systemResponse": {
+                        "type": "string",
+                        "description": "System response to the action (if applicable)"
+                      }
+                    },
+                    "required": [
+                      "stepNumber",
+                      "actor",
+                      "action"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "Steps in this alternative flow"
+                },
+                "rejoinsAt": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Step number in main flow where this rejoins (null if terminates)"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "branchPoint",
+                "condition",
+                "steps"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Alternative or exception flows"
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Testable acceptance criteria for this use case"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "must",
+              "should",
+              "could",
+              "wont"
+            ],
+            "description": "MoSCoW priority (must/should/could/wont)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "validated"
+            ],
+            "description": "Draft or validated status"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "actor"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "All use cases identified from the conversation"
+    },
+    "systemBoundaries": {
+      "type": "object",
+      "properties": {
+        "internal": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Components/features that are part of the system"
+        },
+        "external": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "External systems, APIs, or services"
+        },
+        "inScope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Deliverables explicitly in scope"
+        },
+        "outOfScope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Deliverables explicitly out of scope"
+        }
+      },
+      "required": [
+        "internal",
+        "external"
+      ],
+      "additionalProperties": false,
+      "default": {
+        "internal": [],
+        "external": []
+      },
+      "description": "System scope boundaries"
+    },
+    "dataEntities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the data entity (e.g., \"User\", \"Order\", \"Product\")"
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of attributes or fields for this entity"
+          },
+          "relationships": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Relationships with other entities"
+          }
+        },
+        "required": [
+          "name",
+          "attributes",
+          "relationships"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Core data objects in the system (lightweight for extraction)"
+    },
+    "problemStatement": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Detailed problem description (can be multiple paragraphs explaining the core problem)"
+        },
+        "targetAudience": {
+          "type": "string",
+          "description": "Who has this problem - specific user groups affected"
+        },
+        "context": {
+          "type": "string",
+          "description": "Background and market context of the problem"
+        },
+        "impact": {
+          "type": "string",
+          "description": "Impact on the business or users if not solved"
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "High-level goals the solution should achieve"
+        }
+      },
+      "required": [
+        "summary",
+        "context",
+        "impact",
+        "goals"
+      ],
+      "additionalProperties": false,
+      "default": {
+        "summary": "",
+        "context": "",
+        "impact": "",
+        "goals": []
+      },
+      "description": "Problem statement with target audience"
+    },
+    "goalsMetrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "goal": {
+            "type": "string",
+            "description": "The goal/metric name (e.g., \"Healthy Daily User MAUs\")"
+          },
+          "metric": {
+            "type": "string",
+            "description": "How success will be measured (measurement method)"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target value or threshold (e.g., \"10,000 users\", \"99.9%\")"
+          },
+          "baseline": {
+            "type": "string",
+            "description": "Current baseline before solution (e.g., \"N/A\", \"500 users\", \"TBD\")"
+          },
+          "timeframe": {
+            "type": "string",
+            "description": "When to achieve this (e.g., \"End of Q2\", \"Within 6 months\")"
+          }
+        },
+        "required": [
+          "goal",
+          "metric"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Goals with measurable success criteria and baselines"
+    },
+    "nonFunctionalRequirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "performance",
+              "security",
+              "scalability",
+              "reliability",
+              "usability",
+              "maintainability",
+              "compliance"
+            ],
+            "description": "Category of the non-functional requirement"
+          },
+          "requirement": {
+            "type": "string",
+            "description": "The requirement statement"
+          },
+          "metric": {
+            "type": "string",
+            "description": "How this requirement will be measured"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target value or threshold"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "Priority level"
+          }
+        },
+        "required": [
+          "category",
+          "requirement",
+          "priority"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Non-functional requirements"
+    },
+    "ffbd": {
+      "type": "object",
+      "properties": {
+        "topLevelBlocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Hierarchical function ID (e.g., \"F.1\", \"F.1.1\", \"F.4.6\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Functional name using verb phrases (e.g., \"Onboard Organization\", \"Predict Heat Strain\")"
+              },
+              "parentId": {
+                "type": "string",
+                "description": "Parent block ID for decomposed blocks (e.g., \"F.1\" for F.1.1)"
+              },
+              "gateType": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "AND",
+                  "OR",
+                  "IT"
+                ],
+                "description": "Logic gate type: AND (parallel), OR (alternative), IT (iteration)"
+              },
+              "gateCondition": {
+                "type": "string",
+                "description": "Condition for gate (e.g., \"outdoor/indoor\", \"data fresh < 15 min\")"
+              },
+              "isCoreValue": {
+                "type": "boolean",
+                "description": "Whether this is a core value function (marked with star)"
+              },
+              "description": {
+                "type": "string",
+                "description": "Brief description of what this function does"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Top-level function blocks (F.1 through F.N)"
+        },
+        "decomposedBlocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Hierarchical function ID (e.g., \"F.1\", \"F.1.1\", \"F.4.6\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Functional name using verb phrases (e.g., \"Onboard Organization\", \"Predict Heat Strain\")"
+              },
+              "parentId": {
+                "type": "string",
+                "description": "Parent block ID for decomposed blocks (e.g., \"F.1\" for F.1.1)"
+              },
+              "gateType": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "AND",
+                  "OR",
+                  "IT"
+                ],
+                "description": "Logic gate type: AND (parallel), OR (alternative), IT (iteration)"
+              },
+              "gateCondition": {
+                "type": "string",
+                "description": "Condition for gate (e.g., \"outdoor/indoor\", \"data fresh < 15 min\")"
+              },
+              "isCoreValue": {
+                "type": "boolean",
+                "description": "Whether this is a core value function (marked with star)"
+              },
+              "description": {
+                "type": "string",
+                "description": "Brief description of what this function does"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "Decomposed sub-function blocks (F.1.1 through F.N.M)"
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Source block ID"
+              },
+              "to": {
+                "type": "string",
+                "description": "Target block ID"
+              },
+              "gateType": {
+                "type": "string",
+                "enum": [
+                  "sequence",
+                  "AND",
+                  "OR",
+                  "IT"
+                ],
+                "description": "Type of connection flow"
+              },
+              "condition": {
+                "type": "string",
+                "description": "Condition label on the connection arrow"
+              }
+            },
+            "required": [
+              "from",
+              "to"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "Flow connections between blocks"
+        }
+      },
+      "required": [
+        "topLevelBlocks"
+      ],
+      "additionalProperties": false,
+      "description": "Functional Flow Block Diagram (Step 3)"
+    },
+    "decisionMatrix": {
+      "type": "object",
+      "properties": {
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Criterion ID (e.g., \"PC-01\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Criterion name (e.g., \"Core Temperature Prediction Accuracy\")"
+              },
+              "unit": {
+                "type": "string",
+                "description": "Measurement unit (e.g., \"degrees C (MAE)\", \"ms\", \"%\")"
+              },
+              "weight": {
+                "type": "number",
+                "description": "Relative importance weight (0.0-1.0, all weights sum to 1.0)"
+              },
+              "minAcceptable": {
+                "type": "string",
+                "description": "Minimum acceptable value"
+              },
+              "targetValue": {
+                "type": "string",
+                "description": "Target/ideal value"
+              },
+              "measurementMethod": {
+                "type": "string",
+                "description": "How this criterion is measured"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "unit",
+              "weight"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Performance criteria with weights"
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Alternative ID (e.g., \"ALT-01\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Alternative name (e.g., \"Cloud-native microservices\")"
+              },
+              "scores": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "description": "Criterion ID to normalized score (0.0-1.0) mapping"
+              },
+              "weightedTotal": {
+                "type": "number",
+                "description": "Weighted total score"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "scores"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Design alternatives with scores"
+        },
+        "recommendation": {
+          "type": "string",
+          "description": "Recommended alternative with rationale"
+        }
+      },
+      "required": [
+        "criteria",
+        "alternatives"
+      ],
+      "additionalProperties": false,
+      "description": "Decision Matrix / Performance Assessment (Step 4)"
+    },
+    "qfd": {
+      "type": "object",
+      "properties": {
+        "customerNeeds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Need ID (e.g., \"CN-01\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Customer need statement (e.g., \"Accurate heat prediction\")"
+              },
+              "relativeImportance": {
+                "type": "number",
+                "description": "Relative importance weight (0.0-1.0)"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "relativeImportance"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Customer needs with importance weights (left side)"
+        },
+        "engineeringCharacteristics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Characteristic ID (e.g., \"EC-01\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Engineering characteristic name (e.g., \"Core Temperature Prediction Accuracy (MAE)\")"
+              },
+              "unit": {
+                "type": "string",
+                "description": "Measurement unit (e.g., \"°C\", \"sec\", \"%\", \"count\")"
+              },
+              "directionOfImprovement": {
+                "type": "string",
+                "enum": [
+                  "higher",
+                  "lower",
+                  "target"
+                ],
+                "description": "Whether higher, lower, or a specific target is better"
+              },
+              "designTarget": {
+                "type": "string",
+                "description": "Target value (e.g., \"≤ 0.3\", \"≥ 99.9%\", \"≤ 500ms\")"
+              },
+              "technicalDifficulty": {
+                "type": "number",
+                "description": "Technical difficulty score (1-5, 5=hardest)"
+              },
+              "estimatedCost": {
+                "type": "number",
+                "description": "Estimated cost score (1-5, 5=most expensive)"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "unit",
+              "directionOfImprovement",
+              "designTarget"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Engineering characteristics with targets (bottom)"
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "needId": {
+                "type": "string",
+                "description": "Customer need ID"
+              },
+              "charId": {
+                "type": "string",
+                "description": "Engineering characteristic ID"
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "strong",
+                  "moderate",
+                  "weak"
+                ],
+                "description": "Relationship strength: strong(9), moderate(3), weak(1)"
+              }
+            },
+            "required": [
+              "needId",
+              "charId",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "Need-to-characteristic relationships (center matrix)"
+        },
+        "roof": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "charId1": {
+                "type": "string",
+                "description": "First engineering characteristic ID"
+              },
+              "charId2": {
+                "type": "string",
+                "description": "Second engineering characteristic ID"
+              },
+              "correlation": {
+                "type": "string",
+                "enum": [
+                  "strong-positive",
+                  "positive",
+                  "negative",
+                  "strong-negative"
+                ],
+                "description": "Correlation type between the two characteristics"
+              }
+            },
+            "required": [
+              "charId1",
+              "charId2",
+              "correlation"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "Engineering characteristic correlations (roof triangle)"
+        },
+        "competitors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Competitor name"
+              },
+              "scores": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "description": "Customer need ID to perception score (1-5) mapping"
+              }
+            },
+            "required": [
+              "name",
+              "scores"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "Competitive analysis scores (right side / back porch)"
+        }
+      },
+      "required": [
+        "customerNeeds",
+        "engineeringCharacteristics"
+      ],
+      "additionalProperties": false,
+      "description": "QFD House of Quality (Step 5)"
+    },
+    "interfaces": {
+      "type": "object",
+      "properties": {
+        "subsystems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Subsystem ID (e.g., \"SS1\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Subsystem name (e.g., \"Prediction Engine\")"
+              },
+              "description": {
+                "type": "string",
+                "description": "What this subsystem does"
+              },
+              "allocatedFunctions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": [],
+                "description": "FFBD block IDs allocated to this subsystem"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "description": "System subsystems"
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Interface ID (e.g., \"IF-01\")"
+              },
+              "name": {
+                "type": "string",
+                "description": "Interface name (e.g., \"Worker Prediction Request\")"
+              },
+              "source": {
+                "type": "string",
+                "description": "Source subsystem ID"
+              },
+              "destination": {
+                "type": "string",
+                "description": "Destination subsystem ID"
+              },
+              "dataPayload": {
+                "type": "string",
+                "description": "Data exchanged (e.g., \"activity, clothing, profile ID\")"
+              },
+              "protocol": {
+                "type": "string",
+                "description": "Communication protocol (e.g., \"REST API\", \"WebSocket\", \"Event\")"
+              },
+              "frequency": {
+                "type": "string",
+                "description": "How often this interface is used (e.g., \"Per prediction\", \"On change\")"
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "system-flow",
+                  "critical",
+                  "auth",
+                  "audit"
+                ],
+                "description": "Interface category for color-coding"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "source",
+              "destination",
+              "dataPayload"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Interface specifications"
+        },
+        "n2Chart": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "default": {},
+          "description": "N2 chart: from-subsystem -> to-subsystem -> payload description"
+        }
+      },
+      "required": [
+        "subsystems",
+        "interfaces"
+      ],
+      "additionalProperties": false,
+      "description": "Interface definitions: DFD, N2 chart, interface matrix (Step 6)"
+    }
+  },
+  "additionalProperties": false,
+  "title": "ExtractionResult",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

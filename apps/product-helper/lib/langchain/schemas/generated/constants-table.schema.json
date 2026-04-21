@@ -1,0 +1,83 @@
+{
+  "type": "object",
+  "properties": {
+    "projectId": {
+      "type": "number",
+      "description": "Associated project ID"
+    },
+    "constants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Constant name (e.g., \"MAX_LOGIN_ATTEMPTS\")"
+          },
+          "value": {
+            "type": "string",
+            "description": "Constant value (can be number, string, or expression)"
+          },
+          "units": {
+            "type": "string",
+            "description": "Units if applicable (e.g., \"seconds\", \"MB\", \"requests/min\")"
+          },
+          "description": {
+            "type": "string",
+            "description": "Purpose and usage of this constant"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "Performance",
+              "Security",
+              "Business Logic",
+              "UI/UX",
+              "Integration",
+              "Other"
+            ],
+            "description": "Constant category"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "description",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "description": "List of all constants"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "number"
+        },
+        "byCategory": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "totalCount",
+        "byCategory",
+        "generatedAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "projectId",
+    "constants"
+  ],
+  "additionalProperties": false,
+  "title": "ConstantsTable",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

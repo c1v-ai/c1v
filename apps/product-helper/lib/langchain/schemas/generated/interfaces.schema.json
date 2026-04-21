@@ -1,0 +1,113 @@
+{
+  "type": "object",
+  "properties": {
+    "subsystems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Subsystem ID (e.g., \"SS1\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Subsystem name (e.g., \"Prediction Engine\")"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this subsystem does"
+          },
+          "allocatedFunctions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "FFBD block IDs allocated to this subsystem"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "description": "System subsystems"
+    },
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Interface ID (e.g., \"IF-01\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Interface name (e.g., \"Worker Prediction Request\")"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source subsystem ID"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination subsystem ID"
+          },
+          "dataPayload": {
+            "type": "string",
+            "description": "Data exchanged (e.g., \"activity, clothing, profile ID\")"
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Communication protocol (e.g., \"REST API\", \"WebSocket\", \"Event\")"
+          },
+          "frequency": {
+            "type": "string",
+            "description": "How often this interface is used (e.g., \"Per prediction\", \"On change\")"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "system-flow",
+              "critical",
+              "auth",
+              "audit"
+            ],
+            "description": "Interface category for color-coding"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "source",
+          "destination",
+          "dataPayload"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Interface specifications"
+    },
+    "n2Chart": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "default": {},
+      "description": "N2 chart: from-subsystem -> to-subsystem -> payload description"
+    }
+  },
+  "required": [
+    "subsystems",
+    "interfaces"
+  ],
+  "additionalProperties": false,
+  "title": "Interfaces",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

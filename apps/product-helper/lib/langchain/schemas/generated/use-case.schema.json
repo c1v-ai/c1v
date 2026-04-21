@@ -1,0 +1,179 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier (e.g., \"UC1\", \"UC2\")"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name as verb phrase (e.g., \"Place Order\", \"View Dashboard\")"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of what happens in this use case"
+    },
+    "actor": {
+      "type": "string",
+      "description": "Name of the primary actor for this use case"
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Conditions that must be true before this use case"
+    },
+    "postconditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Conditions that are true after successful completion"
+    },
+    "trigger": {
+      "type": "string",
+      "description": "Event or action that initiates this use case"
+    },
+    "outcome": {
+      "type": "string",
+      "description": "Expected result or outcome of this use case"
+    },
+    "mainFlow": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stepNumber": {
+            "type": "number",
+            "description": "Step number in the flow sequence"
+          },
+          "actor": {
+            "type": "string",
+            "description": "Actor performing this step (user or system)"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action taken in this step"
+          },
+          "systemResponse": {
+            "type": "string",
+            "description": "System response to the action (if applicable)"
+          }
+        },
+        "required": [
+          "stepNumber",
+          "actor",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Main flow steps with actor, action, and system response"
+    },
+    "alternativeFlows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the alternative flow (e.g., \"AF1\", \"EF1\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name describing the alternative flow"
+          },
+          "branchPoint": {
+            "type": "number",
+            "description": "Step number in main flow where this branches off"
+          },
+          "condition": {
+            "type": "string",
+            "description": "Condition that triggers this alternative flow"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stepNumber": {
+                  "type": "number",
+                  "description": "Step number in the flow sequence"
+                },
+                "actor": {
+                  "type": "string",
+                  "description": "Actor performing this step (user or system)"
+                },
+                "action": {
+                  "type": "string",
+                  "description": "Action taken in this step"
+                },
+                "systemResponse": {
+                  "type": "string",
+                  "description": "System response to the action (if applicable)"
+                }
+              },
+              "required": [
+                "stepNumber",
+                "actor",
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Steps in this alternative flow"
+          },
+          "rejoinsAt": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Step number in main flow where this rejoins (null if terminates)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "branchPoint",
+          "condition",
+          "steps"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Alternative or exception flows"
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Testable acceptance criteria for this use case"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "must",
+        "should",
+        "could",
+        "wont"
+      ],
+      "description": "MoSCoW priority (must/should/could/wont)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "validated"
+      ],
+      "description": "Draft or validated status"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "actor"
+  ],
+  "additionalProperties": false,
+  "title": "UseCase",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

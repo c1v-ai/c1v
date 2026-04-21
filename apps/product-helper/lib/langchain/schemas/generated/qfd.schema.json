@@ -1,0 +1,182 @@
+{
+  "type": "object",
+  "properties": {
+    "customerNeeds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Need ID (e.g., \"CN-01\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Customer need statement (e.g., \"Accurate heat prediction\")"
+          },
+          "relativeImportance": {
+            "type": "number",
+            "description": "Relative importance weight (0.0-1.0)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "relativeImportance"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Customer needs with importance weights (left side)"
+    },
+    "engineeringCharacteristics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Characteristic ID (e.g., \"EC-01\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Engineering characteristic name (e.g., \"Core Temperature Prediction Accuracy (MAE)\")"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Measurement unit (e.g., \"°C\", \"sec\", \"%\", \"count\")"
+          },
+          "directionOfImprovement": {
+            "type": "string",
+            "enum": [
+              "higher",
+              "lower",
+              "target"
+            ],
+            "description": "Whether higher, lower, or a specific target is better"
+          },
+          "designTarget": {
+            "type": "string",
+            "description": "Target value (e.g., \"≤ 0.3\", \"≥ 99.9%\", \"≤ 500ms\")"
+          },
+          "technicalDifficulty": {
+            "type": "number",
+            "description": "Technical difficulty score (1-5, 5=hardest)"
+          },
+          "estimatedCost": {
+            "type": "number",
+            "description": "Estimated cost score (1-5, 5=most expensive)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "unit",
+          "directionOfImprovement",
+          "designTarget"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Engineering characteristics with targets (bottom)"
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "needId": {
+            "type": "string",
+            "description": "Customer need ID"
+          },
+          "charId": {
+            "type": "string",
+            "description": "Engineering characteristic ID"
+          },
+          "strength": {
+            "type": "string",
+            "enum": [
+              "strong",
+              "moderate",
+              "weak"
+            ],
+            "description": "Relationship strength: strong(9), moderate(3), weak(1)"
+          }
+        },
+        "required": [
+          "needId",
+          "charId",
+          "strength"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Need-to-characteristic relationships (center matrix)"
+    },
+    "roof": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "charId1": {
+            "type": "string",
+            "description": "First engineering characteristic ID"
+          },
+          "charId2": {
+            "type": "string",
+            "description": "Second engineering characteristic ID"
+          },
+          "correlation": {
+            "type": "string",
+            "enum": [
+              "strong-positive",
+              "positive",
+              "negative",
+              "strong-negative"
+            ],
+            "description": "Correlation type between the two characteristics"
+          }
+        },
+        "required": [
+          "charId1",
+          "charId2",
+          "correlation"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Engineering characteristic correlations (roof triangle)"
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Competitor name"
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Customer need ID to perception score (1-5) mapping"
+          }
+        },
+        "required": [
+          "name",
+          "scores"
+        ],
+        "additionalProperties": false
+      },
+      "default": [],
+      "description": "Competitive analysis scores (right side / back porch)"
+    }
+  },
+  "required": [
+    "customerNeeds",
+    "engineeringCharacteristics"
+  ],
+  "additionalProperties": false,
+  "title": "Qfd",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

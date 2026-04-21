@@ -1,0 +1,117 @@
+{
+  "type": "object",
+  "properties": {
+    "projectId": {
+      "type": "number",
+      "description": "Associated project ID"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique requirement ID (e.g., \"REQ-001\")"
+          },
+          "name": {
+            "type": "string",
+            "description": "Short abstract name for the requirement"
+          },
+          "description": {
+            "type": "string",
+            "description": "Full requirement statement using \"shall\" language"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source use case or UCBD step (e.g., \"UC1.3\")"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Critical",
+              "High",
+              "Medium",
+              "Low"
+            ],
+            "description": "Requirement priority"
+          },
+          "testability": {
+            "type": "string",
+            "description": "How this requirement can be tested/verified"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Approved",
+              "Implemented",
+              "Verified"
+            ],
+            "default": "Draft"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "Functional",
+              "Performance",
+              "Security",
+              "Usability",
+              "Reliability",
+              "Other"
+            ],
+            "description": "Requirement category"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "source",
+          "priority",
+          "testability",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "description": "List of all requirements"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "number"
+        },
+        "byPriority": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "byCategory": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "totalCount",
+        "byPriority",
+        "byCategory",
+        "generatedAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "projectId",
+    "requirements"
+  ],
+  "additionalProperties": false,
+  "title": "RequirementsTable",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
