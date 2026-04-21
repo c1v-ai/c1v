@@ -21,6 +21,10 @@ import {
 import type { TechStackModel, TechChoice, TechCategory } from '../../db/schema/v2-types';
 import { getTechStackKnowledge } from '../../education/generator-kb';
 import type { KBProjectContext } from '../../education/reference-data/types';
+import type {
+  DecisionCriterionProjection,
+  EngineeringTargetProjection,
+} from '../schemas/projections';
 
 // ============================================================
 // Context Interface
@@ -37,6 +41,12 @@ export interface TechStackContext {
   constraints?: string[];
   preferences?: string[];
   projectContext?: Partial<KBProjectContext>;
+
+  // Steps 3-6 projections (additive — all optional, prompt sections are
+  // omitted entirely when absent to preserve pre-Phase-N behavior).
+  decisionCriteria?: DecisionCriterionProjection[];
+  decisionRecommendation?: string;
+  engineeringTargets?: EngineeringTargetProjection[];
 }
 
 // ============================================================
@@ -55,6 +65,81 @@ const structuredTechStackLLM = createClaudeAgent(techStackModelSchema, 'recommen
 // ============================================================
 // Prompt Builder
 // ============================================================
+
+/**
+ * Format the Decision Matrix section for the prompt.
+ * Returns '' when no criteria are supplied (graceful-degradation contract).
+ */
+export function formatDecisionMatrixSection(
+  criteria?: DecisionCriterionProjection[],
+  recommendation?: string,
+): string {
+  const hasCriteria = criteria && criteria.length > 0;
+  if (!hasCriteria && !recommendation) return '';
+
+  const lines: string[] = ['## Trade-off Criteria (from Decision Matrix)'];
+  if (hasCriteria) {
+    for (const c of criteria) {
+      const bounds: string[] = [];
+      if (c.minAcceptable) bounds.push(`min: ${c.minAcceptable}`);
+      if (c.targetValue) bounds.push(`target: ${c.targetValue}`);
+      const boundsStr = bounds.length ? ` — ${bounds.join(', ')}` : '';
+      lines.push(`- **${c.name}** (${c.unit}, weight ${c.weight.toFixed(2)})${boundsStr}`);
+    }
+  }
+  if (recommendation) {
+    lines.push('');
+    lines.push(`**Prior recommendation:** ${recommendation}`);
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Format the QFD Engineering Targets section for the prompt.
+ * Returns '' when no targets are supplied.
+ */
+export function formatEngineeringTargetsSection(
+  targets?: EngineeringTargetProjection[],
+): string {
+  if (!targets || targets.length === 0) return '';
+
+  const lines: string[] = ['## Engineering Targets (from QFD House of Quality)'];
+  lines.push('| Characteristic | Direction | Target | Unit | Difficulty (1-5) | Cost (1-5) |');
+  lines.push('|---|---|---|---|---|---|');
+  for (const t of targets) {
+    const diff = t.technicalDifficulty ?? '—';
+    const cost = t.estimatedCost ?? '—';
+    lines.push(`| ${t.name} | ${t.directionOfImprovement} | ${t.designTarget} | ${t.unit} | ${diff} | ${cost} |`);
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Extra Instructions sentence — only added when at least one Steps 3-6 signal
+ * is present; otherwise omitted so we don't instruct the LLM to honor criteria
+ * that don't exist.
+ */
+function formatStepsInstructionLine(
+  criteria?: DecisionCriterionProjection[],
+  targets?: EngineeringTargetProjection[],
+): string {
+  const hasCriteria = criteria && criteria.length > 0;
+  const hasTargets = targets && targets.length > 0;
+  if (!hasCriteria && !hasTargets) return '';
+
+  const parts: string[] = [];
+  if (hasCriteria) {
+    parts.push(
+      'When multiple options meet the functional need, prefer the one that best satisfies the weighted Trade-off Criteria and meets every `minAcceptable` threshold.',
+    );
+  }
+  if (hasTargets) {
+    parts.push(
+      'Every recommendation must be able to hit the Engineering Targets above — call out in the rationale when a choice is load-bearing for a specific target.',
+    );
+  }
+  return parts.join(' ');
+}
 
 function buildTechStackPrompt(projectContext?: Partial<KBProjectContext>): string {
   return `You are a senior software architect recommending a technology stack for a new project.
@@ -77,11 +162,12 @@ ${getTechStackKnowledge(projectContext)}
 
 ## Preferences
 {preferencesFormatted}
+{stepsContextSections}
 
 ## Instructions
 
 Use the Knowledge Bank above as your primary reference for current (February 2026) technology recommendations.
-Match the project type to the recommended stacks, then customize based on specific constraints and preferences.
+Match the project type to the recommended stacks, then customize based on specific constraints and preferences.{stepsInstructionLine}
 
 Recommend technologies for the following REQUIRED categories:
 1. **frontend** - UI framework and libraries
@@ -118,6 +204,57 @@ Also provide:
 `;
 }
 
+/**
+ * Full prompt composition — exported for unit + snapshot testing without
+ * invoking the LLM. This is the function `recommendTechStack` ultimately
+ * passes to the Claude client.
+ */
+export function buildTechStackPromptText(context: TechStackContext): string {
+  const useCasesFormatted =
+    context.useCases.length > 0
+      ? context.useCases.map((uc, i) => `${i + 1}. **${uc.name}**: ${uc.description}`).join('\n')
+      : 'No use cases provided';
+
+  const dataEntitiesFormatted =
+    context.dataEntities.length > 0
+      ? context.dataEntities.map((e) => `- ${e.name}`).join('\n')
+      : 'No data entities provided';
+
+  const constraintsFormatted =
+    context.constraints && context.constraints.length > 0
+      ? context.constraints.map((c) => `- ${c}`).join('\n')
+      : 'No specific constraints';
+
+  const preferencesFormatted =
+    context.preferences && context.preferences.length > 0
+      ? context.preferences.map((p) => `- ${p}`).join('\n')
+      : 'No specific preferences';
+
+  const dmSection = formatDecisionMatrixSection(
+    context.decisionCriteria,
+    context.decisionRecommendation,
+  );
+  const qfdSection = formatEngineeringTargetsSection(context.engineeringTargets);
+  const stepsSections = [dmSection, qfdSection].filter((s) => s.length > 0).join('\n\n');
+  const stepsContextSections = stepsSections ? `\n\n${stepsSections}` : '';
+
+  const instructionLine = formatStepsInstructionLine(
+    context.decisionCriteria,
+    context.engineeringTargets,
+  );
+  const stepsInstructionLine = instructionLine ? `\n\n${instructionLine}` : '';
+
+  return buildTechStackPrompt(context.projectContext)
+    .replace('{projectName}', context.projectName)
+    .replace('{projectVision}', context.projectVision)
+    .replace('{useCasesFormatted}', useCasesFormatted)
+    .replace('{dataEntitiesFormatted}', dataEntitiesFormatted)
+    .replace('{constraintsFormatted}', constraintsFormatted)
+    .replace('{preferencesFormatted}', preferencesFormatted)
+    .replace('{stepsContextSections}', stepsContextSections)
+    .replace('{stepsInstructionLine}', stepsInstructionLine);
+}
+
 // ============================================================
 // Main Function
 // ============================================================
@@ -132,36 +269,7 @@ export async function recommendTechStack(
   context: TechStackContext
 ): Promise<TechStackModel> {
   try {
-    // Format use cases for prompt
-    const useCasesFormatted = context.useCases.length > 0
-      ? context.useCases
-          .map((uc, i) => `${i + 1}. **${uc.name}**: ${uc.description}`)
-          .join('\n')
-      : 'No use cases provided';
-
-    // Format data entities for prompt
-    const dataEntitiesFormatted = context.dataEntities.length > 0
-      ? context.dataEntities.map(e => `- ${e.name}`).join('\n')
-      : 'No data entities provided';
-
-    // Format constraints for prompt
-    const constraintsFormatted = context.constraints && context.constraints.length > 0
-      ? context.constraints.map(c => `- ${c}`).join('\n')
-      : 'No specific constraints';
-
-    // Format preferences for prompt
-    const preferencesFormatted = context.preferences && context.preferences.length > 0
-      ? context.preferences.map(p => `- ${p}`).join('\n')
-      : 'No specific preferences';
-
-    // Build prompt
-    const promptText = buildTechStackPrompt(context.projectContext)
-      .replace('{projectName}', context.projectName)
-      .replace('{projectVision}', context.projectVision)
-      .replace('{useCasesFormatted}', useCasesFormatted)
-      .replace('{dataEntitiesFormatted}', dataEntitiesFormatted)
-      .replace('{constraintsFormatted}', constraintsFormatted)
-      .replace('{preferencesFormatted}', preferencesFormatted);
+    const promptText = buildTechStackPromptText(context);
 
     // Invoke structured LLM
     const result = await structuredTechStackLLM.invoke(promptText);
