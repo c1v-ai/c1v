@@ -22,6 +22,10 @@ import type {
 } from '../../db/schema/v2-types';
 import { getSchemaKnowledge } from '../../education/generator-kb';
 import type { KBProjectContext } from '../../education/reference-data/types';
+import type {
+  InterfaceMatrixRowProjection,
+  SubsystemProjection,
+} from '../schemas/projections';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -130,44 +134,117 @@ export interface SchemaExtractionContext {
     description: string;
   }>;
   projectContext?: Partial<KBProjectContext>;
+
+  // Steps 3-6 projections (additive — all optional, section + entity-
+  // discovery instructions are omitted entirely when absent so pre-Phase-N
+  // intakes see no behavioral change).
+  interfacePayloads?: InterfaceMatrixRowProjection[];
+  subsystems?: SubsystemProjection[];
 }
 
 // ============================================================
 // Main Extraction Function
 // ============================================================
 
-export async function extractDatabaseSchema(
-  context: SchemaExtractionContext
-): Promise<DatabaseSchemaModel> {
-  const structuredModel = createClaudeAgent(databaseSchemaSchema, 'extract_database_schema', {
-    temperature: 0.2,
-    maxTokens: 8000, // Schema generation needs more output tokens
-  });
+/**
+ * Format the System Interfaces & Subsystems section (Step 6). Empty string
+ * when no interface payloads or subsystems are supplied — preserves the
+ * pre-Phase-N prompt shape for intakes that never ran Pipeline A.
+ */
+export function formatInterfacePayloadsSection(
+  interfaces?: InterfaceMatrixRowProjection[],
+  subsystems?: SubsystemProjection[],
+): string {
+  const hasInterfaces = interfaces && interfaces.length > 0;
+  const hasSubsystems = subsystems && subsystems.length > 0;
+  if (!hasInterfaces && !hasSubsystems) return '';
 
+  const lines: string[] = ['## System Interfaces & Subsystems (Step 6)'];
+
+  if (hasSubsystems) {
+    lines.push('');
+    lines.push('**Subsystems** (may imply supporting tables):');
+    for (const s of subsystems) {
+      lines.push(`- **${s.id}: ${s.name}** — ${s.description}`);
+    }
+  }
+
+  if (hasInterfaces) {
+    lines.push('');
+    lines.push('**Interface payloads:**');
+    for (const i of interfaces) {
+      const category = i.category ? ` [${i.category}]` : '';
+      lines.push(
+        `- **${i.id}**: ${i.source} → ${i.destination}${category} — payload: ${i.dataPayload}`,
+      );
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Additional instructions activated when interface payloads are present —
+ * tells the LLM to discover entities from payload nouns and emit an
+ * append-only audit table when an audit-category interface exists.
+ */
+function formatInterfaceInstructionAddendum(
+  interfaces?: InterfaceMatrixRowProjection[],
+): string {
+  if (!interfaces || interfaces.length === 0) return '';
+
+  const hasAudit = interfaces.some((i) => i.category === 'audit');
+  const lines: string[] = [
+    '',
+    '### Steps 3-6 Entity Discovery (from System Interfaces)',
+    '- If a payload mentions a noun that is NOT already listed in Data Entities above, create a supporting entity for it (e.g., "profile ID" → a Profile entity; "audit_event" → an AuditEvent entity).',
+    '- Entities derived from payloads still follow the Standard Fields rule (id, created_at, updated_at).',
+  ];
+  if (hasAudit) {
+    lines.push(
+      '- At least one interface is tagged `category: audit` — emit an `AuditEvent` (or similarly named) append-only table: no `updated_at`, no DELETE-cascade relationships, and an index on (actor_id, created_at).',
+    );
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Compose the full Schema Extraction prompt from a context object. Pure
+ * function — exported so tests can exercise the populated / undefined
+ * Steps 3-6 paths without invoking the LLM.
+ */
+export function buildSchemaExtractionPromptText(context: SchemaExtractionContext): string {
   const dataEntitiesText = context.dataEntities
     .map((entity, idx) => {
-      const attrs = entity.attributes.length > 0
-        ? `Attributes: ${entity.attributes.join(', ')}`
-        : 'Attributes: (none specified)';
-      const rels = entity.relationships.length > 0
-        ? `Relationships: ${entity.relationships.join('; ')}`
-        : 'Relationships: (none specified)';
+      const attrs =
+        entity.attributes.length > 0
+          ? `Attributes: ${entity.attributes.join(', ')}`
+          : 'Attributes: (none specified)';
+      const rels =
+        entity.relationships.length > 0
+          ? `Relationships: ${entity.relationships.join('; ')}`
+          : 'Relationships: (none specified)';
       return `${idx + 1}. ${entity.name}\n   ${attrs}\n   ${rels}`;
     })
     .join('\n\n');
 
   const useCasesText = context.useCases
-    ? context.useCases
-        .map((uc, idx) => `${idx + 1}. ${uc.name}: ${uc.description}`)
-        .join('\n')
+    ? context.useCases.map((uc, idx) => `${idx + 1}. ${uc.name}: ${uc.description}`).join('\n')
     : '(No use cases provided)';
 
-  // Keep vision concise to avoid overwhelming the model
-  const visionText = context.projectVision.length > 1500
-    ? context.projectVision.slice(0, 1500) + '...'
-    : context.projectVision;
+  const visionText =
+    context.projectVision.length > 1500
+      ? context.projectVision.slice(0, 1500) + '...'
+      : context.projectVision;
 
-  const prompt = `You are a database architect converting PRD data entities into a complete PostgreSQL database schema.
+  const interfacesSection = formatInterfacePayloadsSection(
+    context.interfacePayloads,
+    context.subsystems,
+  );
+  const interfacesSectionBlock = interfacesSection ? `\n\n${interfacesSection}` : '';
+  const interfacesInstructionBlock = formatInterfaceInstructionAddendum(context.interfacePayloads);
+
+  return `You are a database architect converting PRD data entities into a complete PostgreSQL database schema.
 
 ${getSchemaKnowledge(context.projectContext)}
 
@@ -179,7 +256,7 @@ Vision: ${visionText}
 ${dataEntitiesText}
 
 ## Use Cases (for additional context)
-${useCasesText}
+${useCasesText}${interfacesSectionBlock}
 
 ## Instructions
 
@@ -214,9 +291,20 @@ You MUST generate at least one entity in the "entities" array for every data ent
 ### Domain Patterns
 - Match the project type to Knowledge Bank domain entity patterns for completeness
 - For B2B SaaS: include organization_id for multi-tenancy
-- For AI products: include vector embedding fields where appropriate
+- For AI products: include vector embedding fields where appropriate${interfacesInstructionBlock}
 
 Generate the complete database schema now. Remember: the "entities" array is REQUIRED and must contain one entity per data entity above.`;
+}
+
+export async function extractDatabaseSchema(
+  context: SchemaExtractionContext
+): Promise<DatabaseSchemaModel> {
+  const structuredModel = createClaudeAgent(databaseSchemaSchema, 'extract_database_schema', {
+    temperature: 0.2,
+    maxTokens: 8000, // Schema generation needs more output tokens
+  });
+
+  const prompt = buildSchemaExtractionPromptText(context);
 
   // Attempt 1
   try {
