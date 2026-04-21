@@ -452,9 +452,17 @@ export async function streamWithLangGraph(
             }
 
             // Merge node output into accumulated state (exclude messages
-            // to prevent shorter partial arrays overwriting cumulative messages)
-            const { messages: _msgs, ...rest } = output;
+            // to prevent shorter partial arrays overwriting cumulative messages).
+            // extractedData is shallow-merged instead of overwritten so parallel
+            // fan-out nodes (DM + Interfaces after FFBD) don't drop each other's keys.
+            const { messages: _msgs, extractedData: newED, ...rest } = output;
             accumulatedState = { ...accumulatedState, ...rest };
+            if (newED !== undefined) {
+              accumulatedState.extractedData = {
+                ...(accumulatedState.extractedData ?? {}),
+                ...newED,
+              };
+            }
 
             if (output.extractedData) {
               latestExtractedData = output.extractedData;
