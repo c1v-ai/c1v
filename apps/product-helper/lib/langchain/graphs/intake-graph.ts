@@ -420,22 +420,19 @@ export function buildIntakeGraph() {
       routeAfterArtifact,
       ['check_prd_spec', 'generate_ffbd', END]
     )
-    // Steps 3-6 chain: FFBD -> Decision Matrix -> QFD -> Interfaces -> END
+    // Steps 3-6: FFBD fans out to (Decision Matrix -> QFD) AND Interfaces
+    // in parallel. Interfaces runs concurrently with the DM->QFD chain.
     .addConditionalEdges(
       'generate_ffbd',
       routeAfterFFBD,
-      ['generate_decision_matrix', END]
+      ['generate_decision_matrix', 'generate_interfaces', END]
     )
     .addConditionalEdges(
       'generate_decision_matrix',
       routeAfterDecisionMatrix,
       ['generate_qfd', END]
     )
-    .addConditionalEdges(
-      'generate_qfd',
-      routeAfterQFD,
-      ['generate_interfaces', END]
-    )
+    .addEdge('generate_qfd', END)
     .addEdge('generate_interfaces', END)
     // ============================================================
     // Add Simple Edges
