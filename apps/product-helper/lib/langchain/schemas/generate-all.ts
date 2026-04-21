@@ -15,6 +15,7 @@ import {
   useCaseSchema,
 } from '../schemas';
 import { zodToStrictJsonSchema } from './zod-to-json';
+import { MODULE_2_PHASE_SCHEMAS } from './module-2';
 
 interface SchemaEntry {
   zodSchema: z.ZodType;
@@ -59,18 +60,33 @@ const SCHEMAS: SchemaEntry[] = [
 ];
 
 const OUTPUT_DIR = join(process.cwd(), 'lib/langchain/schemas/generated');
+const MODULE_2_OUTPUT_DIR = join(OUTPUT_DIR, 'module-2');
 
 function main(): void {
   mkdirSync(OUTPUT_DIR, { recursive: true });
+  mkdirSync(MODULE_2_OUTPUT_DIR, { recursive: true });
 
+  // Legacy root-level schemas (pre-module-2)
   for (const { zodSchema, name, filename } of SCHEMAS) {
     const json = zodToStrictJsonSchema(zodSchema, name);
     const outputPath = join(OUTPUT_DIR, filename);
     writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
-    console.log(`✔ ${name.padEnd(20)} → ${filename}`);
+    console.log(`✔ ${name.padEnd(30)} → ${filename}`);
   }
 
-  console.log(`\nGenerated ${SCHEMAS.length} schemas → ${OUTPUT_DIR}`);
+  // Module 2 phase schemas (Gate B)
+  for (const { zodSchema, name, slug } of MODULE_2_PHASE_SCHEMAS) {
+    const json = zodToStrictJsonSchema(zodSchema, name);
+    const filename = `${slug}.schema.json`;
+    const outputPath = join(MODULE_2_OUTPUT_DIR, filename);
+    writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+    console.log(`✔ ${name.padEnd(30)} → module-2/${filename}`);
+  }
+
+  const total = SCHEMAS.length + MODULE_2_PHASE_SCHEMAS.length;
+  console.log(
+    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_2_PHASE_SCHEMAS.length} module-2) → ${OUTPUT_DIR}`,
+  );
 }
 
 main();

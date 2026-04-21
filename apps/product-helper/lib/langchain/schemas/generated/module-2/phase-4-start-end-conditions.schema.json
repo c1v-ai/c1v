@@ -1,0 +1,328 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "ucbds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "uc_id": {
+            "type": "string",
+            "pattern": "^(UC[0-9]{2}|CC)$",
+            "description": "x-ui-surface=section:UC Overview > Header — stable UC identifier (\"UC01\"..\"UC99\" or \"CC\" for cross-cutting)."
+          },
+          "uc_name": {
+            "type": "string",
+            "description": "x-ui-surface=section:UC Overview > Header — concise, verb-first UC title."
+          },
+          "actor": {
+            "type": "string",
+            "description": "x-ui-surface=section:UC Overview > Header — primary actor performing the UC."
+          },
+          "trigger": {
+            "type": "string",
+            "description": "x-ui-surface=section:UC Overview > Context — event that starts the UC."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "must",
+              "should",
+              "could",
+              "wont"
+            ],
+            "description": "x-ui-surface=section:UC Overview > Header — MoSCoW priority carried from Phase 1."
+          },
+          "actor_goal": {
+            "type": "string",
+            "description": "x-ui-surface=section:UC Overview > Context — value the actor expects from completing the UC."
+          },
+          "also_appears_in": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "phase": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+                },
+                "artifact": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+                },
+                "relationship": {
+                  "type": "string",
+                  "enum": [
+                    "sourced_from",
+                    "also_appears_in",
+                    "derived_from",
+                    "refines"
+                  ],
+                  "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+                },
+                "note": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+                }
+              },
+              "required": [
+                "phase",
+                "artifact",
+                "relationship"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — other phases that reference this UCBD (C11)."
+          },
+          "preconditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "clause": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:UC Overview > Start/End Conditions — natural-language predicate (e.g., \"User is authenticated\")."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Requirement Detail > Provenance — source of this clause (vision / interview / kb section)."
+                }
+              },
+              "required": [
+                "clause"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:UC Overview > Start/End Conditions — one pre- or post-condition clause."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:UC Overview > Start/End Conditions — clauses that must hold when `trigger` fires."
+          },
+          "postconditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "clause": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:UC Overview > Start/End Conditions — natural-language predicate (e.g., \"User is authenticated\")."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Requirement Detail > Provenance — source of this clause (vision / interview / kb section)."
+                }
+              },
+              "required": [
+                "clause"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:UC Overview > Start/End Conditions — one pre- or post-condition clause."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:UC Overview > Start/End Conditions — clauses that must hold at successful exit."
+          },
+          "exit_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "x-ui-surface=section:UC Overview > Start/End Conditions — testable criteria Phase 5 step flow must prove."
+          }
+        },
+        "required": [
+          "uc_id",
+          "uc_name",
+          "actor",
+          "trigger",
+          "priority",
+          "actor_goal"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:UC Overview > Header — one UCBD header per prioritized UC."
+      },
+      "description": "x-ui-surface=page:/projects/[id]/requirements/use-cases — full UCBD set with start/end conditions layered on."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "ucbds"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase4StartEndConditions",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
