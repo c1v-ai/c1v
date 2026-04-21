@@ -38,6 +38,10 @@ import { checkRateLimit } from '@/lib/mcp/rate-limit';
  * @see PLAN_API_INTEGRATION.md for architecture details
  */
 
+// Allow up to 10 minutes for the Steps 3-6 parallel fan-out pipeline
+// (FFBD → {Decision Matrix → QFD, Interfaces}) to complete before Vercel 504s.
+export const maxDuration = 600;
+
 // Using Node.js runtime because this route uses Drizzle ORM with database operations
 export const runtime = 'nodejs';
 
