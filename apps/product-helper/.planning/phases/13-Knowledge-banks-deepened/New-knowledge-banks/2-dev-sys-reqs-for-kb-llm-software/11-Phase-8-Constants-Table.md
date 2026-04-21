@@ -156,6 +156,15 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
       "source": "LLM proposed initial value; consistent with common web-UX latency guidance and assess-software-performance KB.",
       "owned_by": "Engineering Lead",
       "notes": "Applies to synchronous user-facing endpoints at P95. Referenced by UC01.R01, UC02.R08, UC03.R02.",
+      "math_derivation": {
+        "formula": "P95 latency budget for synchronous user-facing request (heuristic: 200–500 ms range)",
+        "source": "api-design-sys-design-kb.md",
+        "inputs": { "percentile": "P95", "path": "sync user-facing" }
+      },
+      "software_arch_decision": {
+        "ref": "api_design",
+        "choice": "sync p95 budget (upper bound of recommended 200–500 ms band)"
+      },
       "referenced_by": ["UC01.R01", "UC02.R08", "UC03.R02"],
       "needs_user_input": true
     },
@@ -168,8 +177,39 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
       "final_date": "",
       "source": "LLM proposed initial value; typical three-nines target for B2C software.",
       "owned_by": "Engineering Lead",
-      "notes": "Measured over SLO_WINDOW. Excludes scheduled maintenance windows. Referenced by UC02.R09.",
+      "notes": "Measured over SLO_WINDOW. Excludes scheduled maintenance windows. Referenced by UC02.R09. System-level target composed across 3 serial services implies ≈99.967% per component.",
+      "math_derivation": {
+        "formula": "A_total = A_1 × A_2 × A_3  (serial chain); back-solved per-component A ≈ A_total^(1/n)",
+        "source": "inline §Availability-nines formula; resilliency-patterns-kb.md",
+        "inputs": { "A_total": 0.999, "n_serial": 3, "A_component_implied": 0.99967, "monthly_budget_min_30d": 43.2 }
+      },
+      "software_arch_decision": {
+        "ref": "resiliency",
+        "choice": "three-nines monthly SLO, serial"
+      },
       "referenced_by": ["UC02.R09"],
+      "needs_user_input": true
+    },
+    {
+      "constant": "READ_CONSISTENCY_MODE",
+      "value": "eventual",
+      "units": "enum:strong|eventual",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-21",
+      "final_date": "",
+      "source": "LLM proposed; cap_theorem.md — AP favored for social-feed / profile / catalog reads where stale reads are tolerable for seconds.",
+      "owned_by": "Engineering Lead",
+      "notes": "Applies to profile and catalog reads (UC03.R04, UC05.R02). Write-side consistency (checkout/inventory) is governed by a separate constant, CHECKOUT_CONSISTENCY_MODE = strong.",
+      "math_derivation": {
+        "formula": "CAP decision — during a partition, choose C or A. Stale-read tolerance window Δt ≤ replication_lag_p99 decides whether AP is safe.",
+        "source": "cap_theorem.md",
+        "inputs": { "partition_choice": "AP", "stale_read_tolerance_sec": 5 }
+      },
+      "software_arch_decision": {
+        "ref": "cap_theorem",
+        "choice": "AP"
+      },
+      "referenced_by": ["UC03.R04", "UC05.R02"],
       "needs_user_input": true
     },
     {
@@ -182,6 +222,15 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
       "source": "LLM proposed; common SLO reporting cadence.",
       "owned_by": "Engineering Lead",
       "notes": "Window over which AVAILABILITY_TARGET is measured.",
+      "math_derivation": {
+        "formula": "text-valued convention; citation-only",
+        "source": "resilliency-patterns-kb.md (common SLO reporting cadence)",
+        "inputs": {}
+      },
+      "software_arch_decision": {
+        "ref": "resiliency",
+        "choice": "calendar-month SLO window"
+      },
       "referenced_by": ["UC02.R09"],
       "needs_user_input": true
     },
@@ -195,6 +244,15 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
       "source": "LLM proposed; resiliency-patterns-kb.md suggests 3 retries with exponential backoff as a common default for idempotent payment operations.",
       "owned_by": "Engineering Lead",
       "notes": "Applies only to transient (retryable) failures, not authorization declines.",
+      "math_derivation": {
+        "formula": "effective_failure_rate ≈ p_transient ^ (MAX_PAYMENT_RETRIES + 1) assuming independent retries with exponential backoff",
+        "source": "resilliency-patterns-kb.md",
+        "inputs": { "pattern": "exponential-backoff", "retryable_class": "transient" }
+      },
+      "software_arch_decision": {
+        "ref": "resiliency",
+        "choice": "exponential-backoff, 3 retries, idempotent only"
+      },
       "referenced_by": ["UC01.R10"],
       "needs_user_input": true
     }
@@ -209,8 +267,8 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
   ],
 
   "summary": {
-    "total_constants": 14,
-    "needs_user_input_count": 14,
+    "total_constants": 15,
+    "needs_user_input_count": 15,
     "conflicts_count": 1
   }
 }
