@@ -32,6 +32,12 @@ import type {
 } from '../../db/schema/v2-types';
 import { getInfrastructureKnowledge } from '../../education/generator-kb';
 import type { KBProjectContext } from '../../education/reference-data/types';
+import type {
+  DecisionCriterionProjection,
+  EngineeringTargetProjection,
+  InterfaceMatrixRowProjection,
+  SubsystemProjection,
+} from '../schemas/projections';
 
 // ============================================================
 // Context Interface
@@ -48,6 +54,14 @@ export interface InfrastructureContext {
   complianceRequirements?: string[];
   budgetConstraints?: string;
   projectContext?: Partial<KBProjectContext>;
+
+  // Steps 3-6 projections (additive — all optional, prompt sections and
+  // conditional instruction lines are omitted entirely when absent so
+  // existing behavior is unchanged for pre-Phase-A intakes).
+  weightedCriteria?: DecisionCriterionProjection[];
+  engineeringTargets?: EngineeringTargetProjection[];
+  subsystems?: SubsystemProjection[];
+  interfaceProtocols?: InterfaceMatrixRowProjection[];
 }
 
 /**
@@ -78,6 +92,140 @@ const structuredInfrastructureLLM = createClaudeAgent(infrastructureSpecSchema, 
 // Prompt Builder
 // ============================================================
 
+/**
+ * Format weighted decision criteria for the prompt.
+ * Empty string when no criteria are supplied (graceful-degradation contract).
+ */
+export function formatWeightedCriteriaSection(
+  criteria?: DecisionCriterionProjection[],
+): string {
+  if (!criteria || criteria.length === 0) return '';
+  const lines: string[] = ['## Weighted Criteria (from Decision Matrix)'];
+  for (const c of criteria) {
+    const bounds: string[] = [];
+    if (c.minAcceptable) bounds.push(`min: ${c.minAcceptable}`);
+    if (c.targetValue) bounds.push(`target: ${c.targetValue}`);
+    const boundsStr = bounds.length ? ` — ${bounds.join(', ')}` : '';
+    lines.push(`- **${c.name}** (${c.unit}, weight ${c.weight.toFixed(2)})${boundsStr}`);
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Format QFD engineering targets table for the prompt. Empty string when
+ * no targets are supplied.
+ */
+export function formatEngineeringTargetsSection(
+  targets?: EngineeringTargetProjection[],
+): string {
+  if (!targets || targets.length === 0) return '';
+  const lines: string[] = ['## Engineering Targets (from QFD)'];
+  lines.push('| Characteristic | Direction | Target | Unit | Difficulty (1-5) | Cost (1-5) |');
+  lines.push('|---|---|---|---|---|---|');
+  for (const t of targets) {
+    const diff = t.technicalDifficulty ?? '—';
+    const cost = t.estimatedCost ?? '—';
+    lines.push(
+      `| ${t.name} | ${t.directionOfImprovement} | ${t.designTarget} | ${t.unit} | ${diff} | ${cost} |`,
+    );
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Format subsystem topology + interface protocols section. Combines
+ * subsystem list and interface protocol/frequency/category so the agent
+ * can pick runtime tiers and CI/CD pipeline count off one section.
+ * Empty string when both inputs are absent.
+ */
+export function formatSubsystemTopologySection(
+  subsystems?: SubsystemProjection[],
+  interfaces?: InterfaceMatrixRowProjection[],
+): string {
+  const hasSubsystems = subsystems && subsystems.length > 0;
+  const hasInterfaces = interfaces && interfaces.length > 0;
+  if (!hasSubsystems && !hasInterfaces) return '';
+
+  const lines: string[] = ['## Subsystem Topology & Interface Protocols (from Step 6)'];
+
+  if (hasSubsystems) {
+    lines.push('');
+    lines.push('**Subsystems:**');
+    for (const s of subsystems) {
+      lines.push(`- **${s.id}: ${s.name}** — ${s.description}`);
+    }
+  }
+
+  if (hasInterfaces) {
+    lines.push('');
+    lines.push('**Interfaces:**');
+    lines.push('| ID | Name | Source → Dest | Protocol | Frequency | Category |');
+    lines.push('|---|---|---|---|---|---|');
+    for (const i of interfaces) {
+      lines.push(
+        `| ${i.id} | ${i.name} | ${i.source} → ${i.destination} | ${i.protocol ?? '—'} | ${i.frequency ?? '—'} | ${i.category ?? '—'} |`,
+      );
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Conditional instruction lines — added only for the Steps 3-6 signals that
+ * are actually present. Avoids telling the LLM to honor constraints that
+ * don't exist in the context.
+ */
+function formatStepsInstructionLines(context: InfrastructureContext): string {
+  const lines: string[] = [];
+
+  // Hosting — low-latency target triggers multi-region / edge requirement
+  const tightLatency = (context.engineeringTargets ?? []).some((t) => {
+    if (t.directionOfImprovement !== 'lower') return false;
+    if (t.unit !== 'ms' && t.unit !== 's') return false;
+    // `designTarget` is free-text, look for a number <= 200ms or <= 0.2s.
+    const match = t.designTarget.match(/(\d+(?:\.\d+)?)/);
+    if (!match) return false;
+    const n = Number(match[1]);
+    if (t.unit === 'ms') return n <= 200;
+    if (t.unit === 's') return n <= 0.2;
+    return false;
+  });
+  if (tightLatency) {
+    lines.push(
+      '- **Hosting:** A latency target ≤ 200ms requires multi-region or edge compute (e.g., Vercel Edge, Cloudflare Workers, fly.io multi-region).',
+    );
+  }
+
+  // Caching — realtime/websocket interfaces trigger persistent-connection tier
+  const needsPersistentTier = (context.interfaceProtocols ?? []).some((i) => {
+    const proto = (i.protocol ?? '').toLowerCase();
+    const freq = (i.frequency ?? '').toLowerCase();
+    return (
+      proto.includes('websocket') ||
+      proto.includes('event') ||
+      freq.includes('real-time') ||
+      freq.includes('stream')
+    );
+  });
+  if (needsPersistentTier) {
+    lines.push(
+      '- **Caching / Runtime:** At least one interface uses WebSocket, Event streaming, or real-time frequency — include a persistent-connection tier (e.g., Cloudflare Durable Objects, fly.io, Upstash Redis pub/sub).',
+    );
+  }
+
+  // CI/CD — one deploy pipeline per subsystem
+  const subsystemCount = context.subsystems?.length ?? 0;
+  if (subsystemCount > 0) {
+    lines.push(
+      `- **CI/CD:** System has ${subsystemCount} subsystem${subsystemCount === 1 ? '' : 's'}. Provision one deploy pipeline per subsystem so they can release independently.`,
+    );
+  }
+
+  if (lines.length === 0) return '';
+  return ['', 'In addition to the base rules, apply these Steps 3-6 derived constraints:', ...lines].join('\n');
+}
+
 function buildInfrastructurePrompt(projectContext?: Partial<KBProjectContext>): string {
   return `You are a senior DevOps and cloud infrastructure architect recommending infrastructure for a new project.
 Analyze the project requirements and provide well-reasoned infrastructure recommendations.
@@ -99,11 +247,12 @@ ${getInfrastructureKnowledge(projectContext)}
 
 ## Budget Constraints
 {budgetFormatted}
+{stepsContextSections}
 
 ## Instructions
 
 Use the Knowledge Bank above as your primary reference for platform selection, cost estimates, monitoring stack, and security checklist.
-Match the project stage and type to KB recommendations, then customize based on specific requirements.
+Match the project stage and type to KB recommendations, then customize based on specific requirements.{stepsInstructionLines}
 
 Recommend a complete infrastructure specification covering:
 
@@ -178,32 +327,7 @@ export async function generateInfrastructureSpec(
   context: InfrastructureContext
 ): Promise<InfrastructureSpec> {
   try {
-    // Format tech stack for prompt
-    const techStackFormatted = context.techStack
-      ? formatTechStack(context.techStack)
-      : 'No tech stack specified - recommend based on project description';
-
-    // Format scale requirements for prompt
-    const scaleFormatted = context.scaleRequirements
-      ? formatScaleRequirements(context.scaleRequirements)
-      : 'No specific scale requirements - assume small to medium project';
-
-    // Format compliance requirements for prompt
-    const complianceFormatted = context.complianceRequirements && context.complianceRequirements.length > 0
-      ? context.complianceRequirements.map(c => `- ${c}`).join('\n')
-      : 'No specific compliance requirements';
-
-    // Format budget constraints for prompt
-    const budgetFormatted = context.budgetConstraints || 'No specific budget constraints';
-
-    // Build prompt
-    const promptText = buildInfrastructurePrompt(context.projectContext)
-      .replace('{projectName}', context.projectName)
-      .replace('{projectDescription}', context.projectDescription)
-      .replace('{techStackFormatted}', techStackFormatted)
-      .replace('{scaleFormatted}', scaleFormatted)
-      .replace('{complianceFormatted}', complianceFormatted)
-      .replace('{budgetFormatted}', budgetFormatted);
+    const promptText = buildInfrastructurePromptText(context);
 
     // Invoke structured LLM
     const result = await structuredInfrastructureLLM.invoke(promptText);
@@ -219,6 +343,51 @@ export async function generateInfrastructureSpec(
     // Return a minimal fallback infrastructure on failure
     return getDefaultInfrastructure(context);
   }
+}
+
+/**
+ * Full prompt composition — exported for unit + snapshot testing without
+ * invoking the LLM. This is the function `generateInfrastructureSpec`
+ * ultimately passes to the Claude client.
+ */
+export function buildInfrastructurePromptText(context: InfrastructureContext): string {
+  const techStackFormatted = context.techStack
+    ? formatTechStack(context.techStack)
+    : 'No tech stack specified - recommend based on project description';
+
+  const scaleFormatted = context.scaleRequirements
+    ? formatScaleRequirements(context.scaleRequirements)
+    : 'No specific scale requirements - assume small to medium project';
+
+  const complianceFormatted =
+    context.complianceRequirements && context.complianceRequirements.length > 0
+      ? context.complianceRequirements.map((c) => `- ${c}`).join('\n')
+      : 'No specific compliance requirements';
+
+  const budgetFormatted = context.budgetConstraints || 'No specific budget constraints';
+
+  const criteriaSection = formatWeightedCriteriaSection(context.weightedCriteria);
+  const targetsSection = formatEngineeringTargetsSection(context.engineeringTargets);
+  const topologySection = formatSubsystemTopologySection(
+    context.subsystems,
+    context.interfaceProtocols,
+  );
+  const joinedSections = [criteriaSection, targetsSection, topologySection]
+    .filter((s) => s.length > 0)
+    .join('\n\n');
+  const stepsContextSections = joinedSections ? `\n\n${joinedSections}` : '';
+
+  const stepsInstructionLines = formatStepsInstructionLines(context);
+
+  return buildInfrastructurePrompt(context.projectContext)
+    .replace('{projectName}', context.projectName)
+    .replace('{projectDescription}', context.projectDescription)
+    .replace('{techStackFormatted}', techStackFormatted)
+    .replace('{scaleFormatted}', scaleFormatted)
+    .replace('{complianceFormatted}', complianceFormatted)
+    .replace('{budgetFormatted}', budgetFormatted)
+    .replace('{stepsContextSections}', stepsContextSections)
+    .replace('{stepsInstructionLines}', stepsInstructionLines);
 }
 
 // ============================================================
