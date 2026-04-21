@@ -34,6 +34,7 @@ import {
   type ArtifactPhase,
 } from '@/lib/langchain/graphs';
 import type { ExtractionResult } from '@/lib/langchain/schemas';
+import { buildSteps36Projections } from '@/lib/langchain/schemas/build-projections';
 import { recommendTechStack, type TechStackContext } from '@/lib/langchain/agents/tech-stack-agent';
 import { generateUserStories, type UserStoriesContext } from '@/lib/langchain/agents/user-stories-agent';
 import { extractDatabaseSchema, type SchemaExtractionContext } from '@/lib/langchain/agents/schema-extraction-agent';
@@ -1067,6 +1068,11 @@ async function triggerPostIntakeGeneration(
     return parts.join('\n');
   });
 
+  // Build Steps 3-6 projections once — each ctx picks the subset it consumes.
+  // When Pipeline A hasn't run yet, every projection is undefined and the
+  // agents fall back to their pre-Phase-N prompts (graceful degradation).
+  const steps36 = buildSteps36Projections(extractedData);
+
   // Build contexts for each generator
   const techStackCtx: TechStackContext = {
     projectName,
@@ -1074,6 +1080,9 @@ async function triggerPostIntakeGeneration(
     useCases: useCases.map((uc, i) => ({ name: uc.name, description: enrichedUseCaseDescriptions[i] })),
     dataEntities: dataEntities.map(e => ({ name: e.name })),
     projectContext,
+    decisionCriteria: steps36.decisionCriteria,
+    decisionRecommendation: steps36.decisionRecommendation,
+    engineeringTargets: steps36.engineeringTargets,
   };
 
   const userStoriesCtx: UserStoriesContext = {
@@ -1095,6 +1104,7 @@ async function triggerPostIntakeGeneration(
       role: a.role,
     })),
     projectContext,
+    functionalBlocks: steps36.functionalBlocks,
   };
 
   const schemaCtx: SchemaExtractionContext = {
@@ -1107,6 +1117,8 @@ async function triggerPostIntakeGeneration(
     })),
     useCases: useCases.map((uc, i) => ({ name: uc.name, description: enrichedUseCaseDescriptions[i] })),
     projectContext,
+    interfacePayloads: steps36.interfaceMatrix,
+    subsystems: steps36.subsystems,
   };
 
   const apiSpecCtx: APISpecGenerationContext = {
@@ -1126,12 +1138,18 @@ async function triggerPostIntakeGeneration(
       relationships: e.relationships ?? [],
     })),
     projectContext,
+    interfaceMatrix: steps36.interfaceMatrix,
+    subsystems: steps36.subsystems,
   };
 
   const infraCtx: InfrastructureContext = {
     projectName,
     projectDescription: enrichedVision,
     projectContext,
+    weightedCriteria: steps36.decisionCriteria,
+    engineeringTargets: steps36.engineeringTargets,
+    subsystems: steps36.subsystems,
+    interfaceProtocols: steps36.interfaceMatrix,
   };
 
   // Phase 1: Run 5 generators in parallel
