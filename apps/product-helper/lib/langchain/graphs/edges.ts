@@ -1,3 +1,4 @@
+import { END } from '@langchain/langgraph';
 import type {
   IntakeState,
   ArtifactPhase,
@@ -354,8 +355,13 @@ export function routeAfterArtifact(state: IntakeState): ArtifactRouteTarget {
 
 /**
  * Routing targets from generate_ffbd node
+ *
+ * Array-valued: FFBD fans out to Decision Matrix AND Interfaces in parallel.
  */
-export type FFBDRouteTarget = 'generate_decision_matrix' | '__end__';
+export type FFBDRouteTarget =
+  | 'generate_decision_matrix'
+  | 'generate_interfaces'
+  | typeof END;
 
 /**
  * Routing targets from generate_decision_matrix node
@@ -373,11 +379,11 @@ export type QFDRouteTarget = 'generate_interfaces' | '__end__';
 export type InterfacesRouteTarget = '__end__';
 
 /**
- * Route after FFBD generation -> Decision Matrix
+ * Route after FFBD generation -> Decision Matrix + Interfaces (parallel fan-out)
  */
-export function routeAfterFFBD(state: IntakeState): FFBDRouteTarget {
-  if (state.error) return '__end__';
-  return 'generate_decision_matrix';
+export function routeAfterFFBD(state: IntakeState): FFBDRouteTarget[] {
+  if (state.error) return [END];
+  return ['generate_decision_matrix', 'generate_interfaces'];
 }
 
 /**
