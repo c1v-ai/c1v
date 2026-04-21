@@ -61,7 +61,15 @@ GEMINI.md
 .private/
 
 # Internal planning & status docs (local only)
-.planning/
+# Use contents-only form (.planning/*) so git can descend for re-include exceptions.
+.planning/*
+# Exception: deepened KBs are load-bearing content, not scratch
+!.planning/phases/
+.planning/phases/*
+!.planning/phases/13-Knowledge-banks-deepened/
+!.planning/phases/13-Knowledge-banks-deepened/**
+# Keep macOS cruft ignored inside the re-included KB subtree
+.planning/phases/13-Knowledge-banks-deepened/**/.DS_Store
 claudedocs/
 CURRENT-STATE.md
 CURRENT-STATUS.md

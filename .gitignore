@@ -54,7 +54,15 @@ drizzle/*.sql
 # Claude/CLEO/Agent state (local only)
 .claude/
 .cleo/
-.planning/
+# Use contents-only form (.planning/*) so git can descend for re-include exceptions.
+.planning/*
+# Exception: deepened KBs are load-bearing content, not scratch (apps/product-helper)
+!/apps/product-helper/.planning/phases/
+/apps/product-helper/.planning/phases/*
+!/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/
+!/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/**
+# Keep macOS cruft ignored inside the re-included KB subtree
+/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/**/.DS_Store
 .serena/
 AGENTS.md
 GEMINI.md
