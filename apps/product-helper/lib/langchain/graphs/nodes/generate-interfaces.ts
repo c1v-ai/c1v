@@ -40,6 +40,10 @@ import { formatMessagesAsText } from '../utils';
 export async function generateInterfaces(
   state: IntakeState
 ): Promise<Partial<IntakeState>> {
+  if (state.error) {
+    console.warn(`[GENERATE_INTERFACES] Skipping: ${state.error}`);
+    return {};
+  }
   console.log(`[GENERATE_INTERFACES] Node entered`);
   console.log(
     `[GENERATE_INTERFACES] Messages: ${state.messages?.length ?? 0}, ` +

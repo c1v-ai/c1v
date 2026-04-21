@@ -38,6 +38,10 @@ import { formatMessagesAsText } from '../utils';
 export async function generateDecisionMatrix(
   state: IntakeState
 ): Promise<Partial<IntakeState>> {
+  if (state.error) {
+    console.warn(`[GENERATE_DECISION_MATRIX] Skipping: ${state.error}`);
+    return {};
+  }
   console.log(`[GENERATE_DECISION_MATRIX] Node entered`);
   console.log(
     `[GENERATE_DECISION_MATRIX] Messages: ${state.messages?.length ?? 0}, ` +

@@ -39,6 +39,10 @@ import { formatMessagesAsText } from '../utils';
 export async function generateQFD(
   state: IntakeState
 ): Promise<Partial<IntakeState>> {
+  if (state.error) {
+    console.warn(`[GENERATE_QFD] Skipping: ${state.error}`);
+    return {};
+  }
   console.log(`[GENERATE_QFD] Node entered`);
   console.log(
     `[GENERATE_QFD] Messages: ${state.messages?.length ?? 0}, ` +
