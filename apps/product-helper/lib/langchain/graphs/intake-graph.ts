@@ -243,14 +243,26 @@ const IntakeStateAnnotation = Annotation.Root({
   projectVision: Annotation<string>,
   teamId: Annotation<number>,
 
-  // Extracted data (last value wins)
+  // Extracted data (shallow-merge under fan-out so parallel branches
+  // adding distinct keys — ffbd/decisionMatrix/qfd/interfaces — don't drop)
   extractedData: Annotation<ExtractionResult>({
-    reducer: (a, b) => b ?? a,
+    reducer: (a, b) => {
+      if (!b) return a;
+      if (!a) return b;
+      return { ...a, ...b };
+    },
     default: createDefaultExtractionResult,
   }),
-  completeness: Annotation<number>,
+  completeness: Annotation<number>({
+    reducer: (a, b) => Math.max(a ?? 0, b ?? 0),
+    default: () => 0,
+  }),
   artifactReadiness: Annotation<ArtifactReadiness>({
-    reducer: (a, b) => b ?? a,
+    reducer: (a, b) => {
+      if (!b) return a;
+      if (!a) return b;
+      return { ...a, ...b };
+    },
     default: createDefaultArtifactReadiness,
   }),
 
