@@ -20,6 +20,10 @@ import type {
   APISpecGenerationContext,
 } from '../../types/api-specification';
 import { getAPISpecKnowledge } from '../../education/generator-kb';
+import type {
+  InterfaceMatrixRowProjection,
+  SubsystemProjection,
+} from '../schemas/projections';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -113,6 +117,64 @@ const apiSpecificationSchema = z.object({
 // API Specification Prompt
 // ============================================================
 
+/**
+ * Format the System Interface Matrix section (Step 6). Empty string when
+ * neither interfaces nor subsystems are supplied — preserves pre-Phase-N
+ * prompt shape for intakes that never ran Pipeline A.
+ */
+export function formatInterfaceMatrixSection(
+  interfaces?: InterfaceMatrixRowProjection[],
+  subsystems?: SubsystemProjection[],
+): string {
+  const hasInterfaces = interfaces && interfaces.length > 0;
+  const hasSubsystems = subsystems && subsystems.length > 0;
+  if (!hasInterfaces && !hasSubsystems) return '';
+
+  const lines: string[] = ['## System Interface Matrix (Step 6)'];
+
+  if (hasSubsystems) {
+    lines.push('');
+    lines.push('**Subsystems** (each becomes a resource/tag):');
+    for (const s of subsystems) {
+      lines.push(`- **${s.id}: ${s.name}** — ${s.description}`);
+    }
+  }
+
+  if (hasInterfaces) {
+    lines.push('');
+    lines.push('**Interfaces:**');
+    lines.push('| ID | Name | Source → Dest | Protocol | Frequency | Category | Payload |');
+    lines.push('|---|---|---|---|---|---|---|');
+    for (const i of interfaces) {
+      lines.push(
+        `| ${i.id} | ${i.name} | ${i.source} → ${i.destination} | ${i.protocol ?? '—'} | ${i.frequency ?? '—'} | ${i.category ?? '—'} | ${i.dataPayload} |`,
+      );
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Format the Steps-3-6 specific additions to the Coverage Requirements block.
+ * Empty when no interfaces are supplied.
+ */
+function formatInterfaceInstructionAddendum(
+  interfaces?: InterfaceMatrixRowProjection[],
+): string {
+  if (!interfaces || interfaces.length === 0) return '';
+  return [
+    '',
+    '### Steps 3-6 Coverage (System Interface Matrix)',
+    '- Each interface with `protocol: REST API` (or unspecified) MUST map to one or more endpoints.',
+    '- SKIP interfaces with `protocol: WebSocket`, `Event`, `gRPC`, or `Message Queue` — they are not REST.',
+    '- For interfaces with `category: auth`, emit auth/token endpoints (e.g., POST /auth/login, POST /auth/refresh).',
+    '- For interfaces with `category: audit`, emit append-only log endpoints (POST only, no DELETE).',
+    '- For interfaces with `category: critical`, add explicit rate-limit and SLA notes in the endpoint description.',
+    '- Use the subsystem `name` as the endpoint `tag` (resource grouping) rather than the entity name where subsystems are defined.',
+  ].join('\n');
+}
+
 function buildAPISpecPrompt(projectContext?: import('../../education/reference-data/types').KBProjectContext): string {
   return `You are an expert API architect generating REST API specifications from PRD data.
 
@@ -130,6 +192,7 @@ Vision: {projectVision}
 
 ## Tech Stack Context
 {techStackText}
+{interfaceMatrixSection}
 
 ## Instructions
 
@@ -144,7 +207,7 @@ Generate a comprehensive REST API specification following the Knowledge Bank pat
 - Include list endpoints with cursor-based pagination for collections
 - Add action endpoints for state transitions (POST /orders/{id}/cancel)
 - Include GET /health endpoint
-- Add search endpoints for entities with complex filtering needs
+- Add search endpoints for entities with complex filtering needs{stepsCoverageAddendum}
 
 ### Endpoint Design
 For each endpoint:
@@ -171,6 +234,67 @@ For each endpoint:
 - Use standard HTTP status codes from KB (400 vs 422 distinction)
 
 Generate the complete API specification now.`;
+}
+
+// ============================================================
+// Prompt Composition (exported for unit + snapshot testing)
+// ============================================================
+
+/**
+ * Compose the full API Spec prompt from a context object. Pure function —
+ * exported so tests can exercise the populated / undefined Steps 3-6 paths
+ * without invoking the LLM.
+ */
+export function buildAPISpecPromptText(context: APISpecGenerationContext): string {
+  const useCasesText = context.useCases
+    .map((uc, idx) => {
+      const preconditions = uc.preconditions?.length
+        ? `\n   Preconditions: ${uc.preconditions.join(', ')}`
+        : '';
+      const postconditions = uc.postconditions?.length
+        ? `\n   Postconditions: ${uc.postconditions.join(', ')}`
+        : '';
+      return `${idx + 1}. ${uc.id}: ${uc.name}\n   Actor: ${uc.actor}\n   Description: ${uc.description}${preconditions}${postconditions}`;
+    })
+    .join('\n\n');
+
+  const dataEntitiesText = context.dataEntities
+    .map((entity, idx) => {
+      const attrs = entity.attributes.length > 0
+        ? `Attributes: ${entity.attributes.join(', ')}`
+        : 'Attributes: (none specified)';
+      const rels = entity.relationships.length > 0
+        ? `\n   Relationships: ${entity.relationships.join('; ')}`
+        : '';
+      return `${idx + 1}. ${entity.name}\n   ${attrs}${rels}`;
+    })
+    .join('\n\n');
+
+  const techStackText = context.techStack
+    ? `Backend: ${context.techStack.backend || 'Not specified'}\nDatabase: ${context.techStack.database || 'Not specified'}\nAuth: ${context.techStack.auth || 'JWT/Bearer (inferred)'}`
+    : 'Not specified (use modern REST best practices with JWT authentication)';
+
+  const visionText =
+    context.projectVision.length > 1500
+      ? context.projectVision.slice(0, 1500) + '...'
+      : context.projectVision;
+
+  const interfaceSection = formatInterfaceMatrixSection(
+    context.interfaceMatrix,
+    context.subsystems,
+  );
+  const interfaceMatrixSection = interfaceSection ? `\n\n${interfaceSection}` : '';
+
+  const stepsCoverageAddendum = formatInterfaceInstructionAddendum(context.interfaceMatrix);
+
+  return buildAPISpecPrompt(context.projectContext)
+    .replace('{projectName}', context.projectName)
+    .replace('{projectVision}', visionText)
+    .replace('{useCasesText}', useCasesText || '(No use cases provided)')
+    .replace('{dataEntitiesText}', dataEntitiesText || '(No data entities provided)')
+    .replace('{techStackText}', techStackText)
+    .replace('{interfaceMatrixSection}', interfaceMatrixSection)
+    .replace('{stepsCoverageAddendum}', stepsCoverageAddendum);
 }
 
 // ============================================================
@@ -201,48 +325,7 @@ export async function generateAPISpecification(
     maxTokens: 8000, // API spec generation needs more output tokens for endpoints
   });
 
-  // Format use cases for prompt
-  const useCasesText = context.useCases
-    .map((uc, idx) => {
-      const preconditions = uc.preconditions?.length
-        ? `\n   Preconditions: ${uc.preconditions.join(', ')}`
-        : '';
-      const postconditions = uc.postconditions?.length
-        ? `\n   Postconditions: ${uc.postconditions.join(', ')}`
-        : '';
-      return `${idx + 1}. ${uc.id}: ${uc.name}\n   Actor: ${uc.actor}\n   Description: ${uc.description}${preconditions}${postconditions}`;
-    })
-    .join('\n\n');
-
-  // Format data entities for prompt
-  const dataEntitiesText = context.dataEntities
-    .map((entity, idx) => {
-      const attrs = entity.attributes.length > 0
-        ? `Attributes: ${entity.attributes.join(', ')}`
-        : 'Attributes: (none specified)';
-      const rels = entity.relationships.length > 0
-        ? `\n   Relationships: ${entity.relationships.join('; ')}`
-        : '';
-      return `${idx + 1}. ${entity.name}\n   ${attrs}${rels}`;
-    })
-    .join('\n\n');
-
-  // Format tech stack context
-  const techStackText = context.techStack
-    ? `Backend: ${context.techStack.backend || 'Not specified'}\nDatabase: ${context.techStack.database || 'Not specified'}\nAuth: ${context.techStack.auth || 'JWT/Bearer (inferred)'}`
-    : 'Not specified (use modern REST best practices with JWT authentication)';
-
-  // Truncate vision to avoid overwhelming the model
-  const visionText = context.projectVision.length > 1500
-    ? context.projectVision.slice(0, 1500) + '...'
-    : context.projectVision;
-
-  const prompt = buildAPISpecPrompt(context.projectContext)
-    .replace('{projectName}', context.projectName)
-    .replace('{projectVision}', visionText)
-    .replace('{useCasesText}', useCasesText || '(No use cases provided)')
-    .replace('{dataEntitiesText}', dataEntitiesText || '(No data entities provided)')
-    .replace('{techStackText}', techStackText);
+  const prompt = buildAPISpecPromptText(context);
 
   // Attempt 1
   try {

@@ -432,6 +432,15 @@ export interface APISpecGenerationContext {
     auth?: string;
   };
   projectContext?: import('../education/reference-data/types').KBProjectContext;
+
+  // Steps 3-6 projections (Phase N — additive, all optional, prompt sections
+  // omitted when absent so pre-Phase-A intakes see no behavioral change).
+  interfaceMatrix?: Array<
+    import('../langchain/schemas/projections').InterfaceMatrixRowProjection
+  >;
+  subsystems?: Array<
+    import('../langchain/schemas/projections').SubsystemProjection
+  >;
 }
 
 /**
