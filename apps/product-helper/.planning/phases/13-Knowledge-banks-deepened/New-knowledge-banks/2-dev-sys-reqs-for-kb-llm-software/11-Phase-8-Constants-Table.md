@@ -125,9 +125,15 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
    - `source` — cite if you pulled from a software-system KB; otherwise `"LLM proposed initial value"`.
    - `owned_by` — default to engineering lead, or a role from Module 1 stakeholders.
    - `notes` — capture why this value, and which requirements reference it.
-3. **Flag every constant as `needs_user_input: true`** — the user must approve every value before it becomes Final.
-4. **Check for conflicts.** If two requirements reference different constants for the same concept, flag to user (might be same value; might be intentionally different).
-5. **Emit `constants_table.json`.**
+3. **Populate `math_derivation` on every row.** Object shape `{ formula, source, inputs }`. Even for string-valued constants (e.g., `SLO_WINDOW`), supply a citation-only `formula` and `inputs: {}`. For numeric constants derived from the inline formulas, populate `inputs` with the named values you used.
+4. **Populate `software_arch_decision` where the constant is tied to an architecture trade-off.** Consult the inline decision plays in `### Inline decision plays (Track 2)`:
+   - Consistency-class constants (data-freshness / correctness gates) → use the **CAP decision play**. Set `ref: "cap_theorem"`, `choice: "CP"` or `"AP"`.
+   - Availability-class constants (reliability targets, nines budgets) → use the **Availability-nines formula**. Set `ref: "resiliency"`, `choice: "<nines target>, <serial|parallel|mixed>"`.
+   - Caching, rate-limit, load-balancing, API-budget constants → use `ref: "caching" | "load_balancing" | "api_design"` with a choice drawn from the relevant KB.
+   - Pure UX or business constants (e.g., `SESSION_TTL_MIN` driven by UX policy) → `ref: "none"`, `choice: "n/a"`.
+5. **Flag every constant as `needs_user_input: true`** — the user must approve every value before it becomes Final.
+6. **Check for conflicts.** If two requirements reference different constants for the same concept, flag to user (might be same value; might be intentionally different).
+7. **Emit `constants_table.json`.**
 
 ## Output Format
 
