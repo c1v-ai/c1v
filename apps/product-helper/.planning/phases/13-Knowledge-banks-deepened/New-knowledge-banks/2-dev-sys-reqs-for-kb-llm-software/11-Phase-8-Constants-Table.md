@@ -274,7 +274,7 @@ Set `software_arch_decision.ref: "resiliency"`, `choice: "<nines target>, <seria
 }
 ```
 
-> `referenced_by`, `needs_user_input`, `conflicts_detected`, `summary` are LLM-internal metadata; the marshaller drops them. Columns A–I of the xlsx get only the 9 schema fields (`constant`, `value`, `units`, `estimate_final`, `date_update`, `final_date`, `source`, `owned_by`, `notes`).
+> `referenced_by`, `needs_user_input`, `math_derivation`, `software_arch_decision`, `conflicts_detected`, `summary` are LLM-internal metadata; the marshaller drops them. Columns A–I of the xlsx get only the 9 schema fields (`constant`, `value`, `units`, `estimate_final`, `date_update`, `final_date`, `source`, `owned_by`, `notes`). `math_derivation` and `software_arch_decision` flow into downstream modules (Decision Matrix PC derivation, QFD EC target-setting, FMEA severity rationale) via the JSON handoff, not the xlsx.
 
 ## Software-system translation notes
 
