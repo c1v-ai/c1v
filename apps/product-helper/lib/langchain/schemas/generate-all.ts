@@ -16,9 +16,12 @@ import {
 } from '../schemas';
 import { zodToStrictJsonSchema } from './zod-to-json';
 import { MODULE_0_PHASE_SCHEMAS } from './module-0';
+import { MODULE_1_PHASE_SCHEMAS } from './module-1';
 import { MODULE_2_PHASE_SCHEMAS } from './module-2';
 import { MODULE_3_PHASE_SCHEMAS } from './module-3';
 import { MODULE_4_PHASE_SCHEMAS } from './module-4';
+import { MODULE_7_PHASE_SCHEMAS } from './module-7-interfaces';
+import { MODULE_8_PHASE_SCHEMAS } from './module-8-risk';
 import { MODULE_8_ATLAS_SCHEMAS } from './atlas';
 import { SYNTHESIS_SCHEMAS } from './synthesis';
 
@@ -66,18 +69,24 @@ const SCHEMAS: SchemaEntry[] = [
 
 const OUTPUT_DIR = join(process.cwd(), 'lib/langchain/schemas/generated');
 const MODULE_0_OUTPUT_DIR = join(OUTPUT_DIR, 'module-0');
+const MODULE_1_OUTPUT_DIR = join(OUTPUT_DIR, 'module-1');
 const MODULE_2_OUTPUT_DIR = join(OUTPUT_DIR, 'module-2');
 const MODULE_3_OUTPUT_DIR = join(OUTPUT_DIR, 'module-3');
 const MODULE_4_OUTPUT_DIR = join(OUTPUT_DIR, 'module-4');
+const MODULE_7_OUTPUT_DIR = join(OUTPUT_DIR, 'module-7-interfaces');
+const MODULE_8_RISK_OUTPUT_DIR = join(OUTPUT_DIR, 'module-8-risk');
 const ATLAS_OUTPUT_DIR = join(OUTPUT_DIR, 'atlas');
 const SYNTHESIS_OUTPUT_DIR = join(OUTPUT_DIR, 'synthesis');
 
 function main(): void {
   mkdirSync(OUTPUT_DIR, { recursive: true });
   mkdirSync(MODULE_0_OUTPUT_DIR, { recursive: true });
+  mkdirSync(MODULE_1_OUTPUT_DIR, { recursive: true });
   mkdirSync(MODULE_2_OUTPUT_DIR, { recursive: true });
   mkdirSync(MODULE_3_OUTPUT_DIR, { recursive: true });
   mkdirSync(MODULE_4_OUTPUT_DIR, { recursive: true });
+  mkdirSync(MODULE_7_OUTPUT_DIR, { recursive: true });
+  mkdirSync(MODULE_8_RISK_OUTPUT_DIR, { recursive: true });
   mkdirSync(ATLAS_OUTPUT_DIR, { recursive: true });
   mkdirSync(SYNTHESIS_OUTPUT_DIR, { recursive: true });
 
@@ -96,6 +105,15 @@ function main(): void {
     const outputPath = join(MODULE_0_OUTPUT_DIR, filename);
     writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
     console.log(`✔ ${name.padEnd(30)} → module-0/${filename}`);
+  }
+
+  // Module 1 phase schemas (Gate B — phase 2.5 data_flows)
+  for (const { zodSchema, name, slug } of MODULE_1_PHASE_SCHEMAS) {
+    const json = zodToStrictJsonSchema(zodSchema, name);
+    const filename = `${slug}.schema.json`;
+    const outputPath = join(MODULE_1_OUTPUT_DIR, filename);
+    writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+    console.log(`✔ ${name.padEnd(30)} → module-1/${filename}`);
   }
 
   // Module 2 phase schemas (Gate B)
@@ -125,6 +143,24 @@ function main(): void {
     console.log(`✔ ${name.padEnd(30)} → module-4/${filename}`);
   }
 
+  // Module 7 Interfaces schemas (N² matrix v1)
+  for (const { zodSchema, name, slug } of MODULE_7_PHASE_SCHEMAS) {
+    const json = zodToStrictJsonSchema(zodSchema, name);
+    const filename = `${slug}.schema.json`;
+    const outputPath = join(MODULE_7_OUTPUT_DIR, filename);
+    writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+    console.log(`✔ ${name.padEnd(30)} → module-7-interfaces/${filename}`);
+  }
+
+  // Module 8 Risk schemas (FMEA-early v1)
+  for (const { zodSchema, name, slug } of MODULE_8_PHASE_SCHEMAS) {
+    const json = zodToStrictJsonSchema(zodSchema, name);
+    const filename = `${slug}.schema.json`;
+    const outputPath = join(MODULE_8_RISK_OUTPUT_DIR, filename);
+    writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+    console.log(`✔ ${name.padEnd(30)} → module-8-risk/${filename}`);
+  }
+
   // Module 8 Atlas schemas (KB-8: company entry + priors + result-shape union)
   for (const { zodSchema, name, slug } of MODULE_8_ATLAS_SCHEMAS) {
     const json = zodToStrictJsonSchema(zodSchema, name);
@@ -146,13 +182,16 @@ function main(): void {
   const total =
     SCHEMAS.length +
     MODULE_0_PHASE_SCHEMAS.length +
+    MODULE_1_PHASE_SCHEMAS.length +
     MODULE_2_PHASE_SCHEMAS.length +
     MODULE_3_PHASE_SCHEMAS.length +
     MODULE_4_PHASE_SCHEMAS.length +
+    MODULE_7_PHASE_SCHEMAS.length +
+    MODULE_8_PHASE_SCHEMAS.length +
     MODULE_8_ATLAS_SCHEMAS.length +
     SYNTHESIS_SCHEMAS.length;
   console.log(
-    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_0_PHASE_SCHEMAS.length} module-0 + ${MODULE_2_PHASE_SCHEMAS.length} module-2 + ${MODULE_3_PHASE_SCHEMAS.length} module-3 + ${MODULE_4_PHASE_SCHEMAS.length} module-4 + ${MODULE_8_ATLAS_SCHEMAS.length} atlas + ${SYNTHESIS_SCHEMAS.length} synthesis) → ${OUTPUT_DIR}`,
+    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_0_PHASE_SCHEMAS.length} module-0 + ${MODULE_1_PHASE_SCHEMAS.length} module-1 + ${MODULE_2_PHASE_SCHEMAS.length} module-2 + ${MODULE_3_PHASE_SCHEMAS.length} module-3 + ${MODULE_4_PHASE_SCHEMAS.length} module-4 + ${MODULE_7_PHASE_SCHEMAS.length} module-7 + ${MODULE_8_PHASE_SCHEMAS.length} module-8-risk + ${MODULE_8_ATLAS_SCHEMAS.length} atlas + ${SYNTHESIS_SCHEMAS.length} synthesis) → ${OUTPUT_DIR}`,
   );
 }
 

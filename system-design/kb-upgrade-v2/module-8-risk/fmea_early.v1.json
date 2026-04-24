@@ -1,0 +1,202 @@
+{
+  "_schema": "module-8.fmea-early.v1",
+  "_output_path": "system-design/kb-upgrade-v2/module-8-risk/fmea_early.v1.json",
+  "_upstream_refs": {
+    "ffbd": "system-design/kb-upgrade-v2/module-3-ffbd/ffbd.v1.json",
+    "n2_matrix": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json",
+    "data_flows": "system-design/kb-upgrade-v2/module-1-defining-scope/data_flows.v1.json",
+    "rating_scales": "system-design/kb-upgrade-v2/module-8-risk/rating_scales.json"
+  },
+  "produced_at": "2026-04-24T12:15:00-04:00",
+  "produced_by": "c1v-m3-ffbd-n2-fmea-early@wave-2-early/fmea-early-producer",
+  "system_name": "c1v",
+  "rating_scales_version": "fmea_rating_scales.v1",
+  "failure_modes": [
+    {
+      "id": "FM.01",
+      "target_ref": { "kind": "function", "ref": "F.2" },
+      "failure_mode": "Spec generation hallucinates citations unsupported by DOCUMENTATION SOURCES",
+      "potential_cause": "LLM completion (DE.13) drifts; no grounded retrieval gate before commit",
+      "potential_effect": "Founder approves spec with unsourced claims — EC10 citation-floor violation",
+      "severity": 4,
+      "likelihood": 3,
+      "detectability": 4,
+      "rpn": 12,
+      "criticality_category": "MEDIUM HIGH",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Require retrieval-grounded generation with citation check at F.2 exit", "kb_refs": ["TechStack.Traceback"] },
+        { "id": "M2", "summary": "Second-pass validator agent (SR-CORNELL) fails-closed on missing citations", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.02",
+      "target_ref": { "kind": "function", "ref": "F.3" },
+      "failure_mode": "Approval fires without compliance policy check",
+      "potential_cause": "DE.14 Compliance Policy not loaded when OR.1 evaluates review_decision",
+      "potential_effect": "Non-compliant spec passes review — potential SOC2/HIPAA/GDPR breach",
+      "severity": 4,
+      "likelihood": 2,
+      "detectability": 4,
+      "rpn": 8,
+      "criticality_category": "MEDIUM",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Hard gate: OR.1 refuses to fire unless policy digest hash matches", "kb_refs": [] },
+        { "id": "M2", "summary": "Emit CC.R02 audit event recording policy version at every review", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.03",
+      "target_ref": { "kind": "interface", "ref": "IF.03" },
+      "failure_mode": "Approved spec handoff corrupts (IF.03 truncation/version-skew)",
+      "potential_cause": "async http-json handoff retries cause F.4 to consume stale DE.05",
+      "potential_effect": "CLI bundle emitted from wrong spec version; silent downstream drift",
+      "severity": 3,
+      "likelihood": 2,
+      "detectability": 3,
+      "rpn": 6,
+      "criticality_category": "MEDIUM",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Content-addressed spec_id + version in DE.05 envelope; F.4 refuses mismatches", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.04",
+      "target_ref": { "kind": "function", "ref": "F.5" },
+      "failure_mode": "Adapter exceeds non-invasive overhead budget on customer system",
+      "potential_cause": "Observability adapter polling loop uses > MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT=2%",
+      "potential_effect": "Customer system degraded — UC11 non-invasiveness hard-constraint breach",
+      "severity": 4,
+      "likelihood": 3,
+      "detectability": 3,
+      "rpn": 12,
+      "criticality_category": "MEDIUM HIGH",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Self-meter adapter overhead; refuse to start if > 2%", "kb_refs": ["Integration.NoninvasiveBudget"] },
+        { "id": "M2", "summary": "Sampled rather than full-fidelity metric ingest with configurable rate", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.05",
+      "target_ref": { "kind": "data_flow", "ref": "DE.08" },
+      "failure_mode": "Metric stream gap undetected (silent loss)",
+      "potential_cause": "OBSERVABILITY TOOLS outage + no heartbeat/gap detection in Feedback.Ingest",
+      "potential_effect": "F.6 issues recommendations on stale data; silent wrong-answer mode",
+      "severity": 3,
+      "likelihood": 4,
+      "detectability": 4,
+      "rpn": 12,
+      "criticality_category": "MEDIUM HIGH",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Ingest-side heartbeat + explicit gap markers; F.6 refuses to recommend on stale window", "kb_refs": ["Feedback.Analyze"] }
+      ]
+    },
+    {
+      "id": "FM.06",
+      "target_ref": { "kind": "function", "ref": "F.6" },
+      "failure_mode": "Recommendation cadence exceeds RECOMMENDATION_CADENCE_MIN (60 min, est.)",
+      "potential_cause": "F.6 → F.7 traceback queue saturated; no backpressure",
+      "potential_effect": "Feedback loop latency budget breached — Module 4 open question realized as incident",
+      "severity": 3,
+      "likelihood": 3,
+      "detectability": 2,
+      "rpn": 9,
+      "criticality_category": "MEDIUM HIGH",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Bounded queue + shed-load policy at F.6 output", "kb_refs": [] },
+        { "id": "M2", "summary": "Promote RECOMMENDATION_CADENCE_MIN to NFR in Module 4", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.07",
+      "target_ref": { "kind": "function", "ref": "F.7" },
+      "failure_mode": "Traceback emits recommendation without complete citation chain",
+      "potential_cause": "DE.09 catalog miss; F.7 falls back to LLM completion without KB anchor",
+      "potential_effect": "Auditability criterion fails; downstream NFR-resynth cannot validate rationale",
+      "severity": 3,
+      "likelihood": 3,
+      "detectability": 3,
+      "rpn": 9,
+      "criticality_category": "MEDIUM HIGH",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Fail-closed: F.7 refuses to emit DE.10 without all citations resolved", "kb_refs": ["TechStack.Traceback"] }
+      ]
+    },
+    {
+      "id": "FM.08",
+      "target_ref": { "kind": "data_flow", "ref": "DE.12" },
+      "failure_mode": "Session token replay across projects",
+      "potential_cause": "Token scope not bound to project_id in F.1",
+      "potential_effect": "Cross-tenant authorization escalation — severe compliance event",
+      "severity": 4,
+      "likelihood": 2,
+      "detectability": 5,
+      "rpn": 8,
+      "criticality_category": "MEDIUM",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Bind DE.12 claims to project_id; enforce at every F.N entry via CC.R01", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.09",
+      "target_ref": { "kind": "interface", "ref": "IF.05" },
+      "failure_mode": "CLI bundle (DE.06) ships with secrets embedded",
+      "potential_cause": "F.4 emit templates interpolate credentials_ref from DE.07 without redaction",
+      "potential_effect": "Secret leakage in committed spec artifacts (DE.15) / downstream IDE consumers",
+      "severity": 4,
+      "likelihood": 2,
+      "detectability": 4,
+      "rpn": 8,
+      "criticality_category": "MEDIUM",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Redaction pass at F.4 exit; deny-list secret patterns", "kb_refs": [] },
+        { "id": "M2", "summary": "credentials_ref handles only, never raw secrets, in DE.07 payload schema", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.10",
+      "target_ref": { "kind": "data_flow", "ref": "DE.11" },
+      "failure_mode": "Audit event not emitted for state-mutating F.N",
+      "potential_cause": "CC.R02 wrapping not applied to a new F.N added after schema lock",
+      "potential_effect": "Audit gap; EC18 retention promise not satisfied",
+      "severity": 3,
+      "likelihood": 2,
+      "detectability": 4,
+      "rpn": 6,
+      "criticality_category": "MEDIUM",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Lint rule on ffbd.v1 — every state-mutating F.N must carry CC.R02 in source_cc", "kb_refs": [] }
+      ]
+    },
+    {
+      "id": "FM.11",
+      "target_ref": { "kind": "interface", "ref": "IF.09" },
+      "failure_mode": "Recommendation loop (DE.10 → F.2) creates specification drift",
+      "potential_cause": "F.2 incorporates DE.10 without version-tagging the resulting spec change",
+      "potential_effect": "Specs mutate silently under founders; loses trust + auditability",
+      "severity": 3,
+      "likelihood": 3,
+      "detectability": 3,
+      "rpn": 9,
+      "criticality_category": "MEDIUM HIGH",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Every recommendation-triggered spec edit bumps version + links DE.10 id in lineage", "kb_refs": ["SpecGen.Versioning.Diff"] }
+      ]
+    },
+    {
+      "id": "FM.12",
+      "target_ref": { "kind": "function", "ref": "F.2" },
+      "failure_mode": "LLM provider outage (DE.13 unavailable) halts spec generation",
+      "potential_cause": "Single-provider dependency; no fallback",
+      "potential_effect": "System unavailability during outage window — availability criterion breach",
+      "severity": 2,
+      "likelihood": 3,
+      "detectability": 1,
+      "rpn": 6,
+      "criticality_category": "MEDIUM",
+      "candidate_mitigation": [
+        { "id": "M1", "summary": "Multi-provider Integration.LLM adapter with circuit breaker", "kb_refs": ["Integration.LLM"] }
+      ]
+    }
+  ],
+  "xlsx_path": "system-design/kb-upgrade-v2/module-8-risk/fmea_early.v1.xlsx"
+}
