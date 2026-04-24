@@ -27,6 +27,8 @@ These carry forward unchanged.
 
 ### 0.2.1 Motivation — what's broken in L1
 
+**Naming convention (resolves prior ambiguity 2026-04-24 11:00 EDT):** The company-stacks atlas is **KB-9** post-consolidation (target: `13-Knowledge-banks-deepened/9-stacks-atlas/`). Legacy references to "KB-8 Atlas" (including in Defect 3 below) refer to the pre-consolidation state at `plans/8-stacks-and-priors-atlas/`. Post-T9: Atlas = KB-9. Do not create a KB-8 slot; the "8-" slot belongs to risk/FMEA.
+
 Audit of `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/` (2026-04-24) found four structural defects that silently degrade every downstream agent:
 
 **Defect 1 — Uneven depth.** Four-layer structure (pedagogy + schemas+templates + filled-examples + cross-cutting sw-design KBs) is present in M2, old-M5-HoQ, M6-interfaces, M7-FMEA. Absent or partial in: M1-defining-scope (no cross-cutting KBs), M3-ffbd-llm (no cross-cutting KBs, no .schema.json), both M4 folders (`4-assess-software-performance-kb` is Cornell-flat, `4-decision-network-mit-crawley` has only 3 foundation docs and no schemas), and `5-form-function-mapping` (5 phase docs + glossary only, no templates).
@@ -39,23 +41,27 @@ Audit of `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/` (20
 
 ### 0.2.2 Exit criteria
 
-- [ ] **EC-0.2.1** Every KB folder `N-*/` (N ∈ {1..9}) has the uniform 4-sub-folder structure:
+- [ ] **EC-0.2.1** Every KB folder `N-*/` (N ∈ {1..9}) has the uniform **6-sub-folder** structure (1 top-level file + 6 sub-folders):
   ```
   N-<slug>/
-  ├── 00-master-prompt.md
+  ├── 00-master-prompt.md   # (file, not folder)
   ├── 01-phase-docs/        # Cornell pedagogy, one file per phase
   ├── 02-schemas/           # *.schema.json for every emitted artifact
   ├── 03-templates/         # *.xlsx, *.pptx stencils, *.mmd skeletons
   ├── 04-filled-examples/   # *_FILLED_TEST.xlsx reference fills
-  ├── 05-crawley/           # Crawley chapter excerpts (present only where patched)
+  ├── 05-crawley/           # Crawley chapter excerpts (present only where patched per §0.2.4)
   └── 06-cross-cutting/     # SYMLINKS to _shared/ (no file content)
   ```
-- [ ] **EC-0.2.2** `_shared/` pool exists at `13-Knowledge-banks-deepened/_shared/` containing single canonical copy of each cross-cutting KB. All four previous duplicates deleted; replaced by symlinks. `find -L . -name "*.md" -type f | xargs md5sum | sort | uniq -d` returns empty.
-- [ ] **EC-0.2.3** Atlas *content* consolidated into `13-Knowledge-banks-deepened/9-stacks-atlas/` (peer of KBs 1-8). Source: `plans/8-stacks-and-priors-atlas/` (company markdown entries + cost-curve references) — moved to new location with git-tracked history. Zod schemas at `lib/langchain/schemas/atlas/` left in place (schema ownership is T8/T4 territory, not T9). All intra-repo references to old content paths updated.
+- [ ] **EC-0.2.1b** (Defect 1 scope note) Structural uniformity only. Empty sub-folders satisfy EC-0.2.1. **Content-depth filling (e.g., populating `02-schemas/` in M1-defining-scope or adding `.schema.json` to M3-ffbd) is OUT OF SCOPE for T9 — owned by T4a (M3 phase 2.5) / T5 (form-function) / downstream module teams.** T9 delivers structure only; Defect 1 is therefore partially addressed by T9 (structural) and closed by downstream teams (content).
+- [ ] **EC-0.2.2** `_shared/` pool exists at `13-Knowledge-banks-deepened/_shared/` containing single canonical copy of each cross-cutting KB. All four previous duplicates deleted; replaced by symlinks. **Scoped dedup check** (not global — avoids false-positives on empty TODO.md and identical boilerplate headers): for each of the 13 canonical cross-cutting KBs in `_shared/`, verify that every `06-cross-cutting/<file>` in every KB folder resolves (via `readlink -f` or `find -L ... -samefile`) to the same `_shared/<file>` canonical inode AND that no non-symlink copy of that filename exists elsewhere under `13-Knowledge-banks-deepened/` (outside `_shared/`). Implemented in `scripts/verify-kb-hygiene.ts`. The legacy global command `find -L . -name "*.md" -type f | xargs md5sum | sort | uniq -w32 -d` (note `-w32` — compares only the 32-char hash, not the full line) may be run as a secondary sanity check but is NOT the authoritative EC.
+- [ ] **EC-0.2.3** Atlas *content* consolidated into `13-Knowledge-banks-deepened/9-stacks-atlas/` (Atlas becomes KB-9 per §0.2.1 naming note). Source: `plans/8-stacks-and-priors-atlas/` (company markdown entries + cost-curve references) — moved to new location with git-tracked history. Zod schemas at `lib/langchain/schemas/atlas/` left in place (schema ownership is T8/T4 territory, not T9). **All intra-repo references to old content paths updated.** Concretely: `grep -r "plans/8-stacks-and-priors-atlas" --include="*.ts" --include="*.tsx" --include="*.md" --include="*.json" --include="*.py" --include="*.mjs" --include="*.cjs" .` must return empty (excluding historical references in `plans/HANDOFF-*.md`, `plans/SNAPSHOT-*.md`, `plans/c1v-MIT-Crawley-Cornell.v2.md` §0.2 itself, and git-ignored dirs). Verifier codifies the exclusion list.
 - [ ] **EC-0.2.4** Folder numbering matches v2 §0.4 renumber ruling. Verified by `scripts/verify-tree-pair-consistency.ts` (see §0.4).
 - [ ] **EC-0.2.5** Crawley content patched into specific KBs per §0.2.4 deliverable matrix. Not uniform — only where Crawley adds signal.
 - [ ] **EC-0.2.6** All `_upstream_refs` paths in `system-design/kb-upgrade-v2/module-*/*.json` files resolve under new paths. Verified by `scripts/verify-v2-upstream-refs.ts`.
 - [ ] **EC-0.2.7** `lib/langchain/schemas/generate-all.ts` still emits valid JSON Schemas post-hygiene. Schema output diff-compared to pre-hygiene baseline.
+- [ ] **EC-0.2.8** `next build` completes without symlink resolution errors AND `find -L .planning -xtype l` returns empty (no broken symlinks).
+- [ ] **EC-0.2.9** **RAG ingest smoke test.** `pnpm tsx scripts/ingest-kbs.ts --dry-run` walks the symlinked `_shared/` content successfully and reports non-zero document count for every cross-cutting KB. Proves downstream tooling resolves relative POSIX symlinks (not just `next build` / `find -L`).
+- [ ] **EC-0.2.10** **Atlas schema→content cross-ref check.** `scripts/verify-atlas-schema-refs.ts` (new — extends `verify-v2-upstream-refs.ts` pattern) confirms every path assumption embedded in `lib/langchain/schemas/atlas/*.ts` or `*.schema.json` (e.g., companion content paths referenced in schema `description` / `examples` / `$ref`) resolves under the new `13-Knowledge-banks-deepened/9-stacks-atlas/` location. Covers the schemas-stay / content-moves ownership seam.
 
 ### 0.2.3 Scope boundaries
 
@@ -154,7 +160,7 @@ Agent({
   name: "structurer",
   subagent_type: "technical-program-manager",
   team: "c1v-kb-hygiene",
-  goal: "Apply the 4-sub-folder uniform structure (00-master-prompt.md, 01-phase-docs/, 02-schemas/, 03-templates/, 04-filled-examples/, 06-cross-cutting/) to every KB folder. Create _shared/ pool. Consolidate Atlas. Rename folders per §0.4.",
+  goal: "Apply the 6-sub-folder uniform structure (00-master-prompt.md + 01-phase-docs/ + 02-schemas/ + 03-templates/ + 04-filled-examples/ + 05-crawley/ + 06-cross-cutting/) to every KB folder per EC-0.2.1. Create _shared/ pool. Consolidate Atlas → KB-9 (9-stacks-atlas/ per §0.2.1 naming note). Rename folders per §0.4. Content-depth fills are OUT OF SCOPE (see EC-0.2.1b) — deliver structure only.",
   inline_skills: [],
   deliverables: [
     "13-Knowledge-banks-deepened/_shared/ created with 13 canonical cross-cutting KB files (copy from M2 as canonical source per auditor's duplicate-content-map.md; verify other 3 copies are byte-identical before deleting).",
@@ -212,8 +218,9 @@ Agent({
   inline_skills: ["testing-strategies"],
   deliverables: [
     "scripts/verify-kb-hygiene.ts — verifier script (reusable; committed to repo). Exit non-zero on any EC failure.",
+    "scripts/verify-atlas-schema-refs.ts — NEW companion verifier for EC-0.2.10 (atlas schema→content cross-ref check). Modeled on verify-v2-upstream-refs.ts but scoped to lib/langchain/schemas/atlas/.",
     "plans/t9-outputs/verification-report.md — per EC: PASS/FAIL + evidence (command output snippet + line count / file count).",
-    "Specific checks: (a) EC-0.2.1 each N-*/ has all 6 required sub-folders; (b) EC-0.2.2 no duplicate content — `find -L . -name '*.md' | xargs md5sum | sort | uniq -w32 -d` returns empty; (c) EC-0.2.3 13-Knowledge-banks-deepened/9-stacks-atlas/ exists with atlas entries, plans/8-stacks-and-priors-atlas/ no longer contains company entry markdown; (d) EC-0.2.4 folder numbering matches §0.4; (e) EC-0.2.6 run `pnpm tsx scripts/verify-v2-upstream-refs.ts` — must exit 0; (f) EC-0.2.7 run `pnpm tsx lib/langchain/schemas/generate-all.ts` — output semantically equivalent to pre-hygiene baseline (compare via `scripts/compare-schema-output.ts` using canonical JSON sort + `fast-deep-equal`; byte-identical not required, same `$id`+required+properties per schema IS required); (g) EC-0.2.8 `next build` completes without symlink resolution errors; `find -L .planning -xtype l` returns empty (no broken symlinks).",
+    "Specific checks: (a) EC-0.2.1 each N-*/ has 1 top-level file (00-master-prompt.md) + all 6 required sub-folders (01..06); (a.b) EC-0.2.1b structural-only — verifier does NOT fail on empty sub-folders (content-depth is downstream teams' territory); (b) EC-0.2.2 scoped dedup — for each of the 13 canonical files in _shared/, confirm all 06-cross-cutting/<file> are symlinks resolving (via readlink -f) to the same _shared/ canonical AND no non-symlink copy exists elsewhere under 13-Knowledge-banks-deepened/. Legacy global command `find -L . -name '*.md' -type f | xargs md5sum | sort | uniq -w32 -d` runs as sanity check only; (c) EC-0.2.3 13-Knowledge-banks-deepened/9-stacks-atlas/ exists with atlas entries AND plans/8-stacks-and-priors-atlas/ no longer contains company entry markdown AND `grep -r 'plans/8-stacks-and-priors-atlas' --include='*.ts' --include='*.tsx' --include='*.md' --include='*.json' --include='*.py' --include='*.mjs' --include='*.cjs' .` returns empty (excluding the exclusion list: plans/HANDOFF-*.md, plans/SNAPSHOT-*.md, plans/c1v-MIT-Crawley-Cornell.v2.md §0.2 itself); (d) EC-0.2.4 folder numbering matches §0.4; (e) EC-0.2.6 run `pnpm tsx scripts/verify-v2-upstream-refs.ts` — must exit 0; (f) EC-0.2.7 run `pnpm tsx lib/langchain/schemas/generate-all.ts` — output semantically equivalent to pre-hygiene baseline (compare via `scripts/compare-schema-output.ts` using canonical JSON sort + `fast-deep-equal`; byte-identical not required, same `$id`+required+properties per schema IS required); (g) EC-0.2.8 `next build` completes without symlink resolution errors; `find -L .planning -xtype l` returns empty (no broken symlinks); (h) EC-0.2.9 `pnpm tsx scripts/ingest-kbs.ts --dry-run` exits 0 and reports non-zero document count for every cross-cutting KB (proves relative POSIX symlinks resolve through RAG ingest, not just through next/find); (i) EC-0.2.10 `pnpm tsx scripts/verify-atlas-schema-refs.ts` exits 0 (atlas schema→content cross-refs resolve under new 9-stacks-atlas/ location).",
     "git commit tagged 't9-wave-1-complete' only if all ECs green."
   ],
   guardrails: [
