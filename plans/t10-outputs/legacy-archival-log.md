@@ -13,11 +13,11 @@ following still shell out to legacy scripts via
 | Generator | Legacy dependency | Path |
 |-----------|-------------------|------|
 | gen-ffbd | create_ffbd_thg_v3.py + generate_c1v_ffbd_pptx.py | `system-design/kb-upgrade-v2/module-3-ffbd/` |
-| gen-fmea | generate_fmea_xlsx.py + generate_stoplights.py | `system-design/kb-upgrade-v2/module-7-fmea/` |
-| gen-interfaces | generate_interface_matrix.py + generate_pptx.py | `system-design/kb-upgrade-v2/module-6-interfaces/` |
-| gen-n2 | generate_n2.py | `system-design/kb-upgrade-v2/module-6-interfaces/` |
-| gen-sequence | (module-6 diagrams) | `system-design/kb-upgrade-v2/module-6-interfaces/` |
-| gen-dfd | (module-6 diagrams) | `system-design/kb-upgrade-v2/module-6-interfaces/` |
+| gen-fmea | generate_fmea_xlsx.py + generate_stoplights.py | `system-design/kb-upgrade-v2/module-8-risk/` |
+| gen-interfaces | generate_interface_matrix.py + generate_pptx.py | `system-design/kb-upgrade-v2/module-7-interfaces/` |
+| gen-n2 | generate_n2.py | `system-design/kb-upgrade-v2/module-7-interfaces/` |
+| gen-sequence | (module-6 diagrams) | `system-design/kb-upgrade-v2/module-7-interfaces/` |
+| gen-dfd | (module-6 diagrams) | `system-design/kb-upgrade-v2/module-7-interfaces/` |
 | gen-ucbd | (module-1 diagrams) | `system-design/kb-upgrade-v2/module-1-defining-scope/diagrams/` |
 
 Moving these files would break generator execution at runtime. The migrator
@@ -43,12 +43,12 @@ system-design/kb-upgrade-v2/module-4-decision-matrix/fill_artifacts.py
 system-design/kb-upgrade-v2/module-4-decision-matrix/renders/generate_readable_xlsx.py
 system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/generate_readable_xlsx.py
 system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/json_to_xlsx.py
-system-design/kb-upgrade-v2/module-5-qfd/write_xlsx.py
-system-design/kb-upgrade-v2/module-6-interfaces/generate_interface_matrix.py
-system-design/kb-upgrade-v2/module-6-interfaces/generate_n2.py
-system-design/kb-upgrade-v2/module-6-interfaces/generate_pptx.py
-system-design/kb-upgrade-v2/module-7-fmea/generate_fmea_xlsx.py
-system-design/kb-upgrade-v2/module-7-fmea/generate_stoplights.py
+system-design/kb-upgrade-v2/module-6-qfd/write_xlsx.py
+system-design/kb-upgrade-v2/module-7-interfaces/generate_interface_matrix.py
+system-design/kb-upgrade-v2/module-7-interfaces/generate_n2.py
+system-design/kb-upgrade-v2/module-7-interfaces/generate_pptx.py
+system-design/kb-upgrade-v2/module-8-risk/generate_fmea_xlsx.py
+system-design/kb-upgrade-v2/module-8-risk/generate_stoplights.py
 ```
 
 Grep validation:

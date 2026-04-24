@@ -20,7 +20,7 @@
 ## Per-generator mapping
 
 ### `gen-qfd.py` — rewritten (AppleScript → openpyxl)
-- **OLD:** `system-design/kb-upgrade-v2/module-5-qfd/write_xlsx.py` (AppleScript+osascript)
+- **OLD:** `system-design/kb-upgrade-v2/module-6-qfd/write_xlsx.py` (AppleScript+osascript)
 - **NEW:** `scripts/artifact-generators/gen-qfd.py` (pure openpyxl, cross-platform)
 - **Targets:** `xlsx`
 - **Key delta:** dropped `osascript` subprocess + generated `.applescript` artifact. Loads template with `openpyxl.load_workbook`, applies the same cell-write plan (123 writes: metadata + front-porch + second-floor + main-floor + roof + back-porch + basement).
@@ -28,7 +28,7 @@
 
 ### `gen-n2.py` — consolidated 3→1
 - **ABSORBS:**
-  1. `system-design/kb-upgrade-v2/module-6-interfaces/generate_n2.py` (thin adapter)
+  1. `system-design/kb-upgrade-v2/module-7-interfaces/generate_n2.py` (thin adapter)
   2. `apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/n2_from_json.py` (canonical JSON-driven impl)
   3. `apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/create_n2_chart.py` (hardcoded THG data)
 - **NEW:** `scripts/artifact-generators/gen-n2.py`
@@ -38,7 +38,7 @@
 
 ### `gen-interfaces.py` — consolidated 2→1
 - **ABSORBS:**
-  1. `system-design/kb-upgrade-v2/module-6-interfaces/generate_interface_matrix.py`
+  1. `system-design/kb-upgrade-v2/module-7-interfaces/generate_interface_matrix.py`
   2. `apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/interface_matrix_from_json.py`
 - **NEW:** `scripts/artifact-generators/gen-interfaces.py`
 - **Targets:** `xlsx`
@@ -47,7 +47,7 @@
 
 ### `gen-sequence.py` — consolidated 2→1
 - **ABSORBS:**
-  1. `system-design/kb-upgrade-v2/module-6-interfaces/generate_pptx.py` (1197 LOC, THG seq)
+  1. `system-design/kb-upgrade-v2/module-7-interfaces/generate_pptx.py` (1197 LOC, THG seq)
   2. `apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/create_sequence_thg.py` (1383 LOC)
 - **NEW:** `scripts/artifact-generators/gen-sequence.py`
 - **Targets:** `pptx`, `mmd`
@@ -75,8 +75,8 @@
 
 ### `gen-fmea.py` — merged 2→1
 - **ABSORBS:**
-  1. `system-design/kb-upgrade-v2/module-7-fmea/generate_fmea_xlsx.py` (FMEA table xlsx)
-  2. `system-design/kb-upgrade-v2/module-7-fmea/generate_stoplights.py` (stoplight heatmaps)
+  1. `system-design/kb-upgrade-v2/module-8-risk/generate_fmea_xlsx.py` (FMEA table xlsx)
+  2. `system-design/kb-upgrade-v2/module-8-risk/generate_stoplights.py` (stoplight heatmaps)
 - **NEW:** `scripts/artifact-generators/gen-fmea.py`
 - **Targets:** `xlsx` (fmea table), `svg`/`png` (stoplight heatmaps, standalone).
 - **Instance shape:** expects `{ fmea_table: {...}, rating_scales: {...}, stoplight_charts: {...} }`. Wrapper materialises these as sibling JSON files under a temp directory, copies the legacy scripts beside them, then runs.
