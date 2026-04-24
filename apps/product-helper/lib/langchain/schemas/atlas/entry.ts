@@ -2,7 +2,7 @@
  * KB-8 Atlas — Company entry schema.
  *
  * Canonical shape every entry under
- *   `.planning/phases/13-.../New-knowledge-banks/8-stacks-and-priors-atlas/companies/*.md`
+ *   `.planning/phases/13-Knowledge-banks-deepened/9-stacks-atlas/companies/*.md`
  * MUST conform to. Stored as YAML frontmatter + markdown body; this schema
  * validates the frontmatter half.
  *
@@ -626,5 +626,14 @@ export { companyAtlasEntryBaseObject };
 /**
  * Schema version stamp — bumped on breaking changes. Emitted alongside the
  * entry in `generate-all.ts` output JSON Schema `title`.
+ *
+ * Changelog:
+ *   1.1.1 (patch, additive) — `bytes_integrity` gains `webfetch_only_no_raw_html`
+ *          variant for SPA / JS-rendered pages (stripe.com/blog finding #39).
+ *   1.1.0 (minor, additive) — data-rate throughput units, bytes_integrity enum,
+ *          globally-distributed-edge-network archetype, registered_members scale,
+ *          private_consumer entry kind, data_quality_grade, primary_source,
+ *          throughput_priors (gaps #31-#38).
+ *   1.0.0 — Initial schema ship.
  */
-export const ATLAS_ENTRY_SCHEMA_VERSION = '1.1.0';
+export const ATLAS_ENTRY_SCHEMA_VERSION = '1.1.1';

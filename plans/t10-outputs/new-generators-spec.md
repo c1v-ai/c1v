@@ -72,9 +72,8 @@ Renders KB-9 Atlas-sourced cost curves for winner's infra choices.
 Outputs:
 - `<base>.<component>_<choice>.svg` — log-log plot, x=DAU, y=$/month.
 
-**Atlas path resolution** (handles T9-in-flight):
-1. `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/9-stacks-atlas/`
-2. Fallback: `plans/8-stacks-and-priors-atlas/` (emits DEPRECATION warn in manifest)
+**Atlas path resolution** (post-T9):
+- `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/9-stacks-atlas/`
 
 **Atlas entry shape consumed:** entries with fields `component`, `choice`, `points[{dau, monthlyUsd}]`, searched recursively through `companies/**/*.json`. Match is case-insensitive by `component` + `choice`.
 

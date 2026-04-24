@@ -4,9 +4,8 @@
 Reads a ``decision_network.v1.json`` (winner + infra choices) and renders
 log-log cost curves sourced from KB-9 Atlas entries.
 
-Atlas location (tried in order — handles pre- and post-T9 structurer):
-  1. apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/9-stacks-atlas/
-  2. plans/8-stacks-and-priors-atlas/   (pre-T9, deprecation WARN)
+Atlas location (post-T9):
+  apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/9-stacks-atlas/
 
 Target:
   - svg : one log-log plot per infra choice, x=DAU, y=$/month.
@@ -52,7 +51,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 _ATLAS_ROOTS = [
     REPO_ROOT / "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/9-stacks-atlas",
-    REPO_ROOT / "plans/8-stacks-and-priors-atlas",
 ]
 
 
@@ -61,8 +59,7 @@ def _resolve_atlas_root(warnings: list[str]) -> Path | None:
         if root.exists():
             if i > 0:
                 warnings.append(
-                    f"gen-cost-curves: atlas found at DEPRECATED pre-T9 path {root}; "
-                    "update to 9-stacks-atlas once T9 structurer completes"
+                    f"gen-cost-curves: atlas found at unexpected fallback path {root}"
                 )
             return root
     warnings.append(
