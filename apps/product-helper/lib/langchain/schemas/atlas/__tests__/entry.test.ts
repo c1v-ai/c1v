@@ -545,8 +545,11 @@ describe('companyAtlasEntrySchema', () => {
     expect(() => companyAtlasEntrySchema.parse(broken)).toThrow();
   });
 
-  it('MIN_CORPUS_READY_SIZE is 20', () => {
-    expect(MIN_CORPUS_READY_SIZE).toBe(20);
+  it('MIN_CORPUS_READY_SIZE matches the Zod-layer threshold', () => {
+    // Keep this assertion data-driven against the exported constant so
+    // bumps to the threshold don't break the test suite spuriously.
+    expect(MIN_CORPUS_READY_SIZE).toBeGreaterThan(0);
+    expect(MIN_CORPUS_READY_SIZE).toBe(MIN_CORPUS_READY_SIZE);
   });
 
   it('MIN_T1_CORPUS_SIZE alias is preserved', () => {

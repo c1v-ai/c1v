@@ -270,12 +270,17 @@ export type ArchetypeTag = z.infer<typeof archetypeTagSchema>;
  * `indexes/index.json`; M4/M5 agents must check this before consuming priors
  * (security-review F2 minimum-corpus gate).
  *
- * Definition (plan §6.3 + README §4): `corpus_ready = ≥20 entries that
+ * Definition (plan §6.3 + README §4): `corpus_ready = ≥7 entries that
  * Zod-parse clean AND carry ≥1 math prior satisfying §6.3 tier rules`.
  * The letter tiers (A-H) apply to citations, not to the gate itself —
  * don't call this a "T1 gate."
+ *
+ * Lowered 20 → 10 → 7 per David's rulings 2026-04-23 (portfolio-scope
+ * sufficiency; matches current_valid after medium.com SPA + pre-v2
+ * staging rejections; R2 fallback path accepted; priors emitted with
+ * provisional: true + sample_size metadata).
  */
-export const MIN_CORPUS_READY_SIZE = 20;
+export const MIN_CORPUS_READY_SIZE = 7;
 
 /** @deprecated — old name, aliased for callers mid-migration. */
 export const MIN_T1_CORPUS_SIZE = MIN_CORPUS_READY_SIZE;
