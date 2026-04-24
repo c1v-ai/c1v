@@ -524,6 +524,8 @@ Agent({
 
 Per David 2026-04-24 02:24 EDT: **option (a) renumber**, applied to **both trees in a single commit** (superseding v1 §5.3 which left the ruling open).
 
+**§0.4.x landed 2026-04-24** for the L2 self-application tree (`system-design/kb-upgrade-v2/`): `module-5-qfd → module-6-qfd`, `module-6-interfaces → module-7-interfaces`, `module-7-fmea → module-8-risk`, plus empty `module-5-formfunction/` scaffold. Schema-dir (§0.4.2) and KB-dir (§0.4.3) renames landed earlier under T8/T9. See `plans/t-renumber-v2-outputs/` for audit trail.
+
 ### 0.4.2 Schema-dir renames (apps/product-helper/lib/langchain/schemas/)
 
 | Current | Target | Notes |
@@ -605,12 +607,12 @@ Fourteen Python scripts are scattered across two trees with version skew:
 | `create_sequence_thg.py` | — | 6-software-define-interface-LLM-kb/ | single |
 | `interface_matrix_from_json.py` | — | 6-software-define-interface-LLM-kb/ | single |
 | `n2_from_json.py` | — | 6-software-define-interface-LLM-kb/ | single |
-| `generate_interface_matrix.py` | module-6-interfaces/ | — | single |
-| `generate_n2.py` | module-6-interfaces/ | — | single |
-| `generate_pptx.py` | module-6-interfaces/ | — | single (sequence) |
-| `write_xlsx.py` + `.applescript` | module-5-qfd/ | — | AppleScript-only (macOS lock-in) |
-| `generate_fmea_xlsx.py` | module-7-fmea/ | — | single |
-| `generate_stoplights.py` | module-7-fmea/ | — | single |
+| `generate_interface_matrix.py` | module-7-interfaces/ | — | single |
+| `generate_n2.py` | module-7-interfaces/ | — | single |
+| `generate_pptx.py` | module-7-interfaces/ | — | single (sequence) |
+| `write_xlsx.py` + `.applescript` | module-6-qfd/ | — | AppleScript-only (macOS lock-in) |
+| `generate_fmea_xlsx.py` | module-8-risk/ | — | single |
+| `generate_stoplights.py` | module-8-risk/ | — | single |
 | `fill_artifacts.py` | module-4-decision-matrix/ | — | single |
 | `generate_ucbd_pptx.py` | — | 2-dev-sys-reqs-for-kb-llm-software/ | single |
 
@@ -745,13 +747,13 @@ TeamCreate({
     current_scripts: [
       "system-design/kb-upgrade-v2/module-3-ffbd/create_ffbd_thg_v3.py",
       "system-design/kb-upgrade-v2/module-4-decision-matrix/fill_artifacts.py",
-      "system-design/kb-upgrade-v2/module-5-qfd/write_xlsx.py",
-      "system-design/kb-upgrade-v2/module-5-qfd/write_xlsx.applescript",
-      "system-design/kb-upgrade-v2/module-6-interfaces/generate_interface_matrix.py",
-      "system-design/kb-upgrade-v2/module-6-interfaces/generate_n2.py",
-      "system-design/kb-upgrade-v2/module-6-interfaces/generate_pptx.py",
-      "system-design/kb-upgrade-v2/module-7-fmea/generate_fmea_xlsx.py",
-      "system-design/kb-upgrade-v2/module-7-fmea/generate_stoplights.py",
+      "system-design/kb-upgrade-v2/module-6-qfd/write_xlsx.py",
+      "system-design/kb-upgrade-v2/module-6-qfd/write_xlsx.applescript",
+      "system-design/kb-upgrade-v2/module-7-interfaces/generate_interface_matrix.py",
+      "system-design/kb-upgrade-v2/module-7-interfaces/generate_n2.py",
+      "system-design/kb-upgrade-v2/module-7-interfaces/generate_pptx.py",
+      "system-design/kb-upgrade-v2/module-8-risk/generate_fmea_xlsx.py",
+      "system-design/kb-upgrade-v2/module-8-risk/generate_stoplights.py",
       "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/2-dev-sys-reqs-for-kb-llm-software/generate_ucbd_pptx.py",
       "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/3-ffbd-llm-kb/create_ffbd_thg_v3.py",
       "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/6-software-define-interface-LLM-kb/create_dfd_thg_v2.py",
