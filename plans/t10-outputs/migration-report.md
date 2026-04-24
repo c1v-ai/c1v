@@ -15,7 +15,7 @@
 | Scripts missing (spec listed, fs absent) | 1 (`system-design/kb-upgrade-v2/module-3-ffbd/create_ffbd_thg_v3.py`) |
 | AppleScript removed | 1 (`write_xlsx.applescript`) |
 | Dedup performed | n2 (3→1), interfaces (2→1), sequence (2→1), fmea (2→1 merge) |
-| Archival step | **DEFERRED** — `t9-pre-hygiene-snapshot` tag does not yet exist |
+| Archival step | **DEFERRED** — see Open items #1 (T9 tag now exists but archival requires coordinated path-constant update in wrappers) |
 
 ## Per-generator mapping
 
@@ -112,7 +112,7 @@ paths, (b) validated schema/instance inputs, (c) smoke-verified error path.
 
 ## Open items / residuals
 
-1. **Archival pending.** Spec requires originals moved to `archive/scripts-v1/`, gated on `t9-pre-hygiene-snapshot` git tag — tag does not yet exist (`git tag -l | grep t9` → empty). Migrator leaves originals in place; archival is a trivial `git mv` follow-up once T9 snapshot lands.
+1. **Archival pending.** Spec requires originals moved to `archive/scripts-v1/`, gated on `t9-pre-hygiene-snapshot` git tag. **Update (post-commit sweep):** the tag now exists (T9 peer landed `02b48cb chore(t9): pre-hygiene snapshot of deepened-KB corpus` during migrator work). Archival deferred to a follow-up PR because the current wrappers delegate to the legacy scripts at their live paths via `common/legacy_invoke.py`; a coordinated PR must `git mv` the originals into `archive/scripts-v1/` **and** update the `LEGACY` path constants in each generator in a single commit to avoid breaking delegation. Deferring this to runtime-wirer or a dedicated cleanup PR rather than risking a broken bulk move here.
 2. **`instanceJson` threading.** Four generators (ffbd, ucbd, sequence, dfd) delegate to hardcoded-data legacy scripts. `instanceJson` is validated against `schemaRef` and written beside outputs for traceability, but is not yet the data source. De-hardcoding these renderers is a follow-up refactor — orthogonal to the contract migration done here.
 3. **FMEA stoplights-as-sheet.** Currently emitted as standalone images. Merging into the FMEA xlsx workbook via `openpyxl` image-embed is a small follow-up.
 4. **`gen-n2` pptx target.** Migrator implements xlsx only. pptx emission is extender/follow-up scope.
