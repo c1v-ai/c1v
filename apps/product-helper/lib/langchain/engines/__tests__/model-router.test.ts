@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
 // Deep-mock ../../config so pulling model-router doesn't trip env validation
 // at import time (env.ts otherwise requires OPENROUTER_API_KEY etc.).
