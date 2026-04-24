@@ -1,0 +1,5 @@
+# Rejected atlas entries land here with a rejection reason.
+
+# Each file is named `{slug}.md` and contains:
+# - frontmatter: slug, kind_hint, rejected_at, rejection_reasons[]
+# - body: which mandatory fields were missing or invalid, what scraper would need to re-fetch to fix
