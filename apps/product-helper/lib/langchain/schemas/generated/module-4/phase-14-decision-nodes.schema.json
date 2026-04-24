@@ -1,0 +1,604 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18,
+          "description": "x-ui-surface=page-header — methodology phase number (0-18) per F13/4 Decision Matrix module."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header (M4-widened phase_number range 0-18)."
+    },
+    "decision_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^DN\\.[0-9]{2}$",
+            "description": "x-ui-surface=section:Decision Node > Header — ID pattern DN.NN (e.g., DN.01 = choose orchestration runtime)."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "question": {
+            "type": "string",
+            "minLength": 3
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Z]$",
+                  "description": "x-ui-surface=section:Decision Node > Alternatives — single uppercase letter ID."
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 2
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "criterion_id": {
+                  "type": "string",
+                  "pattern": "^PC-[0-9]{2}$"
+                },
+                "weight": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "maximize",
+                    "minimize"
+                  ]
+                }
+              },
+              "required": [
+                "criterion_id",
+                "weight",
+                "direction"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Decision Node > Criteria — local criterion binding with weight and optimization direction."
+            },
+            "minItems": 1
+          },
+          "scores": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "alternative_id": {
+                  "type": "string",
+                  "pattern": "^[A-Z]$",
+                  "description": "x-ui-surface=section:Decision Node > Alternatives — single uppercase letter ID."
+                },
+                "criterion_id": {
+                  "type": "string",
+                  "pattern": "^PC-[0-9]{2}$"
+                },
+                "raw_value": {
+                  "type": "number"
+                },
+                "normalized_value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "empirical_priors": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "kb-8-atlas",
+                        "kb-shared",
+                        "nfr",
+                        "fmea",
+                        "inferred"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Score > Citation — atlas entry filename or NFR id or inferred-rationale."
+                    },
+                    "sample_size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "x-ui-surface=section:Score > Citation — n supporting the prior (drives provisional flag)."
+                    },
+                    "provisional": {
+                      "type": "boolean",
+                      "default": false,
+                      "description": "x-ui-surface=section:Score > Citation — true when sample_size < 10 (per v1 R2 ruling)."
+                    },
+                    "rationale": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Score > Citation — required when source=\"inferred\"; describes why no empirical prior exists."
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "ref"
+                  ],
+                  "additionalProperties": false,
+                  "description": "x-ui-surface=section:Score > Citation — empirical prior binding. Every score MUST cite KB-8 atlas, shared KB, NFR, FMEA, or mark inferred with rationale."
+                },
+                "math_derivation": {
+                  "type": "object",
+                  "properties": {
+                    "formula": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+                    },
+                    "inputs": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": [
+                          "number",
+                          "string"
+                        ]
+                      },
+                      "default": {},
+                      "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+                    },
+                    "kb_source": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+                    },
+                    "kb_section": {
+                      "type": "string",
+                      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+                    },
+                    "result": {
+                      "type": [
+                        "number",
+                        "string"
+                      ],
+                      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+                    },
+                    "result_shape": {
+                      "type": "string",
+                      "enum": [
+                        "scalar",
+                        "vector",
+                        "graph"
+                      ],
+                      "default": "scalar",
+                      "description": "x-ui-surface=internal:decision-net — result shape discriminator. scalar=legacy, vector=utility scores, graph=Pareto frontier edges."
+                    },
+                    "result_vector": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "description": "x-ui-surface=internal:decision-net — populated when result_shape=vector."
+                    },
+                    "result_graph": {
+                      "type": "object",
+                      "properties": {
+                        "nodes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "edges": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "dominates",
+                                  "depends_on",
+                                  "inferred"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "from",
+                              "to",
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "nodes",
+                        "edges"
+                      ],
+                      "additionalProperties": false,
+                      "description": "x-ui-surface=internal:decision-net — populated when result_shape=graph (Pareto dominance edges)."
+                    }
+                  },
+                  "required": [
+                    "formula",
+                    "kb_source"
+                  ],
+                  "additionalProperties": false,
+                  "description": "x-ui-surface=section:Decision Node > Math — math derivation V2 (scalar/vector/graph result shapes for decision-net rework)."
+                }
+              },
+              "required": [
+                "alternative_id",
+                "criterion_id",
+                "raw_value",
+                "normalized_value",
+                "empirical_priors",
+                "math_derivation"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Decision Node > Scores Row — one score per (alternative, criterion) cell."
+            },
+            "minItems": 1
+          },
+          "dependency_edges": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^DN\\.[0-9]{2}$",
+              "description": "x-ui-surface=section:Decision Node > Header — ID pattern DN.NN (e.g., DN.01 = choose orchestration runtime)."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Decision Node > Dependencies — outbound DN.NN refs; acyclicity enforced in phase-15."
+          },
+          "utility_vector": {
+            "type": "object",
+            "properties": {
+              "formula": {
+                "type": "string",
+                "const": "U(a) = Σ w_c · score(a,c)"
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "alternative_id": {
+                      "type": "string",
+                      "pattern": "^[A-Z]$",
+                      "description": "x-ui-surface=section:Decision Node > Alternatives — single uppercase letter ID."
+                    },
+                    "utility": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "alternative_id",
+                    "utility"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "math_derivation": {
+                "type": "object",
+                "properties": {
+                  "formula": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "number",
+                        "string"
+                      ]
+                    },
+                    "default": {},
+                    "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+                  },
+                  "kb_source": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+                  },
+                  "kb_section": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+                  },
+                  "result": {
+                    "type": [
+                      "number",
+                      "string"
+                    ],
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+                  },
+                  "result_shape": {
+                    "type": "string",
+                    "enum": [
+                      "scalar",
+                      "vector",
+                      "graph"
+                    ],
+                    "default": "scalar",
+                    "description": "x-ui-surface=internal:decision-net — result shape discriminator. scalar=legacy, vector=utility scores, graph=Pareto frontier edges."
+                  },
+                  "result_vector": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "description": "x-ui-surface=internal:decision-net — populated when result_shape=vector."
+                  },
+                  "result_graph": {
+                    "type": "object",
+                    "properties": {
+                      "nodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "edges": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "from": {
+                              "type": "string"
+                            },
+                            "to": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "dominates",
+                                "depends_on",
+                                "inferred"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "from",
+                            "to",
+                            "kind"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "nodes",
+                      "edges"
+                    ],
+                    "additionalProperties": false,
+                    "description": "x-ui-surface=internal:decision-net — populated when result_shape=graph (Pareto dominance edges)."
+                  }
+                },
+                "required": [
+                  "formula",
+                  "kb_source"
+                ],
+                "additionalProperties": false,
+                "description": "x-ui-surface=section:Decision Node > Math — math derivation V2 (scalar/vector/graph result shapes for decision-net rework)."
+              }
+            },
+            "required": [
+              "formula",
+              "values",
+              "math_derivation"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Decision Node > Utility — weighted-sum utility per alternative."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "question",
+          "alternatives",
+          "criteria",
+          "scores",
+          "utility_vector"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Decision Node — full decision node (alternatives + criteria + scores + deps + utility)."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "decision_nodes"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase14DecisionNodes",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

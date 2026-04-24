@@ -19,7 +19,54 @@ import { z } from 'zod';
 import {
   phaseEnvelopeSchema,
   metadataHeaderSchema,
+  mathDerivationSchema,
 } from '../module-2/_shared';
+
+/**
+ * M4 decision-net rework (T4b, Wave 3) — `mathDerivationV2`.
+ *
+ * The legacy `mathDerivationSchema` returns a scalar `result` (number or
+ * string). The decision-net rework needs to carry vector-valued utility
+ * scores and graph-valued Pareto frontiers. `mathDerivationV2` adds
+ * `result_shape: 'scalar' | 'vector' | 'graph'` and a tagged-union `result`
+ * so downstream validators can route per-shape.
+ *
+ * Backwards compatible: existing `mathDerivationSchema` callers unaffected.
+ * New decision-net schemas (phase-14..19, phases-11-13-vector-scores) use V2.
+ */
+export const mathDerivationV2Schema = mathDerivationSchema.extend({
+    result_shape: z
+      .enum(['scalar', 'vector', 'graph'])
+      .default('scalar')
+      .describe(
+        'x-ui-surface=internal:decision-net — result shape discriminator. scalar=legacy, vector=utility scores, graph=Pareto frontier edges.',
+      ),
+    result_vector: z
+      .array(z.number())
+      .optional()
+      .describe(
+        'x-ui-surface=internal:decision-net — populated when result_shape=vector.',
+      ),
+    result_graph: z
+      .object({
+        nodes: z.array(z.string()),
+        edges: z.array(
+          z.object({
+            from: z.string(),
+            to: z.string(),
+            kind: z.enum(['dominates', 'depends_on', 'inferred']),
+          }),
+        ),
+      })
+      .optional()
+      .describe(
+        'x-ui-surface=internal:decision-net — populated when result_shape=graph (Pareto dominance edges).',
+      ),
+  })
+  .describe(
+    'x-ui-surface=section:Decision Node > Math — math derivation V2 (scalar/vector/graph result shapes for decision-net rework).',
+  );
+export type MathDerivationV2 = z.infer<typeof mathDerivationV2Schema>;
 
 /**
  * M4 metadata — same as M2's except `phase_number` is widened to 0-18 to

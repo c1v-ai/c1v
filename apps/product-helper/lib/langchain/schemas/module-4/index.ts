@@ -53,6 +53,21 @@ import {
   phase17Schema,
 } from './submodule-4-3-sensitivity-handoff';
 
+// Decision-net rework (T4b Wave 3)
+import { phase14Schema } from './phase-14-decision-nodes';
+import { phase15Schema } from './phase-15-decision-dependencies';
+import { phase16Schema } from './phase-16-pareto-frontier';
+import { phase17bSchema } from './phase-17b-sensitivity-analysis';
+import { phase19Schema } from './phase-19-empirical-prior-binding';
+import { phases11to13VectorScoresSchema } from './phases-11-13-vector-scores';
+
+export * from './phase-14-decision-nodes';
+export * from './phase-15-decision-dependencies';
+export * from './phase-16-pareto-frontier';
+export * from './phase-17b-sensitivity-analysis';
+export * from './phase-19-empirical-prior-binding';
+export * from './phases-11-13-vector-scores';
+
 // M4-specific envelope + metadata (widened phase_number)
 export * from './_shared';
 
@@ -247,5 +262,42 @@ export const MODULE_4_PHASE_SCHEMAS: readonly Module4PhaseEntry[] = [
     name: 'Phase18SoftwareSpecificDm',
     phaseNumber: 18,
     zodSchema: phase18Schema,
+  },
+  // Decision-net rework (T4b Wave 3) ─────────────────────────────────────
+  {
+    slug: 'phase-14-decision-nodes',
+    name: 'Phase14DecisionNodes',
+    phaseNumber: 14,
+    zodSchema: phase14Schema,
+  },
+  {
+    slug: 'phase-15-decision-dependencies',
+    name: 'Phase15DecisionDependencies',
+    phaseNumber: 15,
+    zodSchema: phase15Schema,
+  },
+  {
+    slug: 'phase-16-pareto-frontier',
+    name: 'Phase16ParetoFrontier',
+    phaseNumber: 16,
+    zodSchema: phase16Schema,
+  },
+  {
+    slug: 'phase-17b-sensitivity-analysis',
+    name: 'Phase17bSensitivityAnalysis',
+    phaseNumber: 17,
+    zodSchema: phase17bSchema,
+  },
+  {
+    slug: 'phase-19-empirical-prior-binding',
+    name: 'Phase19EmpiricalPriorBinding',
+    phaseNumber: 18,
+    zodSchema: phase19Schema,
+  },
+  {
+    slug: 'phases-11-13-vector-scores',
+    name: 'Phases11To13VectorScores',
+    phaseNumber: 13,
+    zodSchema: phases11to13VectorScoresSchema,
   },
 ] as const;
