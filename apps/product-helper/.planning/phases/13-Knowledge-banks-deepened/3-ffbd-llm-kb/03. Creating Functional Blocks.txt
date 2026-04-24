@@ -1,0 +1,74 @@
+Part of the key to the longevity
+of FFBD's use is, luckily, they're fairly
+straightforward to interpret, and also fairly straightforward
+to develop as well. FFBDs tend to follow
+a general left-to-right flow, showing the order of
+functions that must be performed typically in
+the operation of a system. Each major function
+that occurs along that operational flow is represented
+by a functional block. And functional blocks
+are essentially the basic building blocks
+of all FFBDs. Each functional block
+is labeled with the name of a function
+and a unique ID. We're going to go over ID
+naming conventions later, but the key thing to
+remember is to keep the name of a functional
+block functional. So, do not list the structural element that
+fulfills that function, list the function
+that must be achieved. Let me give you
+some examples. So, don't write the name
+of a specific sensor, write the purpose that
+sensor is meeting. So, don't write "a thermometer,"
+write "measure temperature." Similarly, don't write "a motor" as an example of
+a structural element, write the function
+the motor is helping to achieve, which could
+be "adjust position," "provide thrust," "adjust steering," or even just "locomotion," overall. Those are functional examples
+of what the motor might be meeting, and that's
+what you want to write in your functional blocks. This is really to help people to understand the operations and not feel locked in to a particular structural
+solution way too soon. For example, imagine that
+you want to cool a component. You might initially
+think, "Oh well, I've got to have a fan for this, and so I'll put 'fan' into my FFBD." Well, this will cause a lot of problems because
+later on you might recognize there's other
+solutions, such as liquid cooling, maybe a simple heat sink
+might serve the purpose, maybe you run the device
+intermittently, or even redesign the device's housing to improve
+passive ventilation. There's lots of
+other different ways that we could cool a component, and if you have listed
+"fan" as a solution instead of "cooling"
+as a function, you and your teammates might
+assume that the solution must be a fan and have not even
+considered other options. So, remember the mantra: Think functionally,
+not structurally. Think functionally,
+not structurally. Really, really
+essential, again, for your Functional
+Flow Block Diagram. Now, function can be written
+at a very high level, such as "determine best option"
+or "evaluate data," or it can even be the name
+of an entire use case in a single Functional Flow Block Diagram
+functional block. But functions can also be written at a very
+low level, such as, simply, maybe a
+just "input voltage" or "increment counter," even. And your FFBD can be
+any mix that you want of both these high and
+low level functions, or anything in between,
+for that matter. Later on we'll
+show you, basically, a hierarchial approach
+to be able to go between various different
+levels of detail. But for now recognize
+you have a lot of freedom as to what level you wish to express
+in any FFBD diagram. Now, that's one of the basic
+building blocks of our FFBD. And like any professional
+diagram that's out there, there are some key formatting rules that should
+be followed, again, in order to make sure that is
+seen as being professional. For these basic functional
+building blocks you want each be comprised of two parts. The larger main box is at the bottom, and this is
+where you're going to write the functional name, and
+it's often referred to as the body of the function box. Now, the smaller part on
+top is often referred to as a header box, and this
+is where you're going to contain the
+functional block's ID. Functional blocks'
+text should generally be centered in the body and functional blocks do not need to be all the same size, but there is a general goal
+to have only a few options. So a few different size boxes
+in the same FFBD. So they're not all
+different sizes, but just a few
+different kinds of size of boxes throughout
+to give it, again, a nice, clean, professional look.

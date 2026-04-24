@@ -1,0 +1,63 @@
+To show the operational flow
+of your system, functional blocks are
+connected with arrows. Now, there are two kinds
+of arrows used in FFBDs. The first is a trigger arrow, which is drawn as a solid arrow. And this indicates
+that the function at the end of an arrow is triggered by or immediately follows the function at
+the beginning of the arrow. These are the most
+commonly used arrows. The second kind of arrow
+is a precedes arrow. This is drawn as it
+dashed line arrow. It indicates that
+the function at the end of the arrow will occur
+at some point later, after the function at
+the beginning, where the amount of time
+may be considerable. As an example, let's look at the heart attack FFBD.
+Look at the original, the overall system,
+operation FFBD. Here you'll see
+that the shutdown function precedes the user
+taking off the device. Now, the shutdown
+occurs and then at some point later the
+user will take off the device. We don't have to specify
+that immediately has to happen; it's just going to
+happen at some point later. Hence, a precedes arrow works better here than
+a trigger arrow. Now, arrows can also be labeled with a variety
+of information. Now, again, there are
+many different variations of FFBDs which have strict rules as to what labels are allowed
+or not allowed. Commonly labels can include information that is
+passed between functions. Sometimes it's the expected time between functional blocks, particularly with precedes arrows. Sometimes it also include
+specifications and how one functional block
+may influence another. Obviously, it could also include
+inputs and outputs of functional blocks, or
+basically any kind of additional constraint or accuracy and
+variation information on any of the above kind of labels that I mentioned before. Again, there are
+different rules for these, but you'll see them used in
+many, many different ways to relate information with different parts of
+the team working on different parts of
+functionality across that FFBD. Now, the formatting
+ for these, of course, also follows
+some very strict guidelines. Operational flow
+arrows should be rectilinear arrows with
+a filled in arrowhead. They should be
+the same thickness as a functional block borders,
+or one setting thicker. Arrow should always
+be in direct contact with the edges of whatever
+they are connecting. Arrows should also be made long enough to clearly distinguish whether it is a precedes
+or a triggers arrow. Basically, this means if it is a precedes
+arrow make sure you can see some of the dashes
+in that precedes arrow. The text labels on the
+arrows are typically written above the arrow, but
+this is not always required, and this guideline can be broken
+for readability purposes. What's most important
+is that you make it obvious that this text is associated with only this
+one specific arrow, overall. So, text labels are also
+commonly italicized and are the same or one font size smaller than the
+functional block text. For more than one text label on the same arrow
+each text label is typically separated by a comma, although semicolons are
+commonly used, too. Arrows should not overlap other arrows or
+other FFBD components. Some formats of the FFBD
+will allow arrow jumps. This is where you have two intersecting arrows and there is a half circle bump at
+that arrow intersection. In general, though, arrow overlaps should be tried to be
+avoided, as it's considered sloppy, and you should
+try to improve it or eliminate their use through the arrangement of
+your functional blocks. If absolutely necessary, though, and there are
+some cases when it is, arrows shortcuts are
+the preferred method, which we'll be discussing later.

@@ -1,0 +1,79 @@
+{
+  "_README": "Worked example from `04 - Formalizing with N-Squared Charts.md`. Filled-in reference for how to use n2-chart-template.json. Generates ecommerce-n2-chart.xlsx.",
+
+  "project": {
+    "id": "ecommerce",
+    "name": "E-Commerce Platform — N2 Interface Chart (Worked Example)",
+    "interface_type": "operational",
+    "version": "1.0",
+    "date": "2026-04-19",
+    "qfd_target_endpoints": 40
+  },
+
+  "subsystems": [
+    { "id": "Storefront",   "name": "Storefront",   "description": "Customer-facing web UI for browsing and checkout.",                "category": "ui" },
+    { "id": "Search",       "name": "Search",       "description": "Product search and ranking service.",                              "category": "engine" },
+    { "id": "Cart",         "name": "Cart",         "description": "Holds in-progress carts; supports add/remove/update.",             "category": "data" },
+    { "id": "Order",        "name": "Order",        "description": "Orchestrates checkout: cart -> payment -> notification.",          "category": "engine" },
+    { "id": "Payment",      "name": "Payment",      "description": "Charges and refunds via payment processor.",                       "category": "engine" },
+    { "id": "Notification", "name": "Notification", "description": "Sends customer email/SMS for order events.",                       "category": "platform" }
+  ],
+
+  "interfaces": [
+    { "id": "IF-01", "from": "Storefront",   "to": "Search",       "name": "Search Queries",   "data": "Free-text query, filters, pagination.",                            "endpoints_count": 2 },
+    { "id": "IF-02", "from": "Storefront",   "to": "Cart",         "name": "Cart Ops",         "data": "POST /cart/items, DELETE /cart/items/:id, PUT /cart/items/:id, GET /cart.", "endpoints_count": 4 },
+    { "id": "IF-03", "from": "Storefront",   "to": "Order",        "name": "Checkout Req",     "data": "Initiate checkout: cart_id, shipping address, payment method id.",  "endpoints_count": 3 },
+
+    { "id": "IF-04", "from": "Search",       "to": "Storefront",   "name": "Search Results",   "data": "Ranked product list with facets and total count.",                  "endpoints_count": 2 },
+
+    { "id": "IF-05", "from": "Cart",         "to": "Storefront",   "name": "Cart State",       "data": "Current cart items, totals, applied promotions.",                   "endpoints_count": 2 },
+    { "id": "IF-06", "from": "Cart",         "to": "Order",        "name": "Cart Data",        "data": "Frozen cart snapshot returned in response to Cart Retrieval.",      "endpoints_count": 2 },
+
+    { "id": "IF-07", "from": "Order",        "to": "Storefront",   "name": "Order Status",     "data": "Order id, state (pending/paid/shipped), timestamps.",               "endpoints_count": 4 },
+    { "id": "IF-08", "from": "Order",        "to": "Cart",         "name": "Cart Retrieval",   "data": "GET /cart/:id — request cart snapshot for checkout.",               "endpoints_count": 1 },
+    { "id": "IF-09", "from": "Order",        "to": "Payment",      "name": "Payment Req",      "data": "amount, currency, payment_method_id, idempotency_key.",             "endpoints_count": 3 },
+    { "id": "IF-10", "from": "Order",        "to": "Notification", "name": "Order Events",     "data": "order.placed, order.shipped, order.delivered events.",              "endpoints_count": 4 },
+
+    { "id": "IF-11", "from": "Payment",      "to": "Order",        "name": "Payment Result",   "data": "auth_id, status (success/decline/error), processor_ref.",           "endpoints_count": 2 },
+
+    { "id": "IF-12", "from": "Notification", "to": "Order",        "name": "Delivery Status",  "data": "Webhook from email/SMS provider: delivered, bounced, opened.",      "endpoints_count": 2 }
+  ],
+
+  "external_interfaces": [
+    { "id": "IF-EXT-01", "from": "Customer Browser", "to": "Storefront", "data": "HTTPS page requests, form submissions." },
+    { "id": "IF-EXT-02", "from": "Payment",          "to": "Stripe API", "data": "PaymentIntents create/confirm." },
+    { "id": "IF-EXT-03", "from": "Notification",     "to": "SendGrid",   "data": "Transactional email send." },
+    { "id": "IF-EXT-04", "from": "Notification",     "to": "Twilio",     "data": "Transactional SMS send." }
+  ],
+
+  "system_flows": [
+    {
+      "name": "Checkout Pipeline",
+      "path": ["Storefront", "Cart", "Order", "Payment"],
+      "description": "Customer adds to cart, initiates checkout, order charges payment."
+    },
+    {
+      "name": "Order Fulfillment Notification",
+      "path": ["Order", "Notification"],
+      "description": "Order publishes events to notification for customer email/SMS."
+    }
+  ],
+
+  "control_loops": [
+    {
+      "name": "Order ↔ Payment Authorization Loop",
+      "path": ["Order", "Payment", "Order"],
+      "description": "Order issues Payment Req; Payment returns Payment Result; Order finalizes state. A short, high-stakes loop — failure here blocks every checkout."
+    },
+    {
+      "name": "Order ↔ Notification Delivery Loop",
+      "path": ["Order", "Notification", "Order"],
+      "description": "Order publishes events; Notification reports delivery webhook back. Lets Order surface delivery failures to customers."
+    },
+    {
+      "name": "Order ↔ Cart Retrieval Loop",
+      "path": ["Order", "Cart", "Order"],
+      "description": "Order asks Cart for snapshot; Cart returns frozen cart data. Ensures checkout uses an immutable cart view."
+    }
+  ]
+}

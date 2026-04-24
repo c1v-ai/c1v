@@ -1,0 +1,148 @@
+{
+  "source_file": "Requirements-table.xlsx",
+  "sheet": "Sheet1",
+  "purpose": "Requirements table — metadata header (rows 2-17) + dynamic table (row 21 header, row 22+ data).",
+  "known_issues": [
+    "Rows 7 and 10 both labeled 'Target Release' — likely a duplicate. Exposed as target_release and target_release_2.",
+    "Row 12 label 'Aprovers' (typo for 'Approvers').",
+    "Row 16 label truncated: 'Parent OKR / strategic initiativ'."
+  ],
+  "merged_ranges": [],
+  "static_text": {
+    "title": {
+      "cell": "A1",
+      "value": "Requirements Table"
+    }
+  },
+  "fields": {
+    "project_name": {
+      "label_cell": "A2",
+      "label_literal": "Project Name",
+      "cell": "B2",
+      "type": "string"
+    },
+    "document_id": {
+      "label_cell": "A3",
+      "label_literal": "Document ID",
+      "cell": "B3",
+      "type": "string"
+    },
+    "document_type": {
+      "label_cell": "A4",
+      "label_literal": "Document Type",
+      "cell": "B4",
+      "type": "string"
+    },
+    "status": {
+      "label_cell": "A5",
+      "label_literal": "Status",
+      "cell": "B5",
+      "type": "string"
+    },
+    "last_update": {
+      "label_cell": "A6",
+      "label_literal": "Last Update",
+      "cell": "B6",
+      "type": "string"
+    },
+    "target_release": {
+      "label_cell": "A7",
+      "label_literal": "Target Release",
+      "cell": "B7",
+      "type": "string"
+    },
+    "confidentiality": {
+      "label_cell": "A8",
+      "label_literal": "Confidentiality",
+      "cell": "B8",
+      "type": "string"
+    },
+    "created_date": {
+      "label_cell": "A9",
+      "label_literal": "Created date",
+      "cell": "B9",
+      "type": "string"
+    },
+    "target_release_2": {
+      "label_cell": "A10",
+      "label_literal": "Target Release",
+      "cell": "B10",
+      "type": "string"
+    },
+    "author": {
+      "label_cell": "A11",
+      "label_literal": "Author",
+      "cell": "B11",
+      "type": "string"
+    },
+    "approvers": {
+      "label_cell": "A12",
+      "label_literal": "Aprovers",
+      "cell": "B12",
+      "type": "string"
+    },
+    "stakeholders": {
+      "label_cell": "A13",
+      "label_literal": "Stakeholders",
+      "cell": "B13",
+      "type": "string"
+    },
+    "supersedes": {
+      "label_cell": "A14",
+      "label_literal": "Supersedes / replaces",
+      "cell": "B14",
+      "type": "string"
+    },
+    "linked_ticket": {
+      "label_cell": "A15",
+      "label_literal": "Linked epic/ticket",
+      "cell": "B15",
+      "type": "string"
+    },
+    "parent_okr": {
+      "label_cell": "A16",
+      "label_literal": "Parent OKR / strategic initiativ",
+      "cell": "B16",
+      "type": "string"
+    },
+    "regulatory_refs": {
+      "label_cell": "A17",
+      "label_literal": "Regulatory refs",
+      "cell": "B17",
+      "type": "string"
+    },
+    "requirements_table": {
+      "type": "table",
+      "header_row": 21,
+      "header_range": "A21:C21",
+      "columns": [
+        {
+          "name": "index",
+          "cell_col": "A",
+          "header": "Index",
+          "type": "string"
+        },
+        {
+          "name": "requirement",
+          "cell_col": "B",
+          "header": "Requirements",
+          "type": "string"
+        },
+        {
+          "name": "abstract_function_name",
+          "cell_col": "C",
+          "header": "Abstract Function Name",
+          "type": "string"
+        }
+      ],
+      "data_start_row": 22,
+      "data_range": "A22:C<n>",
+      "write_strategy": "append_rows"
+    }
+  },
+  "data_validations": [],
+  "write_guidance": {
+    "library": "openpyxl",
+    "preserve_template": "Load original, save to NEW path."
+  }
+}

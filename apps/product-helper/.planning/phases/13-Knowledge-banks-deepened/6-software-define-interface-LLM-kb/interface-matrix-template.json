@@ -1,0 +1,107 @@
+{
+  "_README": [
+    "===========================================================================",
+    "INTERFACE MATRIX — FILL-IN TEMPLATE",
+    "===========================================================================",
+    "",
+    "PURPOSE",
+    "  Capture every interface specification (Step 08 + Step 09 of the KB).",
+    "  Feed this JSON to `interface_matrix_from_json.py` to produce a multi-tab",
+    "  Excel workbook with one tab per subsystem.",
+    "",
+    "WORKFLOW (RECOMMENDED — ONE SUBSYSTEM AT A TIME)",
+    "  1. Copy this file:  cp interface-matrix-template.json my-matrix.json",
+    "  2. Fill in the `subsystems` list (every subsystem in your system).",
+    "  3. Fill in ONE subsystem's tab in `tabs` and run:",
+    "       python3 interface_matrix_from_json.py my-matrix.json --only <ss_id>",
+    "     Open the generated `my-matrix__<ss_id>.xlsx` and verify the layout.",
+    "  4. Repeat for the next subsystem until every tab is filled.",
+    "  5. Generate the combined workbook:",
+    "       python3 interface_matrix_from_json.py my-matrix.json",
+    "",
+    "ROW MODEL",
+    "  Each row in a tab is one of:",
+    "    GROUP HEADER  — set `group` only. Text goes in the Q column.",
+    "    SPEC ROW      — set `name` only. Text goes in the R column (sub-row).",
+    "    GROUP+VALUE   — set BOTH `group` AND value/units/provided_to. Text in",
+    "                     Q; the same row carries the value (used when the group",
+    "                     itself is the spec, e.g. \"Total Cost Allowed = $1500\").",
+    "",
+    "  Every row may carry `value`, `units`, `estimate`, `provided_to` (list of",
+    "  subsystem IDs), `last_updated`, `last_updated_by`, `champion`, `est_due`,",
+    "  `actual_due`. Omit fields that don't apply.",
+    "",
+    "  `value` may be a number, a string (\"Bearer JWT\", \"See OpenAPI v1.2\"),",
+    "  or an Excel formula prefixed with `=` (e.g. `=E14*4/1000`).",
+    "",
+    "RULES (from `08 - Creating the Interface Matrix.md` / `09 - Adding Values...`)",
+    "  - One tab per subsystem. The owning subsystem's column is left blank",
+    "    (you don't 'Provide To' yourself).",
+    "  - Mark every other subsystem that consumes a spec with `Provided To`.",
+    "  - Always separate value from units (E and F columns).",
+    "  - Mark estimates with `\"estimate\": true` (renders as `X` in column G).",
+    "  - Set `final_value_due` (Actual Due Date) even for unknown values, so the",
+    "    timeline is visible to all teams.",
+    "  - Interface names should match your DFD / N² Chart / Sequence Diagram",
+    "    labels for traceability.",
+    "==========================================================================="
+  ],
+
+  "project": {
+    "_instructions": "Workbook-level metadata.",
+    "id": "my-matrix",
+    "name": "Interface Matrix",
+    "version": "0.1",
+    "date": "YYYY-MM-DD",
+    "starting_row_number": 1,
+    "_starting_row_number": "First value of the Row # column (P4). Increments via Excel formula."
+  },
+
+  "subsystems": [
+    {
+      "_instructions": "Order matters — defines the left-to-right column order on every tab.",
+      "id": "ss1",
+      "name": "Subsystem One"
+    },
+    { "id": "ss2", "name": "Subsystem Two" },
+    { "id": "ss3", "name": "Subsystem Three" }
+  ],
+
+  "tabs": {
+    "_instructions": "One key per subsystem id. Each value is a list of rows for that subsystem's tab.",
+
+    "ss1": [
+      {
+        "_comment": "Pure group header — only Q column gets text.",
+        "group": "First Interface Group"
+      },
+      {
+        "_comment": "Spec row under the group above — R column gets text, plus value/provided_to.",
+        "name": "Detail Spec A",
+        "value": 100,
+        "units": "ms",
+        "estimate": true,
+        "provided_to": ["ss2"],
+        "last_updated": "2026-04-01",
+        "last_updated_by": "A. Park",
+        "champion": "Sec Team",
+        "est_due": "2026-04-15",
+        "actual_due": "2026-05-01"
+      },
+      {
+        "_comment": "Group with its own value (no detail rows underneath).",
+        "group": "Total Cost Allowed",
+        "value": 1500,
+        "units": "$",
+        "provided_to": ["ss2", "ss3"],
+        "last_updated": "2026-04-01",
+        "last_updated_by": "Lead",
+        "champion": "PM",
+        "actual_due": "2026-05-01"
+      }
+    ],
+
+    "ss2": [],
+    "ss3": []
+  }
+}

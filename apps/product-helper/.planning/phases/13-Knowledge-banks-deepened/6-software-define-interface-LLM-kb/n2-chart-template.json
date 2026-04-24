@@ -1,0 +1,101 @@
+{
+  "_README": [
+    "===========================================================================",
+    "N-SQUARED (N2) CHART — FILL-IN TEMPLATE",
+    "===========================================================================",
+    "",
+    "PURPOSE",
+    "  Capture every subsystem-to-subsystem interface in a single structured file.",
+    "  Feed this JSON to `n2_from_json.py` to generate an Excel N2 chart with",
+    "  automatic analysis (system flows, critical subsystems, QFD endpoint check).",
+    "",
+    "HOW TO USE",
+    "  1. Copy this file: `cp n2-chart-template.json my-project-n2.json`",
+    "  2. Fill in every section below. Keys prefixed with `_` are comments and",
+    "     are ignored by the script — leave them or delete them.",
+    "  3. Run: `python n2_from_json.py my-project-n2.json`",
+    "  4. Open the generated `<project_id>-n2-chart.xlsx`.",
+    "",
+    "RULES (from the N2 method — see `04 - Formalizing with N-Squared Charts.md`)",
+    "  - Row = SENDER (provider). Column = RECEIVER. Cell (i,j) = what i provides to j.",
+    "  - Subsystem names live on the diagonal (auto-placed by the script).",
+    "  - One JSON file = one interface type. Use `interface_type: operational` for",
+    "    runtime data flows. Use `interface_type: design` for build-time artifacts",
+    "    (libraries, contracts, schemas). Do NOT mix the two.",
+    "  - Keep `name` short (fits in a matrix cell). Put detail in `data`.",
+    "  - Request/response pairs occupy MIRRORED cells: e.g. (Storefront -> Cart) for",
+    "    the request and (Cart -> Storefront) for the reply. Define BOTH.",
+    "==========================================================================="
+  ],
+
+  "project": {
+    "_instructions": "Identifies the chart and the design context it belongs to.",
+    "id": "my-project",
+    "name": "My Project — N2 Interface Chart",
+    "interface_type": "operational",
+    "_interface_type_options": "operational | design",
+    "version": "0.1",
+    "date": "YYYY-MM-DD",
+    "qfd_target_endpoints": 40,
+    "_qfd_target_endpoints": "From your QFD design target. The script compares this to your declared endpoint counts and flags drift > 25%."
+  },
+
+  "subsystems": [
+    {
+      "_instructions": "List every subsystem ONCE. Order matters — it becomes row/column order in the matrix. 4-9 subsystems is the sweet spot; >10 becomes hard to read.",
+      "id": "SS1",
+      "name": "Subsystem One",
+      "description": "What this subsystem is responsible for (one sentence).",
+      "category": "engine",
+      "_category_options": "engine | ui | platform | data | external — used only for color coding"
+    },
+    {
+      "id": "SS2",
+      "name": "Subsystem Two",
+      "description": "...",
+      "category": "ui"
+    }
+  ],
+
+  "interfaces": [
+    {
+      "_instructions": "One entry per directional interface. (from, to) must be unique — if two subsystems exchange data both ways, write TWO entries.",
+      "id": "IF-01",
+      "from": "SS1",
+      "to": "SS2",
+      "name": "Short Label",
+      "_name": "Shows in the matrix cell. Keep under ~25 chars.",
+      "data": "Detailed payload description: fields, units, frequency, trigger.",
+      "endpoints_count": 4,
+      "_endpoints_count": "Approx number of API endpoints / message types this interface covers. Used for QFD reconciliation."
+    }
+  ],
+
+  "external_interfaces": [
+    {
+      "_instructions": "Interfaces that cross the system boundary (third-party APIs, browsers, regulators). Listed in a separate table — they don't appear in the N2 matrix itself.",
+      "id": "IF-EXT-01",
+      "from": "External System Name",
+      "to": "SS1",
+      "data": "What flows in/out and why."
+    }
+  ],
+
+  "system_flows": [
+    {
+      "_instructions": "An ordered traversal through the matrix that represents a real user/operational journey. List each subsystem in the order data flows. The script will validate that each consecutive (from, to) pair exists in `interfaces`.",
+      "name": "Checkout Flow",
+      "path": ["SS1", "SS2", "SS3"],
+      "description": "User browses product, adds to cart, places order."
+    }
+  ],
+
+  "control_loops": [
+    {
+      "_instructions": "A system_flow whose path returns to a prior subsystem. The script auto-detects loops; this section lets you NAME and DESCRIBE the ones that matter. The path MUST start and end at the same subsystem and every (from, to) pair must exist in `interfaces`.",
+      "name": "Order ↔ Payment Confirmation Loop",
+      "path": ["SS3", "SS4", "SS3"],
+      "description": "Order requests payment; payment result returns; order finalizes."
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "source_file": "Requirement_Constants_Definition_Template.xlsx",
+  "sheet": "Req Constant Def Template",
+  "purpose": "Tracks named constants used in the product: value, units, estimate/final status, provenance.",
+  "known_issues": [
+    "Rows 7 and 10 both labeled 'Target Release' — likely a duplicate. Exposed as target_release and target_release_2.",
+    "Row 12 label 'Aprovers' (typo for 'Approvers').",
+    "Row 16 label truncated: 'Parent OKR / strategic initiativ'."
+  ],
+  "merged_ranges": [
+    "A19:I19"
+  ],
+  "static_text": {
+    "title": {
+      "cell": "A1",
+      "value": "Requirement Constants Definition Table"
+    },
+    "about_label": {
+      "cell": "A18",
+      "value": "About this document:"
+    },
+    "about_body": {
+      "range": "A19:I19",
+      "value": "(merged) description paragraph"
+    }
+  },
+  "fields": {
+    "project_name": {
+      "label_cell": "A2",
+      "label_literal": "Project Name",
+      "cell": "B2",
+      "type": "string"
+    },
+    "document_id": {
+      "label_cell": "A3",
+      "label_literal": "Document ID",
+      "cell": "B3",
+      "type": "string"
+    },
+    "document_type": {
+      "label_cell": "A4",
+      "label_literal": "Document Type",
+      "cell": "B4",
+      "type": "string"
+    },
+    "status": {
+      "label_cell": "A5",
+      "label_literal": "Status",
+      "cell": "B5",
+      "type": "string"
+    },
+    "last_update": {
+      "label_cell": "A6",
+      "label_literal": "Last Update",
+      "cell": "B6",
+      "type": "string"
+    },
+    "target_release": {
+      "label_cell": "A7",
+      "label_literal": "Target Release",
+      "cell": "B7",
+      "type": "string"
+    },
+    "confidentiality": {
+      "label_cell": "A8",
+      "label_literal": "Confidentiality",
+      "cell": "B8",
+      "type": "string"
+    },
+    "created_date": {
+      "label_cell": "A9",
+      "label_literal": "Created date",
+      "cell": "B9",
+      "type": "string"
+    },
+    "target_release_2": {
+      "label_cell": "A10",
+      "label_literal": "Target Release",
+      "cell": "B10",
+      "type": "string"
+    },
+    "author": {
+      "label_cell": "A11",
+      "label_literal": "Author",
+      "cell": "B11",
+      "type": "string"
+    },
+    "approvers": {
+      "label_cell": "A12",
+      "label_literal": "Aprovers",
+      "cell": "B12",
+      "type": "string"
+    },
+    "stakeholders": {
+      "label_cell": "A13",
+      "label_literal": "Stakeholders",
+      "cell": "B13",
+      "type": "string"
+    },
+    "supersedes": {
+      "label_cell": "A14",
+      "label_literal": "Supersedes / replaces",
+      "cell": "B14",
+      "type": "string"
+    },
+    "linked_ticket": {
+      "label_cell": "A15",
+      "label_literal": "Linked epic/ticket",
+      "cell": "B15",
+      "type": "string"
+    },
+    "parent_okr": {
+      "label_cell": "A16",
+      "label_literal": "Parent OKR / strategic initiativ",
+      "cell": "B16",
+      "type": "string"
+    },
+    "regulatory_refs": {
+      "label_cell": "A17",
+      "label_literal": "Regulatory refs",
+      "cell": "B17",
+      "type": "string"
+    },
+    "constants_table": {
+      "type": "table",
+      "header_row": 21,
+      "header_range": "A21:I21",
+      "columns": [
+        {
+          "name": "constant",
+          "cell_col": "A",
+          "header": "Constant",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "cell_col": "B",
+          "header": "Value",
+          "type": "number|string"
+        },
+        {
+          "name": "units",
+          "cell_col": "C",
+          "header": "Units",
+          "type": "string"
+        },
+        {
+          "name": "estimate_final",
+          "cell_col": "D",
+          "header": "Estimate/Final",
+          "type": "enum:Estimate|Final"
+        },
+        {
+          "name": "date_update",
+          "cell_col": "E",
+          "header": "Date Update",
+          "type": "date"
+        },
+        {
+          "name": "final_date",
+          "cell_col": "F",
+          "header": "Final Date",
+          "type": "date"
+        },
+        {
+          "name": "source",
+          "cell_col": "G",
+          "header": "Source",
+          "type": "string"
+        },
+        {
+          "name": "owned_by",
+          "cell_col": "H",
+          "header": "Owned by",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "cell_col": "I",
+          "header": "Notes",
+          "type": "string"
+        }
+      ],
+      "data_start_row": 22,
+      "data_range": "A22:I<n>",
+      "write_strategy": "append_rows"
+    }
+  },
+  "data_validations": []
+}
