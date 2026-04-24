@@ -34,13 +34,16 @@ import { resolve, join, basename, extname } from 'path';
 import { createHash } from 'crypto';
 import type { KBChunkInput } from '@/lib/langchain/engines/kb-embedder';
 
+// Post-T8 reorg (2026-04): the `New-knowledge-banks/` intermediate
+// folder was removed and the KB-1..7 corpora sit directly under
+// `13-Knowledge-banks-deepened/`. Default points at the current layout
+// so the script is self-serve; `--kb-root=` override remains.
 const DEFAULT_KB_ROOT = resolve(
   __dirname,
   '..',
   '.planning',
   'phases',
   '13-Knowledge-banks-deepened',
-  'New-knowledge-banks',
 );
 
 // Chunk target. 500 tokens ≈ 2000 chars for English prose (cl100k).
