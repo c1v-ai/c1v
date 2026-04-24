@@ -2,8 +2,8 @@
 """gen-fmea.py — FMEA table + stoplight generator.
 
 Consolidates (2→1 merge):
-  - system-design/kb-upgrade-v2/module-7-fmea/generate_fmea_xlsx.py
-  - system-design/kb-upgrade-v2/module-7-fmea/generate_stoplights.py
+  - system-design/kb-upgrade-v2/module-8-risk/generate_fmea_xlsx.py
+  - system-design/kb-upgrade-v2/module-8-risk/generate_stoplights.py
 
 Targets: xlsx (fmea table), svg (stoplight matrix — standalone).
 
@@ -35,7 +35,7 @@ from common.runner import run_generator  # noqa: E402
 from common.legacy_invoke import REPO_ROOT, run_legacy, move_into  # noqa: E402
 
 
-FMEA_DIR = REPO_ROOT / "system-design/kb-upgrade-v2/module-7-fmea"
+FMEA_DIR = REPO_ROOT / "system-design/kb-upgrade-v2/module-8-risk"
 LEGACY_XLSX = FMEA_DIR / "generate_fmea_xlsx.py"
 LEGACY_STOPLIGHTS = FMEA_DIR / "generate_stoplights.py"
 

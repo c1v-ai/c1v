@@ -2,7 +2,7 @@
 """gen-interfaces.py — Interface matrix (formal specs) generator.
 
 Consolidates (2→1):
-  - system-design/kb-upgrade-v2/module-6-interfaces/generate_interface_matrix.py (adapter)
+  - system-design/kb-upgrade-v2/module-7-interfaces/generate_interface_matrix.py (adapter)
   - apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/interface_matrix_from_json.py (core)
 
 Target: xlsx.

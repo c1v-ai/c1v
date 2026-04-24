@@ -2,7 +2,7 @@
 """gen-qfd.py — House of Quality (QFD) xlsx generator.
 
 Migrated from:
-    system-design/kb-upgrade-v2/module-5-qfd/write_xlsx.py
+    system-design/kb-upgrade-v2/module-6-qfd/write_xlsx.py
 
 Changes vs legacy:
   - Drops AppleScript dependency (legacy used osascript + Microsoft Excel).
@@ -118,7 +118,7 @@ def render(instance, output_dir: Path, targets, options, warnings):
         # Default template lives next to the legacy script.
         default_template = (
             Path(__file__).resolve().parents[2]
-            / "system-design/kb-upgrade-v2/module-5-qfd/c1v_QFD.xlsx"
+            / "system-design/kb-upgrade-v2/module-6-qfd/c1v_QFD.xlsx"
         )
         template = str(default_template)
 

@@ -2,7 +2,7 @@
 """gen-n2.py — N-Squared (N2) interface chart generator.
 
 Consolidates (3→1):
-  - system-design/kb-upgrade-v2/module-6-interfaces/generate_n2.py (adapter)
+  - system-design/kb-upgrade-v2/module-7-interfaces/generate_n2.py (adapter)
   - apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/n2_from_json.py (core)
   - apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/create_n2_chart.py (hardcoded THG)
 

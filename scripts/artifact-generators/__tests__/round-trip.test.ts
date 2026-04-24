@@ -50,33 +50,33 @@ const MIGRATED: MigratedCase[] = [
   },
   {
     generator: 'gen-qfd',
-    v2SourceGlob: 'system-design/kb-upgrade-v2/module-5-qfd/c1v_QFD.json',
+    v2SourceGlob: 'system-design/kb-upgrade-v2/module-6-qfd/c1v_QFD.json',
     baselineArtifact: null,
     note: 'v1 xlsx baseline not committed',
   },
   {
     generator: 'gen-n2',
-    v2SourceGlob: 'system-design/kb-upgrade-v2/module-6-interfaces/n2_chart.json',
+    v2SourceGlob: 'system-design/kb-upgrade-v2/module-7-interfaces/n2_chart.json',
     baselineArtifact: null,
   },
   {
     generator: 'gen-sequence',
-    v2SourceGlob: 'system-design/kb-upgrade-v2/module-6-interfaces/interface_matrix.json',
+    v2SourceGlob: 'system-design/kb-upgrade-v2/module-7-interfaces/interface_matrix.json',
     baselineArtifact: null,
   },
   {
     generator: 'gen-dfd',
-    v2SourceGlob: 'system-design/kb-upgrade-v2/module-6-interfaces/interface_matrix.json',
+    v2SourceGlob: 'system-design/kb-upgrade-v2/module-7-interfaces/interface_matrix.json',
     baselineArtifact: null,
   },
   {
     generator: 'gen-interfaces',
-    v2SourceGlob: 'system-design/kb-upgrade-v2/module-6-interfaces/interface_matrix.json',
+    v2SourceGlob: 'system-design/kb-upgrade-v2/module-7-interfaces/interface_matrix.json',
     baselineArtifact: null,
   },
   {
     generator: 'gen-fmea',
-    v2SourceGlob: 'system-design/kb-upgrade-v2/module-7-fmea/fmea_table.json',
+    v2SourceGlob: 'system-design/kb-upgrade-v2/module-8-risk/fmea_table.json',
     baselineArtifact: null,
   },
   {

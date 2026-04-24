@@ -2,7 +2,7 @@
 """gen-sequence.py — Sequence diagram generator.
 
 Consolidates (2→1):
-  - system-design/kb-upgrade-v2/module-6-interfaces/generate_pptx.py (seq chart impl)
+  - system-design/kb-upgrade-v2/module-7-interfaces/generate_pptx.py (seq chart impl)
   - apps/product-helper/.planning/.../6-software-define-interface-LLM-kb/create_sequence_thg.py
 
 Targets: pptx, mmd.
@@ -31,7 +31,7 @@ LEGACY_DEEPENED = (
     / "6-software-define-interface-LLM-kb/create_sequence_thg.py"
 )
 LEGACY_V2 = (
-    REPO_ROOT / "system-design/kb-upgrade-v2/module-6-interfaces/generate_pptx.py"
+    REPO_ROOT / "system-design/kb-upgrade-v2/module-7-interfaces/generate_pptx.py"
 )
 
 
