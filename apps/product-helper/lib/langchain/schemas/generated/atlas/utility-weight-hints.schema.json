@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "properties": {
+    "latency": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "cost": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "quality_bench": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "availability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "safety": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "developer_velocity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "security_compliance": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    }
+  },
+  "additionalProperties": false,
+  "description": "x-ui-surface=section:Math Priors > Utility Weights — criterion-weight hints for M4 decision utility.",
+  "title": "UtilityWeightHints",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

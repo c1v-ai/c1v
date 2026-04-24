@@ -1,0 +1,253 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "scalar"
+        },
+        "value": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "units": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Math > Result — scalar value (Little's Law, availability, p95 chain)."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "vector"
+        },
+        "dim_label": {
+          "type": "string",
+          "description": "x-ui-surface=section:Math > Result — dimension name (e.g., 'alternative_id')."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "value": {
+                "type": "number"
+              },
+              "components": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "label",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "units": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "dim_label",
+        "values"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Math > Result — per-alternative utility vector."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "graph"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "coords": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "is_frontier": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "coords",
+              "is_frontier"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "relation": {
+                "type": "string",
+                "enum": [
+                  "dominates",
+                  "incomparable",
+                  "dominated_by"
+                ]
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "relation"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "axes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "nodes",
+        "edges",
+        "axes"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Math > Result — Pareto dominance graph across alternatives."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "matrix"
+        },
+        "row_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "col_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "cell_semantics": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "row_labels",
+        "col_labels",
+        "cells",
+        "cell_semantics"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Math > Result — concept-quality matrix Q(f,g)."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "piecewise"
+        },
+        "x_label": {
+          "type": "string"
+        },
+        "y_label": {
+          "type": "string"
+        },
+        "breakpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "regime_label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2
+        },
+        "slope_left": {
+          "type": "number"
+        },
+        "slope_right": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "x_label",
+        "y_label",
+        "breakpoints"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Math > Result — piecewise function (cost curves, tiered pricing)."
+    }
+  ],
+  "title": "ResultShape",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

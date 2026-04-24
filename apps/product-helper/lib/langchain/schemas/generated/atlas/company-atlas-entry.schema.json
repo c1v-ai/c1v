@@ -1,0 +1,1632 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "x-ui-surface=page-header — file-matching slug (matches filename in companies/)."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "x-ui-surface=page-header — display name (e.g., \"Anthropic\")."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "public",
+        "ai_infra_public",
+        "frontier_ai_private",
+        "private_consumer"
+      ],
+      "description": "x-ui-surface=page-header — entry-kind discriminator."
+    },
+    "hq": {
+      "type": "string",
+      "description": "x-ui-surface=section:Entry > Identity — headquarters city/region."
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https\\:\\/\\/",
+      "description": "x-ui-surface=section:Entry > Identity — canonical website URL."
+    },
+    "last_verified": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+      "description": "x-ui-surface=page-header — ISO date of last human review. Drives 18-month staleness gate."
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "partial",
+        "inferred"
+      ],
+      "description": "x-ui-surface=page-header — overall entry verification state."
+    },
+    "reviewer": {
+      "type": "string",
+      "description": "x-ui-surface=section:Entry > Lineage — human/agent that signed off on the entry."
+    },
+    "data_quality_grade": {
+      "type": "string",
+      "enum": [
+        "Q1",
+        "Q2",
+        "Q3"
+      ],
+      "description": "x-ui-surface=page-header — curator-assigned entry-level grade (Q1/Q2/Q3). Orthogonal to citation tier."
+    },
+    "primary_source": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "string",
+          "enum": [
+            "A_sec_filing",
+            "B_official_blog",
+            "C_press_analyst",
+            "D_stackshare",
+            "E_conference",
+            "F_github",
+            "G_model_card",
+            "H_social_flagged"
+          ],
+          "description": "x-ui-surface=section:Entry > Lineage — strongest tier among this entry's citations."
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https\\:\\/\\/",
+          "description": "x-ui-surface=section:Entry > Lineage — URL of the strongest-tier citation."
+        },
+        "anchor": {
+          "type": "string",
+          "description": "x-ui-surface=section:Entry > Lineage — optional section anchor within the primary source."
+        }
+      },
+      "required": [
+        "tier",
+        "source_url"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Lineage — strongest-tier citation pointer (convenience; not enforcement)."
+    },
+    "scale": {
+      "type": "object",
+      "properties": {
+        "metric": {
+          "type": "string",
+          "enum": [
+            "daily_active_users",
+            "monthly_active_users",
+            "api_calls_per_day_est",
+            "paying_subscribers",
+            "registered_members",
+            "gmv_usd_annual",
+            "repositories_count",
+            "seats_active"
+          ],
+          "description": "x-ui-surface=section:Entry > Scale — which scale metric is reported."
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "number",
+                  "minimum": 0
+                }
+              ]
+            }
+          ],
+          "description": "x-ui-surface=section:Entry > Scale — point estimate or [low, high] range."
+        },
+        "as_of": {
+          "type": "string",
+          "pattern": "^\\d{4}(-Q[1-4]|-\\d{2})?$",
+          "description": "x-ui-surface=section:Entry > Scale — reporting period (e.g., \"2025-Q4\")."
+        },
+        "citation": {
+          "type": "object",
+          "properties": {
+            "kb_source": {
+              "type": "string",
+              "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+            },
+            "source_url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https\\:\\/\\/",
+              "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+            },
+            "source_tier": {
+              "type": "string",
+              "enum": [
+                "A_sec_filing",
+                "B_official_blog",
+                "C_press_analyst",
+                "D_stackshare",
+                "E_conference",
+                "F_github",
+                "G_model_card",
+                "H_social_flagged"
+              ],
+              "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+            },
+            "publish_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+              "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+            },
+            "retrieved_at": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+              "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+            },
+            "bytes_integrity": {
+              "type": "string",
+              "enum": [
+                "clean",
+                "captcha_wall_content_via_webfetch",
+                "paywall_content_via_webfetch",
+                "cdn_geoblock_content_via_webfetch"
+              ],
+              "default": "clean",
+              "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+            },
+            "content_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+            },
+            "is_ic": {
+              "type": "boolean",
+              "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+            },
+            "anchor": {
+              "type": "string",
+              "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+            },
+            "corroborated_by": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https\\:\\/\\/"
+                  },
+                  "source_tier": {
+                    "type": "string",
+                    "enum": [
+                      "A_sec_filing",
+                      "B_official_blog",
+                      "C_press_analyst",
+                      "D_stackshare",
+                      "E_conference",
+                      "F_github",
+                      "G_model_card",
+                      "H_social_flagged"
+                    ]
+                  }
+                },
+                "required": [
+                  "source_url",
+                  "source_tier"
+                ],
+                "additionalProperties": false
+              },
+              "default": [],
+              "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+            }
+          },
+          "required": [
+            "kb_source",
+            "source_url",
+            "source_tier",
+            "publish_date",
+            "retrieved_at",
+            "sha256"
+          ],
+          "additionalProperties": false,
+          "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+        }
+      },
+      "required": [
+        "metric",
+        "value",
+        "as_of",
+        "citation"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Scale — cited scale claim."
+    },
+    "dau_band": {
+      "type": "string",
+      "enum": [
+        "under_10k",
+        "10k_100k",
+        "100k_1m",
+        "1m_10m",
+        "10m_100m",
+        "over_100m",
+        "unknown"
+      ],
+      "description": "x-ui-surface=section:Entry > Scale — index bucket (feeds by-dau.json)."
+    },
+    "revenue_usd_annual": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "x-ui-surface=section:Entry > Economics — annual revenue USD; null when undisclosed."
+    },
+    "infra_cost_usd_annual": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "x-ui-surface=section:Entry > Economics — annual infra cost USD; null when undisclosed."
+    },
+    "cost_band": {
+      "type": "string",
+      "enum": [
+        "under_100k_usd",
+        "100k_1m_usd",
+        "1m_10m_usd",
+        "10m_100m_usd",
+        "100m_1b_usd",
+        "over_1b_usd",
+        "undisclosed"
+      ]
+    },
+    "headcount_est": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "x-ui-surface=section:Entry > Economics — estimated FTE headcount; null when undisclosed."
+    },
+    "economics_citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+          },
+          "source_url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https\\:\\/\\/",
+            "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+          },
+          "source_tier": {
+            "type": "string",
+            "enum": [
+              "A_sec_filing",
+              "B_official_blog",
+              "C_press_analyst",
+              "D_stackshare",
+              "E_conference",
+              "F_github",
+              "G_model_card",
+              "H_social_flagged"
+            ],
+            "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+          },
+          "publish_date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+            "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+          },
+          "retrieved_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+            "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+          },
+          "bytes_integrity": {
+            "type": "string",
+            "enum": [
+              "clean",
+              "captcha_wall_content_via_webfetch",
+              "paywall_content_via_webfetch",
+              "cdn_geoblock_content_via_webfetch"
+            ],
+            "default": "clean",
+            "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+          },
+          "content_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+          },
+          "is_ic": {
+            "type": "boolean",
+            "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+          },
+          "anchor": {
+            "type": "string",
+            "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+          },
+          "corroborated_by": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https\\:\\/\\/"
+                },
+                "source_tier": {
+                  "type": "string",
+                  "enum": [
+                    "A_sec_filing",
+                    "B_official_blog",
+                    "C_press_analyst",
+                    "D_stackshare",
+                    "E_conference",
+                    "F_github",
+                    "G_model_card",
+                    "H_social_flagged"
+                  ]
+                }
+              },
+              "required": [
+                "source_url",
+                "source_tier"
+              ],
+              "additionalProperties": false
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+          }
+        },
+        "required": [
+          "kb_source",
+          "source_url",
+          "source_tier",
+          "publish_date",
+          "retrieved_at",
+          "sha256"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Entry > Economics — backing citations for revenue/cost/headcount claims."
+    },
+    "frontend": {
+      "type": "object",
+      "properties": {
+        "web": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "mobile": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "desktop": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Frontend — frontend stack slots."
+    },
+    "backend": {
+      "type": "object",
+      "properties": {
+        "primary_langs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "runtimes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Backend — backend stack slots."
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "oltp": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "cache": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "warehouse": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "search": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "queue": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Data — data-tier stack slots."
+    },
+    "infra": {
+      "type": "object",
+      "properties": {
+        "cloud": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "compute": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "cdn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "observability": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "security": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Infra — infrastructure stack slots."
+    },
+    "ai_stack": {
+      "type": "object",
+      "properties": {
+        "training_framework": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "serving": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "evals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "fine_tune": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        },
+        "rag": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > AI Stack — REQUIRED for kind ∈ {ai_infra_public, frontier_ai_private}."
+    },
+    "gpu_exposure": {
+      "type": "string",
+      "enum": [
+        "owns_cluster",
+        "rents_long_term",
+        "rents_spot",
+        "serverless",
+        "none"
+      ],
+      "default": "none",
+      "description": "x-ui-surface=section:Entry > AI Stack — GPU ownership pattern (default none)."
+    },
+    "inference_pattern": {
+      "type": "string",
+      "enum": [
+        "edge",
+        "batch",
+        "streaming",
+        "fine_tune_service",
+        "training_only",
+        "none"
+      ],
+      "default": "none",
+      "description": "x-ui-surface=section:Entry > AI Stack — inference deployment pattern (default none)."
+    },
+    "latency_priors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "x-ui-surface=internal:math-resolver — snake_case identifier unique within the entry (e.g., \"api_usd_per_1m_tokens_sonnet_input\")."
+          },
+          "description": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors — one-line human description of what this prior represents."
+          },
+          "citation": {
+            "type": "object",
+            "properties": {
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https\\:\\/\\/",
+                "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+              },
+              "source_tier": {
+                "type": "string",
+                "enum": [
+                  "A_sec_filing",
+                  "B_official_blog",
+                  "C_press_analyst",
+                  "D_stackshare",
+                  "E_conference",
+                  "F_github",
+                  "G_model_card",
+                  "H_social_flagged"
+                ],
+                "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+              },
+              "publish_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+              },
+              "retrieved_at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+              },
+              "bytes_integrity": {
+                "type": "string",
+                "enum": [
+                  "clean",
+                  "captcha_wall_content_via_webfetch",
+                  "paywall_content_via_webfetch",
+                  "cdn_geoblock_content_via_webfetch"
+                ],
+                "default": "clean",
+                "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+              },
+              "content_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+              },
+              "is_ic": {
+                "type": "boolean",
+                "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+              },
+              "anchor": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+              },
+              "corroborated_by": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https\\:\\/\\/"
+                    },
+                    "source_tier": {
+                      "type": "string",
+                      "enum": [
+                        "A_sec_filing",
+                        "B_official_blog",
+                        "C_press_analyst",
+                        "D_stackshare",
+                        "E_conference",
+                        "F_github",
+                        "G_model_card",
+                        "H_social_flagged"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source_url",
+                    "source_tier"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+              }
+            },
+            "required": [
+              "kb_source",
+              "source_url",
+              "source_tier",
+              "publish_date",
+              "retrieved_at",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Math Priors — [0,1] — reviewer-assigned confidence in this prior."
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "partial",
+              "inferred"
+            ],
+            "description": "x-ui-surface=section:Math Priors — verification state (AI-private entries commonly \"partial\")."
+          },
+          "result_kind": {
+            "type": "string",
+            "const": "scalar"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "description": "x-ui-surface=section:Math Priors > Latency — latency value (non-negative)."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "ns",
+              "us",
+              "ms",
+              "s"
+            ],
+            "description": "x-ui-surface=section:Math Priors > Latency — time unit."
+          },
+          "percentile": {
+            "type": "string",
+            "enum": [
+              "p50",
+              "p90",
+              "p95",
+              "p99",
+              "mean"
+            ],
+            "description": "x-ui-surface=section:Math Priors > Latency — latency percentile."
+          }
+        },
+        "required": [
+          "anchor",
+          "description",
+          "citation",
+          "confidence",
+          "verification_status",
+          "result_kind",
+          "value",
+          "units",
+          "percentile"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Math Priors > Latency — scalar latency budget (p50/p95/p99)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Math Priors > Latency — scalar latency priors (p50/p95/p99)."
+    },
+    "availability_priors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "x-ui-surface=internal:math-resolver — snake_case identifier unique within the entry (e.g., \"api_usd_per_1m_tokens_sonnet_input\")."
+          },
+          "description": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors — one-line human description of what this prior represents."
+          },
+          "citation": {
+            "type": "object",
+            "properties": {
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https\\:\\/\\/",
+                "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+              },
+              "source_tier": {
+                "type": "string",
+                "enum": [
+                  "A_sec_filing",
+                  "B_official_blog",
+                  "C_press_analyst",
+                  "D_stackshare",
+                  "E_conference",
+                  "F_github",
+                  "G_model_card",
+                  "H_social_flagged"
+                ],
+                "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+              },
+              "publish_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+              },
+              "retrieved_at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+              },
+              "bytes_integrity": {
+                "type": "string",
+                "enum": [
+                  "clean",
+                  "captcha_wall_content_via_webfetch",
+                  "paywall_content_via_webfetch",
+                  "cdn_geoblock_content_via_webfetch"
+                ],
+                "default": "clean",
+                "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+              },
+              "content_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+              },
+              "is_ic": {
+                "type": "boolean",
+                "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+              },
+              "anchor": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+              },
+              "corroborated_by": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https\\:\\/\\/"
+                    },
+                    "source_tier": {
+                      "type": "string",
+                      "enum": [
+                        "A_sec_filing",
+                        "B_official_blog",
+                        "C_press_analyst",
+                        "D_stackshare",
+                        "E_conference",
+                        "F_github",
+                        "G_model_card",
+                        "H_social_flagged"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source_url",
+                    "source_tier"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+              }
+            },
+            "required": [
+              "kb_source",
+              "source_url",
+              "source_tier",
+              "publish_date",
+              "retrieved_at",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Math Priors — [0,1] — reviewer-assigned confidence in this prior."
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "partial",
+              "inferred"
+            ],
+            "description": "x-ui-surface=section:Math Priors — verification state (AI-private entries commonly \"partial\")."
+          },
+          "result_kind": {
+            "type": "string",
+            "const": "scalar"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Math Priors > Availability — fraction of uptime in [0,1] (e.g., 0.999 = three nines)."
+          },
+          "units": {
+            "type": "string",
+            "const": "fraction_uptime"
+          },
+          "window": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "quarterly",
+              "annual"
+            ],
+            "description": "x-ui-surface=section:Math Priors > Availability — measurement window."
+          }
+        },
+        "required": [
+          "anchor",
+          "description",
+          "citation",
+          "confidence",
+          "verification_status",
+          "result_kind",
+          "value",
+          "units",
+          "window"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Math Priors > Availability — scalar uptime prior."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Math Priors > Availability — scalar availability priors."
+    },
+    "throughput_priors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "x-ui-surface=internal:math-resolver — snake_case identifier unique within the entry (e.g., \"api_usd_per_1m_tokens_sonnet_input\")."
+          },
+          "description": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors — one-line human description of what this prior represents."
+          },
+          "citation": {
+            "type": "object",
+            "properties": {
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https\\:\\/\\/",
+                "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+              },
+              "source_tier": {
+                "type": "string",
+                "enum": [
+                  "A_sec_filing",
+                  "B_official_blog",
+                  "C_press_analyst",
+                  "D_stackshare",
+                  "E_conference",
+                  "F_github",
+                  "G_model_card",
+                  "H_social_flagged"
+                ],
+                "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+              },
+              "publish_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+              },
+              "retrieved_at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+              },
+              "bytes_integrity": {
+                "type": "string",
+                "enum": [
+                  "clean",
+                  "captcha_wall_content_via_webfetch",
+                  "paywall_content_via_webfetch",
+                  "cdn_geoblock_content_via_webfetch"
+                ],
+                "default": "clean",
+                "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+              },
+              "content_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+              },
+              "is_ic": {
+                "type": "boolean",
+                "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+              },
+              "anchor": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+              },
+              "corroborated_by": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https\\:\\/\\/"
+                    },
+                    "source_tier": {
+                      "type": "string",
+                      "enum": [
+                        "A_sec_filing",
+                        "B_official_blog",
+                        "C_press_analyst",
+                        "D_stackshare",
+                        "E_conference",
+                        "F_github",
+                        "G_model_card",
+                        "H_social_flagged"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source_url",
+                    "source_tier"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+              }
+            },
+            "required": [
+              "kb_source",
+              "source_url",
+              "source_tier",
+              "publish_date",
+              "retrieved_at",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Math Priors — [0,1] — reviewer-assigned confidence in this prior."
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "partial",
+              "inferred"
+            ],
+            "description": "x-ui-surface=section:Math Priors — verification state (AI-private entries commonly \"partial\")."
+          },
+          "result_kind": {
+            "type": "string",
+            "const": "scalar"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "description": "x-ui-surface=section:Math Priors > Throughput — rate value (non-negative)."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "rps",
+              "rpm",
+              "rph",
+              "qps",
+              "bytes_per_second",
+              "kb_per_second",
+              "mb_per_second",
+              "gb_per_second",
+              "tb_per_second",
+              "gb_per_hour",
+              "gb_per_day",
+              "tb_per_day",
+              "pb_per_day",
+              "messages_per_second",
+              "events_per_second"
+            ],
+            "description": "x-ui-surface=section:Math Priors > Throughput — rate unit. Request-rate (rps/rpm/rph/qps), data-rate (bytes_per_second .. pb_per_day), or message/event-rate (messages_per_second, events_per_second). Choose the unit that keeps `value` in a human-reasonable range."
+          },
+          "measurement": {
+            "type": "string",
+            "enum": [
+              "peak_burst",
+              "sustained",
+              "p95_window",
+              "p99_window"
+            ],
+            "description": "x-ui-surface=section:Math Priors > Throughput — what this rate represents (peak burst, sustained average, or tail window)."
+          },
+          "window": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors > Throughput — optional window label (e.g., \"1s\", \"5m\", \"BFCM 2025\")."
+          },
+          "concurrency": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "x-ui-surface=section:Math Priors > Throughput — typical concurrent clients/connections producing this rate."
+          },
+          "replicas": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=section:Math Priors > Throughput — backend fleet size at the time of measurement."
+          }
+        },
+        "required": [
+          "anchor",
+          "description",
+          "citation",
+          "confidence",
+          "verification_status",
+          "result_kind",
+          "value",
+          "units",
+          "measurement"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Math Priors > Throughput — scalar throughput observation (peak/sustained/tail)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Math Priors > Throughput — scalar throughput priors (rps/rpm/rph/qps; peak/sustained/tail)."
+    },
+    "cost_curves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "x-ui-surface=internal:math-resolver — snake_case identifier unique within the entry (e.g., \"api_usd_per_1m_tokens_sonnet_input\")."
+          },
+          "description": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors — one-line human description of what this prior represents."
+          },
+          "citation": {
+            "type": "object",
+            "properties": {
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https\\:\\/\\/",
+                "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+              },
+              "source_tier": {
+                "type": "string",
+                "enum": [
+                  "A_sec_filing",
+                  "B_official_blog",
+                  "C_press_analyst",
+                  "D_stackshare",
+                  "E_conference",
+                  "F_github",
+                  "G_model_card",
+                  "H_social_flagged"
+                ],
+                "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+              },
+              "publish_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+              },
+              "retrieved_at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+                "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+              },
+              "bytes_integrity": {
+                "type": "string",
+                "enum": [
+                  "clean",
+                  "captcha_wall_content_via_webfetch",
+                  "paywall_content_via_webfetch",
+                  "cdn_geoblock_content_via_webfetch"
+                ],
+                "default": "clean",
+                "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+              },
+              "content_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+              },
+              "is_ic": {
+                "type": "boolean",
+                "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+              },
+              "anchor": {
+                "type": "string",
+                "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+              },
+              "corroborated_by": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https\\:\\/\\/"
+                    },
+                    "source_tier": {
+                      "type": "string",
+                      "enum": [
+                        "A_sec_filing",
+                        "B_official_blog",
+                        "C_press_analyst",
+                        "D_stackshare",
+                        "E_conference",
+                        "F_github",
+                        "G_model_card",
+                        "H_social_flagged"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source_url",
+                    "source_tier"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+              }
+            },
+            "required": [
+              "kb_source",
+              "source_url",
+              "source_tier",
+              "publish_date",
+              "retrieved_at",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Math Priors — [0,1] — reviewer-assigned confidence in this prior."
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "partial",
+              "inferred"
+            ],
+            "description": "x-ui-surface=section:Math Priors — verification state (AI-private entries commonly \"partial\")."
+          },
+          "result_kind": {
+            "type": "string",
+            "const": "piecewise"
+          },
+          "x_label": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors > Cost — x-axis label (e.g., \"requests_per_month\")."
+          },
+          "y_label": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors > Cost — y-axis label (e.g., \"usd_per_month\")."
+          },
+          "units": {
+            "type": "string",
+            "description": "x-ui-surface=section:Math Priors > Cost — unit string (e.g., \"usd_per_1m_tokens\")."
+          },
+          "breakpoints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "regime_label": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Math Priors > Cost — regime label (e.g., \"free_tier\", \"linear\", \"volume_discount\")."
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 2
+          },
+          "slope_left": {
+            "type": "number"
+          },
+          "slope_right": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "anchor",
+          "description",
+          "citation",
+          "confidence",
+          "verification_status",
+          "result_kind",
+          "x_label",
+          "y_label",
+          "units",
+          "breakpoints"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Math Priors > Cost — piecewise cost curve."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Math Priors > Cost — piecewise cost curves."
+    },
+    "utility_weight_hints": {
+      "type": "object",
+      "properties": {
+        "latency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "cost": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "quality_bench": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "availability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "safety": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "developer_velocity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "security_compliance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Math Priors > Utility Weights — REQUIRED for AI-kind entries."
+    },
+    "archetype_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "rails-majestic-monolith",
+          "go-microservices-at-scale",
+          "php-hyperscale",
+          "python-data-heavy",
+          "scala-jvm-platform",
+          "fintech-secure-core",
+          "ai-native-inference-edge",
+          "ai-training-gpu-fleet",
+          "ai-inference-as-a-service",
+          "data-warehouse-and-ml-platform",
+          "globally-distributed-edge-network",
+          "developer-platform-saas",
+          "elixir-beam-actor-platform"
+        ]
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Entry > Archetypes — cross-cut archetype tags."
+    },
+    "related_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entry_slug": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "x-ui-surface=internal:math-resolver — Atlas entry slug (e.g., \"anthropic\")."
+          },
+          "prior_path": {
+            "type": "string",
+            "pattern": "^(cost_curves|latency_priors|availability_priors|throughput_priors|utility_weight_hints)(\\.[a-z0-9_]+)?$",
+            "description": "x-ui-surface=internal:math-resolver — dotted path into the entry frontmatter (e.g., \"cost_curves.api_usd_per_1m_tokens_sonnet_input\")."
+          },
+          "expected_kind": {
+            "type": "string",
+            "enum": [
+              "scalar",
+              "vector",
+              "graph",
+              "matrix",
+              "piecewise"
+            ],
+            "description": "x-ui-surface=internal:math-resolver — expected result_shape.kind; resolver fails closed if mismatch."
+          }
+        },
+        "required": [
+          "entry_slug",
+          "prior_path"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:math-resolver — typed pointer from a mathDerivation into KB-8 priors."
+      },
+      "default": [],
+      "description": "x-ui-surface=internal:math-resolver — optional cross-entry prior refs (sibling companies, archetypes)."
+    },
+    "nda_clean": {
+      "type": "boolean",
+      "const": true,
+      "description": "x-ui-surface=internal:ingest-gate — NDA screen MUST pass before commit. Hard-literal true."
+    },
+    "ingest_script_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "x-ui-surface=internal:ingest-gate — version of scripts/atlas/structure-to-entry.ts that produced the entry."
+    }
+  },
+  "required": [
+    "slug",
+    "name",
+    "kind",
+    "hq",
+    "last_verified",
+    "verification_status",
+    "reviewer",
+    "data_quality_grade",
+    "primary_source",
+    "scale",
+    "dau_band",
+    "revenue_usd_annual",
+    "infra_cost_usd_annual",
+    "cost_band",
+    "headcount_est",
+    "frontend",
+    "backend",
+    "data",
+    "infra",
+    "nda_clean",
+    "ingest_script_version"
+  ],
+  "additionalProperties": false,
+  "title": "CompanyAtlasEntry",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
