@@ -1,0 +1,1 @@
+../../_shared/message-queues-kb.md
