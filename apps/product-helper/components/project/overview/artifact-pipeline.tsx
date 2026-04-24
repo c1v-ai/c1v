@@ -22,7 +22,42 @@ import { useProjectChat } from '@/components/project/project-chat-provider';
 
 type HasDataMap = Record<string, boolean>;
 
+interface ManifestOutput { target: string; path: string; sha256: string; bytes: number }
+interface ManifestEntry { timestamp: string; generator: string; instance: string; outputs: ManifestOutput[]; ok: boolean }
+interface ManifestResponse { runDir: string | null; entries: ManifestEntry[]; latest: ManifestEntry[] }
+
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function ArtifactDownloads({ projectId }: { projectId: number }) {
+  const { data } = useSWR<ManifestResponse>(
+    `/api/projects/${projectId}/artifacts/manifest`,
+    fetcher,
+    { refreshInterval: 10000 }
+  );
+  const latest = data?.latest?.filter((e) => e.ok) ?? [];
+  if (!data?.runDir || latest.length === 0) return null;
+  return (
+    <div>
+      <h4 className="text-sm font-semibold mb-2 text-foreground">Generated Artifacts</h4>
+      <ul className="space-y-1 text-xs">
+        {latest.flatMap((e) =>
+          e.outputs.map((o) => (
+            <li key={`${e.generator}-${o.target}-${o.path}`} className="flex items-center justify-between rounded border border-border px-2 py-1">
+              <span className="truncate text-muted-foreground">{e.generator} · {o.target}</span>
+              <a
+                href={`/api/projects/${projectId}/artifacts/download?path=${encodeURIComponent(o.path)}`}
+                className="ml-2 shrink-0 text-primary hover:underline"
+                download
+              >
+                download
+              </a>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+}
 
 interface PipelineItem {
   name: string;
@@ -135,6 +170,7 @@ export function ArtifactPipeline({ projectId }: { projectId: number }) {
             hasData={data?.hasData}
             isGenerating={isLoading}
           />
+          <ArtifactDownloads projectId={projectId} />
         </div>
       </CardContent>
     </Card>
