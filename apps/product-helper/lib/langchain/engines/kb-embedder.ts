@@ -71,7 +71,44 @@ export function hashChunk(content: string): string {
 }
 
 /**
+ * Deterministic stub embedder — activated by `EMBEDDINGS_STUB=1`.
+ *
+ * Seeds a 1536-dim unit vector from SHA-256(content). Identical inputs
+ * always produce identical vectors, so pgvector cosine retrieval still
+ * returns "semantic"-looking rankings (near-duplicate chunks cluster
+ * tightly, unrelated chunks are ~orthogonal). No network, no key.
+ *
+ * Use-case: Phase A ingestion dry-run before the real EMBEDDINGS_API_KEY
+ * is provisioned. Rows written with stub vectors SHOULD be re-embedded
+ * under the real model before Phase B — delete them via
+ * `DELETE FROM kb_chunks WHERE kb_source IN (...);` then rerun without
+ * the flag.
+ */
+function stubEmbed(text: string): number[] {
+  const hash = createHash('sha256').update(text).digest();
+  const out = new Array<number>(KB_EMBEDDING_DIMENSIONS);
+  let sumSq = 0;
+  for (let i = 0; i < KB_EMBEDDING_DIMENSIONS; i++) {
+    // Cycle through the 32-byte SHA-256 digest; map each byte to
+    // [-1, 1) to spread signs. Good enough for cosine spread in tests.
+    const byte = hash[i % hash.length];
+    const v = (byte / 128) - 1;
+    out[i] = v;
+    sumSq += v * v;
+  }
+  const norm = Math.sqrt(sumSq) || 1;
+  for (let i = 0; i < KB_EMBEDDING_DIMENSIONS; i++) {
+    out[i] = out[i] / norm;
+  }
+  return out;
+}
+
+/**
  * Call OpenAI `/v1/embeddings` for up to `MAX_BATCH_SIZE` inputs.
+ *
+ * When `EMBEDDINGS_STUB=1` is set, returns deterministic hash-seeded
+ * unit vectors instead of calling the network — lets Phase A ingestion
+ * run before `EMBEDDINGS_API_KEY` is provisioned.
  *
  * Returns float[][] preserving input order. Throws on non-2xx.
  */
@@ -81,6 +118,10 @@ export async function embedBatch(texts: string[]): Promise<number[][]> {
     throw new Error(
       `embedBatch: ${texts.length} inputs exceeds MAX_BATCH_SIZE=${MAX_BATCH_SIZE}`,
     );
+  }
+
+  if (process.env.EMBEDDINGS_STUB === '1') {
+    return texts.map(stubEmbed);
   }
 
   const res = await fetch(EMBED_URL, {

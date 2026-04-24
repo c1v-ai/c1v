@@ -23,8 +23,15 @@
  *   # optional: --kb-root=<abs-path> to override the default root
  */
 
-import { readFileSync, readdirSync, existsSync, type Dirent } from 'fs';
+import {
+  readFileSync,
+  readdirSync,
+  existsSync,
+  realpathSync,
+  type Dirent,
+} from 'fs';
 import { resolve, join, basename, extname } from 'path';
+import { createHash } from 'crypto';
 import type { KBChunkInput } from '@/lib/langchain/engines/kb-embedder';
 
 const DEFAULT_KB_ROOT = resolve(
@@ -53,9 +60,23 @@ const SKIP_DIR_PATTERNS = [
 
 interface WalkedFile {
   absPath: string;
+  realPath: string;
   kbSource: string;
   module: string;
   phase: string;
+}
+
+function sha256Hex(buf: Buffer): string {
+  return createHash('sha256').update(buf).digest('hex');
+}
+
+function percentile(sorted: number[], p: number): number {
+  if (sorted.length === 0) return 0;
+  const idx = Math.min(
+    sorted.length - 1,
+    Math.max(0, Math.ceil((p / 100) * sorted.length) - 1),
+  );
+  return sorted[idx];
 }
 
 function deriveModule(folder: string): string {
@@ -87,8 +108,16 @@ function walkMarkdown(
     } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
       const topLevel = relFromRoot[0];
       if (!topLevel) continue;
+      const absPath = join(here, entry.name);
+      let realPath = absPath;
+      try {
+        realPath = realpathSync(absPath);
+      } catch {
+        // fall back to absPath
+      }
       out.push({
-        absPath: join(here, entry.name),
+        absPath,
+        realPath,
         kbSource: topLevel,
         module: deriveModule(topLevel),
         phase: derivePhase(entry.name),
@@ -171,12 +200,30 @@ async function main() {
   const files = walkMarkdown(kbRoot);
   console.log(`[ingest-kbs] walked ${files.length} markdown files`);
 
+  // Realpath-level dedup: symlinks or duplicated folders map to a single
+  // canonical disk file. Surfaces the "13 cross-cutting sw-design KBs
+  // copy-pasted into 4 folders" problem described in CLAUDE.md.
+  const byRealPath = new Map<string, WalkedFile[]>();
+  // Content-hash dedup: even without symlinks, the 4x duplicate corpus
+  // produces identical file bodies. SHA-256 of raw file buffer.
+  const byContentHash = new Map<string, WalkedFile[]>();
+
   const bySource = new Map<string, KBChunkInput[]>();
   let totalChunks = 0;
   const perFilePhaseIndex = new Map<string, number>();
+  const chunkCharSizes: number[] = [];
 
   for (const file of files) {
-    const body = readFileSync(file.absPath, 'utf8');
+    const raw = readFileSync(file.absPath);
+    const contentHash = sha256Hex(raw);
+    const realPathList = byRealPath.get(file.realPath) ?? [];
+    realPathList.push(file);
+    byRealPath.set(file.realPath, realPathList);
+    const contentList = byContentHash.get(contentHash) ?? [];
+    contentList.push(file);
+    byContentHash.set(contentHash, contentList);
+
+    const body = raw.toString('utf8');
     const chunks = chunkMarkdown(body);
     const arr = bySource.get(file.kbSource) ?? [];
     const phaseKey = `${file.kbSource}::${file.phase}`;
@@ -190,6 +237,7 @@ async function main() {
         content: c.content,
         chunkIndex: idx++,
       });
+      chunkCharSizes.push(c.content.length);
       totalChunks++;
     }
     perFilePhaseIndex.set(phaseKey, idx);
@@ -200,11 +248,63 @@ async function main() {
     `[ingest-kbs] prepared ${totalChunks} chunks across ${bySource.size} sources`,
   );
 
+  // ── Stats: dedup + chunk-size distribution ─────────────────────────────
+  const realPathDupes = [...byRealPath.entries()].filter(
+    ([, v]) => v.length > 1,
+  );
+  const contentHashDupes = [...byContentHash.entries()].filter(
+    ([, v]) => v.length > 1,
+  );
+  const uniqueRealPaths = byRealPath.size;
+  const uniqueContentHashes = byContentHash.size;
+
+  console.log(`\n[stats] file dedup:`);
+  console.log(`  walked files:          ${files.length}`);
+  console.log(`  unique realpaths:      ${uniqueRealPaths}`);
+  console.log(`  unique content SHA-256:${uniqueContentHashes}`);
+  console.log(`  realpath duplicates:   ${realPathDupes.length} groups`);
+  console.log(
+    `  content-hash duplicates:${contentHashDupes.length} groups (${
+      files.length - uniqueContentHashes
+    } redundant files)`,
+  );
+  if (contentHashDupes.length > 0) {
+    console.log(`  top content-hash dupes (by group size):`);
+    const sorted = [...contentHashDupes]
+      .sort((a, b) => b[1].length - a[1].length)
+      .slice(0, 5);
+    for (const [hash, group] of sorted) {
+      console.log(
+        `    ${hash.slice(0, 8)}… ×${group.length}: ${group
+          .map((f) => `${f.kbSource}/${basename(f.absPath)}`)
+          .slice(0, 4)
+          .join(', ')}${group.length > 4 ? ', …' : ''}`,
+      );
+    }
+  }
+
+  const sortedSizes = [...chunkCharSizes].sort((a, b) => a - b);
+  const avg =
+    chunkCharSizes.reduce((n, v) => n + v, 0) /
+    Math.max(1, chunkCharSizes.length);
+  console.log(`\n[stats] chunk-size distribution (chars):`);
+  console.log(`  n:     ${chunkCharSizes.length}`);
+  console.log(`  min:   ${sortedSizes[0] ?? 0}`);
+  console.log(`  p50:   ${percentile(sortedSizes, 50)}`);
+  console.log(`  p95:   ${percentile(sortedSizes, 95)}`);
+  console.log(`  p99:   ${percentile(sortedSizes, 99)}`);
+  console.log(`  max:   ${sortedSizes[sortedSizes.length - 1] ?? 0}`);
+  console.log(`  mean:  ${avg.toFixed(0)}`);
+  console.log(
+    `  target: ${TARGET_CHARS} (overlap=${OVERLAP_CHARS})  — ~500 tokens cl100k`,
+  );
+
   if (dryRun) {
+    console.log(`\n[ingest-kbs] per-source chunk counts:`);
     for (const [src, arr] of bySource.entries()) {
       console.log(`  ${src}: ${arr.length} chunks`);
     }
-    console.log('[ingest-kbs] --dry-run set; skipping embed + write.');
+    console.log('\n[ingest-kbs] --dry-run set; skipping embed + write.');
     return;
   }
 
@@ -225,6 +325,55 @@ async function main() {
   console.log(
     `[ingest-kbs] done. inserted=${grandInserted} skipped=${grandSkipped} total=${totalChunks}`,
   );
+
+  await postInsertVerify(Array.from(bySource.keys()));
+}
+
+async function postInsertVerify(allSources: string[]): Promise<void> {
+  const { db } = await import('@/lib/db/drizzle');
+  const { sql } = await import('drizzle-orm');
+
+  const rowCountRes = await db.execute(
+    sql`SELECT COUNT(*)::int AS n FROM kb_chunks`,
+  );
+  const rowCount = Number(
+    (rowCountRes as unknown as Array<{ n: number }>)[0]?.n ?? 0,
+  );
+  console.log(`\n[verify] kb_chunks row count: ${rowCount}`);
+
+  const indexRes = await db.execute(sql`
+    SELECT indexname, indexdef
+    FROM pg_indexes
+    WHERE schemaname = 'public' AND tablename = 'kb_chunks'
+    ORDER BY indexname
+  `);
+  const indexes = indexRes as unknown as Array<{
+    indexname: string;
+    indexdef: string;
+  }>;
+  console.log(`[verify] kb_chunks indexes:`);
+  for (const idx of indexes) {
+    const kind = /\busing (\w+)/i.exec(idx.indexdef)?.[1] ?? '?';
+    console.log(`  ${idx.indexname} — using ${kind}`);
+  }
+  const vectorIdx = indexes.find((i) => /ivfflat|hnsw/i.test(i.indexdef));
+  if (vectorIdx) {
+    const kind = /ivfflat/i.test(vectorIdx.indexdef) ? 'IVFFLAT' : 'HNSW';
+    console.log(`[verify] vector index kind: ${kind}`);
+  } else {
+    console.log(`[verify] WARNING: no ivfflat/hnsw vector index found`);
+  }
+
+  const sources = allSources.slice(0, 3);
+  for (const src of sources) {
+    const r = await db.execute(sql`
+      SELECT COUNT(*)::int AS n
+      FROM kb_chunks
+      WHERE kb_source = ${src}
+    `);
+    const n = Number((r as unknown as Array<{ n: number }>)[0]?.n ?? 0);
+    console.log(`[verify] spot-check kb_source='${src}': ${n} rows`);
+  }
 }
 
 main().catch((err) => {
