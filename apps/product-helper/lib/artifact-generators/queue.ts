@@ -32,6 +32,21 @@ type UnknownQueue = {
   close: () => Promise<void>;
 };
 
+type UnknownJob = { id?: string; data: unknown };
+type UnknownWorker = {
+  on: (event: 'failed', handler: (job: UnknownJob | undefined, err: Error) => void) => void;
+  close: () => Promise<void>;
+};
+
+type BullmqModule = {
+  Queue: new (name: string, opts: unknown) => UnknownQueue;
+  Worker: new (
+    name: string,
+    processor: (job: UnknownJob) => Promise<unknown>,
+    opts: unknown,
+  ) => UnknownWorker;
+};
+
 let _queue: UnknownQueue | null = null;
 let _queueInitPromise: Promise<UnknownQueue> | null = null;
 
@@ -45,7 +60,7 @@ async function getQueue(): Promise<UnknownQueue> {
       throw new Error('REDIS_URL not set; BullMQ queue unavailable');
     }
 
-    const { Queue } = (await import('bullmq')) as typeof import('bullmq');
+    const { Queue } = (await import('bullmq' as string)) as BullmqModule;
     const queue = new Queue(QUEUE_NAME, {
       connection: { url: redisUrl } as unknown as object,
       defaultJobOptions: {
@@ -104,11 +119,11 @@ export async function startWorker(): Promise<() => Promise<void>> {
   const redisUrl = process.env.REDIS_URL;
   if (!redisUrl) throw new Error('REDIS_URL not set');
 
-  const { Worker } = (await import('bullmq')) as typeof import('bullmq');
+  const { Worker } = (await import('bullmq' as string)) as BullmqModule;
 
   const worker = new Worker(
     QUEUE_NAME,
-    async (job) => {
+    async (job: UnknownJob) => {
       const { input, inputPath } = job.data as {
         input: ArtifactGeneratorInput;
         inputPath: string;
@@ -119,7 +134,7 @@ export async function startWorker(): Promise<() => Promise<void>> {
     { connection: { url: redisUrl } as unknown as object }
   );
 
-  worker.on('failed', (job, err) => {
+  worker.on('failed', (job: UnknownJob | undefined, err: Error) => {
     console.error(`[artifact-queue] job ${job?.id} failed: ${err.message}`);
   });
 
