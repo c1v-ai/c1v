@@ -1,5 +1,21 @@
 # KB-8 Atlas — Schema Changelog
 
+## 1.1.0 — patch (non-breaking) — 2026-04-23 (architect: kb8-atlas team)
+
+Patch on top of commit 1d885fe. No schema_v bump — same 1.1.0 tag.
+
+- `citationSchema.bytes_integrity` already carries `.default('clean')` —
+  verified optional on input; older citations without the field parse
+  implicitly as `clean`. The `superRefine` gate still demands
+  `content_sha256` when `bytes_integrity !== 'clean'`. No fixture or landed
+  atlas entry backfill required (the 6 landed entries omit the field and
+  parse green under the default).
+- `lib/db/schema/atlas-entries.ts` migrated off Drizzle's deprecated
+  2-arg `pgTable(name, columns, extraConfig)` callback-returning-object
+  form onto the current array-returning form (index names retained as
+  literal strings; column references unchanged). Types-only migration —
+  no SQL migration required, `drizzle-kit` remains broken.
+
 ## 1.1.0 — 2026-04-23 (architect: kb8-atlas team)
 
 Batched response to 5 schema gaps flagged by curator/scraper during the first
