@@ -97,3 +97,35 @@ lib/
 - **MCP Server** — 17 tools for IDE integration (CLAUDE.md + SKILL.md export)
 - **Quick Start Pipeline** — SSE-streamed 5-step PRD generation from one sentence
 - **Stripe Billing** — checkout, webhooks, plan management (Free/Base/Plus tiers)
+- **System-Design Viewers** — 5 routes at `/projects/[id]/system-design/{decision-matrix,ffbd,qfd,interfaces}/page.tsx` + `/diagrams` (Mermaid). Data source: `project.projectData.intakeState.extractedData.{decisionMatrix,ffbd,qfd,interfaces}`. Viewer components in `components/system-design/` + `components/diagrams/diagram-viewer.tsx`.
+- **Requirements & Backend Section Viewers** — 7 routes at `/projects/[id]/requirements/{problem-statement,system-overview,goals-metrics,user-stories,architecture,tech-stack,nfr}/` + 4 backend routes at `/projects/[id]/backend/{schema,api-spec,guidelines,infrastructure}/`. 13 section components in `components/projects/sections/`.
+- **Artifact Pipeline component** — `components/project/overview/artifact-pipeline.tsx`. v2 plan extends this to read `artifacts.manifest.jsonl` download links (manifest-read only).
+
+## UI Freeze
+
+Active for v2 cycle. See `plans/c1v-MIT-Crawley-Cornell.md` §9 + v2 §15.5.
+
+| Status | Path | Notes |
+|---|---|---|
+| 🔒 Frozen | `components/system-design/decision-matrix-viewer.tsx` | No edits without explicit unfreeze |
+| 🔒 Frozen | `components/system-design/ffbd-viewer.tsx` | " |
+| 🔒 Frozen | `components/system-design/qfd-viewer.tsx` | " |
+| 🔒 Frozen | `components/system-design/interfaces-viewer.tsx` | " |
+| 🔒 Frozen | `components/diagrams/diagram-viewer.tsx` | " |
+| 🔒 Frozen | `app/(dashboard)/projects/[id]/system-design/**/page.tsx` | All 4 pages |
+| 🟡 Semi | `components/project/overview/artifact-pipeline.tsx` | Manifest-read extension only |
+
+## System-Design Data Path
+
+All 4 system-design routes read from `(project as any).projectData?.intakeState?.extractedData?.<module>`. **TODO:** the `any` cast is a type hole — type it properly when extending the shape. Single `extractedData` blob — not separate artifacts per module. Crawley pivot / v2 pipeline must EXTEND this shape (add `extractedData.decisionNetwork`, `.formFunction`, `.fmea`), not replace it.
+
+## Dev Quirks
+
+- Dev server: from `apps/product-helper/` run `pnpm dev` (Turbopack; port 3000). Monorepo-root alternative: `pnpm dev --filter=product-helper`.
+- Tests: `jest + ts-jest` (not vitest). Run from `apps/product-helper/` with format-valid stub env vars — `lib/config/env.ts` enforces prefixes + lengths and now requires `OPENROUTER_API_KEY`. Minimum passing recipe: `POSTGRES_URL=stub AUTH_SECRET=stubstubstubstubstubstubstubstubstub ANTHROPIC_API_KEY=sk-ant-stub STRIPE_SECRET_KEY=sk_test_stub STRIPE_WEBHOOK_SECRET=whsec_stub OPENROUTER_API_KEY=stub BASE_URL=http://localhost:3000 npx jest <path>`. The old all-`stub` recipe fails at import time. For scripts that hit the live DB (ingest-kbs, verify-t3), source `.env.local` instead: `set -a; source .env.local; set +a; POSTGRES_URL=... pnpm tsx scripts/<name>.ts`.
+- Regenerate JSON schemas: `pnpm tsx lib/langchain/schemas/generate-all.ts` → emits `schemas/generated/{,module-2}/*.schema.json`.
+- Module 2 phase Zod lives in `lib/langchain/schemas/module-2/` — each phase extends `phaseEnvelopeSchema` from `_shared.ts`, registers in `module-2/index.ts`.
+- Zod `.describe("x-ui-surface=page:/... | section:... | internal:...")` convention drives frontend routing from schema metadata (round-trips through `zod-to-json.ts`).
+- Zod `.refine()` + `.extend()` drops the refinement. Unwrap with `.innerType()`, extend, re-apply via `.superRefine()`. Pattern: `applyNumericMathGate` in `schemas/module-2/requirements-table-base.ts`.
+- Stale `.next` after dev-server port change → `/manifest.webmanifest` returns 500 ENOENT → `rm -rf .next && pnpm dev`.
+- One-off scripts: `scripts/<name>.ts`, run via `pnpm tsx scripts/<name>.ts`.

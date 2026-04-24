@@ -48,6 +48,10 @@
 - **Env-var naming.** `lib/langchain/engines/kb-embedder.ts:58` reads `OPENAI_API_KEY`, not the briefed `EMBEDDINGS_API_KEY`. For Phase B (real re-embed) either rename for clarity alongside the OpenRouter gateway or alias one to the other. Purely cosmetic for now.
 - **KB `_shared/` path.** The brief points retrieval at `.planning/phases/13-Knowledge-banks-deepened/_shared/caching-system-design-kb.md`, but T9 `_shared/` extraction has not run yet; the file currently lives as 5 copies (folders 2, 4, 5-HoQ, 6, 7). The verifier targets the module-2 copy deterministically. Unique row count will compress once T9 lands.
 
-## Phase B gating
+## Phase B gating — RESOLVED 2026-04-24
 
-- `kb_chunks` currently holds **4,990 rows** with real `text-embedding-3-small` vectors, sufficient for the Wave-1 exit criteria. Re-embedding under a newly provisioned `EMBEDDINGS_API_KEY`/`OPENAI_API_KEY` can happen in Wave 2 without blocking the tag.
+- `kb_chunks` holds **4,990 rows** with real `text-embedding-3-small` vectors.
+- **Phase B re-ingest executed 2026-04-24** with `OPENAI_API_KEY` from `.env.local`:
+  `inserted=0 skipped=3289 total=3289`. Every chunk the current walker+splitter produces matches an existing `(kb_source, chunk_hash)` row, so the content-hash gate short-circuited every call and no embedding API requests fired. **Cost: ~$0.**
+- This proves the 4,990-row state is reproducible from clean sources with the chunker committed in `d65fed8`. The earlier "reproducibility gap" concern is closed.
+- Real-cosine spot checks across 3 kb_sources (caching/FFBD/HoQ) post-ingest returned on-topic top-K hits with cosine scores in 0.55–0.72, monotonic non-increasing — consistent with healthy retrieval over real embeddings.
