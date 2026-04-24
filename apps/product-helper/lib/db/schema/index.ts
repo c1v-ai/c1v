@@ -73,6 +73,29 @@ export type {
   DecisionAuditRow,
   NewDecisionAuditRow,
 } from './decision-audit';
+
+// Module 0 — signup enrichment cache + per-project entry states
+export {
+  userSignals,
+  USER_SIGNALS_TTL_DAYS,
+  USER_SIGNAL_STATUSES,
+} from './user-signals';
+export type {
+  UserSignalRow,
+  NewUserSignalRow,
+  UserSignalStatus,
+} from './user-signals';
+export {
+  projectEntryStates,
+  ENTRY_PATTERNS,
+  PIPELINE_START_SUBMODULES,
+} from './project-entry-states';
+export type {
+  ProjectEntryStateRow,
+  NewProjectEntryStateRow,
+  EntryPattern,
+  PipelineStartSubmodule,
+} from './project-entry-states';
 export type {
   TracebackCitation,
   NewTracebackCitation,
