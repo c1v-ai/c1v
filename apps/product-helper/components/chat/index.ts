@@ -21,3 +21,6 @@ export { DiagramLinkCard, detectDiagramType } from './diagram-link-card';
 export type { DiagramLinkCardProps, DiagramInfo, DiagramType as LinkDiagramType } from './diagram-link-card';
 
 export { DiagramPopup } from './diagram-popup';
+
+export { DecisionQuestionCard } from './decision-question-card';
+export type { DecisionQuestionCardProps } from './decision-question-card';
