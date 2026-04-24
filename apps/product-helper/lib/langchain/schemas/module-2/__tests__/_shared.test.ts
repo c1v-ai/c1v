@@ -20,7 +20,7 @@ import {
   columnPlanSchema,
   insertionSchema,
   phaseEnvelopeSchema,
-} from '../_shared';
+} from '..';
 
 // ─────────────────────────────────────────────────────────────────────────
 // phaseStatusSchema (C4 discriminator)

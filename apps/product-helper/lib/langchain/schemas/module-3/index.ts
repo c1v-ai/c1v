@@ -9,18 +9,28 @@
  * have one import surface (plan §8 S2.a). **M2 is read-only** — M3 never
  * edits `module-2/` files; it only imports.
  *
+ * **Layout (post `plans/reorg-mapping.md` §3 reorg):** phase schemas are
+ * grouped under 3 submodule files (1:1 renames, Gate C additions will
+ * register here):
+ *   - `submodule-3-1-hierarchy.ts`       — phase-0a (ingest → hierarchy)
+ *   - `submodule-3-2-flows-branching.ts` — phase-6 (shortcuts/flows)
+ *   - `submodule-3-3-handoff.ts`         — phase-11 (FFBD→DM bridge)
+ *
+ * Landing-path slugs (`m3StepData.phase-0a-ingest-m2-handoff` etc.) are
+ * preserved verbatim in the registry — only the TS filename changed.
+ *
  * @module lib/langchain/schemas/module-3
  */
 
 import type { z } from 'zod';
-import { phase0aSchema } from './phase-0a-ingest-m2-handoff';
-import { phase6Schema } from './phase-6-shortcuts-reference-blocks';
-import { phase11Schema } from './phase-11-ffbd-to-decision-matrix';
+import { phase0aSchema } from './submodule-3-1-hierarchy';
+import { phase6Schema } from './submodule-3-2-flows-branching';
+import { phase11Schema } from './submodule-3-3-handoff';
 
 // Re-export M2 shared primitives (plan §8 S2.a — single import surface)
 export * from '../module-2/_shared';
 
-// Phase exports (Gate B — 3 priority phases)
+// Phase exports (Gate B — 3 priority phases) — via submodule barrels
 export {
   phase0aSchema,
   type Phase0aArtifact,
@@ -34,7 +44,7 @@ export {
   type CarriedConstant,
   crossCuttingConcernSchema,
   type CrossCuttingConcern,
-} from './phase-0a-ingest-m2-handoff';
+} from './submodule-3-1-hierarchy';
 
 export {
   phase6Schema,
@@ -43,7 +53,7 @@ export {
   type ArrowShortcut,
   referenceBlockSchema,
   type ReferenceBlock,
-} from './phase-6-shortcuts-reference-blocks';
+} from './submodule-3-2-flows-branching';
 
 export {
   phase11Schema,
@@ -56,7 +66,7 @@ export {
   type CandidateDimension,
   alternativeSchema,
   type Alternative,
-} from './phase-11-ffbd-to-decision-matrix';
+} from './submodule-3-3-handoff';
 
 /**
  * Canonical registry consumed by `generate-all.ts` + future preload bundle.

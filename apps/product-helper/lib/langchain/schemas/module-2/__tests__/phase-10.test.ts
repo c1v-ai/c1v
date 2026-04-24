@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase10Schema, sysmlNodeKindSchema } from '../phase-10-sysml-activity';
+import { phase10Schema, sysmlNodeKindSchema } from '..';
 
 function envelope() {
   return {

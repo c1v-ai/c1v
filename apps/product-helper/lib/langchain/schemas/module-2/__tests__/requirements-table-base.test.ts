@@ -7,7 +7,7 @@ import {
   requirementRowBaseObject,
   applyNumericMathGate,
   NUMERIC_REQUIREMENT_CLASSES,
-} from '../requirements-table-base';
+} from '..';
 
 describe('requirementIdSchema (C12)', () => {
   it('accepts UC01.R01 .. UC99.R99 and CC variants', () => {

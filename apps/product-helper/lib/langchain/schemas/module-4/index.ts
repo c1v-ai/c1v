@@ -20,37 +20,48 @@
  * 15, 16 are envelope-only acks (calibration / glossary / checklist /
  * instructions — no independent JSON emission) per plan §4 decision #1.
  *
+ * **Layout (post `plans/reorg-mapping.md` §4 reorg):** phase schemas are
+ * grouped under 3 submodule files:
+ *   - `submodule-4-1-nodes-dependencies.ts` — phases 1,3,4,5,18
+ *   - `submodule-4-2-utility-pareto.ts`     — phases 6,7,8,9,10,11,12
+ *   - `submodule-4-3-sensitivity-handoff.ts` — phases 13,17
+ *
+ * Registry slugs are preserved verbatim — only the TS source path moved.
+ *
  * @module lib/langchain/schemas/module-4
  */
 
 import type { z } from 'zod';
-import { phase1Schema } from './phase-1-dm-envelope';
-import { phase3Schema } from './phase-3-performance-criteria';
-import { phase4Schema } from './phase-4-pc-pitfalls';
-import { phase5Schema } from './phase-5-direct-scaled-measures';
-import { phase6Schema } from './phase-6-ranges';
-import { phase7Schema } from './phase-7-subjective-rubric';
-import { phase8Schema } from './phase-8-measurement-scale';
-import { phase9Schema } from './phase-9-normalization';
-import { phase10Schema } from './phase-10-criterion-weights';
-import { phase11Schema } from './phase-11-consensus';
-import { phase12Schema } from './phase-12-min-max-scores';
-import { phase13Schema } from './phase-13-score-interpretation';
-import { phase17Schema } from './phase-17-dm-to-qfd-bridge';
-import { phase18Schema } from './phase-18-software-specific-dm';
+import {
+  phase1Schema,
+  phase3Schema,
+  phase4Schema,
+  phase5Schema,
+  phase18Schema,
+} from './submodule-4-1-nodes-dependencies';
+import {
+  phase6Schema,
+  phase7Schema,
+  phase8Schema,
+  phase9Schema,
+  phase10Schema,
+  phase11Schema,
+  phase12Schema,
+} from './submodule-4-2-utility-pareto';
+import {
+  phase13Schema,
+  phase17Schema,
+} from './submodule-4-3-sensitivity-handoff';
 
 // M4-specific envelope + metadata (widened phase_number)
 export * from './_shared';
 
-// Phase exports
+// Phase exports — via submodule barrels (registry slugs preserved verbatim)
 export {
   phase1Schema,
   type Phase1Artifact,
   decisionContextSchema,
   type DecisionContext,
-} from './phase-1-dm-envelope';
-
-export {
   phase3Schema,
   type Phase3Artifact,
   performanceCriterionSchema,
@@ -61,18 +72,12 @@ export {
   type PcDirection,
   pcMeasureTypeSchema,
   type PcMeasureType,
-} from './phase-3-performance-criteria';
-
-export {
   phase4Schema,
   type Phase4Artifact,
   pitfallCheckSchema,
   type PitfallCheck,
   pitfallTypeSchema,
   type PitfallType,
-} from './phase-4-pc-pitfalls';
-
-export {
   phase5Schema,
   type Phase5Artifact,
   rubricAnchorSchema,
@@ -83,39 +88,31 @@ export {
   type DirectMeasure,
   measureEntrySchema,
   type MeasureEntry,
-} from './phase-5-direct-scaled-measures';
+  phase18Schema,
+  type Phase18Artifact,
+  softwareCriterionLinkageSchema,
+  type SoftwareCriterionLinkage,
+} from './submodule-4-1-nodes-dependencies';
 
 export {
   phase6Schema,
   type Phase6Artifact,
   rangeEntrySchema,
   type RangeEntry,
-} from './phase-6-ranges';
-
-export {
   phase7Schema,
   type Phase7Artifact,
   subjectiveRubricSchema,
   type SubjectiveRubric,
-} from './phase-7-subjective-rubric';
-
-export {
   phase8Schema,
   type Phase8Artifact,
   scaleTypeSchema,
   type ScaleType,
-} from './phase-8-measurement-scale';
-
-export {
   phase9Schema,
   type Phase9Artifact,
   normalizationMethodSchema,
   type NormalizationMethod,
   normalizationEntrySchema,
   type NormalizationEntry,
-} from './phase-9-normalization';
-
-export {
   phase10Schema,
   type Phase10Artifact,
   criterionWeightSchema,
@@ -124,19 +121,13 @@ export {
   type ConsensusMethod,
   fmeaSeverityLinkageSchema,
   type FmeaSeverityLinkage,
-} from './phase-10-criterion-weights';
-
-export {
   phase11Schema,
   type Phase11Artifact,
   consensusMetricTypeSchema,
   type ConsensusMetricType,
-} from './phase-11-consensus';
-
-export {
   phase12Schema,
   type Phase12Artifact,
-} from './phase-12-min-max-scores';
+} from './submodule-4-2-utility-pareto';
 
 export {
   phase13Schema,
@@ -145,9 +136,6 @@ export {
   type OptionWeightedScore,
   interpretationThresholdSchema,
   type InterpretationThreshold,
-} from './phase-13-score-interpretation';
-
-export {
   phase17Schema,
   type Phase17Artifact,
   selectedOptionSchema,
@@ -158,14 +146,7 @@ export {
   type ScoringSnapshot,
   scoringSnapshotCellSchema,
   type ScoringSnapshotCell,
-} from './phase-17-dm-to-qfd-bridge';
-
-export {
-  phase18Schema,
-  type Phase18Artifact,
-  softwareCriterionLinkageSchema,
-  type SoftwareCriterionLinkage,
-} from './phase-18-software-specific-dm';
+} from './submodule-4-3-sensitivity-handoff';
 
 /**
  * Canonical registry consumed by `generate-all.ts` + the preload bundle.

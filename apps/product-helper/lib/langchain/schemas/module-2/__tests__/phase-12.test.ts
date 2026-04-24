@@ -3,8 +3,8 @@ import {
   phase12HandoffSchema,
   operationalPrimitivesSchema,
   sessionShapeSchema,
-} from '../phase-12-ffbd-handoff';
-import { phase12FinalReviewSchema } from '../phase-12-final-review';
+  phase12FinalReviewSchema,
+} from '..';
 
 function envelope(n: number, slug: string, name: string) {
   return {
