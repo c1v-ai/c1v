@@ -1,0 +1,71 @@
+{
+  "_schema": "fmea_stoplight_charts.v1",
+  "_module": "Module 7 — FMEA Phase 6",
+  "_produced_date": "2026-04-20",
+  "_source_table": "fmea_table.json",
+  "_total_cause_rows": 42,
+  "_matrix_convention": "y = Likelihood (1..5, bottom-to-top), x = Severity (1..4)",
+
+  "before_corrective_actions": {
+    "description": "Original risk distribution — cause rows at each (Severity, Likelihood) cell.",
+    "matrix": {
+      "L5": {"S1": 0, "S2": 0, "S3": 0, "S4": 0},
+      "L4": {"S1": 0, "S2": 0, "S3": 1, "S4": 1},
+      "L3": {"S1": 1, "S2": 3, "S3": 5, "S4": 4},
+      "L2": {"S1": 0, "S2": 4, "S3": 6, "S4": 7},
+      "L1": {"S1": 0, "S2": 1, "S3": 2, "S4": 7}
+    },
+    "criticality_totals": {
+      "HIGH":        {"rpn_range": "15-20", "count": 1,  "rows": ["F.15-c2"]},
+      "MEDIUM HIGH": {"rpn_range": "9-14",  "count": 10, "rows": ["F.3-c2", "F.5", "F.6", "F.11", "F.15-c1", "F.17", "F.19-c1", "F.22-c2", "F.30", "F.34"]},
+      "MEDIUM":      {"rpn_range": "5-8",   "count": 16, "rows": ["F.1-c1", "F.2", "F.3-c1", "F.4", "F.9", "F.10", "F.13-c1", "F.13-c2", "F.14", "F.16", "F.19-c2", "F.22-c1", "F.24", "F.25", "F.26", "F.27"]},
+      "MEDIUM LOW":  {"rpn_range": "3-4",   "count": 14, "rows": ["F.1-c2", "F.7", "F.8", "F.12", "F.18", "F.20", "F.23-c1", "F.23-c2", "F.28", "F.29", "F.31", "F.32", "F.33", "F.35"]},
+      "LOW":         {"rpn_range": "1-2",   "count": 1,  "rows": ["F.21"]}
+    },
+    "sum_check": 42
+  },
+
+  "after_corrective_actions": {
+    "description": "Adjusted risk distribution after proposed corrective actions. Rows without corrective actions retain original ratings.",
+    "matrix": {
+      "L5": {"S1": 0, "S2": 0, "S3": 0, "S4": 0},
+      "L4": {"S1": 0, "S2": 0, "S3": 0, "S4": 0},
+      "L3": {"S1": 0, "S2": 0, "S3": 0, "S4": 0},
+      "L2": {"S1": 0, "S2": 1, "S3": 1, "S4": 1},
+      "L1": {"S1": 1, "S2": 7, "S3": 14, "S4": 17}
+    },
+    "criticality_totals": {
+      "HIGH":        {"rpn_range": "15-20", "count": 0,  "rows": []},
+      "MEDIUM HIGH": {"rpn_range": "9-14",  "count": 0,  "rows": []},
+      "MEDIUM":      {"rpn_range": "5-8",   "count": 2,  "rows": ["F.6", "F.15-c2"]},
+      "MEDIUM LOW":  {"rpn_range": "3-4",   "count": 32, "rows": ["F.2", "F.3-c1", "F.3-c2", "F.4", "F.5", "F.7", "F.8", "F.9", "F.10", "F.11", "F.13-c1", "F.13-c2", "F.14", "F.15-c1", "F.16", "F.17", "F.18", "F.19-c1", "F.19-c2", "F.22-c1", "F.22-c2", "F.23-c1", "F.23-c2", "F.24", "F.25", "F.27", "F.29", "F.30", "F.31", "F.33", "F.34", "F.35"]},
+      "LOW":         {"rpn_range": "1-2",   "count": 8,  "rows": ["F.1-c1", "F.1-c2", "F.12", "F.20", "F.21", "F.26", "F.28", "F.32"]}
+    },
+    "sum_check": 42
+  },
+
+  "risk_migration_summary": {
+    "HIGH":        {"before": 1,  "after": 0,  "delta": -1},
+    "MEDIUM HIGH": {"before": 10, "after": 0,  "delta": -10},
+    "MEDIUM":      {"before": 16, "after": 2,  "delta": -14},
+    "MEDIUM LOW":  {"before": 14, "after": 32, "delta": 18},
+    "LOW":         {"before": 1,  "after": 8,  "delta": 7},
+    "interpretation": "All HIGH + MEDIUM HIGH cells cleared. Residual MEDIUM (2 rows) are F.6 token-drift (adj RPN 6, severity unchanged, likelihood halved) and F.15-c2 stale-citation TTL drift (adj RPN 8 — EC9↔EC11 roof is the strongest negative pair in the QFD and cannot be fully eliminated without giving up either freshness or perf).",
+    "overall_risk_reduction_pct": 65.7
+  },
+
+  "residual_risks_requiring_v1_1_followup": [
+    {
+      "row": "F.15-c2",
+      "description": "Stale citation served when TTL_HOURS=24 outlives EC11=7d refresh cadence even after reducing TTL to 6 on top-50 sources.",
+      "reason_cannot_go_lower": "EC9↔EC11 is the QFD roof's strongest negative pair (-2). Any further TTL reduction breaches EC7 prompt-cache hit target.",
+      "v1_1_recommendation": "Implement event-driven vendor-doc webhooks where available; target adj RPN 4 (MEDIUM LOW)."
+    },
+    {
+      "row": "F.6",
+      "description": "Agent context exceeds EC8=8000 tokens silently on long sessions.",
+      "reason_cannot_go_lower": "Provider tokenizer drift is a known risk as models evolve; no reliable upstream commitment to ABI stability.",
+      "v1_1_recommendation": "Add quarterly tokenizer-diff CI job; target adj RPN 3 (MEDIUM LOW)."
+    }
+  ]
+}

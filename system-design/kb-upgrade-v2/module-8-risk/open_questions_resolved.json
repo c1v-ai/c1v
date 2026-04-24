@@ -1,0 +1,99 @@
+{
+  "_schema": "fmea_open_questions_resolved.v1",
+  "_module": "Module 7 — FMEA",
+  "_produced_date": "2026-04-20",
+  "_source": "system-design/module-6-interfaces/risk_handoff.json open_questions_for_module_7",
+
+  "resolutions": [
+    {
+      "question": "What MTTD and recovery action are acceptable for a stale SS7 cache entry that outlived a refresh?",
+      "resolved_by_fmea_rows": ["F.15-c1", "F.15-c2"],
+      "answer": {
+        "mttd_target_seconds": 120,
+        "detection_mechanism": "Every citation is stamped with source_version; SS12 emits a diff-detector alert on >5% citation drift; downstream readers reject version mismatches.",
+        "recovery_action": "Transactional invalidate + outbox pattern with retry; monotonic source_uri version counter; reduce TTL_HOURS to 6 for top-50 most-cited sources.",
+        "adjusted_rpn": 8,
+        "residual_status": "F.15-c2 cannot be driven below MEDIUM in v1 because of the EC9↔EC11 roof (-2). Promote to v1.1 via event-driven refresh."
+      }
+    },
+    {
+      "question": "Can IF-24 audit remain 'best-effort' or does EC18 compliance require synchronous-blocking audit writes?",
+      "resolved_by_fmea_rows": ["F.19-c1", "F.34"],
+      "answer": {
+        "policy": "Split-policy: synchronous-durable for compliance-critical events (auth, CLI emit, spec emit, credential rotation); async best-effort for telemetry (probe metrics, cache hits, UI events).",
+        "constant_promoted": "AUDIT_WRITE_POLICY = 'compliance-critical=sync-durable; telemetry=best-effort-async'",
+        "reason": "F.19 and F.34 both scored MEDIUM HIGH under pure best-effort; split policy recovers them to MEDIUM LOW without blocking the hot path for telemetry volume.",
+        "promote_on_status": "Final"
+      }
+    },
+    {
+      "question": "How is a mid-session mode switch (cloud→local) handled — lock-break, new session, or error?",
+      "resolved_by_fmea_rows": ["F.3-c1", "F.3-c2"],
+      "answer": {
+        "policy": "Mode is locked at session boot. Mid-session mode change forces a NEW session with explicit founder confirmation; old session ends with audit entry.",
+        "enforcement": "Two-phase commit between IF-03 dispatch and IF-09 ack with a 2s timeout; on timeout, reject dispatch and retry.",
+        "residual_risk": "F.3-c1 adj RPN 4, F.3-c2 adj RPN 4. Both MEDIUM LOW."
+      }
+    },
+    {
+      "question": "Is SS4 provider fallback depth = 2 sufficient for PC.4 (spec-gen time) under degraded-provider conditions?",
+      "resolved_by_fmea_rows": ["F.7", "F.8"],
+      "answer": {
+        "sufficiency_verdict": "Insufficient for production targets. Promote SS4_PROVIDER_FALLBACK_DEPTH from 2 to 3.",
+        "constant_promoted": "SS4_PROVIDER_FALLBACK_DEPTH = 3",
+        "reason": "F.7/F.8 reached MEDIUM LOW only because likelihood at the catastrophic-severity tier is Remote (L=1). Increasing depth is cheap insurance (+40 hrs) against the compound-outage scenario and unlocks a third-provider posture for multi-region routing.",
+        "promote_on_status": "Final"
+      }
+    },
+    {
+      "question": "Under what failure mode can SS9 silently exceed MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT=2% despite IF-18 backpressure?",
+      "resolved_by_fmea_rows": ["F.22-c1", "F.22-c2", "F.27"],
+      "answer": {
+        "paths_identified": [
+          "F.22-c1: IF-18 backpressure ack lost → SS10 silent → SDK never throttles",
+          "F.22-c2: PROBE_FREQUENCY_PER_MIN=6 interacts with high-churn customer workload",
+          "F.27: Backpressure reject-on-violation event payload dropped in transport"
+        ],
+        "mitigations_layered": [
+          "SDK self-governor measures local overhead and auto-throttles if SS10 silent for 2*AGGREGATION_WINDOW",
+          "Adaptive probe frequency (6→3/min if local CPU > 70%)",
+          "Idempotent backpressure messages with monotonic sequence + SDK-side ack; retry-until-acked"
+        ],
+        "residual_rpn_after_all_three": 4,
+        "status": "MEDIUM LOW — defense-in-depth"
+      }
+    },
+    {
+      "question": "If SS10 buffer overflows before SS11 write succeeds, what is the acceptable data-loss window?",
+      "resolved_by_fmea_rows": ["F.25", "F.28"],
+      "answer": {
+        "policy": "Maximum acceptable data-loss window = 10 minutes (not 60 min). AGGREGATION_WINDOW_MIN=60 is a logical window, not a durability budget.",
+        "constant_new": "METRIC_CHECKPOINT_INTERVAL_MIN = 10",
+        "enforcement": "SS10 checkpoints to disk every 10 min; SS11 write failures are reconciled within 60 min via write-ahead log + retry job.",
+        "promote_on_status": "Final"
+      }
+    },
+    {
+      "question": "What is the FMEA scope for dual-mode: does Privacy Local inherit the same failure modes as SOTA Cloud or a reduced subset (no provider fallback)?",
+      "resolved_by_fmea_rows": ["F.7", "F.8", "F.3-c1", "F.3-c2"],
+      "answer": {
+        "policy": "Privacy Local inherits ALL of F.1-F.6 and F.11-F.35. It does NOT inherit F.7-F.10 (no external provider in local mode).",
+        "local_mode_specific_risks": [
+          "Local model corruption or disk failure (NEW candidate failure mode F.LM1 for v1.1 FMEA)",
+          "Local inference OOM under long context (NEW candidate F.LM2)"
+        ],
+        "current_run_scope": "v1 FMEA covers Cloud mode as primary. Local mode additions tracked for v1.1 FMEA iteration.",
+        "status": "Confirmed reduced-subset inheritance; add 2 local-mode-specific modes at next iteration."
+      }
+    }
+  ],
+
+  "promoted_constants": [
+    {"name": "AUDIT_WRITE_POLICY", "old": "best-effort (async)", "new": "compliance-critical=sync-durable; telemetry=best-effort-async", "status": "Final"},
+    {"name": "SS4_PROVIDER_FALLBACK_DEPTH", "old": 2, "new": 3, "status": "Final"},
+    {"name": "METRIC_CHECKPOINT_INTERVAL_MIN", "old": "(unset)", "new": 10, "status": "Final"},
+    {"name": "FLUSH_FALLBACK_BATCH_MIN", "old": 10, "new": "tiered: low-traffic=3, default=10", "status": "Final"},
+    {"name": "TRACEBACK_CACHE_TTL_HOURS", "old": 24, "new": "top-50=6, default=24", "status": "Final"},
+    {"name": "CITATION_CHECK_LATENCY_MAX_S", "old": 3, "new": 5, "status": "Final (with hard-reject on exceed)"}
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "_schema": "n2_chart.v1",
+  "_produced_date": "2026-04-20",
+  "_produced_by": "Module 6 — Defining Interfaces",
+  "_source_references": [
+    "system-design/module-5-qfd/interfaces_handoff.json",
+    "system-design/module-3-ffbd/interfaces_list.json",
+    "system-design/module-5-qfd/c1v_QFD.json"
+  ],
+  "_notes": [
+    "Diagonal = 14 c1v subsystems (SS1..SS14). Row = sender/provider, Column = receiver.",
+    "Cell (i,j) records what i provides to j. Request/response pairs appear in mirrored cells (upper and lower triangle).",
+    "External actors are NOT rows/columns (per KB) — they live in external_interfaces.",
+    "Every cell is driven by an M5 EC budget and/or an M3 informal interface (I.INT.x / I.EXT.x / I.UI.x)."
+  ],
+
+  "project": {
+    "id": "c1v",
+    "name": "c1v Dual-Mode Platform — N2 Interface Chart",
+    "interface_type": "operational",
+    "version": "1.0",
+    "date": "2026-04-20",
+    "qfd_target_endpoints": 40
+  },
+
+  "subsystems": [
+    { "id": "SS1",  "name": "Founder Web UI",            "description": "Intake conversation, spec review, quick-start trigger.",                      "category": "ui" },
+    { "id": "SS2",  "name": "Session Manager",           "description": "Holds per-founder mode (Cloud default / Local opt-in) + auth + routing.",     "category": "platform" },
+    { "id": "SS3",  "name": "Agent Orchestrator",        "description": "LangGraph orchestration of intake/extraction/generation/review agents.",      "category": "engine" },
+    { "id": "SS4",  "name": "LLM Provider Layer",        "description": "Routes across Anthropic / OpenAI / local model endpoints.",                   "category": "engine" },
+    { "id": "SS5",  "name": "Prompt Cache",              "description": "Claude prompt-caching layer + local embedding cache.",                        "category": "data" },
+    { "id": "SS6",  "name": "Spec Generator",            "description": "Produces Mermaid-only spec artifacts (v1).",                                  "category": "engine" },
+    { "id": "SS7",  "name": "Traceback Store",           "description": "Citation cache + vendor-doc fetcher (internal cache↔fetcher invalidation).",  "category": "data" },
+    { "id": "SS8",  "name": "CLI Bundle Emitter",        "description": "Packaging + signing + delivery of CLI bundle (SKILL.md + CLAUDE.md + MCP).",   "category": "engine" },
+    { "id": "SS9",  "name": "Probe SDK",                 "description": "Runs inside customer system; emits bounded-overhead metrics.",                "category": "external" },
+    { "id": "SS10", "name": "Metrics Collector",         "description": "c1v-side ingestion endpoint + aggregator.",                                   "category": "engine" },
+    { "id": "SS11", "name": "Metric Store",              "description": "Time-series storage for aggregated metrics (60min window).",                  "category": "data" },
+    { "id": "SS12", "name": "Recommendation Engine",     "description": "Consumes metric deviations + produces cited recommendations.",                "category": "engine" },
+    { "id": "SS13", "name": "Auth / Credential Vault",   "description": "Session tokens, customer API credentials, rotation.",                         "category": "platform" },
+    { "id": "SS14", "name": "Audit Log Store",           "description": "Operational audit trail (90d retention).",                                    "category": "data" }
+  ],
+
+  "interfaces": [
+    { "id": "IF-01", "from": "SS1",  "to": "SS2",  "name": "Founder auth + mode select", "data": "Login credentials, mode selection (Cloud/Local), intake intent. Drives session boot.",                                    "endpoints_count": 3, "driven_by_ec": ["EC15"], "driven_by_m3": ["I.INT.1", "I.UI.1"] },
+    { "id": "IF-02", "from": "SS2",  "to": "SS1",  "name": "Session state + UI stream",  "data": "Server-sent events: session bound, intake turn payload, spec preview, progress deltas. 50ms streaming cadence (EC16).", "endpoints_count": 4, "driven_by_ec": ["EC15","EC16"], "driven_by_m3": ["I.UI.1"] },
+
+    { "id": "IF-03", "from": "SS2",  "to": "SS3",  "name": "Dispatch request (locked mode)", "data": "Authenticated principal + locked mode + intake payload. MUST include mode lock before parallel dispatch (EC5↔EC6 roof resolution).", "endpoints_count": 2, "driven_by_ec": ["EC5","EC6","EC8"], "driven_by_m3": ["I.INT.1"] },
+    { "id": "IF-04", "from": "SS3",  "to": "SS2",  "name": "Agent run state",            "data": "Per-run status, agent counts (≤5), tokens consumed (≤8000/call), completion/failure events.",                             "endpoints_count": 3, "driven_by_ec": ["EC6","EC8"], "driven_by_m3": ["I.INT.1"] },
+
+    { "id": "IF-05", "from": "SS3",  "to": "SS5",  "name": "Cache lookup",               "data": "Prompt hash + cache key. Attempt first; fallthrough on miss. Target ≥70% hit rate rolling 24h (EC7).",                     "endpoints_count": 2, "driven_by_ec": ["EC7"], "driven_by_m3": [] },
+    { "id": "IF-06", "from": "SS5",  "to": "SS3",  "name": "Cache hit/miss response",    "data": "Cached completion on hit; miss signal otherwise. Determines whether SS4 is called.",                                     "endpoints_count": 2, "driven_by_ec": ["EC7"], "driven_by_m3": [] },
+
+    { "id": "IF-07", "from": "SS3",  "to": "SS4",  "name": "LLM call",                   "data": "Prompt + tool set + context (≤8000 tokens, EC8). Cache-miss only. Routed per session policy (EC5).",                       "endpoints_count": 3, "driven_by_ec": ["EC8","EC5"], "driven_by_m3": ["I.EXT.2"] },
+    { "id": "IF-08", "from": "SS4",  "to": "SS3",  "name": "Completion / tool calls",    "data": "Model completion, tool calls, usage metadata. Streamed to UI via SS2→SS1.",                                              "endpoints_count": 3, "driven_by_ec": ["EC8","EC16"], "driven_by_m3": ["I.EXT.2"] },
+
+    { "id": "IF-09", "from": "SS2",  "to": "SS4",  "name": "Routing policy write",       "data": "Per-session routing policy (provider preference, temperature, local-mode flag). EC5 target = per-session (2).",              "endpoints_count": 1, "driven_by_ec": ["EC5"], "driven_by_m3": [] },
+    { "id": "IF-10", "from": "SS5",  "to": "SS4",  "name": "Cache-assisted call",        "data": "SS5 forwards cache-qualified prompts to SS4 with prefix reuse hints. Part of the ≥70% hit-rate pipeline (EC7).",               "endpoints_count": 2, "driven_by_ec": ["EC7","EC8"], "driven_by_m3": [] },
+
+    { "id": "IF-11", "from": "SS3",  "to": "SS6",  "name": "Generate spec request",      "data": "Intake-approved requirements → spec generation request (Mermaid v1, EC12).",                                             "endpoints_count": 1, "driven_by_ec": ["EC12","EC13"], "driven_by_m3": ["I.INT.2"] },
+    { "id": "IF-12", "from": "SS6",  "to": "SS3",  "name": "Spec draft + review signal", "data": "Draft spec URI + pending-review flag. Gated on citation check (IF-13/IF-14).",                                           "endpoints_count": 2, "driven_by_ec": ["EC10","EC12"], "driven_by_m3": ["I.INT.2","I.INT.3"] },
+
+    { "id": "IF-13", "from": "SS6",  "to": "SS7",  "name": "Citation check request",     "data": "Per-claim source lookup batch. Hard floor: every claim must resolve. 100% or emission blocked (EC10).",                    "endpoints_count": 2, "driven_by_ec": ["EC10"], "driven_by_m3": ["I.INT.7","I.EXT.5"] },
+    { "id": "IF-14", "from": "SS7",  "to": "SS6",  "name": "Traced citations",           "data": "Resolved citations with TTL=24h (EC9); unresolved → spec emission blocked.",                                              "endpoints_count": 2, "driven_by_ec": ["EC9","EC10"], "driven_by_m3": ["I.INT.7"] },
+
+    { "id": "IF-15", "from": "SS3",  "to": "SS8",  "name": "Emit CLI bundle",            "data": "Approved spec URI → emit SKILL.md + CLAUDE.md + MCP tool defs. ≤5MB bundle (EC14). Only fires after IF-12 review.",       "endpoints_count": 1, "driven_by_ec": ["EC14","EC12"], "driven_by_m3": ["I.INT.3","I.INT.4","I.EXT.7"] },
+    { "id": "IF-16", "from": "SS8",  "to": "SS3",  "name": "Emit receipt + signature",   "data": "Bundle signature hash, VCS commit ref, success/failure status. Feeds audit trail (IF-24).",                               "endpoints_count": 2, "driven_by_ec": ["EC14"], "driven_by_m3": ["I.INT.4","I.EXT.7"] },
+
+    { "id": "IF-17", "from": "SS9",  "to": "SS10", "name": "Probe payload",              "data": "Per-probe metric payload. ≤4KB (EC3). ≤6 probes/min (EC1). Batch ≥50 or time-flush after aggregation window (EC4).",       "endpoints_count": 3, "driven_by_ec": ["EC1","EC3","EC4","EC2"], "driven_by_m3": ["I.EXT.10","I.EXT.4"] },
+    { "id": "IF-18", "from": "SS10", "to": "SS9",  "name": "Backpressure + config",      "data": "Reject-on-violation responses, overhead-budget backpressure, collector-side SDK config (probe frequency + batch size).", "endpoints_count": 2, "driven_by_ec": ["EC1","EC3","EC4"], "driven_by_m3": ["I.EXT.10"] },
+
+    { "id": "IF-19", "from": "SS10", "to": "SS11", "name": "Aggregated write",           "data": "60-minute-window aggregates (EC2) written to time-series store.",                                                        "endpoints_count": 1, "driven_by_ec": ["EC2"], "driven_by_m3": [] },
+    { "id": "IF-20", "from": "SS11", "to": "SS12", "name": "Metric read + deviation",    "data": "Query aggregated series for deviation detection. Pull model (not push).",                                                "endpoints_count": 2, "driven_by_ec": ["EC2"], "driven_by_m3": ["I.INT.6"] },
+
+    { "id": "IF-21", "from": "SS12", "to": "SS7",  "name": "Citation lookup for recs",   "data": "Citation resolution for recommendation claims (reuses SS7 cache).",                                                    "endpoints_count": 1, "driven_by_ec": ["EC9","EC10"], "driven_by_m3": ["I.INT.6","I.INT.7"] },
+    { "id": "IF-22", "from": "SS7",  "to": "SS12", "name": "Cited refs for recs",        "data": "Traced citations (24h TTL).",                                                                                            "endpoints_count": 1, "driven_by_ec": ["EC9","EC10"], "driven_by_m3": ["I.INT.7"] },
+
+    { "id": "IF-23", "from": "SS12", "to": "SS3",  "name": "Recommendation feed-back",   "data": "Cited recommendation → next-iteration spec candidate (feedback loop from F.6→F.2).",                                     "endpoints_count": 1, "driven_by_ec": ["EC10"], "driven_by_m3": ["I.INT.6","I.INT.8"] },
+
+    { "id": "IF-24", "from": "SS3",  "to": "SS14", "name": "Audit log write",            "data": "All orchestration events, spec approvals, CLI emissions, mode switches. 90d retention (EC18).",                         "endpoints_count": 1, "driven_by_ec": ["EC18"], "driven_by_m3": [] },
+    { "id": "IF-25", "from": "SS8",  "to": "SS14", "name": "CLI emission audit",         "data": "Bundle id, hash, signer, VCS commit, timestamp.",                                                                        "endpoints_count": 1, "driven_by_ec": ["EC18","EC14"], "driven_by_m3": ["I.INT.4"] },
+    { "id": "IF-26", "from": "SS10", "to": "SS14", "name": "Probe rejection audit",      "data": "Overhead-violation rejections logged for compliance evidence (I.EXT.9).",                                                "endpoints_count": 1, "driven_by_ec": ["EC18","EC1"], "driven_by_m3": ["I.EXT.10","I.EXT.9"] },
+
+    { "id": "IF-27", "from": "SS13", "to": "SS2",  "name": "Session token issue",        "data": "Signed JWT on auth success; mode claim + role claims.",                                                                   "endpoints_count": 1, "driven_by_ec": ["EC17"], "driven_by_m3": ["I.INT.1","I.EXT.1"] },
+    { "id": "IF-28", "from": "SS2",  "to": "SS13", "name": "Token refresh / rotate",     "data": "Rotation trigger at 90d cadence (EC17).",                                                                                "endpoints_count": 1, "driven_by_ec": ["EC17"], "driven_by_m3": ["I.INT.1"] },
+    { "id": "IF-29", "from": "SS13", "to": "SS4",  "name": "Provider credentials",       "data": "Per-provider API keys (Anthropic/OpenAI) + local-mode flag. Vaulted; rotated per EC17.",                                 "endpoints_count": 1, "driven_by_ec": ["EC17","EC5"], "driven_by_m3": [] },
+    { "id": "IF-30", "from": "SS13", "to": "SS9",  "name": "Probe credentials",          "data": "Read-only handles to VCS + Observability (I.EXT.3, I.EXT.4). Write-scope grants rejected (UC11).",                       "endpoints_count": 1, "driven_by_ec": ["EC17"], "driven_by_m3": ["I.EXT.1","I.EXT.3","I.EXT.4"] },
+
+    { "id": "IF-31", "from": "SS1",  "to": "SS6",  "name": "Spec review approvals",      "data": "Founder approvals/edits to draft spec. Gates IF-15 (CLI emission).",                                                     "endpoints_count": 2, "driven_by_ec": ["EC13"], "driven_by_m3": ["I.INT.3","I.UI.1","I.UI.2"] },
+    { "id": "IF-32", "from": "SS6",  "to": "SS1",  "name": "Spec preview render",        "data": "Rendered Mermaid artifacts for in-UI review (intake step 3/5 — EC13).",                                                  "endpoints_count": 1, "driven_by_ec": ["EC13","EC12"], "driven_by_m3": ["I.UI.1","I.UI.2"] }
+  ],
+
+  "external_interfaces": [
+    { "id": "IF-EXT-01", "from": "Founders / PMs / Engineers / Admins", "to": "SS1",  "data": "I.UI.1-4 — bidirectional HTTP/SSE: idea prompts, intake Q&A, spec approvals, recommendation consumption, org/seat provisioning." },
+    { "id": "IF-EXT-02", "from": "Identity Providers",                  "to": "SS13", "data": "I.EXT.1 — OIDC/SAML inbound-auth. Read-only scope mandatory for customer-system connections." },
+    { "id": "IF-EXT-03", "from": "SS4",                                 "to": "LLM Providers (Anthropic/OpenAI/local)", "data": "I.EXT.2 — HTTPS JSON prompts → completions/embeddings/tool calls. Fallback chain per CC.R07. Local-mode bypass per Privacy Local opt-in." },
+    { "id": "IF-EXT-04", "from": "SS8",                                 "to": "Version Control",  "data": "I.EXT.3 (write) / I.EXT.7 — signed artifact commit (SKILL.md + CLAUDE.md + MCP tool defs) to customer VCS." },
+    { "id": "IF-EXT-05", "from": "SS9",                                 "to": "Customer Prod Systems + Observability", "data": "I.EXT.10 + I.EXT.4 — read-only probe handles. MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT=2% enforced via EC1/EC3/EC4." },
+    { "id": "IF-EXT-06", "from": "SS7",                                 "to": "Documentation Sources", "data": "I.EXT.5 — HTTPS+RAG retrieval of vendor specs, RFCs, standards. Refresh cadence 7d (EC11)." },
+    { "id": "IF-EXT-07", "from": "SS14",                                "to": "Compliance Frameworks", "data": "I.EXT.9 — evidence exports (SOC2/HIPAA/GDPR/PCI-DSS). v1 = operational audit; deeper evidence deferred to v2 per M4 D3." },
+    { "id": "IF-EXT-08", "from": "SS8",                                 "to": "CI/CD Systems", "data": "I.EXT.8 — GH Actions / CircleCI hooks: spec as gate + acceptance criteria." },
+    { "id": "IF-EXT-09", "from": "SS4",                                 "to": "Cloud Providers", "data": "I.EXT.6 — vendor APIs (AWS/GCP/Azure) for service catalogs + SLAs (consumed during extraction)." },
+    { "id": "IF-EXT-10", "from": "SS8",                                 "to": "IDE / CLI Clients", "data": "I.EXT.7 — signed artifact + receipt delivered to founder's IDE (Claude Code, Cursor, etc.)." }
+  ],
+
+  "system_flows": [
+    {
+      "name": "Founder Intake → Spec → CLI Emission (5-step Quick Start)",
+      "path": ["SS1", "SS2", "SS3", "SS6", "SS3", "SS8"],
+      "description": "I.UI.1/I.INT.1/I.INT.2/I.INT.3/I.INT.4 realized end-to-end. Founder enters intake, session dispatches agents, spec drafted, review approved, CLI emitted."
+    },
+    {
+      "name": "Agent LLM Call with Cache",
+      "path": ["SS3", "SS5", "SS4", "SS3"],
+      "description": "Cache lookup (IF-05/06) first; on miss SS5→SS4 cache-assisted call (IF-10) returns via IF-08. Target ≥70% cache hits (EC7)."
+    },
+    {
+      "name": "Probe → Aggregation → Store",
+      "path": ["SS9", "SS10", "SS11"],
+      "description": "Customer-side probe → collector aggregates at 60-min window → time-series store. Overhead enforcement at SS10 boundary (IF-18)."
+    },
+    {
+      "name": "Deviation → Cited Recommendation → Feedback",
+      "path": ["SS11", "SS12", "SS7", "SS12", "SS3"],
+      "description": "I.INT.6+I.INT.8 realized: deviation detected from aggregates, citations fetched, recommendation fed back to orchestrator for next-iteration spec."
+    },
+    {
+      "name": "Citation-Gated Spec Review",
+      "path": ["SS6", "SS7", "SS6", "SS1"],
+      "description": "IF-13/14 citation check (100% floor) → draft returned to SS6 → rendered to founder (IF-32) for approval."
+    }
+  ],
+
+  "control_loops": [
+    {
+      "name": "Agent ↔ Cache ↔ LLM Call Loop",
+      "path": ["SS3", "SS5", "SS3"],
+      "description": "Cache lookup → hit returns cached completion OR miss triggers SS4 call. Closed loop on every agent step. High-stakes: governs EC7 (70% hit) and EC8 (8000 tokens)."
+    },
+    {
+      "name": "Spec Generation ↔ Traceback Citation Loop",
+      "path": ["SS6", "SS7", "SS6"],
+      "description": "Every claim in the spec must resolve to a citation. EC10 hard floor (100%); emission blocked if any claim unresolved. EC9↔EC11 TTL/refresh coordination lives inside SS7."
+    },
+    {
+      "name": "Probe ↔ Collector Backpressure Loop",
+      "path": ["SS9", "SS10", "SS9"],
+      "description": "Collector sends backpressure + config updates; SDK self-throttles. Resolves EC1↔EC2 and EC2↔EC4 roof negatives (joint tuning + time-based flush)."
+    },
+    {
+      "name": "Recommendation ↔ Traceback Loop",
+      "path": ["SS12", "SS7", "SS12"],
+      "description": "Recommendation Engine requests citations, receives cited refs. Every rec claim must resolve in SS7 cache before feeding back to SS3. Part of F.6→F.2 loop from FFBD."
+    },
+    {
+      "name": "Session ↔ Credential Rotation Loop",
+      "path": ["SS2", "SS13", "SS2"],
+      "description": "Session Manager requests rotation at 90d cadence (EC17); vault issues new token. Operational hygiene loop."
+    }
+  ]
+}
