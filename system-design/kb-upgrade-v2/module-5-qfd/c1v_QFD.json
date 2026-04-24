@@ -1,0 +1,839 @@
+{
+  "_schema": "qfd_populated.v1",
+  "_conforms_to": "QFD-Template.schema.json",
+  "_produced_by": "Module 5 — QFD House of Quality",
+  "_produced_date": "2026-04-20",
+  "_upstream_refs": [
+    "system-design/kb-upgrade-v2/module-4-decision-matrix/qfd_handoff.json",
+    "system-design/kb-upgrade-v2/module-4-decision-matrix/final_report.md",
+    "system-design/kb-upgrade-v2/module-2-requirements/constants_table.json",
+    "system-design/kb-upgrade-v2/module-1-defining-scope/system_scope_summary.json"
+  ],
+  "_winning_concept": "c1v Dual-Mode Platform (Option C, M4 score 0.662)",
+  "metadata": {
+    "project_title": "c1v Dual-Mode Platform — House of Quality",
+    "developed_by": "David Ancor (Bond)",
+    "last_updated": "2026-04-20"
+  },
+  "front_porch": [
+    {
+      "pc_id": "PC.1",
+      "full_attribute": "The system shall impose minimal overhead on customer production systems it observes.",
+      "short_name": "Non-invasiveness",
+      "relative_importance": 0.2,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.2",
+      "full_attribute": "The system shall deliver recommendations quickly after a metric deviation is detected.",
+      "short_name": "Feedback Latency",
+      "relative_importance": 0.2,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.3",
+      "full_attribute": "The system shall back every tech-stack recommendation with a verifiable metric citation.",
+      "short_name": "Traceback Coverage",
+      "relative_importance": 0.2,
+      "direction_of_change": "↑"
+    },
+    {
+      "pc_id": "PC.4",
+      "full_attribute": "The system shall generate a reviewable spec shortly after idea submission.",
+      "short_name": "Spec Gen Time",
+      "relative_importance": 0.16,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.5",
+      "full_attribute": "The system shall emit the CLI bundle quickly after spec approval.",
+      "short_name": "CLI Emission",
+      "relative_importance": 0.12,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.6",
+      "full_attribute": "The system shall feel responsive during founder intake conversation.",
+      "short_name": "Intake Response",
+      "relative_importance": 0.12,
+      "direction_of_change": "↓"
+    }
+  ],
+  "_weights_check": {
+    "sum": 1.0,
+    "note": "Locked from M4 handoff. Raw 1-5 ratings: {PC.1:5, PC.2:5, PC.3:5, PC.4:4, PC.5:3, PC.6:3}; sum 25; normalized weights above."
+  },
+  "second_floor": [
+    {
+      "ec_id": 1,
+      "name": "Probe frequency",
+      "unit": "probes/min",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 2,
+      "name": "Aggregation window",
+      "unit": "min",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 3,
+      "name": "Metric payload size",
+      "unit": "KB",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 4,
+      "name": "Probe batch size",
+      "unit": "events/batch",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": 5,
+      "name": "LLM routing granularity",
+      "unit": "scale 1-3",
+      "direction_of_change": "target"
+    },
+    {
+      "ec_id": 6,
+      "name": "Parallel agent dispatch count",
+      "unit": "agents",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": 7,
+      "name": "Prompt-cache hit rate",
+      "unit": "%",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": 8,
+      "name": "Context tokens per agent call",
+      "unit": "tokens",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 9,
+      "name": "Traceback cache TTL",
+      "unit": "hours",
+      "direction_of_change": "target"
+    },
+    {
+      "ec_id": 10,
+      "name": "Citation completeness floor",
+      "unit": "%",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": 11,
+      "name": "Vendor-doc refresh cadence",
+      "unit": "days",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 12,
+      "name": "Spec artifact format count",
+      "unit": "formats",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 13,
+      "name": "Quick Start step count",
+      "unit": "steps",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 14,
+      "name": "CLI bundle size",
+      "unit": "MB",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 15,
+      "name": "Founder intake turn budget",
+      "unit": "ms",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 16,
+      "name": "Streaming UI chunk cadence",
+      "unit": "ms",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 17,
+      "name": "Credential rotation cadence",
+      "unit": "days",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": 18,
+      "name": "Audit log retention",
+      "unit": "days",
+      "direction_of_change": "target"
+    }
+  ],
+  "main_floor": {
+    "_note": "Values are PC row x EC column on -2..+2 scale. Blank/0 = no significant effect.",
+    "PC.1": {
+      "EC1": 2,
+      "EC2": -1,
+      "EC3": 2,
+      "EC4": 1,
+      "EC5": 0,
+      "EC6": 0,
+      "EC7": 0,
+      "EC8": 0,
+      "EC9": 0,
+      "EC10": 0,
+      "EC11": 0,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17": 0,
+      "EC18": 0
+    },
+    "PC.2": {
+      "EC1": -2,
+      "EC2": 2,
+      "EC3": 1,
+      "EC4": -1,
+      "EC5": 0,
+      "EC6": 1,
+      "EC7": 1,
+      "EC8": 1,
+      "EC9": 0,
+      "EC10": -1,
+      "EC11": -1,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17": 0,
+      "EC18": 0
+    },
+    "PC.3": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": -1,
+      "EC6": 0,
+      "EC7": -1,
+      "EC8": -2,
+      "EC9": 2,
+      "EC10": 2,
+      "EC11": 1,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17": 0,
+      "EC18": 0
+    },
+    "PC.4": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": 1,
+      "EC6": 2,
+      "EC7": 2,
+      "EC8": 1,
+      "EC9": 0,
+      "EC10": -1,
+      "EC11": 0,
+      "EC12": 2,
+      "EC13": 1,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17": 0,
+      "EC18": 0
+    },
+    "PC.5": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": 0,
+      "EC6": 0,
+      "EC7": 0,
+      "EC8": 0,
+      "EC9": 0,
+      "EC10": 0,
+      "EC11": 0,
+      "EC12": 1,
+      "EC13": 0,
+      "EC14": 2,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17": -1,
+      "EC18": 0
+    },
+    "PC.6": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": -1,
+      "EC6": 1,
+      "EC7": 2,
+      "EC8": 2,
+      "EC9": 0,
+      "EC10": 0,
+      "EC11": 0,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 2,
+      "EC16": 2,
+      "EC17": 0,
+      "EC18": 0
+    }
+  },
+  "_main_floor_stats": {
+    "total_cells": 108,
+    "nonzero_cells": 35,
+    "sparsity_pct": 67.6,
+    "meets_sparsity_threshold": true,
+    "rows_without_nonzero": [],
+    "cols_without_nonzero": []
+  },
+  "roof": {
+    "_note": "Lower triangle only. Pair EC_i↔EC_j stored as 'EC_i_EC_j' with i<j. Excel cell: row=j+2, col=i+4.",
+    "EC1_EC2": -1,
+    "EC2_EC4": -1,
+    "EC3_EC4": 1,
+    "EC5_EC6": -1,
+    "EC6_EC7": 1,
+    "EC6_EC8": 1,
+    "EC7_EC8": 1,
+    "EC7_EC15": 1,
+    "EC8_EC15": 1,
+    "EC9_EC11": -2,
+    "EC10_EC11": 1,
+    "EC12_EC13": 1,
+    "EC12_EC14": 2,
+    "EC15_EC16": 2
+  },
+  "_roof_stats": {
+    "total_lower_triangle_pairs": 153,
+    "nonzero_pairs": 14,
+    "nonzero_pct": 9.2,
+    "tradeoffs_flagged_for_design_targets": [
+      "EC1_EC2",
+      "EC2_EC4",
+      "EC5_EC6",
+      "EC9_EC11"
+    ]
+  },
+  "back_porch": {
+    "_note": "1-5 customer perception (1=poor, 5=excellent). A = c1v Dual-Mode Platform; B = Devin (Cognition); C = Cursor (Anysphere).",
+    "_competitor_b_name": "Devin (Cognition)",
+    "_competitor_c_name": "Cursor (Anysphere)",
+    "PC.1": {
+      "A_low": 3,
+      "A_high": 5,
+      "A_target": 4,
+      "B": 5,
+      "C": 5,
+      "rationale": "c1v probes customer prod at 2% ceiling; Devin/Cursor do not touch customer prod systems (trivially non-invasive)."
+    },
+    "PC.2": {
+      "A_low": 3,
+      "A_high": 4,
+      "A_target": 3,
+      "B": 1,
+      "C": 1,
+      "rationale": "c1v purpose-built for metric→recommendation loop (60 min target); Devin/Cursor do not implement this category."
+    },
+    "PC.3": {
+      "A_low": 5,
+      "A_high": 5,
+      "A_target": 5,
+      "B": 2,
+      "C": 2,
+      "rationale": "c1v enforces 100% traceback (PC.3 Final); Devin cites ~30-40% of suggestions, Cursor ~20-30%."
+    },
+    "PC.4": {
+      "A_low": 2,
+      "A_high": 4,
+      "A_target": 3,
+      "B": 2,
+      "C": 3,
+      "rationale": "c1v target 300s; Devin 600-900s for full spec work; Cursor 30-60s but produces IDE-level scaffolding, not structured PRD."
+    },
+    "PC.5": {
+      "A_low": 3,
+      "A_high": 5,
+      "A_target": 4,
+      "B": 1,
+      "C": 1,
+      "rationale": "c1v emits CLI bundle in 60s target; Devin/Cursor have no equivalent signed-bundle deliverable."
+    },
+    "PC.6": {
+      "A_low": 2,
+      "A_high": 4,
+      "A_target": 3,
+      "B": 2,
+      "C": 5,
+      "rationale": "c1v web-streaming UI ~2000 ms/turn; Devin ~3000-5000 ms; Cursor ~500-1500 ms (IDE-embedded, local context)."
+    }
+  },
+  "basement": {
+    "_note": "Per-EC operational data. Competitor values are industry-informed estimates (marked Est.) where no public benchmark exists. N/A = capability not implemented by competitor.",
+    "EC1": {
+      "unit": "probes/min",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≤60/min",
+      "target": 6,
+      "technical_difficulty": 2,
+      "estimated_cost": 2
+    },
+    "EC2": {
+      "unit": "min",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≤60 min",
+      "target": 60,
+      "technical_difficulty": 2,
+      "estimated_cost": 1
+    },
+    "EC3": {
+      "unit": "KB",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "—",
+      "target": 4,
+      "technical_difficulty": 2,
+      "estimated_cost": 1
+    },
+    "EC4": {
+      "unit": "events/batch",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "—",
+      "target": 50,
+      "technical_difficulty": 2,
+      "estimated_cost": 1
+    },
+    "EC5": {
+      "unit": "scale 1-3",
+      "competitor_b": "1 (per-org) Est.",
+      "competitor_c": "1 (per-org) Est.",
+      "external_threshold": "≥2",
+      "target": 2,
+      "technical_difficulty": 3,
+      "estimated_cost": 3
+    },
+    "EC6": {
+      "unit": "agents",
+      "competitor_b": "3 Est.",
+      "competitor_c": "1 Est.",
+      "external_threshold": "—",
+      "target": 5,
+      "technical_difficulty": 3,
+      "estimated_cost": 4
+    },
+    "EC7": {
+      "unit": "%",
+      "competitor_b": "50 Est.",
+      "competitor_c": "60 Est.",
+      "external_threshold": "—",
+      "target": 70,
+      "technical_difficulty": 3,
+      "estimated_cost": 2
+    },
+    "EC8": {
+      "unit": "tokens",
+      "competitor_b": "16000 Est.",
+      "competitor_c": "4000 Est.",
+      "external_threshold": "≤200000 (Sonnet)",
+      "target": 8000,
+      "technical_difficulty": 2,
+      "estimated_cost": 1
+    },
+    "EC9": {
+      "unit": "hours",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "—",
+      "target": 24,
+      "technical_difficulty": 3,
+      "estimated_cost": 2
+    },
+    "EC10": {
+      "unit": "%",
+      "competitor_b": "30 Est.",
+      "competitor_c": "20 Est.",
+      "external_threshold": "≥100",
+      "target": 100,
+      "technical_difficulty": 4,
+      "estimated_cost": 3
+    },
+    "EC11": {
+      "unit": "days",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≤30",
+      "target": 7,
+      "technical_difficulty": 3,
+      "estimated_cost": 3
+    },
+    "EC12": {
+      "unit": "formats",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≥1",
+      "target": 1,
+      "technical_difficulty": 1,
+      "estimated_cost": 1
+    },
+    "EC13": {
+      "unit": "steps",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "—",
+      "target": 5,
+      "technical_difficulty": 2,
+      "estimated_cost": 2
+    },
+    "EC14": {
+      "unit": "MB",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≤50",
+      "target": 5,
+      "technical_difficulty": 3,
+      "estimated_cost": 2
+    },
+    "EC15": {
+      "unit": "ms",
+      "competitor_b": "3000 Est.",
+      "competitor_c": "800 Est.",
+      "external_threshold": "≤2000",
+      "target": 2000,
+      "technical_difficulty": 3,
+      "estimated_cost": 2
+    },
+    "EC16": {
+      "unit": "ms",
+      "competitor_b": "100 Est.",
+      "competitor_c": "20 Est.",
+      "external_threshold": "—",
+      "target": 50,
+      "technical_difficulty": 3,
+      "estimated_cost": 2
+    },
+    "EC17": {
+      "unit": "days",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≤90",
+      "target": 90,
+      "technical_difficulty": 2,
+      "estimated_cost": 2
+    },
+    "EC18": {
+      "unit": "days",
+      "competitor_b": "N/A",
+      "competitor_c": "N/A",
+      "external_threshold": "≥30",
+      "target": 90,
+      "technical_difficulty": 1,
+      "estimated_cost": 2
+    }
+  },
+  "_basement_imputed_importance_actual": {
+    "_note": "Computed by Excel SUMPRODUCT(ABS(E33:E44),$D33:$D44) after save + reopen. Ranked by imputed.",
+    "EC8": {
+      "imputed": 1.0,
+      "positive": 0.6,
+      "negative": -0.4,
+      "rank": 1,
+      "name": "Context tokens per agent call"
+    },
+    "EC7": {
+      "imputed": 0.96,
+      "positive": 0.76,
+      "negative": -0.2,
+      "rank": 2,
+      "name": "Prompt-cache hit rate"
+    },
+    "EC1": {
+      "imputed": 0.8,
+      "positive": 0.4,
+      "negative": -0.4,
+      "rank": 3,
+      "name": "Probe frequency"
+    },
+    "EC10": {
+      "imputed": 0.76,
+      "positive": 0.4,
+      "negative": -0.36,
+      "rank": 4,
+      "name": "Citation completeness floor"
+    },
+    "EC6": {
+      "imputed": 0.64,
+      "positive": 0.64,
+      "negative": 0.0,
+      "rank": 5,
+      "name": "Parallel agent dispatch count"
+    },
+    "EC2": {
+      "imputed": 0.6,
+      "positive": 0.4,
+      "negative": -0.2,
+      "rank": 6,
+      "name": "Aggregation window"
+    },
+    "EC3": {
+      "imputed": 0.6,
+      "positive": 0.6,
+      "negative": 0.0,
+      "rank": 7,
+      "name": "Metric payload size"
+    },
+    "EC5": {
+      "imputed": 0.48,
+      "positive": 0.16,
+      "negative": -0.32,
+      "rank": 8,
+      "name": "LLM routing granularity"
+    },
+    "EC12": {
+      "imputed": 0.44,
+      "positive": 0.44,
+      "negative": 0.0,
+      "rank": 9,
+      "name": "Spec artifact format count"
+    },
+    "EC4": {
+      "imputed": 0.4,
+      "positive": 0.2,
+      "negative": -0.2,
+      "rank": 10,
+      "name": "Probe batch size"
+    },
+    "EC9": {
+      "imputed": 0.4,
+      "positive": 0.4,
+      "negative": 0.0,
+      "rank": 11,
+      "name": "Traceback cache TTL"
+    },
+    "EC11": {
+      "imputed": 0.4,
+      "positive": 0.2,
+      "negative": -0.2,
+      "rank": 12,
+      "name": "Vendor-doc refresh cadence"
+    },
+    "EC14": {
+      "imputed": 0.24,
+      "positive": 0.24,
+      "negative": 0.0,
+      "rank": 13,
+      "name": "CLI bundle size"
+    },
+    "EC15": {
+      "imputed": 0.24,
+      "positive": 0.24,
+      "negative": 0.0,
+      "rank": 14,
+      "name": "Founder intake turn budget"
+    },
+    "EC16": {
+      "imputed": 0.24,
+      "positive": 0.24,
+      "negative": 0.0,
+      "rank": 15,
+      "name": "Streaming UI chunk cadence"
+    },
+    "EC13": {
+      "imputed": 0.16,
+      "positive": 0.16,
+      "negative": 0.0,
+      "rank": 16,
+      "name": "Quick Start step count"
+    },
+    "EC17": {
+      "imputed": 0.12,
+      "positive": 0.0,
+      "negative": -0.12,
+      "rank": 17,
+      "name": "Credential rotation cadence"
+    },
+    "EC18": {
+      "imputed": 0.0,
+      "positive": 0.0,
+      "negative": 0.0,
+      "rank": 18,
+      "name": "Audit log retention"
+    }
+  },
+  "validation": {
+    "weights_sum_to_1": true,
+    "every_pc_has_nonzero_ec": true,
+    "every_ec_has_nonzero_pc_or_flagged": {
+      "all_ecs_have_nonzero": false,
+      "zero_imputed_ecs": [
+        "EC18"
+      ],
+      "ec18_rationale": "Audit log retention (90d, operational-only in v1 per M4 D3) has no direct PC lever — retained in second floor as a compliance hygiene signal and M6 interfaces anchor, not a QFD optimization knob."
+    },
+    "roof_lower_triangle_only": true,
+    "relationship_matrix_values_in_range": true,
+    "competitor_names_filled": true,
+    "no_writes_to_formula_cells": true
+  },
+  "open_questions_resolved": {
+    "Q1_probe_freq_vs_aggregation_tradeoff": "EC1/EC2 roof pair scored -1. Targets: 6 probes/min + 60 min window. Both inside M1's 2% overhead ceiling while honoring PC.2 60 min target.",
+    "Q2_routing_policy_granularity": "EC5 target = 2 (per-session). Balances PC.4/PC.6 speed (per-request overhead) with PC.1 per-org simplicity. Per-session = 'once per founder session pick a mode, stick with it'.",
+    "Q3_competitor_scoring": "Devin + Cursor chosen. Per back_porch rationales.",
+    "Q4_spec_gen_tighten_to_120s": "Declined. EC12=1 (Mermaid only) + EC6=5 (parallel dispatch) + EC7=70% cache hit rate yields ~150-300s budget. 300s kept as PC.4 target; 150s becomes A(high) stretch.",
+    "Q5_credential_rotation_tighten": "EC17 target = 90d (unchanged). Compliance deferred to v2 per M4 D3. 30d would be premature without compliance driver."
+  },
+  "constants_touched_by_m5": {
+    "finalized_in_m5": [
+      {
+        "constant": "PROBE_FREQUENCY_PER_MIN",
+        "value": 6,
+        "driver": "EC1 target"
+      },
+      {
+        "constant": "AGGREGATION_WINDOW_MIN",
+        "value": 60,
+        "driver": "EC2 target (confirms M2)"
+      },
+      {
+        "constant": "METRIC_PAYLOAD_KB_MAX",
+        "value": 4,
+        "driver": "EC3 target"
+      },
+      {
+        "constant": "PROBE_BATCH_SIZE",
+        "value": 50,
+        "driver": "EC4 target"
+      },
+      {
+        "constant": "PARALLEL_AGENT_DISPATCH",
+        "value": 5,
+        "driver": "EC6 target"
+      },
+      {
+        "constant": "PROMPT_CACHE_HIT_TARGET_PCT",
+        "value": 70,
+        "driver": "EC7 target"
+      },
+      {
+        "constant": "AGENT_CONTEXT_TOKENS_MAX",
+        "value": 8000,
+        "driver": "EC8 target"
+      },
+      {
+        "constant": "TRACEBACK_CACHE_TTL_HOURS",
+        "value": 24,
+        "driver": "EC9 target"
+      },
+      {
+        "constant": "VENDOR_DOC_REFRESH_DAYS",
+        "value": 7,
+        "driver": "EC11 target"
+      },
+      {
+        "constant": "SPEC_FORMAT_COUNT_V1",
+        "value": 1,
+        "driver": "EC12 target (Mermaid only; confirms M4)"
+      },
+      {
+        "constant": "QUICK_START_STEP_COUNT",
+        "value": 5,
+        "driver": "EC13 target"
+      },
+      {
+        "constant": "CLI_BUNDLE_SIZE_MB_MAX",
+        "value": 5,
+        "driver": "EC14 target"
+      },
+      {
+        "constant": "STREAMING_CHUNK_CADENCE_MS",
+        "value": 50,
+        "driver": "EC16 target"
+      }
+    ],
+    "still_estimate_after_m5_deferred_to_m6_or_v2": [
+      "LLM_ROUTING_GRANULARITY_MODE (EC5 = per-session; confirm in Module 6 interfaces)",
+      "CITATION_COMPLETENESS_FLOOR_PCT (EC10 = 100%; already Final via PC.3 anchor — no change)",
+      "CREDENTIAL_ROTATION_DAYS (EC17 = 90d; compliance-driven, revisit in v2)",
+      "AUDIT_RETENTION_DAYS (EC18 = 90d; already Final via M4 D3)"
+    ]
+  },
+  "module_6_interfaces_preview": {
+    "_note": "Handoff preview — full interfaces_handoff.json lives in this directory. Ranking matches _basement_imputed_importance_actual above (Excel-computed, not preview estimates).",
+    "top_imputed_importance_ecs": [
+      {
+        "rank": 1,
+        "ec": "EC8 Context tokens",
+        "imputed": 1.0,
+        "drives_interface": "Agent Orchestrator → LLM Provider Layer"
+      },
+      {
+        "rank": 2,
+        "ec": "EC7 Prompt cache hit rate",
+        "imputed": 0.96,
+        "drives_interface": "Agent Orchestrator → Prompt Cache → LLM Provider"
+      },
+      {
+        "rank": 3,
+        "ec": "EC1 Probe frequency",
+        "imputed": 0.8,
+        "drives_interface": "Probe SDK → Metrics Collector"
+      },
+      {
+        "rank": 4,
+        "ec": "EC10 Citation floor",
+        "imputed": 0.76,
+        "drives_interface": "Spec Generator → Traceback Store"
+      },
+      {
+        "rank": 5,
+        "ec": "EC6 Parallel dispatch",
+        "imputed": 0.64,
+        "drives_interface": "Agent Orchestrator internal (pool → agents)"
+      },
+      {
+        "rank": 6,
+        "ec": "EC2 Aggregation window",
+        "imputed": 0.6,
+        "drives_interface": "Collector → Metric Store"
+      },
+      {
+        "rank": 7,
+        "ec": "EC3 Payload size",
+        "imputed": 0.6,
+        "drives_interface": "Probe SDK → Collector (serialization contract)"
+      },
+      {
+        "rank": 8,
+        "ec": "EC5 LLM routing",
+        "imputed": 0.48,
+        "drives_interface": "Session Manager → LLM Provider Layer"
+      }
+    ],
+    "_ranking_change_from_preview_to_actual": "Preview had a three-way tie (EC1/EC2/EC8 at 0.80); actuals show EC8 alone at rank 1 (1.00) and EC7 promoted to rank 2 (0.96). Interface-level implication: the Orchestrator ↔ LLM Provider path (anchors both EC8 and EC7) is the dominant M6 interface — EC7 Prompt Cache + EC8 Context together carry 1.96 of total imputed weight.",
+    "interface_tradeoffs_flagged": [
+      "EC1↔EC2 (-1): probe SDK ↔ aggregator contract must handle joint tuning",
+      "EC9↔EC11 (-2): traceback cache ↔ vendor-doc fetcher must coordinate invalidation",
+      "EC5↔EC6 (-1): routing policy ↔ parallel dispatch share a session token",
+      "EC2↔EC4 (-1): aggregation window ↔ batch size needs time-based flush fallback"
+    ]
+  }
+}

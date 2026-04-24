@@ -1,0 +1,206 @@
+{
+  "_schema": "UCBD_Template_and_Sample.schema.json",
+  "_output_path": "system-design/module-2-requirements/ucbd/UC04-emit-cli-commands.ucbd.json",
+  "_upstream_refs": {
+    "scope_summary": "system-design/kb-upgrade-v2/module-1-defining-scope/system_scope_summary.json",
+    "use_case_priority": "system-design/kb-upgrade-v2/module-2-requirements/use_case_priority.json"
+  },
+  "_phase_status": "phase-5-complete",
+  "metadata": {
+    "project_name": "c1v",
+    "document_id": "C1V-M2-UC04",
+    "document_type": "Use Case Behavioral Diagram",
+    "status": "Draft — Module 2 first pass",
+    "last_update": "2026-04-20",
+    "target_release": "v1.0",
+    "confidentiality": "Internal",
+    "created_date": "2026-04-20",
+    "target_release_2": "v1.0",
+    "author": "David Ancor",
+    "approvers": "David Ancor (Founder)",
+    "stakeholders": "Founders; Product Managers; Engineering Teams; Team Admins; Compliance Officers; Site Reliability / DevOps",
+    "supersedes": "",
+    "linked_ticket": "",
+    "parent_okr": "Ship c1v v1.0 with metric-traceable specs and live feedback loop",
+    "regulatory_refs": "SOC 2 Type II; HIPAA; GDPR; PCI-DSS (scope tbd in Module 4)"
+  },
+  "use_case_name": "UC04 — Emit CLI Commands from Spec",
+  "swimlane_columns": {
+    "primary_actor": "Engineering Team Member",
+    "the_system": "c1v (The System)",
+    "other_actors": "IDE / CLI Client",
+    "extra_actor_col": "Version Control"
+  },
+  "initial_conditions": [
+    "An approved spec exists (state 'approved' produced by UC03).",
+    "The Engineering Team Member is authenticated (cross-cutting UC14).",
+    "The Engineering Team Member holds emit permission on the spec's organization.",
+    "At least one IDE/CLI client is registered for the Engineering Team Member's account."
+  ],
+  "actor_steps_table": [
+    {
+      "step": 1,
+      "primary_actor": "Engineering Team Member requests a CLI bundle for an approved spec",
+      "the_system": "",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 2,
+      "primary_actor": "",
+      "the_system": "The system shall authenticate the Engineering Team Member's session before accepting the emission request (CC.R01).",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 3,
+      "primary_actor": "",
+      "the_system": "The system shall verify the referenced spec's status is exactly 'approved' before proceeding.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 4,
+      "primary_actor": "",
+      "the_system": "The system shall verify the Engineering Team Member holds emit permission on the spec's organization.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 5,
+      "primary_actor": "",
+      "the_system": "The system shall load the approved spec bundle at its committed hash from version-controlled storage.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 6,
+      "primary_actor": "",
+      "the_system": "The system shall generate a SKILL.md export from the spec's agent and capability sections.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 7,
+      "primary_actor": "",
+      "the_system": "The system shall generate a CLAUDE.md export from the spec's conventions and architecture sections.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 8,
+      "primary_actor": "",
+      "the_system": "The system shall generate one MCP tool definition for each interface declared in the spec's interface matrix (seed from Module 6).",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 9,
+      "primary_actor": "",
+      "the_system": "The system shall package the SKILL.md, CLAUDE.md, and MCP tool definitions into a single CLI bundle.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 10,
+      "primary_actor": "",
+      "the_system": "The system shall sign the CLI bundle with the spec's commit hash and the emission timestamp.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 11,
+      "primary_actor": "",
+      "the_system": "The system shall complete the CLI bundle generation within CLI_EMISSION_TIMEOUT_SEC of the emission request.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 12,
+      "primary_actor": "",
+      "the_system": "",
+      "other_actors": "",
+      "extra_actor_col": "Version Control receives the signed CLI bundle and records the commit reference."
+    },
+    {
+      "step": 13,
+      "primary_actor": "",
+      "the_system": "The system shall write the signed CLI bundle to the spec's Version Control repository under the emission path.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 14,
+      "primary_actor": "",
+      "the_system": "The system shall deliver the signed CLI bundle to the Engineering Team Member's registered IDE/CLI client.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 15,
+      "primary_actor": "",
+      "the_system": "",
+      "other_actors": "IDE/CLI client acknowledges receipt of the CLI bundle with a receipt token.",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 16,
+      "primary_actor": "",
+      "the_system": "The system shall require an IDE/CLI receipt token before marking the emission as delivered.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 17,
+      "primary_actor": "",
+      "the_system": "The system shall record an audit entry for the CLI emission with Engineering Team Member identity, spec commit hash, bundle signature, IDE/CLI client identifier, and timestamp (CC.R02).",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 18,
+      "primary_actor": "",
+      "the_system": "The system shall return the bundle location, signature, and commit hash to the Engineering Team Member.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 19,
+      "primary_actor": "Engineering Team Member receives the bundle location and signature",
+      "the_system": "",
+      "other_actors": "",
+      "extra_actor_col": ""
+    }
+  ],
+  "ending_conditions": [
+    "A signed CLI bundle containing SKILL.md, CLAUDE.md, and one MCP tool definition per interface is delivered to the Engineering Team Member's IDE/CLI client.",
+    "The signed CLI bundle is written to the spec's Version Control repository under the emission path.",
+    "The emission is recorded in the audit trail with Engineering Team Member identity, spec commit hash, bundle signature, IDE/CLI client identifier, and timestamp.",
+    "The Engineering Team Member holds the bundle location, signature, and commit hash."
+  ],
+  "notes": [
+    "Scope boundary: UC04 covers the emission of a CLI bundle from one approved spec to one IDE/CLI client. Multi-client fan-out is a separate invocation per client.",
+    "Bundle format is standardized as SKILL.md + CLAUDE.md + MCP tool definitions to satisfy the M1 hard constraint 'no single-vendor lock-in' — multi-IDE contract.",
+    "<<extends>> UC01 per inventory: UC04 runs automatically after UC03 approval only if auto-emit is enabled in the organization; otherwise UC04 is invoked on-demand.",
+    "Signing uses spec commit hash + emission timestamp so any IDE/CLI client can verify the bundle without calling back into c1v.",
+    "Version Control write (step 13) creates an auditable emission log separate from the in-product audit trail (step 17); both must succeed for the emission to be marked complete.",
+    "Cross-cutting: session auth (CC.R01), audit trail (CC.R02), RBAC on emit permission (CC.R03).",
+    "Degradation: if Version Control write fails, the system retries up to MAX_RETRIES and surfaces the failure to the Engineering Team Member; the IDE/CLI delivery leg is independent and may still succeed.",
+    "MCP tool definition count depends on the spec's interface matrix (from Module 6). First-pass v1 assumes a minimum of one MCP tool per spec."
+  ],
+  "cross_module_links": {
+    "includes": [],
+    "extends": [
+      "UC01"
+    ],
+    "module_1_scope_refs": [
+      "system_scope_summary.use_cases[UC04]",
+      "system_scope_summary.hard_constraints[4]"
+    ]
+  },
+  "source_references": [
+    "system-design/module-1-defining-scope/use_case_inventory.json#UC04",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/06-Phase-3-UCBD-Setup.md",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/08-Phase-5-UCBD-Step-Flow.md"
+  ]
+}

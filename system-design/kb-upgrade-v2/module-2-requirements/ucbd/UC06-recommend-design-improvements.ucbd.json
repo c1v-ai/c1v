@@ -1,0 +1,219 @@
+{
+  "_schema": "UCBD_Template_and_Sample.schema.json",
+  "_output_path": "system-design/module-2-requirements/ucbd/UC06-recommend-design-improvements.ucbd.json",
+  "_upstream_refs": {
+    "scope_summary": "system-design/kb-upgrade-v2/module-1-defining-scope/system_scope_summary.json",
+    "use_case_priority": "system-design/kb-upgrade-v2/module-2-requirements/use_case_priority.json"
+  },
+  "_phase_status": "phase-5-complete",
+  "metadata": {
+    "project_name": "c1v",
+    "document_id": "C1V-M2-UC06",
+    "document_type": "Use Case Behavioral Diagram",
+    "status": "Draft — Module 2 first pass",
+    "last_update": "2026-04-20",
+    "target_release": "v1.0",
+    "confidentiality": "Internal",
+    "created_date": "2026-04-20",
+    "target_release_2": "v1.0",
+    "author": "David Ancor",
+    "approvers": "David Ancor (Founder)",
+    "stakeholders": "Founders; Product Managers; Engineering Teams; Team Admins; Compliance Officers; Site Reliability / DevOps",
+    "supersedes": "",
+    "linked_ticket": "",
+    "parent_okr": "Ship c1v v1.0 with metric-traceable specs and live feedback loop",
+    "regulatory_refs": "SOC 2 Type II; HIPAA; GDPR; PCI-DSS (scope tbd in Module 4)"
+  },
+  "use_case_name": "UC06 — Recommend Design Improvements",
+  "swimlane_columns": {
+    "primary_actor": "Engineering Team Member",
+    "the_system": "c1v (The System)",
+    "other_actors": "Observability Tools",
+    "extra_actor_col": "Product Managers"
+  },
+  "initial_conditions": [
+    "A spec is live (approved by UC03 and emitted to production via UC04).",
+    "A non-invasive read-only connection to Observability Tools exists (established by UC11).",
+    "The system has ingested metric samples over a sustained window of at least AGGREGATION_WINDOW_MIN.",
+    "At least one LLM Provider is configured for the organization.",
+    "The Engineering Team Member is authenticated and subscribed to the project's recommendation stream."
+  ],
+  "actor_steps_table": [
+    {
+      "step": 1,
+      "primary_actor": "",
+      "the_system": "",
+      "other_actors": "Observability Tools stream availability, throughput, and latency samples into the feedback-loop ingest (<<include>> UC05).",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 2,
+      "primary_actor": "",
+      "the_system": "The system shall persist every ingested metric sample to the feedback-loop store with the source observability identifier and a monotonic ingest timestamp.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 3,
+      "primary_actor": "",
+      "the_system": "The system shall bound the overhead of metric ingestion on the customer system to at most MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT of the customer system's measured baseline resources.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 4,
+      "primary_actor": "",
+      "the_system": "The system shall aggregate persisted samples over the AGGREGATION_WINDOW_MIN window on a RECOMMENDATION_CADENCE_MIN schedule.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 5,
+      "primary_actor": "",
+      "the_system": "The system shall compare every aggregate against the spec's declared performance targets for availability, throughput, and latency.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 6,
+      "primary_actor": "",
+      "the_system": "The system shall compute a metric deviation value for every aggregate that falls outside the spec's declared target.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 7,
+      "primary_actor": "",
+      "the_system": "The system shall suppress deviations whose magnitude is below DEVIATION_SUPPRESSION_THRESHOLD to prevent noise surfacing.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 8,
+      "primary_actor": "",
+      "the_system": "The system shall query a configured LLM Provider with each unsuppressed deviation to propose candidate improvements.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 9,
+      "primary_actor": "",
+      "the_system": "The system shall link every candidate improvement to the deviating metric and its source sample identifiers.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 10,
+      "primary_actor": "",
+      "the_system": "The system shall rank candidate improvements by deviation severity and LLM-reported confidence within RECOMMENDATION_LATENCY_SEC of the cycle start.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 11,
+      "primary_actor": "",
+      "the_system": "The system shall cap the delivered recommendation list at MAX_RECOMMENDATIONS_PER_CYCLE entries.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 12,
+      "primary_actor": "",
+      "the_system": "The system shall deliver the ranked recommendation list to the Engineering Team Member's recommendation stream.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 13,
+      "primary_actor": "Engineering Team Member receives the recommendation list",
+      "the_system": "",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 14,
+      "primary_actor": "",
+      "the_system": "",
+      "other_actors": "",
+      "extra_actor_col": "Product Managers receive a digest of the recommendation cycle."
+    },
+    {
+      "step": 15,
+      "primary_actor": "",
+      "the_system": "The system shall notify Product Managers subscribed to the project of the recommendation cycle completion.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 16,
+      "primary_actor": "",
+      "the_system": "The system shall record an audit entry for the recommendation cycle with the window boundaries, sample count, deviation count, recommendation count, and timestamp (CC.R02).",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 17,
+      "primary_actor": "Engineering Team Member selects an action per recommendation: accept, decline, or defer",
+      "the_system": "",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 18,
+      "primary_actor": "",
+      "the_system": "The system shall persist the Engineering Team Member's action per recommendation with actor identity and timestamp.",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 19,
+      "primary_actor": "",
+      "the_system": "The system shall surface a proactive feature candidate when a deviation indicates missing functionality (<<extends>> UC07).",
+      "other_actors": "",
+      "extra_actor_col": ""
+    },
+    {
+      "step": 20,
+      "primary_actor": "",
+      "the_system": "The system shall refrain from writing any recommendation back to the customer system in v1 scope (read-only posture).",
+      "other_actors": "",
+      "extra_actor_col": ""
+    }
+  ],
+  "ending_conditions": [
+    "A ranked recommendation list bounded by MAX_RECOMMENDATIONS_PER_CYCLE is delivered to the Engineering Team Member's recommendation stream.",
+    "Every delivered recommendation is linked to its source metric deviation and source sample identifiers.",
+    "Product Managers subscribed to the project have received a recommendation cycle digest.",
+    "Every recommendation carries a persisted action state of accepted, declined, or deferred once the Engineering Team Member acts.",
+    "An audit entry records the recommendation cycle with window boundaries, counts, and timestamp.",
+    "No recommendation is written back to the customer system (read-only posture preserved in v1)."
+  ],
+  "notes": [
+    "Scope boundary (v1 read-only): UC06 delivers recommendations; it does NOT apply them. Write-through (suggest-and-apply) is explicitly deferred to v1.1+ per M1 open-question resolution.",
+    "<<include>> UC05 on step 1 — metric ingestion is the upstream leg, treated here as a single boundary step.",
+    "<<extends>> UC07 on step 19 — proactive feature surfacing branches off when a deviation indicates missing functionality; a separate flow in v1.1 converts that candidate into a PM backlog item.",
+    "Non-invasive overhead: step 3 enforces the M1 hard constraint MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT on ingestion.",
+    "Cadence discipline: RECOMMENDATION_CADENCE_MIN governs how often cycles run; AGGREGATION_WINDOW_MIN governs the sample window each cycle evaluates.",
+    "Deviation suppression (step 7) prevents alert fatigue on sub-threshold noise; threshold is tuned per project.",
+    "Latency: RECOMMENDATION_LATENCY_SEC bounds step 4→10 end-to-end; this is a batch latency, not a per-sample latency.",
+    "Audit trail (step 16) captures the cycle as a single event; per-recommendation actions (step 18) produce finer-grained audit rows.",
+    "Degradation: if all configured LLM Providers are unavailable, the system shall defer the cycle and emit an operational alert; no silent drop of deviations."
+  ],
+  "cross_module_links": {
+    "includes": [
+      "UC05"
+    ],
+    "extends_from_elsewhere": [
+      "UC07 extends UC06 when a deviation implies missing functionality"
+    ],
+    "module_1_scope_refs": [
+      "system_scope_summary.use_cases[UC06]",
+      "system_scope_summary.hard_constraints[0]"
+    ]
+  },
+  "source_references": [
+    "system-design/module-1-defining-scope/use_case_inventory.json#UC06",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/06-Phase-3-UCBD-Setup.md",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/08-Phase-5-UCBD-Step-Flow.md"
+  ]
+}

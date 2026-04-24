@@ -1,0 +1,1023 @@
+{
+  "_schema": "Requirements-table.schema.json",
+  "_output_path": "system-design/module-2-requirements/requirements_table.json",
+  "_upstream_refs": {
+    "scope_summary": "system-design/kb-upgrade-v2/module-1-defining-scope/system_scope_summary.json",
+    "ucbd_dir": "system-design/kb-upgrade-v2/module-2-requirements/ucbd/"
+  },
+  "_phase_status": "phase-9-complete",
+  "metadata": {
+    "project_name": "c1v",
+    "document_id": "C1V-M2-REQ",
+    "document_type": "Requirements Table",
+    "status": "Draft — Module 2 first pass (post-audit, post-delve)",
+    "last_update": "2026-04-20",
+    "target_release": "v1.0",
+    "confidentiality": "Internal",
+    "created_date": "2026-04-20",
+    "target_release_2": "v1.0",
+    "author": "David Ancor",
+    "approvers": "David Ancor (Founder)",
+    "stakeholders": "Founders; Product Managers; Engineering Teams; Team Admins; Compliance Officers; Site Reliability / DevOps",
+    "supersedes": "",
+    "linked_ticket": "",
+    "parent_okr": "Ship c1v v1.0 with metric-traceable specs and live feedback loop",
+    "regulatory_refs": "SOC 2 Type II; HIPAA; GDPR; PCI-DSS (scope tbd in Module 4)"
+  },
+  "audit_summary": {
+    "rules_checked": [
+      "shall_prefix",
+      "atomicity",
+      "functional_not_structural",
+      "unambiguous",
+      "objective",
+      "verifiable",
+      "constants_named_not_inline"
+    ],
+    "passes": 94,
+    "failures_after_rewrite": 0,
+    "notes": "Every numeric threshold references an UPPER_SNAKE_CASE constant defined in constants_table.json. No 'and/or' joining two behaviors. No subjective qualifiers (fast, easy, intuitive, seamless). No structural choices (database names, language names, framework names) except as inherited from Module 1 hard constraints."
+  },
+  "requirements_table": [
+    {
+      "index": "UC01.R01",
+      "requirement": "The system shall authenticate the Founder's session before accepting a submitted idea prompt.",
+      "abstract_function_name": "authenticate_session",
+      "source_ucbd": "UC01",
+      "source_step": 2,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R01"
+    },
+    {
+      "index": "UC01.R02",
+      "requirement": "The system shall persist the submitted idea prompt to the project context with a stable Project ID.",
+      "abstract_function_name": "persist_idea_prompt",
+      "source_ucbd": "UC01",
+      "source_step": 3,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R03",
+      "requirement": "The system shall initiate a conversational intake session scoped to the Project ID.",
+      "abstract_function_name": "initiate_intake_session",
+      "source_ucbd": "UC01",
+      "source_step": 4,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R04",
+      "requirement": "The system shall present the first intake question to the Founder within FOUNDER_INTAKE_RESPONSE_BUDGET_MS of receiving the idea prompt.",
+      "abstract_function_name": "present_intake_question",
+      "source_ucbd": "UC01",
+      "source_step": 5,
+      "referenced_constants": [
+        "FOUNDER_INTAKE_RESPONSE_BUDGET_MS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R05",
+      "requirement": "The system shall classify the idea's domain by invoking a configured LLM Provider with the idea prompt and the intake answers.",
+      "abstract_function_name": "classify_idea_domain",
+      "source_ucbd": "UC01",
+      "source_step": 7,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R08"
+    },
+    {
+      "index": "UC01.R06",
+      "requirement": "The system shall loop intake questions until the INTAKE_COMPLETENESS_THRESHOLD is met.",
+      "abstract_function_name": "loop_intake_to_threshold",
+      "source_ucbd": "UC01",
+      "source_step": 9,
+      "referenced_constants": [
+        "INTAKE_COMPLETENESS_THRESHOLD"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R07",
+      "requirement": "The system shall assemble an initial scope outline containing actors, use cases, and constraints from the intake transcript.",
+      "abstract_function_name": "assemble_scope_outline",
+      "source_ucbd": "UC01",
+      "source_step": 10,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R08",
+      "requirement": "The system shall draft a tech-stack recommendation for each subsystem identified in the scope outline.",
+      "abstract_function_name": "draft_tech_stack_recommendation",
+      "source_ucbd": "UC01",
+      "source_step": 11,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R09",
+      "requirement": "The system shall invoke the metric-traceback subroutine for every tech-stack recommendation before the spec is assembled.",
+      "abstract_function_name": "invoke_metric_traceback",
+      "source_ucbd": "UC01",
+      "source_step": 12,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R10",
+      "requirement": "The system shall assemble the spec bundle from the scope outline, the traced tech-stack recommendations, and the extracted constants.",
+      "abstract_function_name": "assemble_spec_bundle",
+      "source_ucbd": "UC01",
+      "source_step": 13,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R11",
+      "requirement": "The system shall validate the assembled spec against the spec-shape schema and reject the assembly if validation fails.",
+      "abstract_function_name": "validate_spec_schema",
+      "source_ucbd": "UC01",
+      "source_step": 14,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R12",
+      "requirement": "The system shall complete the spec generation cycle within SPEC_GENERATION_TIMEOUT_SEC from the first Founder answer.",
+      "abstract_function_name": "enforce_spec_generation_timeout",
+      "source_ucbd": "UC01",
+      "source_step": 15,
+      "referenced_constants": [
+        "SPEC_GENERATION_TIMEOUT_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R13",
+      "requirement": "The system shall persist the validated spec to version-controlled storage with status 'draft' and a commit hash.",
+      "abstract_function_name": "persist_spec_versioned",
+      "source_ucbd": "UC01",
+      "source_step": 16,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R14",
+      "requirement": "The system shall record an audit entry for the spec creation with Founder identity, Project ID, commit hash, and timestamp.",
+      "abstract_function_name": "audit_spec_creation",
+      "source_ucbd": "UC01",
+      "source_step": 17,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R02"
+    },
+    {
+      "index": "UC01.R15",
+      "requirement": "The system shall notify the spec's assigned Product Managers that the spec is ready for review.",
+      "abstract_function_name": "notify_reviewers",
+      "source_ucbd": "UC01",
+      "source_step": 19,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC01.R16",
+      "requirement": "The system shall return the persisted spec's URL and commit hash to the Founder.",
+      "abstract_function_name": "return_spec_location",
+      "source_ucbd": "UC01",
+      "source_step": 20,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R01",
+      "requirement": "The system shall authenticate the Product Manager's session before exposing the review queue.",
+      "abstract_function_name": "authenticate_session",
+      "source_ucbd": "UC03",
+      "source_step": 2,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R01"
+    },
+    {
+      "index": "UC03.R02",
+      "requirement": "The system shall enumerate every spec in 'draft' status assigned to the authenticated Product Manager's review queue.",
+      "abstract_function_name": "enumerate_review_queue",
+      "source_ucbd": "UC03",
+      "source_step": 3,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R03",
+      "requirement": "The system shall return the spec list sorted by submission time ascending and rendered within REVIEW_QUEUE_LOAD_BUDGET_MS.",
+      "abstract_function_name": "render_review_queue",
+      "source_ucbd": "UC03",
+      "source_step": 4,
+      "referenced_constants": [
+        "REVIEW_QUEUE_LOAD_BUDGET_MS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R04",
+      "requirement": "The system shall verify the Product Manager holds review permission on the selected spec's organization.",
+      "abstract_function_name": "verify_review_permission",
+      "source_ucbd": "UC03",
+      "source_step": 6,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R03"
+    },
+    {
+      "index": "UC03.R05",
+      "requirement": "The system shall load the spec bundle including the spec document, diagrams, and constants table at the spec's committed hash.",
+      "abstract_function_name": "load_spec_bundle",
+      "source_ucbd": "UC03",
+      "source_step": 7,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R06",
+      "requirement": "The system shall render the loaded spec bundle in a reviewable view within SPEC_RENDER_BUDGET_MS.",
+      "abstract_function_name": "render_spec_view",
+      "source_ucbd": "UC03",
+      "source_step": 8,
+      "referenced_constants": [
+        "SPEC_RENDER_BUDGET_MS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R07",
+      "requirement": "The system shall persist each submitted review comment with Product Manager identity, spec section anchor, and timestamp.",
+      "abstract_function_name": "persist_review_comment",
+      "source_ucbd": "UC03",
+      "source_step": 11,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R08",
+      "requirement": "The system shall validate that every 'request_revisions' action includes at least one review comment.",
+      "abstract_function_name": "validate_revision_comment",
+      "source_ucbd": "UC03",
+      "source_step": 13,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R09",
+      "requirement": "The system shall transition the spec state from 'draft' to the state implied by the review action within STATE_TRANSITION_BUDGET_MS.",
+      "abstract_function_name": "transition_spec_state",
+      "source_ucbd": "UC03",
+      "source_step": 14,
+      "referenced_constants": [
+        "STATE_TRANSITION_BUDGET_MS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R10",
+      "requirement": "The system shall record an audit entry for the state transition with reviewer identity, prior state, new state, comment count, and timestamp.",
+      "abstract_function_name": "audit_state_transition",
+      "source_ucbd": "UC03",
+      "source_step": 15,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R02"
+    },
+    {
+      "index": "UC03.R11",
+      "requirement": "The system shall notify the spec's Founder of the review decision and attached comments.",
+      "abstract_function_name": "notify_founder_of_review",
+      "source_ucbd": "UC03",
+      "source_step": 17,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R12",
+      "requirement": "The system shall enable the CLI-emission pipeline on approve and block it on reject or revisions_requested.",
+      "abstract_function_name": "gate_cli_emission_on_approval",
+      "source_ucbd": "UC03",
+      "source_step": 18,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC03.R13",
+      "requirement": "The system shall notify Engineering Teams subscribed to the project that the spec has transitioned to 'approved' status.",
+      "abstract_function_name": "notify_engineers_of_approval",
+      "source_ucbd": "UC03",
+      "source_step": 20,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R01",
+      "requirement": "The system shall authenticate the Engineering Team Member's session before accepting a CLI emission request.",
+      "abstract_function_name": "authenticate_session",
+      "source_ucbd": "UC04",
+      "source_step": 2,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R01"
+    },
+    {
+      "index": "UC04.R02",
+      "requirement": "The system shall verify the referenced spec's status is exactly 'approved' before proceeding with CLI emission.",
+      "abstract_function_name": "verify_spec_approved",
+      "source_ucbd": "UC04",
+      "source_step": 3,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R03",
+      "requirement": "The system shall verify the Engineering Team Member holds emit permission on the spec's organization.",
+      "abstract_function_name": "verify_emit_permission",
+      "source_ucbd": "UC04",
+      "source_step": 4,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R03"
+    },
+    {
+      "index": "UC04.R04",
+      "requirement": "The system shall load the approved spec bundle at its committed hash from version-controlled storage.",
+      "abstract_function_name": "load_spec_bundle",
+      "source_ucbd": "UC04",
+      "source_step": 5,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R05",
+      "requirement": "The system shall generate a SKILL.md export from the spec's agent and capability sections.",
+      "abstract_function_name": "generate_skill_md",
+      "source_ucbd": "UC04",
+      "source_step": 6,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R06",
+      "requirement": "The system shall generate a CLAUDE.md export from the spec's conventions and architecture sections.",
+      "abstract_function_name": "generate_claude_md",
+      "source_ucbd": "UC04",
+      "source_step": 7,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R07",
+      "requirement": "The system shall generate one MCP tool definition for each interface declared in the spec's interface matrix.",
+      "abstract_function_name": "generate_mcp_tool_definition",
+      "source_ucbd": "UC04",
+      "source_step": 8,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R08",
+      "requirement": "The system shall package the SKILL.md, CLAUDE.md, and MCP tool definitions into a single CLI bundle.",
+      "abstract_function_name": "package_cli_bundle",
+      "source_ucbd": "UC04",
+      "source_step": 9,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R09",
+      "requirement": "The system shall sign the CLI bundle with the spec's commit hash and the emission timestamp.",
+      "abstract_function_name": "sign_cli_bundle",
+      "source_ucbd": "UC04",
+      "source_step": 10,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R10",
+      "requirement": "The system shall complete CLI bundle generation within CLI_EMISSION_TIMEOUT_SEC of the emission request.",
+      "abstract_function_name": "enforce_cli_emission_timeout",
+      "source_ucbd": "UC04",
+      "source_step": 11,
+      "referenced_constants": [
+        "CLI_EMISSION_TIMEOUT_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R11",
+      "requirement": "The system shall write the signed CLI bundle to the spec's Version Control repository under the emission path.",
+      "abstract_function_name": "write_bundle_to_vcs",
+      "source_ucbd": "UC04",
+      "source_step": 13,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R12",
+      "requirement": "The system shall deliver the signed CLI bundle to the Engineering Team Member's registered IDE or CLI client.",
+      "abstract_function_name": "deliver_bundle_to_client",
+      "source_ucbd": "UC04",
+      "source_step": 14,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R13",
+      "requirement": "The system shall require an IDE or CLI receipt token before marking the emission as delivered.",
+      "abstract_function_name": "require_receipt_token",
+      "source_ucbd": "UC04",
+      "source_step": 16,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC04.R14",
+      "requirement": "The system shall record an audit entry for the CLI emission with Engineering Team Member identity, spec commit hash, bundle signature, IDE or CLI client identifier, and timestamp.",
+      "abstract_function_name": "audit_cli_emission",
+      "source_ucbd": "UC04",
+      "source_step": 17,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R02"
+    },
+    {
+      "index": "UC04.R15",
+      "requirement": "The system shall return the bundle location, signature, and commit hash to the Engineering Team Member.",
+      "abstract_function_name": "return_bundle_location",
+      "source_ucbd": "UC04",
+      "source_step": 18,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R01",
+      "requirement": "The system shall persist every ingested metric sample to the feedback-loop store with the source observability identifier and a monotonic ingest timestamp.",
+      "abstract_function_name": "persist_metric_sample",
+      "source_ucbd": "UC06",
+      "source_step": 2,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R02",
+      "requirement": "The system shall bound the overhead of metric ingestion on the customer system to at most MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT of the customer system's measured baseline resources.",
+      "abstract_function_name": "enforce_customer_overhead_budget",
+      "source_ucbd": "UC06",
+      "source_step": 3,
+      "referenced_constants": [
+        "MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R03",
+      "requirement": "The system shall aggregate persisted samples over the AGGREGATION_WINDOW_MIN window on a RECOMMENDATION_CADENCE_MIN schedule.",
+      "abstract_function_name": "aggregate_metric_window",
+      "source_ucbd": "UC06",
+      "source_step": 4,
+      "referenced_constants": [
+        "AGGREGATION_WINDOW_MIN",
+        "RECOMMENDATION_CADENCE_MIN"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R04",
+      "requirement": "The system shall compare every aggregate against the spec's declared performance targets for availability, throughput, and latency.",
+      "abstract_function_name": "compare_aggregate_to_target",
+      "source_ucbd": "UC06",
+      "source_step": 5,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R05",
+      "requirement": "The system shall compute a metric deviation value for every aggregate that falls outside the spec's declared target.",
+      "abstract_function_name": "compute_metric_deviation",
+      "source_ucbd": "UC06",
+      "source_step": 6,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R06",
+      "requirement": "The system shall suppress deviations whose magnitude is below DEVIATION_SUPPRESSION_THRESHOLD to prevent noise surfacing.",
+      "abstract_function_name": "suppress_noise_deviations",
+      "source_ucbd": "UC06",
+      "source_step": 7,
+      "referenced_constants": [
+        "DEVIATION_SUPPRESSION_THRESHOLD"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R07",
+      "requirement": "The system shall query a configured LLM Provider with each unsuppressed deviation to propose candidate improvements.",
+      "abstract_function_name": "propose_candidate_improvements",
+      "source_ucbd": "UC06",
+      "source_step": 8,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R08"
+    },
+    {
+      "index": "UC06.R08",
+      "requirement": "The system shall link every candidate improvement to the deviating metric and its source sample identifiers.",
+      "abstract_function_name": "link_recommendation_to_metric",
+      "source_ucbd": "UC06",
+      "source_step": 9,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R09",
+      "requirement": "The system shall rank candidate improvements by deviation severity and LLM-reported confidence within RECOMMENDATION_LATENCY_SEC of the cycle start.",
+      "abstract_function_name": "rank_recommendations",
+      "source_ucbd": "UC06",
+      "source_step": 10,
+      "referenced_constants": [
+        "RECOMMENDATION_LATENCY_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R10",
+      "requirement": "The system shall cap the delivered recommendation list at MAX_RECOMMENDATIONS_PER_CYCLE entries.",
+      "abstract_function_name": "cap_recommendation_list",
+      "source_ucbd": "UC06",
+      "source_step": 11,
+      "referenced_constants": [
+        "MAX_RECOMMENDATIONS_PER_CYCLE"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R11",
+      "requirement": "The system shall deliver the ranked recommendation list to the Engineering Team Member's recommendation stream.",
+      "abstract_function_name": "deliver_recommendation_list",
+      "source_ucbd": "UC06",
+      "source_step": 12,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R12",
+      "requirement": "The system shall notify Product Managers subscribed to the project of the recommendation cycle completion.",
+      "abstract_function_name": "notify_pm_of_cycle",
+      "source_ucbd": "UC06",
+      "source_step": 15,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R13",
+      "requirement": "The system shall record an audit entry for the recommendation cycle with the window boundaries, sample count, deviation count, recommendation count, and timestamp.",
+      "abstract_function_name": "audit_recommendation_cycle",
+      "source_ucbd": "UC06",
+      "source_step": 16,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R02"
+    },
+    {
+      "index": "UC06.R14",
+      "requirement": "The system shall persist the Engineering Team Member's action per recommendation with actor identity and timestamp.",
+      "abstract_function_name": "persist_recommendation_action",
+      "source_ucbd": "UC06",
+      "source_step": 18,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R15",
+      "requirement": "The system shall surface a proactive feature candidate when a deviation indicates missing functionality.",
+      "abstract_function_name": "surface_feature_candidate",
+      "source_ucbd": "UC06",
+      "source_step": 19,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC06.R16",
+      "requirement": "The system shall refrain from writing any recommendation back to the customer system in v1 scope.",
+      "abstract_function_name": "enforce_read_only_posture",
+      "source_ucbd": "UC06",
+      "source_step": 20,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R01",
+      "requirement": "The system shall receive every draft tech-stack recommendation from the spec generator or recommender with the technology name and the claimed performance capability.",
+      "abstract_function_name": "receive_draft_recommendation",
+      "source_ucbd": "UC08",
+      "source_step": 1,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R02",
+      "requirement": "The system shall parse every draft tech-stack recommendation to extract the technology identifier and the claimed performance capability.",
+      "abstract_function_name": "parse_recommendation",
+      "source_ucbd": "UC08",
+      "source_step": 2,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R03",
+      "requirement": "The system shall classify the claimed capability into exactly one metric class drawn from availability, throughput, or latency before querying any external source.",
+      "abstract_function_name": "classify_capability_metric",
+      "source_ucbd": "UC08",
+      "source_step": 3,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R04",
+      "requirement": "The system shall query Documentation Sources for published performance data matching the technology identifier.",
+      "abstract_function_name": "query_documentation_sources",
+      "source_ucbd": "UC08",
+      "source_step": 4,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R05",
+      "requirement": "The system shall query Cloud Providers for baseline availability and pricing data matching the technology identifier.",
+      "abstract_function_name": "query_cloud_providers",
+      "source_ucbd": "UC08",
+      "source_step": 6,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R06",
+      "requirement": "The system shall resolve the recommendation to a concrete value for the classified metric using only the cited external sources.",
+      "abstract_function_name": "resolve_metric_value",
+      "source_ucbd": "UC08",
+      "source_step": 8,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R07",
+      "requirement": "The system shall validate that every recommendation's claimed capability is supported by at least one cited external source.",
+      "abstract_function_name": "validate_external_citation",
+      "source_ucbd": "UC08",
+      "source_step": 9,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R08",
+      "requirement": "The system shall compute a traceback confidence score in the range zero to one for every resolved recommendation.",
+      "abstract_function_name": "compute_traceback_confidence",
+      "source_ucbd": "UC08",
+      "source_step": 10,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R09",
+      "requirement": "The system shall record the traceback triple for every recommendation with fields recommendation, metric value, metric class, source citation, confidence, and cited_at timestamp.",
+      "abstract_function_name": "record_traceback_triple",
+      "source_ucbd": "UC08",
+      "source_step": 11,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R10",
+      "requirement": "The system shall flag a recommendation for human review when the traceback confidence score is below TRACEBACK_MIN_CONFIDENCE.",
+      "abstract_function_name": "flag_low_confidence_recommendation",
+      "source_ucbd": "UC08",
+      "source_step": 12,
+      "referenced_constants": [
+        "TRACEBACK_MIN_CONFIDENCE"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R11",
+      "requirement": "The system shall attach the recorded traceback triple to the recommendation in the spec when the confidence score meets or exceeds TRACEBACK_MIN_CONFIDENCE.",
+      "abstract_function_name": "attach_traceback_to_spec",
+      "source_ucbd": "UC08",
+      "source_step": 14,
+      "referenced_constants": [
+        "TRACEBACK_MIN_CONFIDENCE"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R12",
+      "requirement": "The system shall refuse to emit a spec in which fewer than TRACEBACK_COVERAGE_PCT of tech-stack recommendations carry an attached traceback triple.",
+      "abstract_function_name": "enforce_traceback_coverage",
+      "source_ucbd": "UC08",
+      "source_step": 15,
+      "referenced_constants": [
+        "TRACEBACK_COVERAGE_PCT"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC08.R13",
+      "requirement": "The system shall record an audit entry for every traceback event with recommendation identifier, metric class, source citation, confidence, and timestamp.",
+      "abstract_function_name": "audit_traceback_event",
+      "source_ucbd": "UC08",
+      "source_step": 16,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R02"
+    },
+    {
+      "index": "UC08.R14",
+      "requirement": "The system shall return every traced recommendation to the calling use case within TRACEBACK_LATENCY_SEC of receipt.",
+      "abstract_function_name": "return_traced_recommendation",
+      "source_ucbd": "UC08",
+      "source_step": 17,
+      "referenced_constants": [
+        "TRACEBACK_LATENCY_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R01",
+      "requirement": "The system shall authenticate the Engineering Team Member's session before accepting customer connection inputs.",
+      "abstract_function_name": "authenticate_session",
+      "source_ucbd": "UC11",
+      "source_step": 2,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R01"
+    },
+    {
+      "index": "UC11.R02",
+      "requirement": "The system shall validate that every supplied endpoint is a well-formed URL resolvable from the c1v egress network before proceeding.",
+      "abstract_function_name": "validate_endpoint_urls",
+      "source_ucbd": "UC11",
+      "source_step": 3,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R03",
+      "requirement": "The system shall initiate an OAuth or OIDC authorization handshake with the customer Identity Provider using the supplied configuration.",
+      "abstract_function_name": "initiate_idp_handshake",
+      "source_ucbd": "UC11",
+      "source_step": 4,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R04",
+      "requirement": "The system shall reject the authorization when the returned scope contains any write-capability grant.",
+      "abstract_function_name": "reject_write_scope_grant",
+      "source_ucbd": "UC11",
+      "source_step": 6,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R05",
+      "requirement": "The system shall persist the Identity Provider credential in encrypted storage with a recorded expiry at ENCRYPTED_CREDENTIAL_EXPIRY_DAYS.",
+      "abstract_function_name": "persist_encrypted_credential",
+      "source_ucbd": "UC11",
+      "source_step": 7,
+      "referenced_constants": [
+        "ENCRYPTED_CREDENTIAL_EXPIRY_DAYS"
+      ],
+      "cross_cutting_ref": "CC.R04"
+    },
+    {
+      "index": "UC11.R06",
+      "requirement": "The system shall establish a read-only handle to the customer Version Control endpoint using the credentialed token.",
+      "abstract_function_name": "establish_vcs_handle",
+      "source_ucbd": "UC11",
+      "source_step": 8,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R07",
+      "requirement": "The system shall establish a read-only handle to the customer Observability Tools endpoints using the credentialed token.",
+      "abstract_function_name": "establish_observability_handle",
+      "source_ucbd": "UC11",
+      "source_step": 10,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R08",
+      "requirement": "The system shall execute a connection-health probe against the Version Control, Observability Tools, and Identity Provider handles and require a success response from each before proceeding.",
+      "abstract_function_name": "probe_connection_health",
+      "source_ucbd": "UC11",
+      "source_step": 12,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R09",
+      "requirement": "The system shall measure CPU, memory, and network overhead imposed on the customer system over a baseline probe window of BASELINE_PROBE_WINDOW_SEC.",
+      "abstract_function_name": "measure_customer_overhead",
+      "source_ucbd": "UC11",
+      "source_step": 13,
+      "referenced_constants": [
+        "BASELINE_PROBE_WINDOW_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R10",
+      "requirement": "The system shall reject the connection and surface an overhead violation to the Engineering Team Member when measured overhead exceeds MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT.",
+      "abstract_function_name": "reject_on_overhead_violation",
+      "source_ucbd": "UC11",
+      "source_step": 14,
+      "referenced_constants": [
+        "MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R11",
+      "requirement": "The system shall persist the connection record with Version Control handle reference, Observability handle reference, Identity Provider credential reference, measured overhead percentage, and non-invasive status flag.",
+      "abstract_function_name": "persist_connection_record",
+      "source_ucbd": "UC11",
+      "source_step": 15,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R12",
+      "requirement": "The system shall schedule a re-authorization event at CONNECTION_REAUTH_DAYS from the connection establishment timestamp.",
+      "abstract_function_name": "schedule_reauthorization",
+      "source_ucbd": "UC11",
+      "source_step": 16,
+      "referenced_constants": [
+        "CONNECTION_REAUTH_DAYS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R13",
+      "requirement": "The system shall record an audit entry for the connection establishment with Engineering Team Member identity, customer organization identifier, endpoint set, measured overhead, and timestamp.",
+      "abstract_function_name": "audit_connection_establishment",
+      "source_ucbd": "UC11",
+      "source_step": 17,
+      "referenced_constants": [],
+      "cross_cutting_ref": "CC.R02"
+    },
+    {
+      "index": "UC11.R14",
+      "requirement": "The system shall complete the connection establishment within CONNECTION_ESTABLISHMENT_BUDGET_SEC of receiving the connection inputs.",
+      "abstract_function_name": "enforce_connection_budget",
+      "source_ucbd": "UC11",
+      "source_step": 18,
+      "referenced_constants": [
+        "CONNECTION_ESTABLISHMENT_BUDGET_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "UC11.R15",
+      "requirement": "The system shall return the connection identifier, measured overhead percentage, non-invasive status flag, and re-authorization due date to the Engineering Team Member.",
+      "abstract_function_name": "return_connection_confirmation",
+      "source_ucbd": "UC11",
+      "source_step": 19,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R01",
+      "requirement": "The system shall authenticate every human actor's session via the organization's configured Identity Provider before exposing any protected action.",
+      "abstract_function_name": "authenticate_session",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "SESSION_TTL_MIN"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R02",
+      "requirement": "The system shall record an audit entry for every state-changing action with actor identity, action type, prior state, new state, and timestamp.",
+      "abstract_function_name": "write_audit_entry",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R03",
+      "requirement": "The system shall enforce role-based access control on every protected action using the organization's configured role definitions.",
+      "abstract_function_name": "enforce_rbac",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R04",
+      "requirement": "The system shall encrypt every persisted credential and secret at rest using the encryption class declared in ENCRYPTION_CLASS.",
+      "abstract_function_name": "encrypt_secrets_at_rest",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "ENCRYPTION_CLASS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R05",
+      "requirement": "The system shall retain every audit entry for at least AUDIT_RETENTION_DAYS before archival or deletion.",
+      "abstract_function_name": "retain_audit_trail",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "AUDIT_RETENTION_DAYS"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R06",
+      "requirement": "The system shall bound external-actor-initiated requests to at most RATE_LIMIT_RPM per authenticated actor per minute and reject excess requests with a rate-limit response.",
+      "abstract_function_name": "enforce_rate_limit",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "RATE_LIMIT_RPM"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R07",
+      "requirement": "The system shall fall back to the next configured LLM Provider in the organization's fallback ordering when the current provider fails to respond within LLM_PROVIDER_TIMEOUT_SEC.",
+      "abstract_function_name": "fallback_llm_provider",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "LLM_PROVIDER_TIMEOUT_SEC"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R08",
+      "requirement": "The system shall emit a structured error response to the initiating actor when a protected action fails, including an error identifier, a retry-eligibility flag, and a support reference identifier.",
+      "abstract_function_name": "emit_structured_error",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R09",
+      "requirement": "The system shall emit structured logs and traces for every action at the log level declared in LOG_LEVEL_PROD with trace sampling at TRACE_SAMPLING_RATE.",
+      "abstract_function_name": "emit_observability_signals",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "LOG_LEVEL_PROD",
+        "TRACE_SAMPLING_RATE"
+      ],
+      "cross_cutting_ref": null
+    },
+    {
+      "index": "CC.R10",
+      "requirement": "The system shall export an audit evidence pack in the format declared in EVIDENCE_EXPORT_FORMATS when a compliance export request is received.",
+      "abstract_function_name": "export_compliance_evidence",
+      "source_ucbd": "cross-cutting",
+      "source_step": null,
+      "referenced_constants": [
+        "EVIDENCE_EXPORT_FORMATS"
+      ],
+      "cross_cutting_ref": null
+    }
+  ],
+  "delving_report": {
+    "delved_ucbds": [
+      "UC01",
+      "UC03",
+      "UC04",
+      "UC06",
+      "UC08",
+      "UC11"
+    ],
+    "delving_questions_applied": [
+      "What happens on the error path?",
+      "What are the concurrency / race conditions?",
+      "What are the edge inputs (empty, maximum, malformed)?",
+      "What is the timeout if the external actor does not respond?",
+      "What gets persisted vs. what stays in memory?",
+      "Who is notified on each state change?",
+      "What is the cross-cutting implication (auth, audit, RBAC)?",
+      "What is the degradation behavior?",
+      "What is the rollback / compensating action?"
+    ],
+    "new_requirements_added_during_delve": 10,
+    "notes": "Cross-cutting requirements CC.R01–CC.R10 were added during Phase 9 delve to cover auth, audit, RBAC, encryption, retention, rate limiting, LLM fallback, error shape, observability, and compliance export. These are referenced from individual UC requirements via cross_cutting_ref."
+  },
+  "source_references": [
+    "system-design/module-2-requirements/ucbd/UC01-generate-spec-from-idea.ucbd.json",
+    "system-design/module-2-requirements/ucbd/UC03-review-generated-spec.ucbd.json",
+    "system-design/module-2-requirements/ucbd/UC04-emit-cli-commands.ucbd.json",
+    "system-design/module-2-requirements/ucbd/UC06-recommend-design-improvements.ucbd.json",
+    "system-design/module-2-requirements/ucbd/UC08-trace-tech-stack-to-metric.ucbd.json",
+    "system-design/module-2-requirements/ucbd/UC11-connect-existing-customer-system.ucbd.json"
+  ]
+}

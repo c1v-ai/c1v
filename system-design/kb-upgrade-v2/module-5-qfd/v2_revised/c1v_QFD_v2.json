@@ -1,0 +1,494 @@
+{
+  "_schema": "qfd_populated.v2",
+  "_supersedes": "system-design/module-5-qfd/c1v_QFD.json",
+  "_produced_by": "Module 5 v2 — HoQ patch driven by M4 v2 PC/EC revision",
+  "_produced_date": "2026-04-20",
+  "_upstream_refs": [
+    "system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/pc_ec_revision.json",
+    "system-design/kb-upgrade-v2/module-5-qfd/c1v_QFD.json"
+  ],
+  "_winning_concept": "c1v Dual-Mode Platform (Option C, M4 score 0.662) — unchanged",
+  "metadata": {
+    "project_title": "c1v Dual-Mode Platform — House of Quality v2",
+    "developed_by": "David Ancor (Bond)",
+    "last_updated": "2026-04-20",
+    "change_log": [
+      "v2: Added PC.7 Observability/Detectability (weight 0.138)",
+      "v2: Split EC17 into EC17a Credential scope enforcement (binary) + EC17b Credential rotation cadence (days)",
+      "v2: Added EC19 Provider redundancy depth (count)",
+      "v2: 3 new roof interactions for EC19 (EC7, EC8, EC16); 3 new PC.7-driven main-floor column effects"
+    ]
+  },
+  "front_porch": [
+    {
+      "pc_id": "PC.1",
+      "full_attribute": "The system shall impose minimal overhead on customer production systems it observes.",
+      "short_name": "Non-invasiveness",
+      "relative_importance": 0.172,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.2",
+      "full_attribute": "The system shall deliver recommendations quickly after a metric deviation is detected.",
+      "short_name": "Feedback Latency",
+      "relative_importance": 0.172,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.3",
+      "full_attribute": "The system shall back every tech-stack recommendation with a verifiable metric citation.",
+      "short_name": "Traceback Coverage",
+      "relative_importance": 0.172,
+      "direction_of_change": "↑"
+    },
+    {
+      "pc_id": "PC.4",
+      "full_attribute": "The system shall generate a reviewable spec shortly after idea submission.",
+      "short_name": "Spec Gen Time",
+      "relative_importance": 0.138,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.5",
+      "full_attribute": "The system shall emit the CLI bundle quickly after spec approval.",
+      "short_name": "CLI Emission",
+      "relative_importance": 0.103,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.6",
+      "full_attribute": "The system shall feel responsive during founder intake conversation.",
+      "short_name": "Intake Response",
+      "relative_importance": 0.103,
+      "direction_of_change": "↓"
+    },
+    {
+      "pc_id": "PC.7",
+      "full_attribute": "The system shall make silent failure modes externally detectable within a bounded time budget (MTTD ≤ 120s for correctness, ≤ 5 min for telemetry).",
+      "short_name": "Observability / Detectability",
+      "relative_importance": 0.138,
+      "direction_of_change": "↑"
+    }
+  ],
+  "_weights_check": {
+    "sum": 0.998,
+    "rounding_note": "0.998 due to 3-dp rounding; raw weighted sum = 29/29 = 1.000",
+    "raw_1_5": {
+      "PC.1": 5,
+      "PC.2": 5,
+      "PC.3": 5,
+      "PC.4": 4,
+      "PC.5": 3,
+      "PC.6": 3,
+      "PC.7": 4
+    },
+    "raw_sum": 29
+  },
+  "second_floor": [
+    {
+      "ec_id": "EC1",
+      "name": "Probe frequency",
+      "unit": "probes/min",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC2",
+      "name": "Aggregation window",
+      "unit": "min",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC3",
+      "name": "Metric payload size",
+      "unit": "KB",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC4",
+      "name": "Probe batch size",
+      "unit": "events/batch",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": "EC5",
+      "name": "LLM routing granularity",
+      "unit": "scale 1-3",
+      "direction_of_change": "target"
+    },
+    {
+      "ec_id": "EC6",
+      "name": "Parallel agent dispatch count",
+      "unit": "agents",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": "EC7",
+      "name": "Prompt-cache hit rate",
+      "unit": "%",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": "EC8",
+      "name": "Context tokens per agent call",
+      "unit": "tokens",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC9",
+      "name": "Traceback cache TTL",
+      "unit": "hours",
+      "direction_of_change": "target"
+    },
+    {
+      "ec_id": "EC10",
+      "name": "Citation completeness floor",
+      "unit": "%",
+      "direction_of_change": "↑"
+    },
+    {
+      "ec_id": "EC11",
+      "name": "Vendor-doc refresh cadence",
+      "unit": "days",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC12",
+      "name": "Spec artifact format count",
+      "unit": "formats",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC13",
+      "name": "Quick Start step count",
+      "unit": "steps",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC14",
+      "name": "CLI bundle size",
+      "unit": "MB",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC15",
+      "name": "Founder intake turn budget",
+      "unit": "ms",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC16",
+      "name": "Streaming UI chunk cadence",
+      "unit": "ms",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC17a",
+      "name": "Credential scope enforcement",
+      "unit": "binary",
+      "direction_of_change": "read-only"
+    },
+    {
+      "ec_id": "EC17b",
+      "name": "Credential rotation cadence",
+      "unit": "days",
+      "direction_of_change": "↓"
+    },
+    {
+      "ec_id": "EC18",
+      "name": "Audit log retention",
+      "unit": "days",
+      "direction_of_change": "target"
+    },
+    {
+      "ec_id": "EC19",
+      "name": "Provider redundancy depth",
+      "unit": "count",
+      "direction_of_change": "↑"
+    }
+  ],
+  "main_floor": {
+    "_note": "Values are PC row × EC column on -2..+2 scale. PC.1-PC.6 rows inherit from v1 where EC unchanged; new cells populated for PC.7, EC17a, EC17b, EC19.",
+    "PC.1": {
+      "EC1": 2,
+      "EC2": -1,
+      "EC3": 2,
+      "EC4": 1,
+      "EC5": 0,
+      "EC6": 0,
+      "EC7": 0,
+      "EC8": 0,
+      "EC9": 0,
+      "EC10": 0,
+      "EC11": 0,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17a": 2,
+      "EC17b": 0,
+      "EC18": 0,
+      "EC19": 0
+    },
+    "PC.2": {
+      "EC1": -2,
+      "EC2": 2,
+      "EC3": 1,
+      "EC4": -1,
+      "EC5": 0,
+      "EC6": 1,
+      "EC7": 1,
+      "EC8": 1,
+      "EC9": 0,
+      "EC10": -1,
+      "EC11": -1,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17a": 0,
+      "EC17b": 0,
+      "EC18": 0,
+      "EC19": 1
+    },
+    "PC.3": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": -1,
+      "EC6": 0,
+      "EC7": -1,
+      "EC8": -2,
+      "EC9": 2,
+      "EC10": 2,
+      "EC11": 1,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17a": 1,
+      "EC17b": 0,
+      "EC18": 1,
+      "EC19": 0
+    },
+    "PC.4": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": 1,
+      "EC6": 2,
+      "EC7": 2,
+      "EC8": 1,
+      "EC9": 0,
+      "EC10": -1,
+      "EC11": 0,
+      "EC12": 2,
+      "EC13": 1,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17a": 0,
+      "EC17b": 0,
+      "EC18": 0,
+      "EC19": 1
+    },
+    "PC.5": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": 0,
+      "EC6": 0,
+      "EC7": 0,
+      "EC8": 0,
+      "EC9": 0,
+      "EC10": 0,
+      "EC11": 0,
+      "EC12": 1,
+      "EC13": 1,
+      "EC14": 2,
+      "EC15": 0,
+      "EC16": 0,
+      "EC17a": 0,
+      "EC17b": 0,
+      "EC18": 0,
+      "EC19": 0
+    },
+    "PC.6": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": 0,
+      "EC6": 0,
+      "EC7": 1,
+      "EC8": 0,
+      "EC9": 0,
+      "EC10": 0,
+      "EC11": 0,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 2,
+      "EC16": 2,
+      "EC17a": 0,
+      "EC17b": 0,
+      "EC18": 0,
+      "EC19": 0
+    },
+    "PC.7": {
+      "EC1": 0,
+      "EC2": 0,
+      "EC3": 0,
+      "EC4": 0,
+      "EC5": 0,
+      "EC6": 0,
+      "EC7": 0,
+      "EC8": 0,
+      "EC9": 1,
+      "EC10": 2,
+      "EC11": 1,
+      "EC12": 0,
+      "EC13": 0,
+      "EC14": 0,
+      "EC15": 0,
+      "EC16": 1,
+      "EC17a": 1,
+      "EC17b": 1,
+      "EC18": 2,
+      "EC19": 1
+    }
+  },
+  "roof_additions": {
+    "description": "3 new roof cells introduced by EC17 split + EC19; existing 14 cells carry forward unchanged.",
+    "new_cells": [
+      {
+        "pair": "EC17a ↔ EC17b",
+        "value": 0,
+        "interpretation": "Orthogonal — scope and rotation are different design knobs."
+      },
+      {
+        "pair": "EC19 ↔ EC7",
+        "value": -1,
+        "interpretation": "Multi-provider increases cache-key fragmentation — tightens EC7 hit rate budget unless normalized."
+      },
+      {
+        "pair": "EC19 ↔ EC8",
+        "value": -1,
+        "interpretation": "LCD context-window across providers → EC8 budget tightens."
+      },
+      {
+        "pair": "EC19 ↔ EC16",
+        "value": -1,
+        "interpretation": "Fallback logic adds 50-200ms routing overhead — tightens EC16 streaming cadence."
+      }
+    ],
+    "strongest_negative_pair_still": "EC9 ↔ EC11 (-2) — unchanged from v1"
+  },
+  "imputed_importance_projected": {
+    "_note": "Projected re-ranking after PC.7 + EC17a/EC17b/EC19 additions. Final values require recomputing Σ(pc_weight × main_floor_value) per EC.",
+    "top_10_projected": [
+      {
+        "rank": 1,
+        "ec": "EC10",
+        "name": "Citation completeness floor",
+        "imputed_v1": 0.76,
+        "imputed_v2_projected": 0.92,
+        "shift": "+0.16 — PC.3 (0.172) + PC.7 (0.138) reinforce"
+      },
+      {
+        "rank": 2,
+        "ec": "EC8",
+        "name": "Context tokens per agent call",
+        "imputed_v1": 1.0,
+        "imputed_v2_projected": 0.89,
+        "shift": "-0.11 — weight dilution from PC.7 entry"
+      },
+      {
+        "rank": 3,
+        "ec": "EC7",
+        "name": "Prompt-cache hit rate",
+        "imputed_v1": 0.96,
+        "imputed_v2_projected": 0.82,
+        "shift": "-0.14 — same dilution"
+      },
+      {
+        "rank": 4,
+        "ec": "EC18",
+        "name": "Audit log retention",
+        "imputed_v1": 0.08,
+        "imputed_v2_projected": 0.41,
+        "shift": "+0.33 — PC.7 × EC18 = +2 is the largest single cell"
+      },
+      {
+        "rank": 5,
+        "ec": "EC1",
+        "name": "Probe frequency",
+        "imputed_v1": 0.8,
+        "imputed_v2_projected": 0.69,
+        "shift": "-0.11"
+      },
+      {
+        "rank": 6,
+        "ec": "EC16",
+        "name": "Streaming UI chunk cadence",
+        "imputed_v1": 0.41,
+        "imputed_v2_projected": 0.52,
+        "shift": "+0.11 — PC.7 × EC16 = +1"
+      },
+      {
+        "rank": 7,
+        "ec": "EC9",
+        "name": "Traceback cache TTL",
+        "imputed_v1": 0.34,
+        "imputed_v2_projected": 0.48,
+        "shift": "+0.14 — PC.7 × EC9 = +1"
+      },
+      {
+        "rank": 8,
+        "ec": "EC6",
+        "name": "Parallel agent dispatch count",
+        "imputed_v1": 0.64,
+        "imputed_v2_projected": 0.55,
+        "shift": "-0.09"
+      },
+      {
+        "rank": 9,
+        "ec": "EC17a",
+        "name": "Credential scope enforcement",
+        "imputed_v1": null,
+        "imputed_v2_projected": 0.52,
+        "shift": "NEW"
+      },
+      {
+        "rank": 10,
+        "ec": "EC19",
+        "name": "Provider redundancy depth",
+        "imputed_v1": null,
+        "imputed_v2_projected": 0.35,
+        "shift": "NEW"
+      }
+    ],
+    "headline_insight": "v1 said context-tokens (EC8) was rank-1. v2 says citation-completeness (EC10) is rank-1 alongside audit-retention (EC18) rising into the top 5. This matches M7's finding that the HIGH-criticality row was a citation-staleness failure, not a context-tokens failure. The v1 HoQ systematically under-weighted correctness + detectability ECs."
+  },
+  "promoted_design_targets_from_m7_unchanged": [
+    "TRACEBACK_COVERAGE_PCT = 100 (hard floor — EC10)",
+    "MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT = 2",
+    "PROBE_FREQUENCY_PER_MIN = 6",
+    "AGGREGATION_WINDOW_MIN = 60",
+    "PARALLEL_AGENT_DISPATCH = 5",
+    "PROMPT_CACHE_HIT_TARGET_PCT = 70",
+    "AGENT_CONTEXT_TOKENS_MAX = 8000",
+    "TRACEBACK_CACHE_TTL_HOURS = tiered (top-50=6, default=24)",
+    "VENDOR_DOC_REFRESH_DAYS = 7",
+    "STREAMING_CHUNK_CADENCE_MS = 50",
+    "CITATION_CHECK_LATENCY_MAX_S = 5",
+    "SS4_PROVIDER_FALLBACK_DEPTH = 3  (ties to new EC19)",
+    "METRIC_CHECKPOINT_INTERVAL_MIN = 10",
+    "AUDIT_WRITE_POLICY = split (sync-durable compliance + async telemetry)"
+  ]
+}
