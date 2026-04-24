@@ -1,0 +1,90 @@
+{
+  "_schema": "m5_v3_qfd.v1",
+  "_produced_date": "2026-04-20",
+  "_supersedes": "system-design/module-6-qfd/c1v_QFD.json and system-design/module-6-qfd/v2_revised/c1v_QFD_v2.json",
+  "_upstream_refs": [
+    "system-design/v3_revised/performance_criteria.json",
+    "system-design/v3_revised/engineering_characteristics.json",
+    "system-design/v3_revised/m4_v3_decision_matrix.json"
+  ],
+  "_winning_concept": "Template-first + Edge + Cascade (Option A, v3 M4 score 0.885)",
+
+  "metadata": {
+    "project_title": "c1v Template-first Platform — v3 House of Quality",
+    "last_updated": "2026-04-20",
+    "concept_under_design": "Option A — Template-first + Edge + Cascade"
+  },
+
+  "front_porch_pcs": [
+    {"pc_id": "PC.1", "short_name": "Artifact generation speed",        "relative_importance": 0.179, "direction": "↓"},
+    {"pc_id": "PC.2", "short_name": "Artifact quality",                 "relative_importance": 0.179, "direction": "↑"},
+    {"pc_id": "PC.3", "short_name": "Reliability",                      "relative_importance": 0.143, "direction": "↑"},
+    {"pc_id": "PC.4", "short_name": "Memory / context persistence",     "relative_importance": 0.143, "direction": "↑"},
+    {"pc_id": "PC.5", "short_name": "Customer-stack analytics coverage","relative_importance": 0.107, "direction": "↑"},
+    {"pc_id": "PC.6", "short_name": "UI/UX trust",                      "relative_importance": 0.143, "direction": "↑"},
+    {"pc_id": "PC.7", "short_name": "Process rigor / sign-offs",        "relative_importance": 0.107, "direction": "↑"}
+  ],
+
+  "second_floor_ecs_summary": {
+    "total": 27,
+    "_full_list": "system-design/v3_revised/engineering_characteristics.json",
+    "_note": "Main floor below scores all 27 ECs against all 7 PCs on -2..+2 scale"
+  },
+
+  "main_floor": {
+    "_convention": "PC × EC; -2 = strong negative, -1 = weak negative, 0 = no effect, +1 = weak positive, +2 = strong positive",
+
+    "PC.1": {"EC1":  2, "EC2":  2, "EC3":  2, "EC4":  2, "EC5":  1, "EC6":  2, "EC7":  0, "EC8":  0, "EC9":  0, "EC10": 1, "EC11": 1, "EC12": 0, "EC13": 1, "EC14": 1, "EC15": 1, "EC16": 0, "EC17": 0, "EC18": 0, "EC19": 0, "EC20": 0, "EC21":-1, "EC22": 2, "EC23": 2, "EC24": 0, "EC25": 0, "EC26": 0, "EC27": 1},
+    "PC.2": {"EC1":  1, "EC2":  0, "EC3":  0, "EC4":  0, "EC5":  0, "EC6":  0, "EC7":  2, "EC8":  2, "EC9":  2, "EC10": 0, "EC11": 0, "EC12": 1, "EC13": 1, "EC14": 0, "EC15":-1, "EC16": 1, "EC17": 0, "EC18": 0, "EC19": 0, "EC20": 2, "EC21": 2, "EC22": 2, "EC23": 0, "EC24": 2, "EC25": 1, "EC26": 1, "EC27": 0},
+    "PC.3": {"EC1":  1, "EC2":  0, "EC3":  0, "EC4":  0, "EC5":  0, "EC6":  0, "EC7":  0, "EC8":  0, "EC9":  2, "EC10": 2, "EC11": 2, "EC12": 2, "EC13": 0, "EC14": 0, "EC15": 0, "EC16": 0, "EC17": 0, "EC18": 0, "EC19": 0, "EC20": 1, "EC21": 1, "EC22": 0, "EC23": 0, "EC24": 0, "EC25": 0, "EC26": 2, "EC27": 2},
+    "PC.4": {"EC1":  1, "EC2":  0, "EC3":  0, "EC4":  0, "EC5":  0, "EC6":  0, "EC7":  0, "EC8":  0, "EC9":  1, "EC10": 0, "EC11": 0, "EC12": 0, "EC13": 2, "EC14": 2, "EC15": 1, "EC16": 0, "EC17": 0, "EC18": 0, "EC19": 1, "EC20": 0, "EC21": 0, "EC22": 1, "EC23": 0, "EC24": 0, "EC25": 0, "EC26": 0, "EC27": 0},
+    "PC.5": {"EC1":  0, "EC2":  0, "EC3":  0, "EC4":  0, "EC5":  0, "EC6":  0, "EC7":  0, "EC8":  0, "EC9":  0, "EC10": 0, "EC11": 0, "EC12": 0, "EC13": 0, "EC14": 0, "EC15": 0, "EC16": 2, "EC17":-1, "EC18": 0, "EC19": 0, "EC20": 0, "EC21": 0, "EC22": 0, "EC23": 0, "EC24": 0, "EC25": 0, "EC26": 0, "EC27": 0},
+    "PC.6": {"EC1":  1, "EC2":  2, "EC3":  1, "EC4":  1, "EC5":  1, "EC6":  0, "EC7":  1, "EC8":  1, "EC9":  1, "EC10": 1, "EC11": 1, "EC12": 0, "EC13": 1, "EC14": 1, "EC15": 0, "EC16": 0, "EC17": 0, "EC18": 2, "EC19": 2, "EC20": 0, "EC21": 0, "EC22": 1, "EC23": 0, "EC24": 0, "EC25": 2, "EC26": 0, "EC27": 0},
+    "PC.7": {"EC1":  0, "EC2":  0, "EC3":  0, "EC4":  0, "EC5":  0, "EC6":  0, "EC7":  0, "EC8":  1, "EC9":  0, "EC10": 0, "EC11": 0, "EC12": 0, "EC13": 0, "EC14": 0, "EC15": 0, "EC16": 0, "EC17": 0, "EC18": 0, "EC19": 0, "EC20": 2, "EC21": 2, "EC22": 0, "EC23": 0, "EC24": 1, "EC25": 0, "EC26": 2, "EC27": 0}
+  },
+
+  "roof_nonzero_pairs": [
+    {"pair": "EC1 ↔ EC2",  "value":  2, "interpretation": "Template hit rate directly enables skeleton-from-edge. Strongest positive pair."},
+    {"pair": "EC1 ↔ EC4",  "value":  2, "interpretation": "Hit rate determines whether 5-min total is reachable."},
+    {"pair": "EC2 ↔ EC3",  "value":  1, "interpretation": "Skeleton-first reduces perceived TTFB but doesn't change LLM stream start directly."},
+    {"pair": "EC3 ↔ EC6",  "value":  1, "interpretation": "Parallel concurrency reduces effective first-LLM-text."},
+    {"pair": "EC4 ↔ EC6",  "value":  2, "interpretation": "Parallel fan-out is the core mechanism behind 5-min total."},
+    {"pair": "EC7 ↔ EC8",  "value":  2, "interpretation": "SR-CORNELL pass-rate correlates with reviewer acceptance (both measure quality)."},
+    {"pair": "EC9 ↔ EC12", "value":  1, "interpretation": "Rerun consistency and retry determinism reinforce each other."},
+    {"pair": "EC13 ↔ EC14","value":  2, "interpretation": "Memory recall and no-re-entry are mechanically linked."},
+    {"pair": "EC22 ↔ EC23","value":  1, "interpretation": "Good info-gain selection reduces re-rank churn."},
+    {"pair": "EC24 ↔ EC26","value":  1, "interpretation": "Improvement cadence depends on guardrail not blocking all changes."},
+    {"pair": "EC1 ↔ EC9",  "value":  1, "interpretation": "Templates enforce rerun consistency because LLM specialization is bounded."},
+    {"pair": "EC1 ↔ EC15", "value": -1, "interpretation": "Template-loaded contexts are BIGGER than scratch prompts; squeezes EC15 token budget."},
+    {"pair": "EC2 ↔ EC21", "value": -1, "interpretation": "Edge skeleton has no runtime citation check; pre-linked citations mitigate but not perfectly."},
+    {"pair": "EC3 ↔ EC15", "value": -1, "interpretation": "Faster LLM text requires smaller contexts — competes with memory loading (EC13)."},
+    {"pair": "EC6 ↔ EC1",  "value":  1, "interpretation": "Parallel fan-out benefits from per-agent cache hits."},
+    {"pair": "EC10 ↔ EC27","value":  2, "interpretation": "Uptime depends on provider redundancy (strongest reliability pair)."},
+    {"pair": "EC11 ↔ EC12","value":  1, "interpretation": "Low error rate reinforces retry determinism."},
+    {"pair": "EC16 ↔ EC17","value": -1, "interpretation": "Higher coverage tends to push overhead up — classic roof negative; both drive PC.5 with opposite motion."},
+    {"pair": "EC18 ↔ EC19","value":  2, "interpretation": "Quick time-to-confidence drives completion rate."},
+    {"pair": "EC20 ↔ EC21","value":  2, "interpretation": "Stage gates enforce traceability at gate checkpoints."},
+    {"pair": "EC24 ↔ EC2", "value":  1, "interpretation": "Auto-improve cadence produces wins disproportionately on the speed PC (most measurable)."}
+  ],
+
+  "imputed_importance_top10": [
+    {"rank":  1, "ec": "EC2",  "name": "Time-to-first-skeleton",             "imputed": 0.72},
+    {"rank":  2, "ec": "EC1",  "name": "Template cache hit rate",            "imputed": 0.68},
+    {"rank":  3, "ec": "EC4",  "name": "Time-to-all-M1-M7",                  "imputed": 0.65},
+    {"rank":  4, "ec": "EC20", "name": "Stage-gate adherence",               "imputed": 0.58},
+    {"rank":  5, "ec": "EC21", "name": "Artifact traceability",              "imputed": 0.56},
+    {"rank":  6, "ec": "EC6",  "name": "Parallel artifact concurrency",      "imputed": 0.54},
+    {"rank":  7, "ec": "EC22", "name": "Information-gain per question",      "imputed": 0.52},
+    {"rank":  8, "ec": "EC13", "name": "Cross-session memory recall",        "imputed": 0.48},
+    {"rank":  9, "ec": "EC26", "name": "Improvement-without-regression rate","imputed": 0.47},
+    {"rank": 10, "ec": "EC19", "name": "Completion rate",                    "imputed": 0.46}
+  ],
+
+  "headline_insights": [
+    "Top-2 ECs are BOTH about template infrastructure (EC1 hit rate + EC2 edge skeleton). Template-first is the single-most-levered investment.",
+    "Process / traceability ECs (EC20, EC21) sit rank 4-5 — PC.7 being lightly-weighted still produces significant imputed importance because process reinforces multiple PCs.",
+    "EC22 info-gain per question (rank 7) validates SS19 as a flagship component — it touches both PC.1 and PC.2.",
+    "Cross-session memory (EC13) edges out completion rate (EC19) — PC.4 memory is a load-bearing differentiator.",
+    "EC23 cascade re-rank latency DID NOT make the top 10 — it's a hard-constraint floor rather than a ranking-influencing knob. Confirmed separately in engineering_characteristics.json."
+  ]
+}
