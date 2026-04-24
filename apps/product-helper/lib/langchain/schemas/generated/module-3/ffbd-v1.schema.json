@@ -1,0 +1,344 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-3.ffbd.v1"
+    },
+    "_output_path": {
+      "type": "string"
+    },
+    "_upstream_refs": {
+      "type": "object",
+      "properties": {
+        "scope_tree": {
+          "type": "string"
+        },
+        "context_diagram": {
+          "type": "string"
+        },
+        "data_flows": {
+          "type": "string"
+        },
+        "ffbd_top_level": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope_tree",
+        "context_diagram",
+        "data_flows",
+        "ffbd_top_level"
+      ],
+      "additionalProperties": false
+    },
+    "produced_at": {
+      "type": "string"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "system_name": {
+      "type": "string"
+    },
+    "top_level_diagram_id": {
+      "type": "string",
+      "default": "F.0"
+    },
+    "functions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F(\\.\\d+)+$",
+            "description": "Function id F.N (top-level) or F.N.M (nested)."
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "functional",
+              "reference"
+            ],
+            "default": "functional"
+          },
+          "uncertainty": {
+            "type": "string",
+            "enum": [
+              "green",
+              "yellow",
+              "red"
+            ]
+          },
+          "delves_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Sub-diagram id this function delves into, or null."
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "data_flow"
+                    },
+                    "ref": {
+                      "type": "string",
+                      "pattern": "^DE\\.\\d{2,}$",
+                      "description": "DE.NN id from data_flows.v1."
+                    },
+                    "rationale": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "ref"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "external"
+                    },
+                    "actor": {
+                      "type": "string",
+                      "description": "Context-diagram external actor name."
+                    },
+                    "rationale": {
+                      "type": "string",
+                      "description": "Why an external reference is used instead of a DE.NN."
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "actor",
+                    "rationale"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "default": []
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "data_flow",
+                    "external"
+                  ]
+                },
+                "ref": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "ref"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
+          },
+          "source_uc": {
+            "type": "string"
+          },
+          "source_cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "uncertainty",
+          "delves_to"
+        ],
+        "additionalProperties": false,
+        "description": "FFBD function block."
+      },
+      "minItems": 1
+    },
+    "arrows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "trigger",
+              "precedes"
+            ]
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "kind"
+        ],
+        "additionalProperties": false,
+        "description": "FFBD arrow (trigger or precedes)."
+      },
+      "minItems": 1
+    },
+    "logic_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Gate id (OR.N, AND.N, IT.N)."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "OR",
+              "AND",
+              "IT"
+            ]
+          },
+          "open_pos": {
+            "type": "string"
+          },
+          "close_pos": {
+            "type": "string"
+          },
+          "guard": {
+            "type": "string",
+            "description": "Branching guard for OR/AND gates."
+          },
+          "termination": {
+            "type": "string",
+            "description": "Termination condition for IT gates."
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "open_pos",
+          "close_pos",
+          "purpose"
+        ],
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "data_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "feeds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source_actor": {
+            "type": "string"
+          },
+          "data_flow_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^DE\\.\\d{2,}$"
+            },
+            "default": [],
+            "description": "DE.NN ids from data_flows.v1 this data block materializes."
+          }
+        },
+        "required": [
+          "name",
+          "feeds",
+          "source_actor"
+        ],
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "cross_cutting_pervasive": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "applies_to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "applies_to"
+        ],
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "mermaid_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Relative paths of per-function Mermaid renders."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_upstream_refs",
+    "produced_at",
+    "produced_by",
+    "system_name",
+    "functions",
+    "arrows"
+  ],
+  "additionalProperties": false,
+  "description": "Canonical FFBD v1 artifact (Gate C close-out).",
+  "title": "FfbdV1",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,196 @@
+{
+  "_schema": "module-3.ffbd.v1",
+  "_output_path": "system-design/kb-upgrade-v2/module-3-ffbd/ffbd.v1.json",
+  "_upstream_refs": {
+    "scope_tree": "system-design/kb-upgrade-v2/module-1-defining-scope/scope_tree.json",
+    "context_diagram": "system-design/kb-upgrade-v2/module-1-defining-scope/context_diagram.json",
+    "data_flows": "system-design/kb-upgrade-v2/module-1-defining-scope/data_flows.v1.json",
+    "ffbd_top_level": "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_top_level.json"
+  },
+  "produced_at": "2026-04-24T12:05:00-04:00",
+  "produced_by": "c1v-m3-ffbd-n2-fmea-early@wave-2-early/ffbd-closer",
+  "system_name": "c1v",
+  "top_level_diagram_id": "F.0",
+  "functions": [
+    {
+      "id": "F.1",
+      "name": "Authenticate & Authorize",
+      "type": "functional",
+      "uncertainty": "green",
+      "delves_to": null,
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.12", "rationale": "Session token from IDP seeds authn." }
+      ],
+      "outputs": [],
+      "source_cc": ["CC.R01", "CC.R03"]
+    },
+    {
+      "id": "F.2",
+      "name": "Generate Spec",
+      "type": "functional",
+      "uncertainty": "yellow",
+      "delves_to": "F.2",
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.01", "rationale": "Founder idea prompt drives spec-from-idea path." },
+        { "kind": "data_flow", "ref": "DE.02", "rationale": "Repo snapshot drives spec-from-code path." },
+        { "kind": "data_flow", "ref": "DE.13", "rationale": "LLM completions used for spec drafting." },
+        { "kind": "data_flow", "ref": "DE.10", "rationale": "Prior recommendation feeds next spec iteration (F.7 → F.2 improvement-informs-next-spec)." }
+      ],
+      "outputs": [{ "kind": "data_flow", "ref": "DE.03" }],
+      "source_uc": "UC01"
+    },
+    {
+      "id": "F.3",
+      "name": "Review & Approve Spec",
+      "type": "functional",
+      "uncertainty": "green",
+      "delves_to": "F.3",
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.03", "rationale": "Draft spec is the object under review." },
+        { "kind": "data_flow", "ref": "DE.04", "rationale": "Reviewer decision drives OR.1 branch." },
+        { "kind": "data_flow", "ref": "DE.14", "rationale": "Compliance policy applied during review gate." }
+      ],
+      "outputs": [{ "kind": "data_flow", "ref": "DE.05" }],
+      "source_uc": "UC03"
+    },
+    {
+      "id": "F.4",
+      "name": "Emit CLI Bundle",
+      "type": "functional",
+      "uncertainty": "yellow",
+      "delves_to": "F.4",
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.05", "rationale": "Approved spec is the source of the CLI bundle." },
+        { "kind": "data_flow", "ref": "DE.14", "rationale": "Compliance policy scoped to emit gate." }
+      ],
+      "outputs": [{ "kind": "data_flow", "ref": "DE.06" }, { "kind": "data_flow", "ref": "DE.15" }],
+      "source_uc": "UC04"
+    },
+    {
+      "id": "F.5",
+      "name": "Connect Customer System",
+      "type": "functional",
+      "uncertainty": "red",
+      "delves_to": "F.5",
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.07", "rationale": "Connection manifest is the input to adapter wiring." },
+        { "kind": "data_flow", "ref": "DE.02", "rationale": "Repo snapshot may be referenced for non-invasive overhead sizing." }
+      ],
+      "outputs": [],
+      "source_uc": "UC11"
+    },
+    {
+      "id": "F.6",
+      "name": "Ingest Metrics & Recommend",
+      "type": "functional",
+      "uncertainty": "red",
+      "delves_to": "F.6",
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.08", "rationale": "Metric stream is the driver of F.6." }
+      ],
+      "outputs": [{ "kind": "data_flow", "ref": "DE.10" }],
+      "source_uc": "UC06"
+    },
+    {
+      "id": "F.7",
+      "name": "Trace Recommendations to Metrics",
+      "type": "functional",
+      "uncertainty": "yellow",
+      "delves_to": "F.7",
+      "inputs": [
+        { "kind": "data_flow", "ref": "DE.09", "rationale": "Tech catalog + vendor docs are the citation source." },
+        { "kind": "data_flow", "ref": "DE.08", "rationale": "Metric samples are the target of the traceback." }
+      ],
+      "outputs": [{ "kind": "data_flow", "ref": "DE.10" }],
+      "source_uc": "UC08"
+    }
+  ],
+  "arrows": [
+    { "from": "F.1", "to": "F.2", "kind": "trigger", "label": "founder authenticated" },
+    { "from": "F.2", "to": "F.3", "kind": "trigger", "label": "draft spec ready" },
+    { "from": "F.3", "to": "OR.1.open", "kind": "trigger", "label": "review complete" },
+    { "from": "OR.1.open", "to": "F.4", "kind": "trigger", "label": "approved" },
+    { "from": "OR.1.open", "to": "F.2", "kind": "trigger", "label": "revisions_requested" },
+    { "from": "F.4", "to": "F.5", "kind": "precedes", "label": "on engineer schedule" },
+    { "from": "F.5", "to": "AND.1.open", "kind": "trigger" },
+    { "from": "AND.1.open", "to": "F.6", "kind": "trigger", "label": "metrics available" },
+    { "from": "AND.1.open", "to": "F.7", "kind": "trigger", "label": "docs & catalogs available" },
+    { "from": "F.6", "to": "F.7", "kind": "trigger", "label": "<=RECOMMENDATION_CADENCE_MIN" },
+    { "from": "F.7", "to": "IT.1.close", "kind": "trigger", "label": "recommendation traced" },
+    { "from": "IT.1.close", "to": "IT.1.open", "kind": "precedes", "label": "Until project deactivates" },
+    { "from": "IT.1.open", "to": "F.6", "kind": "trigger" },
+    { "from": "F.7", "to": "F.2", "kind": "precedes", "label": "improvement informs next spec" }
+  ],
+  "logic_gates": [
+    {
+      "id": "OR.1",
+      "kind": "OR",
+      "open_pos": "after F.3",
+      "close_pos": "before F.2 / F.4 rejoin",
+      "guard": "review_decision == approved ? F.4 : F.2",
+      "purpose": "Branch on reviewer decision: approve → emit, revise → re-generate."
+    },
+    {
+      "id": "AND.1",
+      "kind": "AND",
+      "open_pos": "after F.5",
+      "close_pos": "before IT.1",
+      "guard": "metrics_available AND docs_available",
+      "purpose": "Parallel activation: both metric ingest and traceback sources must be live before feedback loop can recommend."
+    },
+    {
+      "id": "IT.1",
+      "kind": "IT",
+      "open_pos": "before F.6",
+      "close_pos": "after F.7",
+      "termination": "project.status != active",
+      "purpose": "Live feedback loop runs indefinitely while project is active; terminates on deactivate."
+    }
+  ],
+  "data_blocks": [
+    {
+      "name": "Founder Idea Prompt",
+      "feeds": ["F.2"],
+      "source_actor": "FOUNDERS",
+      "data_flow_refs": ["DE.01"]
+    },
+    {
+      "name": "Existing Codebase (read-only)",
+      "feeds": ["F.2", "F.5"],
+      "source_actor": "EXISTING CODEBASES",
+      "data_flow_refs": ["DE.02"]
+    },
+    {
+      "name": "Compliance Policy",
+      "feeds": ["F.3", "F.4"],
+      "source_actor": "COMPLIANCE FRAMEWORKS",
+      "data_flow_refs": ["DE.14"]
+    },
+    {
+      "name": "Live Performance Metrics",
+      "feeds": ["F.6"],
+      "source_actor": "OBSERVABILITY TOOLS",
+      "data_flow_refs": ["DE.08"]
+    },
+    {
+      "name": "Documentation Sources + Cloud SLAs",
+      "feeds": ["F.7"],
+      "source_actor": "DOCUMENTATION SOURCES",
+      "data_flow_refs": ["DE.09"]
+    }
+  ],
+  "cross_cutting_pervasive": [
+    { "id": "CC.R01", "name": "authenticate_session", "applies_to": "implicit on entry to F.1, F.3, F.4, F.5" },
+    { "id": "CC.R02", "name": "write_audit_entry", "applies_to": "every F.N that mutates state (F.2, F.3, F.4, F.5, F.6)" },
+    { "id": "CC.R09", "name": "emit_observability_signals", "applies_to": "every F.N unconditionally" }
+  ],
+  "mermaid_paths": [
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_top_level.mmd",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F2_generate_spec.mmd",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F3_review_spec.mmd",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F4_emit_cli.mmd",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F5_connect_system.mmd",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F6_recommend.mmd",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F7_trace_metric.mmd"
+  ]
+}

@@ -26,6 +26,20 @@ import type { z } from 'zod';
 import { phase0aSchema } from './submodule-3-1-hierarchy';
 import { phase6Schema } from './submodule-3-2-flows-branching';
 import { phase11Schema } from './submodule-3-3-handoff';
+import { ffbdV1Schema } from './ffbd-v1';
+
+export {
+  ffbdV1Schema,
+  ffbdFunctionSchema,
+  ffbdArrowSchema,
+  ffbdLogicGateSchema,
+  ffbdFunctionInputSchema,
+  type FfbdV1,
+  type FfbdFunction,
+  type FfbdArrow,
+  type FfbdLogicGate,
+  type FfbdFunctionInput,
+} from './ffbd-v1';
 
 // Re-export M2 shared primitives (plan §8 S2.a — single import surface)
 export * from '../module-2/_shared';
@@ -101,5 +115,11 @@ export const MODULE_3_PHASE_SCHEMAS: readonly Module3PhaseEntry[] = [
     name: 'Phase11FfbdToDecisionMatrix',
     phaseNumber: 11,
     zodSchema: phase11Schema,
+  },
+  {
+    slug: 'ffbd-v1',
+    name: 'FfbdV1',
+    phaseNumber: 'v1',
+    zodSchema: ffbdV1Schema,
   },
 ] as const;
