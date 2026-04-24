@@ -12,7 +12,7 @@ Source data: n2_chart.json, data_flow_diagram.mmd, sequence_diagrams.mmd,
              interface_matrix.json (for criticality).
 
 Run:
-    python3 system-design/module-6-interfaces/generate_pptx.py
+    python3 system-design/module-7-interfaces/generate_pptx.py
 """
 
 import json

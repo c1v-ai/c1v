@@ -1,0 +1,77 @@
+%% UC04 — Emit CLI Commands from Spec
+%% Generated for c1v Module 2 (2026-04-20)
+%% Source: system-design/module-2-requirements/ucbd/UC04-emit-cli-commands.ucbd.json
+flowchart TB
+  start(( )) --> A1
+
+  subgraph "Engineering Team Member"
+    A1[Engineer requests CLI bundle]
+    A19[Engineer receives bundle location + signature]
+  end
+
+  subgraph "The System"
+    A2[Authenticate Engineer session]
+    A3[Verify spec is approved]
+    A4[Verify emit permission]
+    A5[Load approved spec bundle]
+    A6[Generate SKILL.md]
+    A7[Generate CLAUDE.md]
+    A8[Generate MCP tool defs]
+    A9[Package CLI bundle]
+    A10[Sign bundle with commit hash]
+    A11[Enforce emission timeout]
+    A13[Write bundle to VCS repo]
+    A14[Deliver bundle to IDE/CLI]
+    A16[Require receipt token]
+    A17[Audit CLI emission]
+    A18[Return bundle location + signature]
+  end
+
+  subgraph "Version Control"
+    A12[Record committed bundle ref]
+  end
+
+  subgraph "IDE / CLI Client"
+    A15[Acknowledge bundle receipt]
+  end
+
+  A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7 --> A8 --> A9 --> A10 --> A11 --> A13 --> A12
+  A11 --> A14 --> A15 --> A16 --> A17 --> A18 --> A19 --> finish(((End)))
+  A12 --> A17
+
+  R01[/"&lt;&lt;requirement&gt;&gt; UC04.R01<br/>authenticate Engineer before emission"/]
+  R02[/"&lt;&lt;requirement&gt;&gt; UC04.R02<br/>verify spec status = approved"/]
+  R03[/"&lt;&lt;requirement&gt;&gt; UC04.R03<br/>verify Engineer holds emit permission"/]
+  R04[/"&lt;&lt;requirement&gt;&gt; UC04.R04<br/>load spec bundle at commit hash"/]
+  R05[/"&lt;&lt;requirement&gt;&gt; UC04.R05<br/>generate SKILL.md from agent sections"/]
+  R06[/"&lt;&lt;requirement&gt;&gt; UC04.R06<br/>generate CLAUDE.md from conventions + arch"/]
+  R07[/"&lt;&lt;requirement&gt;&gt; UC04.R07<br/>generate one MCP tool def per interface"/]
+  R08[/"&lt;&lt;requirement&gt;&gt; UC04.R08<br/>package SKILL + CLAUDE + MCP into CLI bundle"/]
+  R09[/"&lt;&lt;requirement&gt;&gt; UC04.R09<br/>sign bundle with commit hash + timestamp"/]
+  R10[/"&lt;&lt;requirement&gt;&gt; UC04.R10<br/>complete within CLI_EMISSION_TIMEOUT_SEC"/]
+  R11[/"&lt;&lt;requirement&gt;&gt; UC04.R11<br/>write signed bundle to spec VCS repo"/]
+  R12[/"&lt;&lt;requirement&gt;&gt; UC04.R12<br/>deliver signed bundle to IDE/CLI client"/]
+  R13[/"&lt;&lt;requirement&gt;&gt; UC04.R13<br/>require receipt token before delivered flag"/]
+  R14[/"&lt;&lt;requirement&gt;&gt; UC04.R14<br/>audit emission with identity + commit + signature"/]
+  R15[/"&lt;&lt;requirement&gt;&gt; UC04.R15<br/>return bundle location + signature + commit"/]
+
+  A2 -.-> R01
+  A3 -.-> R02
+  A4 -.-> R03
+  A5 -.-> R04
+  A6 -.-> R05
+  A7 -.-> R06
+  A8 -.-> R07
+  A9 -.-> R08
+  A10 -.-> R09
+  A11 -.-> R10
+  A13 -.-> R11
+  A14 -.-> R12
+  A16 -.-> R13
+  A17 -.-> R14
+  A18 -.-> R15
+
+  NS[/"Initial: approved spec exists; Engineer authenticated (CC.R01); IDE/CLI client registered"/]
+  NE[/"Ending: signed bundle delivered + committed to VCS; audit recorded; Engineer holds location + signature"/]
+  start -.-> NS
+  finish -.-> NE

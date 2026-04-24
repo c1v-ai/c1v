@@ -1,0 +1,78 @@
+%% UC08 — Trace Tech-Stack Recommendation to Metric
+%% Generated for c1v Module 2 (2026-04-20)
+%% Source: system-design/module-2-requirements/ucbd/UC08-trace-tech-stack-to-metric.ucbd.json
+flowchart TB
+  start(( )) --> A1
+
+  subgraph "The System"
+    A1[Receive draft tech-stack recommendation]
+    A2[Parse tech id + claimed capability]
+    A3[Classify capability to metric class]
+    A4[Query Documentation Sources]
+    A6[Query Cloud Providers]
+    A8[Resolve metric value from cited sources]
+    A9[Validate external citation exists]
+    A10[Compute traceback confidence]
+    A11[Record traceback triple]
+    D1{confidence &gt;= TRACEBACK_MIN_CONFIDENCE?}
+    A12[Flag for human review]
+    A14[Attach traceback to recommendation]
+    D2{coverage &gt;= TRACEBACK_COVERAGE_PCT?}
+    A15[Refuse spec emission below coverage]
+    A16[Audit traceback event]
+    A17[Return traced rec to caller]
+  end
+
+  subgraph "Documentation Sources"
+    A5[Return vendor specs + RFCs + SLAs]
+  end
+
+  subgraph "Cloud Providers"
+    A7[Return availability zones + baselines + SLAs]
+  end
+
+  subgraph "Engineering Team Member"
+    A13[Review flagged rec + override or refine]
+  end
+
+  A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7 --> A8 --> A9 --> A10 --> A11 --> D1
+  D1 -->|No| A12 --> A13 --> A11
+  D1 -->|Yes| A14 --> D2
+  D2 -->|No| A15 --> A16
+  D2 -->|Yes| A16
+  A16 --> A17 --> finish(((End)))
+
+  R01[/"&lt;&lt;requirement&gt;&gt; UC08.R01<br/>receive draft rec with tech + capability"/]
+  R02[/"&lt;&lt;requirement&gt;&gt; UC08.R02<br/>parse to extract tech id + capability"/]
+  R03[/"&lt;&lt;requirement&gt;&gt; UC08.R03<br/>classify capability to {availability|throughput|latency}"/]
+  R04[/"&lt;&lt;requirement&gt;&gt; UC08.R04<br/>query Documentation Sources for perf data"/]
+  R05[/"&lt;&lt;requirement&gt;&gt; UC08.R05<br/>query Cloud Providers for baselines"/]
+  R06[/"&lt;&lt;requirement&gt;&gt; UC08.R06<br/>resolve metric value using only cited sources"/]
+  R07[/"&lt;&lt;requirement&gt;&gt; UC08.R07<br/>validate external citation supports capability"/]
+  R08[/"&lt;&lt;requirement&gt;&gt; UC08.R08<br/>compute confidence score in [0.0, 1.0]"/]
+  R09[/"&lt;&lt;requirement&gt;&gt; UC08.R09<br/>record traceback triple with cited_at"/]
+  R10[/"&lt;&lt;requirement&gt;&gt; UC08.R10<br/>flag when confidence &lt; TRACEBACK_MIN_CONFIDENCE"/]
+  R11[/"&lt;&lt;requirement&gt;&gt; UC08.R11<br/>attach triple when confidence meets threshold"/]
+  R12[/"&lt;&lt;requirement&gt;&gt; UC08.R12<br/>refuse spec below TRACEBACK_COVERAGE_PCT"/]
+  R13[/"&lt;&lt;requirement&gt;&gt; UC08.R13<br/>audit every traceback event"/]
+  R14[/"&lt;&lt;requirement&gt;&gt; UC08.R14<br/>return traced rec within TRACEBACK_LATENCY_SEC"/]
+
+  A1 -.-> R01
+  A2 -.-> R02
+  A3 -.-> R03
+  A4 -.-> R04
+  A6 -.-> R05
+  A8 -.-> R06
+  A9 -.-> R07
+  A10 -.-> R08
+  A11 -.-> R09
+  A12 -.-> R10
+  A14 -.-> R11
+  A15 -.-> R12
+  A16 -.-> R13
+  A17 -.-> R14
+
+  NS[/"Initial: draft rec exists; external sources authorized; metric vocab = {availability, throughput, latency}"/]
+  NE[/"Ending: every rec linked to metric + cited source; below-threshold flagged; coverage gate enforced; audit recorded"/]
+  start -.-> NS
+  finish -.-> NE

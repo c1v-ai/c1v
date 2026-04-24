@@ -3,9 +3,9 @@
   "_produced_date": "2026-04-20",
   "_produced_by": "Module 6 — Defining Interfaces",
   "_source_references": [
-    "system-design/module-5-qfd/interfaces_handoff.json",
+    "system-design/module-6-qfd/interfaces_handoff.json",
     "system-design/module-3-ffbd/interfaces_list.json",
-    "system-design/module-5-qfd/c1v_QFD.json"
+    "system-design/module-6-qfd/c1v_QFD.json"
   ],
   "_notes": [
     "Diagonal = 14 c1v subsystems (SS1..SS14). Row = sender/provider, Column = receiver.",

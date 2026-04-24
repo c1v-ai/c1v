@@ -4,8 +4,8 @@
   "_produced_date": "2026-04-20",
   "_upstream_refs": [
     "system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/pc_ec_revision.json",
-    "system-design/kb-upgrade-v2/module-6-interfaces/interface_matrix.json",
-    "system-design/kb-upgrade-v2/module-7-fmea/fmea_table.json",
+    "system-design/kb-upgrade-v2/module-7-interfaces/interface_matrix.json",
+    "system-design/kb-upgrade-v2/module-8-risk/fmea_table.json",
     "apps/product-helper/package.json",
     "apps/product-helper/lib/db/schema/index.ts",
     "apps/product-helper/app/api/"

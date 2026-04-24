@@ -1,0 +1,296 @@
+{
+  "_schema": "ffbd_handoff.v1",
+  "_output_path": "system-design/module-2-requirements/ffbd-handoff.json",
+  "_produced_by": "Module 2 — Developing System Requirements",
+  "_for_consumption_by": "Module 3 — Functional Flow Block Diagram",
+  "_produced_date": "2026-04-20",
+
+  "system_name": "c1v",
+  "system_description": "An AI-native workbench that turns one-sentence product ideas or existing codebases into enterprise-grade engineering specs and CLI commands, with every tech-stack recommendation traced to system performance metrics (availability, throughput, latency), running alongside existing customer systems with a live feedback loop that recommends design improvements and proactively surfaces additional features.",
+
+  "boundary": {
+    "the_system": "c1v",
+    "external_actors": [
+      { "name": "Founders", "type": "human" },
+      { "name": "Product Managers", "type": "human" },
+      { "name": "Engineering Teams", "type": "human" },
+      { "name": "Team Admins", "type": "human" },
+      { "name": "Product Ideas", "type": "data source" },
+      { "name": "Existing Codebases", "type": "data source" },
+      { "name": "Live Performance Metrics", "type": "data source" },
+      { "name": "Documentation Sources", "type": "data source" },
+      { "name": "LLM Providers", "type": "external system" },
+      { "name": "Observability Tools", "type": "external system" },
+      { "name": "Compliance Frameworks", "type": "regulatory" },
+      { "name": "Cloud Providers", "type": "external system" },
+      { "name": "IDE / CLI Clients", "type": "downstream consumer" },
+      { "name": "Version Control", "type": "downstream consumer" },
+      { "name": "CI/CD Systems", "type": "downstream consumer" },
+      { "name": "Identity Providers", "type": "external system" }
+    ]
+  },
+
+  "functions": [
+    { "name": "authenticate_session",                 "description_hint": "Verify actor session before any protected action via configured IdP.",                                        "source_requirements": ["UC01.R01","UC03.R01","UC04.R01","UC11.R01","CC.R01"], "appears_in_use_cases": ["UC01","UC03","UC04","UC11"] },
+    { "name": "persist_idea_prompt",                  "description_hint": "Persist submitted idea prompt to project context with a stable Project ID.",                                "source_requirements": ["UC01.R02"], "appears_in_use_cases": ["UC01"] },
+    { "name": "initiate_intake_session",              "description_hint": "Initiate conversational intake scoped to a Project ID.",                                                      "source_requirements": ["UC01.R03"], "appears_in_use_cases": ["UC01"] },
+    { "name": "present_intake_question",              "description_hint": "Present intake question within FOUNDER_INTAKE_RESPONSE_BUDGET_MS.",                                           "source_requirements": ["UC01.R04"], "appears_in_use_cases": ["UC01"] },
+    { "name": "classify_idea_domain",                 "description_hint": "Classify the idea's domain via configured LLM Provider.",                                                   "source_requirements": ["UC01.R05"], "appears_in_use_cases": ["UC01"] },
+    { "name": "loop_intake_to_threshold",             "description_hint": "Loop intake until INTAKE_COMPLETENESS_THRESHOLD is met.",                                                   "source_requirements": ["UC01.R06"], "appears_in_use_cases": ["UC01"] },
+    { "name": "assemble_scope_outline",               "description_hint": "Assemble initial scope outline from intake transcript.",                                                    "source_requirements": ["UC01.R07"], "appears_in_use_cases": ["UC01"] },
+    { "name": "draft_tech_stack_recommendation",      "description_hint": "Draft tech-stack recommendation per identified subsystem.",                                                 "source_requirements": ["UC01.R08"], "appears_in_use_cases": ["UC01"] },
+    { "name": "invoke_metric_traceback",              "description_hint": "Invoke UC08 traceback for every tech-stack recommendation.",                                                 "source_requirements": ["UC01.R09"], "appears_in_use_cases": ["UC01","UC06"] },
+    { "name": "assemble_spec_bundle",                 "description_hint": "Assemble spec bundle (scope + traced recs + constants).",                                                   "source_requirements": ["UC01.R10"], "appears_in_use_cases": ["UC01"] },
+    { "name": "validate_spec_schema",                 "description_hint": "Validate spec against spec-shape schema; fail-closed on reject.",                                            "source_requirements": ["UC01.R11"], "appears_in_use_cases": ["UC01"] },
+    { "name": "enforce_spec_generation_timeout",      "description_hint": "Complete spec generation within SPEC_GENERATION_TIMEOUT_SEC.",                                               "source_requirements": ["UC01.R12"], "appears_in_use_cases": ["UC01"] },
+    { "name": "persist_spec_versioned",               "description_hint": "Persist spec to VCS with draft status + commit hash.",                                                      "source_requirements": ["UC01.R13"], "appears_in_use_cases": ["UC01"] },
+    { "name": "write_audit_entry",                    "description_hint": "Write audit entry for every state-changing action.",                                                        "source_requirements": ["UC01.R14","UC03.R10","UC04.R14","UC06.R13","UC08.R13","UC11.R13","CC.R02"], "appears_in_use_cases": ["UC01","UC03","UC04","UC06","UC08","UC11"] },
+    { "name": "notify_reviewers",                     "description_hint": "Notify assigned PMs that spec is ready for review.",                                                         "source_requirements": ["UC01.R15"], "appears_in_use_cases": ["UC01"] },
+    { "name": "return_spec_location",                 "description_hint": "Return spec URL + commit hash to Founder.",                                                                  "source_requirements": ["UC01.R16"], "appears_in_use_cases": ["UC01"] },
+    { "name": "enumerate_review_queue",               "description_hint": "Enumerate draft specs for authenticated PM.",                                                                "source_requirements": ["UC03.R02"], "appears_in_use_cases": ["UC03"] },
+    { "name": "render_review_queue",                  "description_hint": "Return review queue within REVIEW_QUEUE_LOAD_BUDGET_MS.",                                                  "source_requirements": ["UC03.R03"], "appears_in_use_cases": ["UC03"] },
+    { "name": "verify_review_permission",             "description_hint": "Verify PM holds review permission on spec org (CC.R03).",                                                    "source_requirements": ["UC03.R04"], "appears_in_use_cases": ["UC03"] },
+    { "name": "load_spec_bundle",                     "description_hint": "Load spec bundle at committed hash.",                                                                       "source_requirements": ["UC03.R05","UC04.R04"], "appears_in_use_cases": ["UC03","UC04"] },
+    { "name": "render_spec_view",                     "description_hint": "Render spec in reviewable view within SPEC_RENDER_BUDGET_MS.",                                               "source_requirements": ["UC03.R06"], "appears_in_use_cases": ["UC03"] },
+    { "name": "persist_review_comment",               "description_hint": "Persist review comment with identity + section anchor.",                                                    "source_requirements": ["UC03.R07"], "appears_in_use_cases": ["UC03"] },
+    { "name": "validate_revision_comment",            "description_hint": "Validate request_revisions includes ≥1 comment.",                                                           "source_requirements": ["UC03.R08"], "appears_in_use_cases": ["UC03"] },
+    { "name": "transition_spec_state",                "description_hint": "Transition spec state within STATE_TRANSITION_BUDGET_MS.",                                                   "source_requirements": ["UC03.R09"], "appears_in_use_cases": ["UC03"] },
+    { "name": "notify_founder_of_review",             "description_hint": "Notify Founder of review decision + comments.",                                                              "source_requirements": ["UC03.R11"], "appears_in_use_cases": ["UC03"] },
+    { "name": "gate_cli_emission_on_approval",        "description_hint": "Enable CLI pipeline on approve; block on reject/revisions.",                                                 "source_requirements": ["UC03.R12"], "appears_in_use_cases": ["UC03"] },
+    { "name": "notify_engineers_of_approval",         "description_hint": "Notify subscribed engineers on transition to approved.",                                                    "source_requirements": ["UC03.R13"], "appears_in_use_cases": ["UC03"] },
+    { "name": "verify_spec_approved",                 "description_hint": "Verify spec is approved before CLI emission.",                                                               "source_requirements": ["UC04.R02"], "appears_in_use_cases": ["UC04"] },
+    { "name": "verify_emit_permission",               "description_hint": "Verify Engineer holds emit permission (CC.R03).",                                                            "source_requirements": ["UC04.R03"], "appears_in_use_cases": ["UC04"] },
+    { "name": "generate_skill_md",                    "description_hint": "Generate SKILL.md from spec's agent + capability sections.",                                                 "source_requirements": ["UC04.R05"], "appears_in_use_cases": ["UC04"] },
+    { "name": "generate_claude_md",                   "description_hint": "Generate CLAUDE.md from spec's conventions + architecture.",                                                 "source_requirements": ["UC04.R06"], "appears_in_use_cases": ["UC04"] },
+    { "name": "generate_mcp_tool_definition",         "description_hint": "Generate one MCP tool def per interface in spec's interface matrix.",                                        "source_requirements": ["UC04.R07"], "appears_in_use_cases": ["UC04"] },
+    { "name": "package_cli_bundle",                   "description_hint": "Package SKILL + CLAUDE + MCP into single CLI bundle.",                                                       "source_requirements": ["UC04.R08"], "appears_in_use_cases": ["UC04"] },
+    { "name": "sign_cli_bundle",                      "description_hint": "Sign bundle with commit hash + emission timestamp.",                                                         "source_requirements": ["UC04.R09"], "appears_in_use_cases": ["UC04"] },
+    { "name": "enforce_cli_emission_timeout",         "description_hint": "Complete within CLI_EMISSION_TIMEOUT_SEC.",                                                                 "source_requirements": ["UC04.R10"], "appears_in_use_cases": ["UC04"] },
+    { "name": "write_bundle_to_vcs",                  "description_hint": "Write signed bundle to spec VCS repo.",                                                                      "source_requirements": ["UC04.R11"], "appears_in_use_cases": ["UC04"] },
+    { "name": "deliver_bundle_to_client",             "description_hint": "Deliver bundle to Engineer's IDE/CLI client.",                                                                "source_requirements": ["UC04.R12"], "appears_in_use_cases": ["UC04"] },
+    { "name": "require_receipt_token",                "description_hint": "Require IDE/CLI receipt token before marking delivered.",                                                    "source_requirements": ["UC04.R13"], "appears_in_use_cases": ["UC04"] },
+    { "name": "return_bundle_location",               "description_hint": "Return bundle location + signature + commit hash.",                                                           "source_requirements": ["UC04.R15"], "appears_in_use_cases": ["UC04"] },
+    { "name": "persist_metric_sample",                "description_hint": "Persist metric samples with source + monotonic ingest timestamp.",                                          "source_requirements": ["UC06.R01"], "appears_in_use_cases": ["UC06"] },
+    { "name": "enforce_customer_overhead_budget",     "description_hint": "Bound ingestion overhead to MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT.",                                               "source_requirements": ["UC06.R02","UC11.R10"], "appears_in_use_cases": ["UC06","UC11"] },
+    { "name": "aggregate_metric_window",              "description_hint": "Aggregate samples over AGGREGATION_WINDOW_MIN on RECOMMENDATION_CADENCE_MIN.",                              "source_requirements": ["UC06.R03"], "appears_in_use_cases": ["UC06"] },
+    { "name": "compare_aggregate_to_target",          "description_hint": "Compare aggregates against declared performance targets.",                                                   "source_requirements": ["UC06.R04"], "appears_in_use_cases": ["UC06"] },
+    { "name": "compute_metric_deviation",             "description_hint": "Compute deviation for aggregates outside declared target.",                                                  "source_requirements": ["UC06.R05"], "appears_in_use_cases": ["UC06"] },
+    { "name": "suppress_noise_deviations",            "description_hint": "Suppress deviations below DEVIATION_SUPPRESSION_THRESHOLD.",                                                 "source_requirements": ["UC06.R06"], "appears_in_use_cases": ["UC06"] },
+    { "name": "propose_candidate_improvements",       "description_hint": "Query LLM to propose candidate improvements per deviation.",                                                 "source_requirements": ["UC06.R07"], "appears_in_use_cases": ["UC06"] },
+    { "name": "link_recommendation_to_metric",        "description_hint": "Link every candidate to deviating metric + source samples.",                                                 "source_requirements": ["UC06.R08"], "appears_in_use_cases": ["UC06"] },
+    { "name": "rank_recommendations",                 "description_hint": "Rank by severity + LLM confidence within RECOMMENDATION_LATENCY_SEC.",                                       "source_requirements": ["UC06.R09"], "appears_in_use_cases": ["UC06"] },
+    { "name": "cap_recommendation_list",              "description_hint": "Cap list at MAX_RECOMMENDATIONS_PER_CYCLE.",                                                                "source_requirements": ["UC06.R10"], "appears_in_use_cases": ["UC06"] },
+    { "name": "deliver_recommendation_list",          "description_hint": "Deliver ranked list to Engineer stream.",                                                                    "source_requirements": ["UC06.R11"], "appears_in_use_cases": ["UC06"] },
+    { "name": "notify_pm_of_cycle",                   "description_hint": "Notify PMs subscribed to project of cycle completion.",                                                      "source_requirements": ["UC06.R12"], "appears_in_use_cases": ["UC06"] },
+    { "name": "persist_recommendation_action",        "description_hint": "Persist Engineer action per recommendation.",                                                                "source_requirements": ["UC06.R14"], "appears_in_use_cases": ["UC06"] },
+    { "name": "surface_feature_candidate",            "description_hint": "Surface feature candidate on missing-functionality deviation (<<extends>> UC07).",                           "source_requirements": ["UC06.R15"], "appears_in_use_cases": ["UC06"] },
+    { "name": "enforce_read_only_posture",            "description_hint": "Refrain from any writeback to customer system in v1 scope.",                                                 "source_requirements": ["UC06.R16"], "appears_in_use_cases": ["UC06"] },
+    { "name": "receive_draft_recommendation",         "description_hint": "Receive draft rec with technology + claimed capability.",                                                   "source_requirements": ["UC08.R01"], "appears_in_use_cases": ["UC08"] },
+    { "name": "parse_recommendation",                 "description_hint": "Parse to extract tech id + capability.",                                                                     "source_requirements": ["UC08.R02"], "appears_in_use_cases": ["UC08"] },
+    { "name": "classify_capability_metric",           "description_hint": "Classify capability into one metric class.",                                                                 "source_requirements": ["UC08.R03"], "appears_in_use_cases": ["UC08"] },
+    { "name": "query_documentation_sources",          "description_hint": "Query Documentation Sources for published perf data.",                                                       "source_requirements": ["UC08.R04"], "appears_in_use_cases": ["UC08"] },
+    { "name": "query_cloud_providers",                "description_hint": "Query Cloud Providers for availability + pricing baselines.",                                                "source_requirements": ["UC08.R05"], "appears_in_use_cases": ["UC08"] },
+    { "name": "resolve_metric_value",                 "description_hint": "Resolve recommendation to concrete metric value using cited sources only.",                                   "source_requirements": ["UC08.R06"], "appears_in_use_cases": ["UC08"] },
+    { "name": "validate_external_citation",           "description_hint": "Validate claimed capability is supported by cited source.",                                                  "source_requirements": ["UC08.R07"], "appears_in_use_cases": ["UC08"] },
+    { "name": "compute_traceback_confidence",         "description_hint": "Compute confidence score [0.0, 1.0] per resolution.",                                                       "source_requirements": ["UC08.R08"], "appears_in_use_cases": ["UC08"] },
+    { "name": "record_traceback_triple",              "description_hint": "Record traceback triple with cited_at.",                                                                    "source_requirements": ["UC08.R09"], "appears_in_use_cases": ["UC08"] },
+    { "name": "flag_low_confidence_recommendation",   "description_hint": "Flag for human review when confidence < TRACEBACK_MIN_CONFIDENCE.",                                          "source_requirements": ["UC08.R10"], "appears_in_use_cases": ["UC08"] },
+    { "name": "attach_traceback_to_spec",             "description_hint": "Attach triple when confidence ≥ threshold.",                                                                "source_requirements": ["UC08.R11"], "appears_in_use_cases": ["UC08"] },
+    { "name": "enforce_traceback_coverage",           "description_hint": "Refuse spec emission below TRACEBACK_COVERAGE_PCT.",                                                        "source_requirements": ["UC08.R12"], "appears_in_use_cases": ["UC08"] },
+    { "name": "return_traced_recommendation",         "description_hint": "Return traced rec within TRACEBACK_LATENCY_SEC to caller.",                                                  "source_requirements": ["UC08.R14"], "appears_in_use_cases": ["UC08"] },
+    { "name": "validate_endpoint_urls",               "description_hint": "Validate endpoints are well-formed + reachable from egress.",                                                "source_requirements": ["UC11.R02"], "appears_in_use_cases": ["UC11"] },
+    { "name": "initiate_idp_handshake",               "description_hint": "Initiate OAuth/OIDC handshake with customer IdP.",                                                          "source_requirements": ["UC11.R03"], "appears_in_use_cases": ["UC11"] },
+    { "name": "reject_write_scope_grant",             "description_hint": "Reject authorization if any write-capability grant present.",                                                "source_requirements": ["UC11.R04"], "appears_in_use_cases": ["UC11"] },
+    { "name": "persist_encrypted_credential",         "description_hint": "Persist credential encrypted with expiry at ENCRYPTED_CREDENTIAL_EXPIRY_DAYS.",                             "source_requirements": ["UC11.R05","CC.R04"], "appears_in_use_cases": ["UC11"] },
+    { "name": "establish_vcs_handle",                 "description_hint": "Establish read-only VCS handle.",                                                                           "source_requirements": ["UC11.R06"], "appears_in_use_cases": ["UC11"] },
+    { "name": "establish_observability_handle",       "description_hint": "Establish read-only observability handle.",                                                                  "source_requirements": ["UC11.R07"], "appears_in_use_cases": ["UC11"] },
+    { "name": "probe_connection_health",              "description_hint": "Probe health across all three handles; fail-closed on any failure.",                                         "source_requirements": ["UC11.R08"], "appears_in_use_cases": ["UC11"] },
+    { "name": "measure_customer_overhead",            "description_hint": "Measure overhead over BASELINE_PROBE_WINDOW_SEC.",                                                          "source_requirements": ["UC11.R09"], "appears_in_use_cases": ["UC11"] },
+    { "name": "reject_on_overhead_violation",         "description_hint": "Reject connection when overhead exceeds MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT.",                                  "source_requirements": ["UC11.R10"], "appears_in_use_cases": ["UC11"] },
+    { "name": "persist_connection_record",            "description_hint": "Persist connection record with non-invasive flag + overhead + handles.",                                    "source_requirements": ["UC11.R11"], "appears_in_use_cases": ["UC11"] },
+    { "name": "schedule_reauthorization",             "description_hint": "Schedule reauthorization at CONNECTION_REAUTH_DAYS.",                                                       "source_requirements": ["UC11.R12"], "appears_in_use_cases": ["UC11"] },
+    { "name": "enforce_connection_budget",            "description_hint": "Complete establishment within CONNECTION_ESTABLISHMENT_BUDGET_SEC.",                                         "source_requirements": ["UC11.R14"], "appears_in_use_cases": ["UC11"] },
+    { "name": "return_connection_confirmation",       "description_hint": "Return id + overhead + status + reauth date to Engineer.",                                                   "source_requirements": ["UC11.R15"], "appears_in_use_cases": ["UC11"] },
+    { "name": "enforce_rbac",                         "description_hint": "Enforce RBAC on every protected action (CC.R03).",                                                         "source_requirements": ["CC.R03"], "appears_in_use_cases": ["UC03","UC04","UC11"] },
+    { "name": "encrypt_secrets_at_rest",              "description_hint": "Encrypt every persisted credential/secret at rest using ENCRYPTION_CLASS.",                                  "source_requirements": ["CC.R04"], "appears_in_use_cases": ["UC11"] },
+    { "name": "retain_audit_trail",                   "description_hint": "Retain audit entries at least AUDIT_RETENTION_DAYS.",                                                        "source_requirements": ["CC.R05"], "appears_in_use_cases": ["UC01","UC03","UC04","UC06","UC08","UC11"] },
+    { "name": "enforce_rate_limit",                   "description_hint": "Bound per-actor request rate to RATE_LIMIT_RPM.",                                                            "source_requirements": ["CC.R06"], "appears_in_use_cases": ["UC01","UC03","UC04","UC06","UC08","UC11"] },
+    { "name": "fallback_llm_provider",                "description_hint": "Fall back to next provider in fallback ordering on timeout.",                                                "source_requirements": ["CC.R07"], "appears_in_use_cases": ["UC01","UC06"] },
+    { "name": "emit_structured_error",                "description_hint": "Emit structured error with id + retry + support ref.",                                                       "source_requirements": ["CC.R08"], "appears_in_use_cases": ["UC01","UC03","UC04","UC06","UC08","UC11"] },
+    { "name": "emit_observability_signals",           "description_hint": "Emit structured logs + traces at LOG_LEVEL_PROD, TRACE_SAMPLING_RATE.",                                     "source_requirements": ["CC.R09"], "appears_in_use_cases": ["UC01","UC03","UC04","UC06","UC08","UC11"] },
+    { "name": "export_compliance_evidence",           "description_hint": "Export evidence pack in EVIDENCE_EXPORT_FORMATS on request.",                                                "source_requirements": ["CC.R10"], "appears_in_use_cases": [] }
+  ],
+
+  "use_case_flows": [
+    {
+      "use_case_id": "UC01",
+      "use_case_name": "Generate Spec from One-Sentence Idea",
+      "function_sequence": [
+        "authenticate_session", "persist_idea_prompt", "initiate_intake_session", "present_intake_question",
+        "classify_idea_domain", "loop_intake_to_threshold", "assemble_scope_outline", "draft_tech_stack_recommendation",
+        "invoke_metric_traceback", "assemble_spec_bundle", "validate_spec_schema", "enforce_spec_generation_timeout",
+        "persist_spec_versioned", "write_audit_entry", "notify_reviewers", "return_spec_location"
+      ],
+      "branching": [
+        { "after_function": "loop_intake_to_threshold", "branches": [
+          { "guard": "not_complete", "next_function": "present_intake_question" },
+          { "guard": "complete", "next_function": "assemble_scope_outline" }
+        ] },
+        { "after_function": "validate_spec_schema", "branches": [
+          { "guard": "valid", "next_function": "enforce_spec_generation_timeout" },
+          { "guard": "invalid", "next_function": "emit_structured_error" }
+        ] }
+      ]
+    },
+    {
+      "use_case_id": "UC03",
+      "use_case_name": "Review Generated Spec",
+      "function_sequence": [
+        "authenticate_session", "enumerate_review_queue", "render_review_queue", "verify_review_permission",
+        "load_spec_bundle", "render_spec_view", "persist_review_comment", "validate_revision_comment",
+        "transition_spec_state", "write_audit_entry", "notify_founder_of_review", "gate_cli_emission_on_approval",
+        "notify_engineers_of_approval"
+      ],
+      "branching": [
+        { "after_function": "transition_spec_state", "branches": [
+          { "guard": "approved", "next_function": "gate_cli_emission_on_approval" },
+          { "guard": "rejected", "next_function": "notify_founder_of_review" },
+          { "guard": "revisions_requested", "next_function": "notify_founder_of_review" }
+        ] }
+      ]
+    },
+    {
+      "use_case_id": "UC04",
+      "use_case_name": "Emit CLI Commands from Spec",
+      "function_sequence": [
+        "authenticate_session", "verify_spec_approved", "verify_emit_permission", "load_spec_bundle",
+        "generate_skill_md", "generate_claude_md", "generate_mcp_tool_definition", "package_cli_bundle",
+        "sign_cli_bundle", "enforce_cli_emission_timeout", "write_bundle_to_vcs", "deliver_bundle_to_client",
+        "require_receipt_token", "write_audit_entry", "return_bundle_location"
+      ],
+      "branching": [],
+      "parallel": [
+        { "at_function": "enforce_cli_emission_timeout", "parallel_functions": ["write_bundle_to_vcs", "deliver_bundle_to_client"], "join_at": "write_audit_entry" }
+      ]
+    },
+    {
+      "use_case_id": "UC06",
+      "use_case_name": "Recommend Design Improvements",
+      "function_sequence": [
+        "persist_metric_sample", "enforce_customer_overhead_budget", "aggregate_metric_window",
+        "compare_aggregate_to_target", "compute_metric_deviation", "suppress_noise_deviations",
+        "propose_candidate_improvements", "link_recommendation_to_metric", "rank_recommendations",
+        "cap_recommendation_list", "deliver_recommendation_list", "notify_pm_of_cycle",
+        "write_audit_entry", "persist_recommendation_action", "surface_feature_candidate",
+        "enforce_read_only_posture"
+      ],
+      "branching": [
+        { "after_function": "persist_recommendation_action", "branches": [
+          { "guard": "missing_functionality", "next_function": "surface_feature_candidate" },
+          { "guard": "not_missing", "next_function": "enforce_read_only_posture" }
+        ] }
+      ]
+    },
+    {
+      "use_case_id": "UC08",
+      "use_case_name": "Trace Tech-Stack Recommendation to Metric",
+      "function_sequence": [
+        "receive_draft_recommendation", "parse_recommendation", "classify_capability_metric",
+        "query_documentation_sources", "query_cloud_providers", "resolve_metric_value",
+        "validate_external_citation", "compute_traceback_confidence", "record_traceback_triple",
+        "flag_low_confidence_recommendation", "attach_traceback_to_spec", "enforce_traceback_coverage",
+        "write_audit_entry", "return_traced_recommendation"
+      ],
+      "branching": [
+        { "after_function": "compute_traceback_confidence", "branches": [
+          { "guard": "below_min_confidence", "next_function": "flag_low_confidence_recommendation" },
+          { "guard": "meets_min_confidence", "next_function": "attach_traceback_to_spec" }
+        ] }
+      ]
+    },
+    {
+      "use_case_id": "UC11",
+      "use_case_name": "Connect Existing Customer System",
+      "function_sequence": [
+        "authenticate_session", "validate_endpoint_urls", "initiate_idp_handshake",
+        "reject_write_scope_grant", "persist_encrypted_credential", "establish_vcs_handle",
+        "establish_observability_handle", "probe_connection_health", "measure_customer_overhead",
+        "reject_on_overhead_violation", "persist_connection_record", "schedule_reauthorization",
+        "write_audit_entry", "enforce_connection_budget", "return_connection_confirmation"
+      ],
+      "branching": [
+        { "after_function": "initiate_idp_handshake", "branches": [
+          { "guard": "write_scope_present", "next_function": "reject_write_scope_grant" },
+          { "guard": "read_only_scope", "next_function": "persist_encrypted_credential" }
+        ] },
+        { "after_function": "measure_customer_overhead", "branches": [
+          { "guard": "overhead_exceeds_budget", "next_function": "reject_on_overhead_violation" },
+          { "guard": "within_budget", "next_function": "persist_connection_record" }
+        ] }
+      ]
+    }
+  ],
+
+  "constants": [
+    { "name": "FOUNDER_INTAKE_RESPONSE_BUDGET_MS",   "value": 2000,  "units": "ms",       "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "INTAKE_COMPLETENESS_THRESHOLD",       "value": 0.85,  "units": "ratio",    "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "SPEC_GENERATION_TIMEOUT_SEC",         "value": 300,   "units": "sec",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "REVIEW_QUEUE_LOAD_BUDGET_MS",         "value": 800,   "units": "ms",       "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "SPEC_RENDER_BUDGET_MS",               "value": 1500,  "units": "ms",       "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "STATE_TRANSITION_BUDGET_MS",          "value": 500,   "units": "ms",       "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "CLI_EMISSION_TIMEOUT_SEC",            "value": 60,    "units": "sec",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT",    "value": 2,     "units": "%",        "estimate_final": "Estimate", "owned_by": "SRE / DevOps Lead" },
+    { "name": "AGGREGATION_WINDOW_MIN",              "value": 60,    "units": "min",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "RECOMMENDATION_CADENCE_MIN",          "value": 60,    "units": "min",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "DEVIATION_SUPPRESSION_THRESHOLD",     "value": 0.10,  "units": "ratio",    "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "RECOMMENDATION_LATENCY_SEC",          "value": 120,   "units": "sec",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "MAX_RECOMMENDATIONS_PER_CYCLE",       "value": 10,    "units": "count",    "estimate_final": "Estimate", "owned_by": "Product Manager" },
+    { "name": "TRACEBACK_MIN_CONFIDENCE",            "value": 0.90,  "units": "ratio",    "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "TRACEBACK_COVERAGE_PCT",              "value": 100,   "units": "%",        "estimate_final": "Final",    "owned_by": "David Ancor" },
+    { "name": "TRACEBACK_LATENCY_SEC",               "value": 5,     "units": "sec",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "ENCRYPTED_CREDENTIAL_EXPIRY_DAYS",    "value": 90,    "units": "days",     "estimate_final": "Estimate", "owned_by": "Security Lead" },
+    { "name": "BASELINE_PROBE_WINDOW_SEC",           "value": 300,   "units": "sec",      "estimate_final": "Estimate", "owned_by": "SRE / DevOps Lead" },
+    { "name": "CONNECTION_REAUTH_DAYS",              "value": 30,    "units": "days",     "estimate_final": "Estimate", "owned_by": "Security Lead" },
+    { "name": "CONNECTION_ESTABLISHMENT_BUDGET_SEC", "value": 120,   "units": "sec",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "SESSION_TTL_MIN",                     "value": 60,    "units": "min",      "estimate_final": "Estimate", "owned_by": "Security Lead" },
+    { "name": "ENCRYPTION_CLASS",                    "value": "AES-256-GCM + TLS-1.3", "units": "enum", "estimate_final": "Estimate", "owned_by": "Security Lead" },
+    { "name": "AUDIT_RETENTION_DAYS",                "value": 2555,  "units": "days",     "estimate_final": "Estimate", "owned_by": "Compliance Officer" },
+    { "name": "RATE_LIMIT_RPM",                      "value": 100,   "units": "req/min",  "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "LLM_PROVIDER_TIMEOUT_SEC",            "value": 30,    "units": "sec",      "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "LOG_LEVEL_PROD",                      "value": "info","units": "enum",     "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "TRACE_SAMPLING_RATE",                 "value": 0.10,  "units": "ratio",    "estimate_final": "Estimate", "owned_by": "Engineering Lead" },
+    { "name": "EVIDENCE_EXPORT_FORMATS",             "value": "SOC2; HIPAA; GDPR; PCI-DSS", "units": "enum-set", "estimate_final": "Estimate", "owned_by": "Compliance Officer" }
+  ],
+
+  "cross_cutting_concerns": [
+    { "index": "CC.R01", "name": "authenticate_session",         "description": "Authenticate every human actor's session via configured IdP." },
+    { "index": "CC.R02", "name": "write_audit_entry",            "description": "Record audit entry for every state-changing action." },
+    { "index": "CC.R03", "name": "enforce_rbac",                 "description": "Enforce RBAC on every protected action." },
+    { "index": "CC.R04", "name": "encrypt_secrets_at_rest",      "description": "Encrypt credentials and secrets at rest using ENCRYPTION_CLASS." },
+    { "index": "CC.R05", "name": "retain_audit_trail",           "description": "Retain audit entries for AUDIT_RETENTION_DAYS." },
+    { "index": "CC.R06", "name": "enforce_rate_limit",           "description": "Bound requests to RATE_LIMIT_RPM per actor." },
+    { "index": "CC.R07", "name": "fallback_llm_provider",        "description": "Fall back to next LLM Provider on timeout." },
+    { "index": "CC.R08", "name": "emit_structured_error",        "description": "Emit structured error with id + retry + support ref." },
+    { "index": "CC.R09", "name": "emit_observability_signals",   "description": "Emit structured logs and traces at declared level/rate." },
+    { "index": "CC.R10", "name": "export_compliance_evidence",   "description": "Export evidence pack in EVIDENCE_EXPORT_FORMATS." }
+  ],
+
+  "module_1_constraints_carried_forward": [
+    "Must run alongside existing customer production systems without disruption (non-invasive)",
+    "Must produce auditable specs — every artifact traceable to source (idea, code, metric)",
+    "Must trace every tech-stack recommendation to a declared performance metric (availability, throughput, latency)",
+    "Must operate across multiple LLM providers; no single-vendor lock-in",
+    "Must integrate with version control, CI/CD, IDE/CLI clients, and observability tools without custom connectors per customer"
+  ],
+
+  "summary": {
+    "total_functions": 82,
+    "total_use_cases": 6,
+    "total_constants": 28,
+    "total_cross_cutting": 10,
+    "module_2_artifacts_folder": "system-design/module-2-requirements/",
+    "first_pass_coverage": "6 of 15 use cases (top-priority)",
+    "deferred_to_module_2_phase_11": ["UC02","UC05","UC07","UC09","UC10","UC12","UC13","UC14","UC15"],
+    "module_3_entry_point": "system-design/module-2-requirements/ffbd-handoff.json"
+  }
+}

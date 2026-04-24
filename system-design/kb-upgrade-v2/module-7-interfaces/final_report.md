@@ -4,7 +4,7 @@ date: 2026-04-20
 module: 6 of 6 (Interfaces)
 status: Complete
 upstream:
-  - system-design/module-5-qfd/interfaces_handoff.json
+  - system-design/module-6-qfd/interfaces_handoff.json
   - system-design/module-3-ffbd/interfaces_list.json
 downstream:
   - system-design/module-7-risk-fmea (to be created)
@@ -197,7 +197,7 @@ PROBE_FREQUENCY_PER_MIN=6, AGGREGATION_WINDOW_MIN=60, METRIC_PAYLOAD_KB_MAX=4, P
 
 ## 10. Files Produced
 
-In `system-design/module-6-interfaces/`:
+In `system-design/module-7-interfaces/`:
 
 - `n2_chart.json` — 14 SS + 32 interfaces + 10 externals + 5 flows + 5 loops
 - `n2_chart.xlsx` — rendered N2 matrix + Analysis sheet (fan counts, flows, loops, QFD endpoint reconciliation)

@@ -3,9 +3,9 @@
   "_produced_date": "2026-04-20",
   "_produced_by": "Module 6 — Defining Interfaces",
   "_source_references": [
-    "system-design/module-5-qfd/interfaces_handoff.json",
+    "system-design/module-6-qfd/interfaces_handoff.json",
     "system-design/module-3-ffbd/interfaces_list.json",
-    "system-design/module-6-interfaces/n2_chart.json"
+    "system-design/module-7-interfaces/n2_chart.json"
   ],
   "_notes": [
     "Formal interface specification matrix. Complements n2_chart.json (which shows directed flow).",

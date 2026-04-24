@@ -5,9 +5,9 @@
   "_supersedes": "nothing (additive patch)",
   "_upstream_refs": [
     "system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/pc_ec_revision.json",
-    "system-design/kb-upgrade-v2/module-5-qfd/v2_revised/c1v_QFD_v2.json",
-    "system-design/kb-upgrade-v2/module-7-fmea/open_questions_resolved.json",
-    "system-design/kb-upgrade-v2/module-7-fmea/fmea_table.json"
+    "system-design/kb-upgrade-v2/module-6-qfd/v2_revised/c1v_QFD_v2.json",
+    "system-design/kb-upgrade-v2/module-8-risk/open_questions_resolved.json",
+    "system-design/kb-upgrade-v2/module-8-risk/fmea_table.json"
   ],
   "_affects": [
     "system-design/module-2-requirements/requirements_table.json (append to requirements_table[])",

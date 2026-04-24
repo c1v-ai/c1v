@@ -6,9 +6,9 @@ status: Complete (CONDITIONAL PASS)
 author: Bond (on behalf of David Ancor)
 winning_concept_under_design: c1v Dual-Mode Platform (carried from M4 through M6)
 upstream_refs:
-  - system-design/module-6-interfaces/risk_handoff.json
-  - system-design/module-6-interfaces/interface_matrix.json
-  - system-design/module-5-qfd/c1v_QFD.json
+  - system-design/module-7-interfaces/risk_handoff.json
+  - system-design/module-7-interfaces/interface_matrix.json
+  - system-design/module-6-qfd/c1v_QFD.json
   - system-design/module-4-decision-matrix/decision_matrix.json
   - system-design/module-1-defining-scope/use_cases.json
 ---

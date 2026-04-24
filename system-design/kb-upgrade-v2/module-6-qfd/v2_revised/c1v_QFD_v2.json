@@ -1,11 +1,11 @@
 {
   "_schema": "qfd_populated.v2",
-  "_supersedes": "system-design/module-5-qfd/c1v_QFD.json",
+  "_supersedes": "system-design/module-6-qfd/c1v_QFD.json",
   "_produced_by": "Module 5 v2 — HoQ patch driven by M4 v2 PC/EC revision",
   "_produced_date": "2026-04-20",
   "_upstream_refs": [
     "system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/pc_ec_revision.json",
-    "system-design/kb-upgrade-v2/module-5-qfd/c1v_QFD.json"
+    "system-design/kb-upgrade-v2/module-6-qfd/c1v_QFD.json"
   ],
   "_winning_concept": "c1v Dual-Mode Platform (Option C, M4 score 0.662) — unchanged",
   "metadata": {

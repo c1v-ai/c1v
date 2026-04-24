@@ -1,7 +1,7 @@
 {
   "_schema": "risk_handoff.v1",
   "_compatible_with": "interfaces_to_risk.v1",
-  "_output_path": "system-design/module-6-interfaces/risk_handoff.json",
+  "_output_path": "system-design/module-7-interfaces/risk_handoff.json",
   "_produced_by": "Module 6 — Defining Interfaces",
   "_for_consumption_by": "Module 7 — Risk / FMEA",
   "_produced_date": "2026-04-20",
@@ -174,11 +174,11 @@
   "ready_for_module_7": true,
 
   "source_references": [
-    "system-design/module-6-interfaces/n2_chart.json",
-    "system-design/module-6-interfaces/interface_matrix.json",
-    "system-design/module-6-interfaces/data_flow_diagram.mmd",
-    "system-design/module-6-interfaces/sequence_diagrams.mmd",
-    "system-design/module-5-qfd/interfaces_handoff.json",
+    "system-design/module-7-interfaces/n2_chart.json",
+    "system-design/module-7-interfaces/interface_matrix.json",
+    "system-design/module-7-interfaces/data_flow_diagram.mmd",
+    "system-design/module-7-interfaces/sequence_diagrams.mmd",
+    "system-design/module-6-qfd/interfaces_handoff.json",
     "system-design/module-3-ffbd/interfaces_list.json"
   ]
 }
