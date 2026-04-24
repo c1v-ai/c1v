@@ -1,0 +1,1 @@
+../../_shared/software_architecture_system.md
