@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "story-response-latency",
+  "version": "1.0.0",
+  "description": "Response latency budget decision — fixture mirroring the sample in plans/schema-first-kb-rewrite-and-nfr-engine.md:131",
+  "decisions": [
+    {
+      "decision_id": "RESPONSE_BUDGET_MS",
+      "target_field": "constants_table.RESPONSE_BUDGET_MS",
+      "inputs": [
+        { "name": "user_type", "source": "module-2/phase-0-ingest" },
+        { "name": "flow_class", "source": "module-2/phase-5-ucbd-step-flow" },
+        { "name": "regulatory_refs", "source": "regulatory_refs" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "if": {
+              "user_type": "consumer_app",
+              "flow_class": "user_facing_sync",
+              "regulatory_refs_contains": "PCI-DSS"
+            },
+            "value": 500,
+            "units": "ms",
+            "base_confidence": 0.94,
+            "rule_id": "consumer-app-user-facing-sync-pci"
+          },
+          {
+            "if": { "user_type": "consumer_app", "flow_class": "user_facing_sync" },
+            "value": 500,
+            "units": "ms",
+            "base_confidence": 0.88,
+            "rule_id": "consumer-app-user-facing-sync"
+          },
+          {
+            "default": {
+              "value": 500,
+              "units": "ms",
+              "base_confidence": 0.6,
+              "rule_id": "default"
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.1, "cap": 1.0 }
+      ],
+      "auto_fill_threshold": 0.9,
+      "fallback": {
+        "action": "surface_to_user",
+        "question_id": "latency_budget_question"
+      }
+    }
+  ]
+}

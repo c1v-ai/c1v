@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "different-story",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "X_Y",
+      "target_field": "a.b",
+      "inputs": [{ "name": "x", "source": "user_input" }],
+      "function": {
+        "type": "decision_tree",
+        "rules": [{ "if": { "x": 1 }, "value": 1, "base_confidence": 0.5 }]
+      }
+    }
+  ]
+}

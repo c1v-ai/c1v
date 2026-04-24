@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "story-malformed",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "DUPE_ID",
+      "target_field": "a.b",
+      "inputs": [{ "name": "x", "source": "user_input" }],
+      "function": {
+        "type": "decision_tree",
+        "rules": [{ "if": { "x": 1 }, "value": 1, "base_confidence": 0.5 }]
+      }
+    },
+    {
+      "decision_id": "DUPE_ID",
+      "target_field": "c.d",
+      "inputs": [{ "name": "y", "source": "user_input" }],
+      "function": {
+        "type": "decision_tree",
+        "rules": [{ "if": { "y": 1 }, "value": 1, "base_confidence": 0.5 }]
+      }
+    }
+  ]
+}
