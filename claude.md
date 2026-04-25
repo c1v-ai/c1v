@@ -554,7 +554,9 @@ Notes: Optimized for each stack
 ## Active Plans (c1v MIT-Crawley-Cornell)
 
 - **v1:** `plans/c1v-MIT-Crawley-Cornell.md` — hybrid Cornell+Crawley+Atlas pivot.
-- **v2 amendment:** `plans/c1v-MIT-Crawley-Cornell.v2.md` — supersedes v1 §0, §5.3, §14; adds §0.2 (T9 KB hygiene), §0.3 (flow restructure), §0.4 (cross-tree renumber), §15 (T10 artifact-gen). 12 teams / 4 waves / ~50 agents. **Waves 1, 2-early, 2-mid, 3 ALL SHIPPED 2026-04-24** — T1/T2/T3/T8/T9/T10/T4a/T7/T11/T4b/T5 all closed at canonical T3/T9/T10 verification bar (per-team tag + verifier + green-gate report). Only T6 (Wave 4 synthesis) remains.
+- **v2 amendment:** `plans/c1v-MIT-Crawley-Cornell.v2.md` — supersedes v1 §0, §5.3, §14; adds §0.2 (T9 KB hygiene), §0.3 (flow restructure), §0.4 (cross-tree renumber), §15 (T10 artifact-gen). 12 teams / 4 waves / ~50 agents. **v2 SHIPPED 2026-04-24** — all 12 teams (T1/T2/T3/T8/T9/T10/T4a/T7/T11/T4b/T5/T6) closed at canonical verification bar. Portfolio keystone `architecture_recommendation.v1.json` on disk.
+- **v2 release notes:** `plans/v2-release-notes.md` (commit `7e2b202`) — end-to-end summary: shipped/deferred/portfolio-artifact.
+- **Post-v2 backlog:** `plans/post-v2-followups.md` — `projects` table RLS hardening, fmea_residual prose-vs-data drift, kb_chunk_ids placeholders, weasyprint PDF.
 - **v2 handoff:** `plans/HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md` — transcript + verbatim quotes + locked decisions.
 - **Methodology correction:** `system-design/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases.
 - **Crawley source-of-truth:** `plans/research/crawley-book-findings.md` — agents read this; do NOT rescan the book.
@@ -576,7 +578,13 @@ Notes: Optimized for each stack
 - **Wave 3 — COMPLETE 2026-04-24:**
   - **T4b `c1v-m4-decision-net`** — tag `t4b-wave-3-complete` @ commit `4ecfe3f`. Ships `decision-net-agent.ts` + `interface-specs-agent.ts` + `decision_network.v1.json` + `interface_specs.v1.json` + `verify-t4b.ts`. 5/5 V4b gates green; report backfilled to canonical bar at `plans/t4b-outputs/verification-report.md` (commit `0fd35af`).
   - **T5 `c1v-m5-formfunction`** — tag `t5-wave-3-complete` @ commit `a30d9c6`. Ships `form-function-agent.ts` + 8-case test + `verify-t5.ts`; re-validates `form_function_map.v1.json`. 4/4 V5 gates green; report backfilled at `plans/t5-outputs/verification-report.md` (commit `0fd35af`). Plan: `plans/t4b-t5-completion.md`.
-- **Pending v2 teams:** T6 (Wave 4 synthesis — folds M6 HoQ + M8.b FMEA-residual; unblocked since 2026-04-24 20:21 EDT by Wave-3 close).
+- **Wave 4 — COMPLETE 2026-04-24** (T6 `c1v-synthesis` terminal wave; tag `synthesizer-wave-4-complete` @ commit `56532d4`):
+  - **hoq-agent** — 10 commits `16bc96c`..`8c9a172`. M6 HoQ schemas (6 phases) + agent + `hoq.v1.json` (6 PCs × 18 ECs, 27 nonzero matrix cells, 14 roof pairs) + xlsx artifact via `gen-qfd.py`. Created `qfd-legacy.schema.json` adapter (frozen `qfd.schema.json` untouched).
+  - **fmea-residual-agent** — 4 commits `b7def3b` / `55d7737` / `629303e` / `aa55cf3`. M8.b `fmea_residual.v1.json` (16 FMs: 4 new + 12 surviving from `fmea_early`; 13 high-RPN flagged per source-of-truth boolean) + `gen-fmea.py variant=residual` extension + xlsx with stoplight sheet.
+  - **drizzle-runstate** — commit `3691617`. `project_run_state` Drizzle table + migration `0013_project_run_state.sql` + RLS policies (5 total). 6/6 RLS smoke tests green against local Supabase :54322. **Surfaced gap:** `projects` table has RLS enabled but zero tenant policies — EXISTS gates from non-owner roles return 0 rows. Deferred to `plans/post-v2-followups.md` (P3 security pass).
+  - **build-all-headless** — commit `94f6c0e`. E2E smoke pipeline at `apps/product-helper/scripts/build-all-headless.ts` + minimal stub-project fixture + 14/14 jest tests in <0.5s. Verifies 15/15 expected artifacts emit + 61 schemas across 9 modules + synthesis register clean. Per-module schema preload routes pending (only m4 ships HTTP route today).
+  - **synthesizer** — 4 commits `2a4a05b` / `15ffe20` / `a2ee9b8` / `56532d4`. **Portfolio keystone:** `architecture_recommendation.v1.json` with derivation_chain (4 decisions D-01..D-04 against winning DN nodes), 3 Pareto alternatives (AV.01 recommended = Sonnet 4.5 + pgvector + LangGraph + Vercel; $320/mo; 2600ms p95; 99.9% avail), 7 atlas empirical_priors across 4 KB-9 companies (anthropic/supabase/langchain/vercel), embedded fmea_residual flags + HoQ target-values + tail-latency consistency check. Verifier `scripts/verify-t6.ts` 6/6 V6 gates green; report at `plans/t6-outputs/verification-report.md`. Deterministic `inputs_hash` enables byte-identical re-runs. Cleanup commit `a4d1bb6` dropped unused readJson helper + captured RLS gap.
+  - **plan-updater** — commit `7e2b202`. v1 §11 R1 (Crawley ToC) + R6 (React Flow vs Mermaid) marked resolved; v1 §12 Exit Criteria annotated SATISFIED with commit SHAs; v2 doc flipped DRAFT→SHIPPED with new CLOSEOUT section; new `plans/v2-release-notes.md` (142 lines).
 
 ## KB Corpus History (RESOLVED — Wave-1 close)
 
