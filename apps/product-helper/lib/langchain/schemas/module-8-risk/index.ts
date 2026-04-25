@@ -6,6 +6,7 @@
 
 import type { z } from 'zod';
 import { fmeaEarlySchema } from './fmea-early';
+import { fmeaResidualSchema } from './fmea-residual';
 
 export {
   fmeaEarlySchema,
@@ -17,6 +18,24 @@ export {
   type CandidateMitigation,
   type TargetRef,
 } from './fmea-early';
+
+export {
+  fmeaResidualSchema,
+  residualFailureModeSchema,
+  predecessorRefSchema,
+  formRefSchema,
+  decisionAnchorSchema,
+  recoverabilitySchema,
+  mitigationStatusSchema,
+  computeWeightedRpn,
+  shouldFlagHighRpn,
+  HIGH_RPN_FLAG_THRESHOLD,
+  type FmeaResidual,
+  type ResidualFailureMode,
+  type PredecessorRef,
+  type FormRef,
+  type DecisionAnchor,
+} from './fmea-residual';
 
 export interface Module8PhaseEntry {
   slug: string;
@@ -31,5 +50,11 @@ export const MODULE_8_PHASE_SCHEMAS: readonly Module8PhaseEntry[] = [
     name: 'FmeaEarly',
     phaseNumber: 1,
     zodSchema: fmeaEarlySchema,
+  },
+  {
+    slug: 'fmea-residual',
+    name: 'FmeaResidual',
+    phaseNumber: 2,
+    zodSchema: fmeaResidualSchema,
   },
 ] as const;

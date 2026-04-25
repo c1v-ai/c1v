@@ -1,0 +1,376 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-8.fmea-residual.v1"
+    },
+    "_output_path": {
+      "type": "string"
+    },
+    "_upstream_refs": {
+      "type": "object",
+      "properties": {
+        "fmea_early": {
+          "type": "string"
+        },
+        "decision_network": {
+          "type": "string"
+        },
+        "form_function_map": {
+          "type": "string"
+        },
+        "interface_specs": {
+          "type": "string"
+        },
+        "rating_scales": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fmea_early",
+        "decision_network",
+        "form_function_map",
+        "interface_specs",
+        "rating_scales"
+      ],
+      "additionalProperties": false
+    },
+    "produced_at": {
+      "type": "string"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "system_name": {
+      "type": "string"
+    },
+    "rating_scales_version": {
+      "type": "string"
+    },
+    "selected_architecture_id": {
+      "type": "string",
+      "pattern": "^AV\\.\\d{2,}$",
+      "description": "Mirror of decision_network.selected_architecture_id."
+    },
+    "high_rpn_flag_threshold": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Threshold for flagged_high_rpn (default 100, scaled by 100x)."
+    },
+    "failure_modes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^FM\\.\\d{2,}$",
+            "description": "Stable failure-mode id FM.NN (residual numbering, may overlap early ids)."
+          },
+          "predecessor_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "new"
+              },
+              {
+                "type": "string",
+                "pattern": "^FM\\.\\d{2,}$"
+              }
+            ],
+            "description": "Either \"new\" (chosen-arch-only failure) or fmea_early FM.NN id."
+          },
+          "target_ref": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "function",
+                  "interface",
+                  "data_flow"
+                ]
+              },
+              "ref": {
+                "type": "string",
+                "description": "F.N | IF.NN | DE.NN — MUST resolve in the upstream artifact for its kind."
+              }
+            },
+            "required": [
+              "kind",
+              "ref"
+            ],
+            "additionalProperties": false,
+            "description": "Target of a failure mode — must resolve in upstream artifact."
+          },
+          "form_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "form_id": {
+                  "type": "string",
+                  "pattern": "^FR\\.\\d{2,}$",
+                  "description": "FR.NN id; MUST resolve in form_function_map.v1."
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "primary",
+                    "secondary",
+                    "fallback",
+                    "audit-cross-cut"
+                  ],
+                  "description": "Role of this form for the residual failure mode."
+                }
+              },
+              "required": [
+                "form_id",
+                "role"
+              ],
+              "additionalProperties": false,
+              "description": "Anchor to a chosen-architecture form (FR.NN)."
+            },
+            "minItems": 1,
+            "description": "At least one chosen-architecture form anchor (FR.NN)."
+          },
+          "decision_anchor": {
+            "type": "object",
+            "properties": {
+              "decision_node_id": {
+                "type": "string",
+                "pattern": "^DN\\.\\d{2,}$"
+              },
+              "alternative_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "architecture_vector_id": {
+                "type": "string",
+                "pattern": "^AV\\.\\d{2,}$",
+                "description": "Selected AV.NN from phase_16_pareto_frontier."
+              }
+            },
+            "required": [
+              "decision_node_id",
+              "alternative_id",
+              "architecture_vector_id"
+            ],
+            "additionalProperties": false,
+            "description": "Anchor to chosen architecture vector + decision node."
+          },
+          "failure_mode": {
+            "type": "string"
+          },
+          "potential_cause": {
+            "type": "string"
+          },
+          "potential_effect": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "likelihood": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "detectability": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Re-scored on chosen forms (higher = harder to detect)."
+          },
+          "recoverability": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "1=auto-recover, 5=manual irreversible. Per rating_scales (residual extension)."
+          },
+          "rpn": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "severity * likelihood per rating_scales.rpn_matrix."
+          },
+          "weighted_rpn": {
+            "type": "number",
+            "minimum": 0,
+            "description": "severity * likelihood * (1/detectability) — synthesizer flag input."
+          },
+          "criticality_category": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM LOW",
+              "MEDIUM",
+              "MEDIUM HIGH",
+              "HIGH"
+            ]
+          },
+          "flagged_high_rpn": {
+            "type": "boolean",
+            "description": "TRUE when severity*likelihood*recoverability*100/detectability > HIGH_RPN_FLAG_THRESHOLD; synthesizer escalates."
+          },
+          "mitigation_status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "committed",
+              "partial",
+              "deferred"
+            ],
+            "description": "none=no mitigation taken; committed=fully landed in form/contract/NFR; partial=some controls landed; deferred=accepted residual risk."
+          },
+          "landed_controls": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "nfr",
+                    "form",
+                    "interface_contract",
+                    "audit_cross_cut"
+                  ]
+                },
+                "ref": {
+                  "type": "string",
+                  "description": "NFR.NN | FR.NN | IF.NN | CC.RNN — MUST resolve in upstream artifact for kind."
+                },
+                "summary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "ref"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
+          },
+          "open_residual_risk": {
+            "type": "string",
+            "description": "Plain-text description of what risk remains after landed controls."
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "predecessor_ref",
+          "target_ref",
+          "form_refs",
+          "failure_mode",
+          "potential_cause",
+          "potential_effect",
+          "severity",
+          "likelihood",
+          "detectability",
+          "recoverability",
+          "rpn",
+          "weighted_rpn",
+          "criticality_category",
+          "flagged_high_rpn",
+          "mitigation_status"
+        ],
+        "additionalProperties": false,
+        "description": "Single residual FMEA row scored on chosen architecture."
+      },
+      "minItems": 1
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "new_modes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "surviving_modes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "flagged_high_rpn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by_criticality": {
+          "type": "object",
+          "properties": {
+            "LOW": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "MEDIUM LOW": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "MEDIUM": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "MEDIUM HIGH": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "HIGH": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "LOW",
+            "MEDIUM LOW",
+            "MEDIUM",
+            "MEDIUM HIGH",
+            "HIGH"
+          ],
+          "additionalProperties": false,
+          "description": "Histogram of residual rows by criticality_category."
+        }
+      },
+      "required": [
+        "total",
+        "new_modes",
+        "surviving_modes",
+        "flagged_high_rpn",
+        "by_criticality"
+      ],
+      "additionalProperties": false,
+      "description": "Roll-up counts; synthesizer reads to populate HoQ rooms."
+    },
+    "xlsx_path": {
+      "type": "string",
+      "description": "Optional relative path to xlsx render via scripts/artifact-generators/gen-fmea.py with options.variant='residual'."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_upstream_refs",
+    "produced_at",
+    "produced_by",
+    "system_name",
+    "rating_scales_version",
+    "selected_architecture_id",
+    "high_rpn_flag_threshold",
+    "failure_modes",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "description": "Canonical FMEA-residual (v1) artifact.",
+  "title": "FmeaResidual",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
