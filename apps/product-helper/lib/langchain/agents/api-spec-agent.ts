@@ -48,11 +48,31 @@ const jsonSchemaPropertySchema = z.object({
   nullable: z.boolean().optional().describe('Whether the property can be null'),
 });
 
-const jsonSchemaSchema: z.ZodType<Record<string, unknown>> = z.object({
+/**
+ * Items shape for jsonSchemaSchema.items. Flat by design — c1v's API-spec viewer
+ * + OpenAPI export render top-level properties + array-of-primitives only;
+ * nested array<object<array>> structure is intentionally unsupported.
+ *
+ * Keeping the 7-value type enum (matching the parent schema) means the LLM can
+ * still declare items as array/null/object without parse rejection — only nested
+ * structural recursion (items inside items) is dropped.
+ *
+ * Why flat: `z.lazy(() => jsonSchemaSchema)` produced a `$ref` self-loop in the
+ * Anthropic tool-use input_schema, which destabilized structured-output
+ * generation (see plans/v2-hotfix/plan.md §Cause A). Flattening eliminates the
+ * recursion site without losing primitive-array expressiveness.
+ */
+const jsonSchemaItemsSchema = z.object({
+  type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object', 'null']).describe('Item type'),
+  description: z.string().optional().describe('Item description'),
+  example: z.unknown().optional().describe('Example value'),
+});
+
+const jsonSchemaSchema = z.object({
   type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object', 'null']).describe('Schema type'),
   properties: z.record(jsonSchemaPropertySchema).optional().describe('Object properties'),
   required: z.array(z.string()).optional().describe('Required properties'),
-  items: z.lazy(() => jsonSchemaSchema).optional().describe('Array item schema'),
+  items: jsonSchemaItemsSchema.optional().describe('Array item schema (flat — primitives or single-level objects only)'),
   description: z.string().optional().describe('Schema description'),
   example: z.unknown().optional().describe('Example value'),
 });
@@ -194,6 +214,16 @@ Vision: {projectVision}
 {techStackText}
 {interfaceMatrixSection}
 
+## Required Output Structure
+
+ALL of these top-level keys are REQUIRED — do NOT stop after authentication:
+- baseUrl: string (e.g., "/api/v1")
+- version: string (e.g., "1.0.0")
+- authentication: { type, description, headerName?, tokenPrefix? }
+- endpoints: array — CRUD per entity (~5 endpoints/entity), plus action endpoints for use cases
+- responseFormat: { wrapped: boolean, contentType: string }
+- errorHandling: { format: object, commonErrors: array of { code, name, description } }
+
 ## Instructions
 
 Use the Knowledge Bank above as your primary reference for REST conventions, error codes, auth patterns, and endpoint design.
@@ -322,7 +352,7 @@ export async function generateAPISpecification(
 ): Promise<APISpecification> {
   const structuredModel = createClaudeAgent(apiSpecificationSchema, 'generate_api_specification', {
     temperature: 0.2,
-    maxTokens: 8000, // API spec generation needs more output tokens for endpoints
+    maxTokens: 12000, // ~30 endpoints with nested response schemas; was 8000
   });
 
   const prompt = buildAPISpecPromptText(context);
@@ -350,13 +380,20 @@ export async function generateAPISpecification(
 
   // Attempt 2: Shorter, focused prompt emphasizing endpoints
   try {
-    const retryPrompt = `Generate a REST API specification for "${context.projectName}".
+    const retryPrompt = `Generate a complete REST API specification for "${context.projectName}".
 
 Entities: ${context.dataEntities.map(e => e.name).join(', ')}
 Use Cases: ${context.useCases.map(uc => `${uc.name} (${uc.actor})`).join(', ')}
 
-Generate CRUD endpoints for each entity. The "endpoints" array is REQUIRED.
-For each endpoint include: path, method, description, authentication (boolean), operationId, tags, responseBody (JSON schema), and errorCodes.
+ALL of these top-level keys are REQUIRED — do NOT stop after authentication:
+- baseUrl: string (e.g., "/api/v1")
+- version: string (e.g., "1.0.0")
+- authentication: { type, description, headerName?, tokenPrefix? }
+- endpoints: array — CRUD per entity (~5 endpoints/entity), plus action endpoints for use cases
+- responseFormat: { wrapped: boolean, contentType: string }
+- errorHandling: { format: object, commonErrors: array of { code, name, description } }
+
+For each endpoint include: path, method, description, authentication (boolean), operationId, tags, responseBody (JSON schema), errorCodes.
 Use REST conventions: plural nouns, proper HTTP methods, /api/v1 prefix.`;
 
     const result = await structuredModel.invoke(retryPrompt);
