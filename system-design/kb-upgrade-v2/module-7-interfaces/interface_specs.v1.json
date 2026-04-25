@@ -1,0 +1,659 @@
+{
+  "_schema": "module-7b.interface-specs.v1",
+  "_output_path": "system-design/kb-upgrade-v2/module-7-interfaces/interface_specs.v1.json",
+  "_upstream_refs": {
+    "n2_matrix": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json",
+    "nfrs": "system-design/kb-upgrade-v2/module-2-requirements/nfrs.v2.json",
+    "fmea_early": "system-design/kb-upgrade-v2/module-8-risk/fmea_early.v1.json",
+    "decision_network": "system-design/kb-upgrade-v2/module-4-decision-matrix/decision_network.v1.json"
+  },
+  "produced_at": "2026-04-24T18:00:00-04:00",
+  "produced_by": "c1v-m4-decision-net@wave-3-t4b/interface-specs-agent",
+  "system_name": "c1v",
+  "interfaces": [
+    {
+      "interface_id": "IF.01",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.01",
+      "producer": "F.1",
+      "consumer": "F.2",
+      "payload_name": "AuthenticatedSession",
+      "protocol": "in-process",
+      "sync_style": "sync",
+      "sla": {
+        "p95_latency_ms": 500,
+        "availability_pct": 99.95,
+        "throughput_ceiling_rps": 200,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.01",
+            "detectability_requirement": "IF IF.01 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "critical"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 500
+        }
+      },
+      "retry": {
+        "max_attempts": 0,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1000,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "in-process",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "advisory"
+      }
+    },
+    {
+      "interface_id": "IF.02",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.02",
+      "producer": "F.2",
+      "consumer": "F.3",
+      "payload_name": "DraftSpec",
+      "protocol": "http-json",
+      "sync_style": "async",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.02",
+            "detectability_requirement": "IF IF.02 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "bearer-jwt",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "required"
+      }
+    },
+    {
+      "interface_id": "IF.03",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.03",
+      "producer": "F.3",
+      "consumer": "F.4",
+      "payload_name": "ApprovedSpec",
+      "protocol": "http-json",
+      "sync_style": "async",
+      "sla": {
+        "p95_latency_ms": 500,
+        "availability_pct": 99.95,
+        "throughput_ceiling_rps": 200,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.03",
+            "detectability_requirement": "IF IF.03 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "critical"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 500
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1000,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "bearer-jwt",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "required"
+      }
+    },
+    {
+      "interface_id": "IF.04",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.04",
+      "producer": "F.3",
+      "consumer": "F.2",
+      "payload_name": "ReviseRequest",
+      "protocol": "http-json",
+      "sync_style": "async",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.04",
+            "detectability_requirement": "IF IF.04 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "bearer-jwt",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "required"
+      }
+    },
+    {
+      "interface_id": "IF.05",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.05",
+      "producer": "F.4",
+      "consumer": "F.5",
+      "payload_name": "CliBundleHandoff",
+      "protocol": "http-json",
+      "sync_style": "batch",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.05",
+            "detectability_requirement": "IF IF.05 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "bearer-jwt",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "required"
+      }
+    },
+    {
+      "interface_id": "IF.06",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.06",
+      "producer": "F.5",
+      "consumer": "F.6",
+      "payload_name": "MetricStreamHandle",
+      "protocol": "event-bus",
+      "sync_style": "streaming",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.06",
+            "detectability_requirement": "IF IF.06 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "api-key",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "advisory"
+      }
+    },
+    {
+      "interface_id": "IF.07",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.07",
+      "producer": "F.5",
+      "consumer": "F.7",
+      "payload_name": "CatalogHandle",
+      "protocol": "http-json",
+      "sync_style": "sync",
+      "sla": {
+        "p95_latency_ms": 1500,
+        "availability_pct": 99.5,
+        "throughput_ceiling_rps": 50,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.07",
+            "detectability_requirement": "IF IF.07 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "medium"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 1500
+        }
+      },
+      "retry": {
+        "max_attempts": 0,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 3000,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "bearer-jwt",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "advisory"
+      }
+    },
+    {
+      "interface_id": "IF.08",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.08",
+      "producer": "F.6",
+      "consumer": "F.7",
+      "payload_name": "RecommendationInProgress",
+      "protocol": "in-process",
+      "sync_style": "sync",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.08",
+            "detectability_requirement": "IF IF.08 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 0,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "in-process",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "advisory"
+      }
+    },
+    {
+      "interface_id": "IF.09",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.09",
+      "producer": "F.7",
+      "consumer": "F.2",
+      "payload_name": "DesignRecommendation",
+      "protocol": "http-json",
+      "sync_style": "async",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.09",
+            "detectability_requirement": "IF IF.09 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "bearer-jwt",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "required"
+      }
+    },
+    {
+      "interface_id": "IF.10",
+      "n2_row_ref": "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#IF.10",
+      "producer": "F.7",
+      "consumer": "F.6",
+      "payload_name": "FeedbackLoopIteration",
+      "protocol": "in-process",
+      "sync_style": "streaming",
+      "sla": {
+        "p95_latency_ms": 800,
+        "availability_pct": 99.9,
+        "throughput_ceiling_rps": 100,
+        "derivation_sources": [
+          {
+            "kind": "nfr",
+            "nfr_id": "NFR.04"
+          },
+          {
+            "kind": "fmea",
+            "fmea_row_id": "FM.10",
+            "detectability_requirement": "IF IF.10 must be observable within 1 RECOMMENDATION_CADENCE_MIN window."
+          }
+        ],
+        "math_derivation": {
+          "formula": "p95_i ≤ budget - Σ others (critical path apportion)",
+          "inputs": {
+            "criticality": "high"
+          },
+          "kb_source": "_shared/resiliency-patterns-kb.md",
+          "result": 800
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_ms": 200,
+        "strategy": "exponential_jitter",
+        "retry_on": [
+          "5xx",
+          "timeout"
+        ]
+      },
+      "timeout_ms": 1600,
+      "circuit_breaker": {
+        "error_rate_threshold_pct": 25,
+        "min_requests_before_trip": 20,
+        "open_state_duration_ms": 30000
+      },
+      "auth": "in-process",
+      "error_handling": {
+        "error_schema_ref": "lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract",
+        "status_codes": [
+          400,
+          401,
+          403,
+          404,
+          409,
+          429,
+          500,
+          503
+        ],
+        "idempotency": "advisory"
+      }
+    }
+  ],
+  "chain_budgets": [
+    {
+      "chain_id": "AUTHORING_SPEC_EMIT",
+      "hops": [
+        "IF.01",
+        "IF.02",
+        "IF.03",
+        "IF.04"
+      ],
+      "sum_p95_latency_ms": 2600,
+      "user_facing_nfr_p95_ms": 3000,
+      "budget_ok": true
+    }
+  ]
+}

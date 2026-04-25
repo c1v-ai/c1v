@@ -28,10 +28,6 @@ import {
   type DecisionNode,
 } from '../lib/langchain/schemas/module-4';
 import {
-  interfaceSpecsV1Schema,
-  type InterfaceSpec,
-} from '../lib/langchain/schemas/module-7-interfaces';
-import {
   computeParetoFrontier,
   computeSensitivity,
   computePriorBindingChain,
@@ -40,12 +36,43 @@ import {
   type DecisionNetworkV1,
   type DecisionAuditRow,
 } from '../lib/langchain/agents/system-design/decision-net-agent';
+import { runInterfaceSpecsAgent } from '../lib/langchain/agents/system-design/interface-specs-agent';
 
 const REPO_ROOT = join(__dirname, '..', '..', '..');
 const SD_ROOT = join(REPO_ROOT, 'system-design', 'kb-upgrade-v2');
 
 const PRODUCED_AT = '2026-04-24T18:00:00-04:00';
 const PRODUCED_BY = 'c1v-m4-decision-net@wave-3-t4b/decision-net-agent';
+
+const SCHEMA_VERSION = '1.0.0';
+const PROJECT_ID = 1;
+const PROJECT_NAME = 'c1v';
+const GENERATOR = 'product-helper@0.1.0/build-t4b-self-application';
+
+const DECISION_NETWORK_OUTPUT = 'system-design/kb-upgrade-v2/module-4-decision-matrix/decision_network.v1.json';
+
+function makeMeta(phase_number: number, phase_slug: string, phase_name: string) {
+  return {
+    phase_number,
+    phase_slug,
+    phase_name,
+    schema_version: SCHEMA_VERSION,
+    project_id: PROJECT_ID,
+    project_name: PROJECT_NAME,
+    author: PRODUCED_BY,
+    generated_at: PRODUCED_AT,
+    generator: GENERATOR,
+  };
+}
+
+function envelope(args: { schema: string; phase_number: number; phase_slug: string; phase_name: string }) {
+  return {
+    _schema: args.schema,
+    _output_path: `${DECISION_NETWORK_OUTPUT}#${args.phase_slug}`,
+    _phase_status: 'complete' as const,
+    metadata: makeMeta(args.phase_number, args.phase_slug, args.phase_name),
+  };
+}
 
 // ─── Decision nodes ─────────────────────────────────────────────────────
 //
@@ -262,21 +289,13 @@ const decisionNodes = [dn01, dn02, dn03, dn04];
 
 // ─── Phase 14: decision nodes ───────────────────────────────────────────
 const phase14 = phase14Schema.parse({
-  metadata: {
-    phase_number: 14,
-    phase_slug: 'phase-14-decision-nodes',
-    phase_name: 'Decision Nodes',
-    authored_by: PRODUCED_BY,
-    authored_at: PRODUCED_AT,
-  },
-  status: 'complete',
+  ...envelope({ schema: 'module-4.phase-14-decision-nodes.v1', phase_number: 14, phase_slug: 'phase-14-decision-nodes', phase_name: 'Decision Nodes' }),
   decision_nodes: decisionNodes,
 });
 
 // ─── Phase 15: DAG ──────────────────────────────────────────────────────
 const phase15 = phase15Schema.parse({
-  metadata: { phase_number: 15, phase_slug: 'phase-15-decision-dependencies', phase_name: 'Decision Dependencies', authored_by: PRODUCED_BY, authored_at: PRODUCED_AT },
-  status: 'complete',
+  ...envelope({ schema: 'module-4.phase-15-decision-dependencies.v1', phase_number: 15, phase_slug: 'phase-15-decision-dependencies', phase_name: 'Decision Dependencies' }),
   nodes: ['DN.01', 'DN.02', 'DN.03', 'DN.04'],
   edges: [
     { from: 'DN.01', to: 'DN.03', relation: 'constrains', rationale: 'LLM choice constrains orchestration adapters needed.' },
@@ -337,8 +356,7 @@ const archVectors = archVectorsRaw.map((v) => ({
 }));
 
 const phase16 = phase16Schema.parse({
-  metadata: { phase_number: 16, phase_slug: 'phase-16-pareto-frontier', phase_name: 'Pareto Frontier', authored_by: PRODUCED_BY, authored_at: PRODUCED_AT },
-  status: 'complete',
+  ...envelope({ schema: 'module-4.phase-16-pareto-frontier.v1', phase_number: 16, phase_slug: 'phase-16-pareto-frontier', phase_name: 'Pareto Frontier' }),
   architecture_vectors: archVectors,
   dominance_edges: domEdges,
   frontier_ids: frontierIds,
@@ -359,8 +377,7 @@ const sensEntries = computeSensitivity(decisionNodes, 10, 0xC1F0);
 const reproInput = JSON.stringify({ nodes: decisionNodes.map((n) => n.id), band: 10, seed: 0xC1F0, entries: sensEntries.map((e) => ({ id: e.decision_node_id, v: e.variance })) });
 const reproHash = createHash('sha256').update(reproInput).digest('hex').slice(0, 16);
 const phase17b = phase17bSchema.parse({
-  metadata: { phase_number: 17, phase_slug: 'phase-17b-sensitivity-analysis', phase_name: 'Sensitivity Analysis', authored_by: PRODUCED_BY, authored_at: PRODUCED_AT },
-  status: 'complete',
+  ...envelope({ schema: 'module-4.phase-17b-sensitivity-analysis.v1', phase_number: 17, phase_slug: 'phase-17b-sensitivity-analysis', phase_name: 'Sensitivity Analysis' }),
   entries: sensEntries,
   method: 'weight_perturbation_variance',
   reproducibility_hash: reproHash,
@@ -394,8 +411,7 @@ const bindingsRaw = decisionNodes.flatMap((n) =>
 );
 const bindings = computePriorBindingChain(bindingsRaw);
 const phase19 = phase19Schema.parse({
-  metadata: { phase_number: 18, phase_slug: 'phase-19-empirical-prior-binding', phase_name: 'Empirical Prior Binding', authored_by: PRODUCED_BY, authored_at: PRODUCED_AT },
-  status: 'complete',
+  ...envelope({ schema: 'module-4.phase-19-empirical-prior-binding.v1', phase_number: 18, phase_slug: 'phase-19-empirical-prior-binding', phase_name: 'Empirical Prior Binding' }),
   bindings,
   kb_8_entries_consulted: [
     'anthropic-claude-2026.md', 'openai-gpt4-2026.md', 'pinecone-2026.md', 'weaviate-2026.md',
@@ -432,8 +448,7 @@ const totalUtility = (['A', 'B', 'C'] as const).map((altId) => ({
   utility: rows.reduce((acc, r) => acc + (r.weighted_values.find((wv) => wv.alternative_id === altId)?.weighted ?? 0), 0),
 }));
 const phases1113 = phases11to13VectorScoresSchema.parse({
-  metadata: { phase_number: 13, phase_slug: 'phases-11-13-vector-scores', phase_name: 'Vector Scores Rework', authored_by: PRODUCED_BY, authored_at: PRODUCED_AT },
-  status: 'complete',
+  ...envelope({ schema: 'module-4.phases-11-13-vector-scores.v1', phase_number: 13, phase_slug: 'phases-11-13-vector-scores', phase_name: 'Vector Scores Rework' }),
   rows,
   total_utility: totalUtility,
 });
@@ -504,90 +519,25 @@ console.log(`✔ decision_network.v1.json → ${dnOut}`);
 console.log(`  decision_nodes=${decisionNodes.length}  arch_vectors=${archVectors.length}  frontier=${frontierIds.length}  sensitivity_entries=${sensEntries.length}  audit_rows=${auditRows.length}`);
 
 // ─── Interface specs (M7.b) ─────────────────────────────────────────────
+// Logic extracted to interface-specs-agent.ts (T4b deliverable D3).
 const n2Raw = readFileSync(join(SD_ROOT, 'module-7-interfaces', 'n2_matrix.v1.json'), 'utf8');
 const n2 = JSON.parse(n2Raw) as { rows: Array<{ id: string; producer: string; consumer: string; payload_name: string; protocol: string; sync_style: string; criticality: string }> };
 
-// SLA derivation defaults by criticality. Tail-latency budgets chosen so
-// front-chain (IF.01..IF.04) sum to ≤ 3000ms (user-facing p95 NFR-like).
-const slaDefaults = {
-  critical: { p95_latency_ms: 500, availability_pct: 99.95, throughput_ceiling_rps: 200 },
-  high: { p95_latency_ms: 800, availability_pct: 99.9, throughput_ceiling_rps: 100 },
-  medium: { p95_latency_ms: 1500, availability_pct: 99.5, throughput_ceiling_rps: 50 },
-} as const;
-
-function slaFor(criticality: string) {
-  return slaDefaults[(criticality as keyof typeof slaDefaults) in slaDefaults ? (criticality as keyof typeof slaDefaults) : 'high'];
-}
-
-const authByProtocol = (protocol: string): 'in-process' | 'bearer-jwt' | 'api-key' => {
-  if (protocol === 'in-process') return 'in-process';
-  if (protocol === 'http-json') return 'bearer-jwt';
-  return 'api-key';
-};
-
-const interfaces: InterfaceSpec[] = n2.rows.map((r) => {
-  const sla = slaFor(r.criticality);
-  return {
-    interface_id: r.id,
-    n2_row_ref: `system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json#${r.id}`,
-    producer: r.producer,
-    consumer: r.consumer,
-    payload_name: r.payload_name,
-    protocol: r.protocol,
-    sync_style: r.sync_style as any,
-    sla: {
-      ...sla,
-      derivation_sources: [
-        { kind: 'nfr', nfr_id: 'NFR.04' },
-        { kind: 'fmea', fmea_row_id: `FM.${r.id.split('.')[1]}`, detectability_requirement: `IF ${r.id} must be observable within 1 RECOMMENDATION_CADENCE_MIN window.` },
-      ],
-      math_derivation: {
-        formula: 'p95_i ≤ budget - Σ others (critical path apportion)',
-        inputs: { criticality: r.criticality },
-        kb_source: '_shared/resiliency-patterns-kb.md',
-        result: sla.p95_latency_ms,
-      },
-    },
-    retry: { max_attempts: r.sync_style === 'sync' ? 0 : 3, backoff_ms: 200, strategy: 'exponential_jitter', retry_on: ['5xx', 'timeout'] },
-    timeout_ms: sla.p95_latency_ms * 2,
-    circuit_breaker: { error_rate_threshold_pct: 25, min_requests_before_trip: 20, open_state_duration_ms: 30_000 },
-    auth: authByProtocol(r.protocol),
-    error_handling: {
-      error_schema_ref: `lib/langchain/schemas/module-7-interfaces/formal-specs.ts#ErrorHandlingContract`,
-      status_codes: [400, 401, 403, 404, 409, 429, 500, 503],
-      idempotency: r.sync_style === 'async' || r.sync_style === 'batch' ? 'required' : 'advisory',
-    },
-  };
-});
-
-// Build chain budget for front chain IF.01..IF.04 (critical authoring path).
-const frontChain = ['IF.01', 'IF.02', 'IF.03', 'IF.04'];
-const frontChainBudget = {
-  chain_id: 'AUTHORING_SPEC_EMIT',
-  hops: frontChain,
-  sum_p95_latency_ms: frontChain.reduce((acc, id) => acc + (interfaces.find((i) => i.interface_id === id)?.sla.p95_latency_ms ?? 0), 0),
-  user_facing_nfr_p95_ms: 3000,
-  budget_ok: true,
-};
-frontChainBudget.budget_ok = frontChainBudget.sum_p95_latency_ms <= frontChainBudget.user_facing_nfr_p95_ms;
-
-const interfaceSpecs = interfaceSpecsV1Schema.parse({
-  _schema: 'module-7b.interface-specs.v1',
-  _output_path: 'system-design/kb-upgrade-v2/module-7-interfaces/interface_specs.v1.json',
-  _upstream_refs: {
+const interfaceSpecs = runInterfaceSpecsAgent({
+  n2Matrix: n2,
+  producedAt: PRODUCED_AT,
+  producedBy: 'c1v-m4-decision-net@wave-3-t4b/interface-specs-agent',
+  systemName: 'c1v',
+  outputPath: 'system-design/kb-upgrade-v2/module-7-interfaces/interface_specs.v1.json',
+  upstreamRefs: {
     n2_matrix: 'system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json',
     nfrs: 'system-design/kb-upgrade-v2/module-2-requirements/nfrs.v2.json',
     fmea_early: 'system-design/kb-upgrade-v2/module-8-risk/fmea_early.v1.json',
     decision_network: 'system-design/kb-upgrade-v2/module-4-decision-matrix/decision_network.v1.json',
   },
-  produced_at: PRODUCED_AT,
-  produced_by: 'c1v-m4-decision-net@wave-3-t4b/interface-specs-agent',
-  system_name: 'c1v',
-  interfaces,
-  chain_budgets: [frontChainBudget],
 });
 
 const ifOut = join(SD_ROOT, 'module-7-interfaces', 'interface_specs.v1.json');
 writeFileSync(ifOut, JSON.stringify(interfaceSpecs, null, 2));
 console.log(`✔ interface_specs.v1.json → ${ifOut}`);
-console.log(`  interfaces=${interfaces.length}  chain_budget_ok=${frontChainBudget.budget_ok}  sum_p95=${frontChainBudget.sum_p95_latency_ms}ms`);
+console.log(`  interfaces=${interfaceSpecs.interfaces.length}  chain_budget_ok=${interfaceSpecs.chain_budgets[0].budget_ok}  sum_p95=${interfaceSpecs.chain_budgets[0].sum_p95_latency_ms}ms`);
