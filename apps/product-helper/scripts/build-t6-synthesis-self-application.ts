@@ -480,10 +480,10 @@ const genInstance = {
 };
 
 const genInput = {
-  schemaRef: 'synthesis/architecture-recommendation.schema.json',
+  schemaRef: 'arch-recommendation-legacy.schema.json',
   instanceJson: genInstance,
   outputDir: OUT_DIR,
-  targets: ['html', 'json-enriched'],
+  targets: ['html', 'pdf', 'json-enriched'],
   options: {
     outputBasename: 'architecture_recommendation',
   },

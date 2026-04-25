@@ -1,5 +1,5 @@
 {
-  "schemaRef": "synthesis/architecture-recommendation.schema.json",
+  "schemaRef": "arch-recommendation-legacy.schema.json",
   "instanceJson": {
     "projectName": "c1v",
     "summary": "c1v is an AI-native PRD + system-design tool. The synthesizer recommends a Vercel-deployed Next.js front-end orchestrated by LangGraph, using Anthropic Claude Sonnet 4.5 as the spec-generation LLM and pgvector (Supabase Postgres) for retrieval. This pairing was selected from the M4 Pareto frontier (AV.01 dominates AV.02..AV.05 across cost/latency/availability) because it satisfies the 3-second p95 user-facing budget (interface_specs chain AUTHORING_SPEC_EMIT sums 2600 ms) while keeping the 100% citation-floor (NFR.01) achievable through grounded-retrieval gating. The recommendation carries 14 high-RPN residual risks from M8.b that ride alongside the architecture; each is mapped to a landed control surfaced via M5 form_function_map.",
