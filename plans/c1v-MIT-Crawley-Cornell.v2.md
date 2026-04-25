@@ -307,8 +307,8 @@ flowchart TD
 
 | Team | v1 | v2 |
 |---|---|---|
-| T4 | single team M3-FFBD-Gate-C + M4-decision-net-rework | **SPLIT.** T4a = M3 FFBD + M7.a N2 + M8.a FMEA-early (Wave 2-early). T4b = M4 decision-net rework + M7.b formal interface specs (Wave 3). |
-| T5 | Wave 2 | **Moves to Wave 3.** Scope is M5 form-function ONLY. NFR priorities drive form-function quality weights (depends on T11 resynth, NOT on FMEA-early directly). |
+| T4 | single team M3-FFBD-Gate-C + M4-decision-net-rework | **SPLIT.** T4a = M3 FFBD + M7.a N2 + M8.a FMEA-early (Wave 2-early). T4b = M4 decision-net rework + M7.b formal interface specs (Wave 3). ✅ **T4b COMPLETE 2026-04-24** — tag `t4b-wave-3-complete` @ `4ecfe3f`. Artifacts: `decision_network.v1.json`, `interface_specs.v1.json`. Plan: [`t4b-t5-completion.md`](t4b-t5-completion.md). |
+| T5 | Wave 2 | **Moves to Wave 3.** Scope is M5 form-function ONLY. NFR priorities drive form-function quality weights (depends on T11 resynth, NOT on FMEA-early directly). ✅ **T5 COMPLETE 2026-04-24** — tag `t5-wave-3-complete` @ `a30d9c6`. Artifact: `form_function_map.v1.json` (re-validated, not regenerated). |
 | T6 | Wave 2 | **Moves to Wave 4.** Scope extended to include M6 HoQ (consumes T4b decision_network winner) + M8.b FMEA-residual (residual risk on chosen architecture). Always terminal. M6 moved here (not T5) to resolve Wave-3 cross-team dep on decision_network. |
 | T7 | Wave 2 | **Moves to Wave 2-early.** Module 0 is intake (understanding), fires with M1. |
 | T9 | — | **NEW Wave 1.** KB hygiene per §0.2. |
@@ -987,7 +987,7 @@ Each gate requires:
 
 **Wave 2-mid (after Wave 2-early gate):** T-new (2 agents).
 
-**Wave 3 (after Wave 2-mid gate):** T4b + T5 + M6 + M7.b + M8.b (5 teams, ~15 agents).
+**Wave 3 (after Wave 2-mid gate):** T4b + T5 + M6 + M7.b + M8.b (5 teams, ~15 agents). ✅ **T4b + T5 SHIPPED 2026-04-24** (tags `t4b-wave-3-complete` `4ecfe3f`, `t5-wave-3-complete` `a30d9c6`); M6 / M7.b / M8.b folded into T6 (Wave 4).
 
 **Wave 4 (after Wave 3 gate):** T6 synthesis (4 agents).
 
