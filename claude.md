@@ -567,17 +567,19 @@ Notes: Optimized for each stack
   - **T3 `c1v-runtime-prereqs`** — ✅ tag `t3-wave-1-complete` @ commit `3641e97`. Phase B ingest landed 2026-04-24 (0/3289 dedup no-op).
   - **T9 `c1v-kb-hygiene`** — ✅ tag `t9-wave-1-complete`. 52 duplicate cross-cutting KBs deduped → `_shared/` pool + 117 relative symlinks; 9 KB folders renamed per v2 §0.4.3; Atlas consolidated to KB-9; 18 Crawley chapter excerpts patched into 7 KBs + `_shared/`, 0 fabricated.
   - **T10 `c1v-artifact-centralization`** — ✅ tag `t10-wave-1-complete`. 13 Python artifact generators at `scripts/artifact-generators/` (9 migrated + 4 new Crawley); TS pipeline (invoker + config + manifest + BullMQ-optional) + `/api/projects/[id]/artifacts/manifest` endpoint; new FMEA viewer (255 LOC) per R-v2.3; `artifact-pipeline.tsx` extended (142→178 LOC). tsc green across product-helper.
-  - **T8 `c1v-reorg`** — 🟡 peer-owned ~40% (mapper shipped `plans/reorg-mapping.md` + 3 az-sweeps + pre-reorg snapshot; refactorer/rewirer/verifier pending). Tag `t8-wave-1-complete` exists but legitimacy is unverified (predates this swarm's policy of human-cut tags after gate review).
+  - **T8 `c1v-reorg`** — ✅ tag `t8-wave-1-complete` @ commit `e173d3b` (verified 2026-04-24 20:51 EDT). 3×8 submodule layout for M2/M3/M4 landed; verification report at `plans/reorg-verification-report.md` (5/5 checks GREEN: generate-all byte-identical to pre-reorg baseline, tsc clean, jest 119/119 green, 14 M4 schemas registered, all submodule files present). Bonus: `scripts/verify-tree-pair-consistency.ts` shipped @ commit `2be3ef4` per v2 §0.4.4 + CI workflow `.github/workflows/verify-trees.yml`. EC=3 broken `_upstream_ref` in `module-8-risk/phase_0_context.json` (stale `use_cases.json` → `use_case_inventory.json`) fixed; verifier now exits 0 on main.
 - **Wave 3 — COMPLETE 2026-04-24:**
   - **T4b `c1v-m4-decision-net`** — tag `t4b-wave-3-complete` @ commit `4ecfe3f`. Ships `decision-net-agent.ts` + `interface-specs-agent.ts` + `decision_network.v1.json` + `interface_specs.v1.json` + `verify-t4b.ts`. 5/5 V4b gates green.
   - **T5 `c1v-m5-formfunction`** — tag `t5-wave-3-complete` @ commit `a30d9c6`. Ships `form-function-agent.ts` + 8-case test + `verify-t5.ts`; re-validates `form_function_map.v1.json`. 4/4 V5 gates green. Plan: `plans/t4b-t5-completion.md`.
 - **Pending v2 teams:** T4a (Wave 2-early M3 FFBD + M7.a + M8.a), T7 (Wave 2-early Module-0), T11 (Wave 2-mid NFR resynth), T6 (Wave 4 synthesis — unblocked by Wave 3 close).
 
-## KB Corpus Gotchas (pre-T9-hygiene)
+## KB Corpus History (RESOLVED — Wave-1 close)
 
-- **4× duplication:** 13 cross-cutting sw-design KBs (caching, CAP, CDN, LB, queues, MT/MP, observability, resiliency, maintainability, sw-arch, data-model, deployment, api-design) are copy-pasted into M2, M5-HoQ, M6, M7 folders. Any edit drifts silently until T9 extracts to `_shared/` pool with symlinks.
-- **Atlas location:** KB-8 lives OUTSIDE the deepened-KB tree at `New-knowledge-banks/8-public-company-stacks-atlas/`. T9 consolidates to `13-Knowledge-banks-deepened/9-stacks-atlas/`.
-- **Folder numbering lag:** disk is still Cornell-era (5-HoQ, 6-interfaces, 7-risk). Hybrid renumber blocks on T8+T9 atomic commit.
+These three issues were live before Wave-1; all resolved by T8/T9 atomic merge on 2026-04-24:
+
+- ~~**4× duplication:** 13 cross-cutting sw-design KBs copy-pasted into M2, M5-HoQ, M6, M7 folders.~~ → T9 deduped 52 files into `_shared/` pool + 117 relative symlinks (tag `t9-wave-1-complete`).
+- ~~**Atlas location:** KB-8 lived outside deepened-KB tree at `New-knowledge-banks/8-public-company-stacks-atlas/`.~~ → T9 consolidated to `13-Knowledge-banks-deepened/9-stacks-atlas/`.
+- ~~**Folder numbering lag:** disk was still Cornell-era (5-HoQ, 6-interfaces, 7-risk).~~ → T8+T9 atomic merge applied v2 §0.4.2 renumber. CI gate `scripts/verify-tree-pair-consistency.ts` now blocks any future drift.
 
 ## Verification-Before-Assertion
 
