@@ -10,7 +10,7 @@ upstream_refs:
   - system-design/module-7-interfaces/interface_matrix.json
   - system-design/module-6-qfd/c1v_QFD.json
   - system-design/module-4-decision-matrix/decision_matrix.json
-  - system-design/module-1-defining-scope/use_cases.json
+  - system-design/kb-upgrade-v2/module-1-defining-scope/use_case_inventory.json
 ---
 
 # Module 7 FMEA — c1v Final Report
@@ -37,7 +37,7 @@ Module 7 ran a Failure Mode and Effects Analysis on **c1v** itself, following th
 
 | Source | What it provided |
 |---|---|
-| M1 `use_cases.json` | 6 UCs in scope (UC01, UC03, UC04, UC06, UC08, UC11) |
+| M1 `use_case_inventory.json` | 6 UCs in scope (UC01, UC03, UC04, UC06, UC08, UC11) |
 | M4 `decision_matrix.json` | Winning concept = c1v Dual-Mode Platform (Option C, 0.662) |
 | M5 `c1v_QFD.json` | EC roof (14 non-zero pairs, top pair EC9↔EC11 = -2); EC8 rank-1 imputed importance |
 | M6 `risk_handoff.json` | 9 priority interfaces, 4 roof tradeoffs with residual risk, 7 open questions, 8 error-contract clusters |

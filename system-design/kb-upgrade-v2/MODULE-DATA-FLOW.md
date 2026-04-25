@@ -137,7 +137,7 @@ Each arrow is a stop-gap-gated contract. Downstream refuses to start until the c
 - **From M6:** `risk_handoff.json` + `interface_matrix.json` — all 32 internal IFs + 10 externals with criticality tags; 9 priority interfaces; 4 roof tradeoffs; 7 open questions; 8 error-contract clusters. _(M7 §2)_
 - **From M5:** `c1v_QFD.json` — EC roof (14 non-zero pairs, top EC9↔EC11 = −2), EC8 rank-1 imputed importance. _(M7 §2)_
 - **From M4:** `decision_matrix.json` — winning concept. _(M7 §2)_
-- **From M1:** `use_cases.json` — 6 UCs in scope.
+- **From M1:** `use_case_inventory.json` — 6 UCs in scope.
 
 ### Soft inputs (partial, forward-passable)
 - **From M6:** critical-interface list and sequence diagrams (SEQ-1..SEQ-4) — M7 can begin Phase 0 context + rating-scale calibration once top-8 criticals named, before `validation_report.json` closes. **Risk:** late changes to critical designations (e.g., IF-30 added) force FMEA row renumbering.

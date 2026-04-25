@@ -2,7 +2,7 @@
   "_schema": "fmea_phase_0_context.v1",
   "_module": "Module 7 — FMEA (CESYS527)",
   "_upstream_refs": [
-    "system-design/kb-upgrade-v2/module-1-defining-scope/use_cases.json",
+    "system-design/kb-upgrade-v2/module-1-defining-scope/use_case_inventory.json",
     "system-design/kb-upgrade-v2/module-4-decision-matrix/decision_matrix.json",
     "system-design/kb-upgrade-v2/module-6-qfd/c1v_QFD.json",
     "system-design/kb-upgrade-v2/module-7-interfaces/risk_handoff.json",
