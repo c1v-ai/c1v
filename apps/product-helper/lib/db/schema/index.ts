@@ -96,6 +96,14 @@ export type {
   EntryPattern,
   PipelineStartSubmodule,
 } from './project-entry-states';
+
+// T6 Wave-4 — pipeline-wide run state (v1 §8.2)
+export { projectRunState } from './project-run-state';
+export type {
+  ProjectRunStateRow,
+  NewProjectRunStateRow,
+  RevisionDelta,
+} from './project-run-state';
 export type {
   TracebackCitation,
   NewTracebackCitation,
