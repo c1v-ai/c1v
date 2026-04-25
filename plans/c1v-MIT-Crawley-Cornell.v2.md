@@ -311,8 +311,8 @@ flowchart TD
 | T5 | Wave 2 | **Moves to Wave 3.** Scope is M5 form-function ONLY. NFR priorities drive form-function quality weights (depends on T11 resynth, NOT on FMEA-early directly). ✅ **T5 COMPLETE 2026-04-24** — tag `t5-wave-3-complete` @ `a30d9c6`. Artifact: `form_function_map.v1.json` (re-validated, not regenerated). |
 | T6 | Wave 2 | **Moves to Wave 4.** Scope extended to include M6 HoQ (consumes T4b decision_network winner) + M8.b FMEA-residual (residual risk on chosen architecture). Always terminal. M6 moved here (not T5) to resolve Wave-3 cross-team dep on decision_network. |
 | T7 | Wave 2 | **Moves to Wave 2-early.** Module 0 is intake (understanding), fires with M1. |
-| T9 | — | **NEW Wave 1.** KB hygiene per §0.2. |
-| T10 | — | **NEW Wave 1.** Artifact-generator centralization per §15. |
+| T9 | — | **NEW Wave 1.** KB hygiene per §0.2. ✅ **COMPLETE 2026-04-24** — tag `t9-wave-1-complete`. 52 duplicate KBs deduped → `_shared/` pool + 117 symlinks; 9 KB folders renamed per §0.4.3; Atlas → KB-9; 18 Crawley excerpts patched into 7 KBs + `_shared/`. |
+| T10 | — | **NEW Wave 1.** Artifact-generator centralization per §15. ✅ **COMPLETE 2026-04-24** — tag `t10-wave-1-complete`. 13 Python generators at `scripts/artifact-generators/` (9 migrated + 4 new Crawley); TS pipeline + manifest endpoint; new FMEA viewer per R-v2.3. |
 | T11 `c1v-m2-nfr-resynth` | — | **NEW Wave 2-mid.** Re-runs M2 NFRs + Constants consuming M8.a. 3 agents (nfr-resynthesizer, constants-resynthesizer, schema-extender). |
 | **Ownership of M6 / M7.b / M8.b** | — | Folded into T5 / T4b / T6 respectively as named agents. See team-spawn-prompts.md §T4b, §T5, §T6 for full per-agent specs. No separate micro-teams. |
 
@@ -973,13 +973,13 @@ Each gate requires:
 
 ### 14.4 Spawn order
 
-**Wave 1 (spawn all 6 teams in parallel):**
-- `TeamCreate({team_name: 'c1v-crawley-kb', ...})` — spawn T1's 4 agents
-- `TeamCreate({team_name: 'c1v-kb8-atlas', ...})` — spawn T2's 3 agents
-- `TeamCreate({team_name: 'c1v-runtime-prereqs', ...})` — spawn T3's 5 agents
-- `TeamCreate({team_name: 'c1v-reorg', ...})` — T8 resumes from 40% (refactorer + agent-rewirer + verifier)
-- `TeamCreate({team_name: 'c1v-kb-hygiene', ...})` — T9, all 4 agents per §0.2.5
-- `TeamCreate({team_name: 'c1v-artifact-centralization', ...})` — T10, all 4 agents per §15.7
+**Wave 1 (spawn all 6 teams in parallel):** ✅ **CLOSED 2026-04-24** (T1, T2, T3, T9, T10 done; T8 ~40% peer-owned, deferred).
+- `TeamCreate({team_name: 'c1v-crawley-kb', ...})` — spawn T1's 4 agents — ✅ done
+- `TeamCreate({team_name: 'c1v-kb8-atlas', ...})` — spawn T2's 3 agents — ✅ done (37-task multi-agent build closed)
+- `TeamCreate({team_name: 'c1v-runtime-prereqs', ...})` — spawn T3's 5 agents — ✅ tag `t3-wave-1-complete` @ `3641e97`
+- `TeamCreate({team_name: 'c1v-reorg', ...})` — T8 resumes from 40% (refactorer + agent-rewirer + verifier) — 🟡 still ~40%; tag `t8-wave-1-complete` exists but legitimacy unverified
+- `TeamCreate({team_name: 'c1v-kb-hygiene', ...})` — T9, all 4 agents per §0.2.5 — ✅ tag `t9-wave-1-complete`
+- `TeamCreate({team_name: 'c1v-artifact-centralization', ...})` — T10, all 4 agents per §15.7 — ✅ tag `t10-wave-1-complete`
 
 23 agents firing in parallel. Each agent's own commit discipline keeps diffs reviewable.
 

@@ -7,7 +7,10 @@
 > **Handoff context:** [`HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md`](HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md)
 > **Created:** 2026-04-24 03:20 EDT
 > **Status:** T4b, T5, T6 NEW per this document. T4a, T9, T10, T11 see v2.md inline. T1, T2, T3, T8 see v1 team-spawn-prompts.md.
-> **Wave 3 closure (2026-04-24):** ✅ T4b COMPLETE — tag `t4b-wave-3-complete` @ `4ecfe3f`. ✅ T5 COMPLETE — tag `t5-wave-3-complete` @ `a30d9c6`. T6 (Wave 4) hard-deps on these tags and is now unblocked. Closure plan: [`t4b-t5-completion.md`](t4b-t5-completion.md).
+> **Wave 1 + Wave 3 closure (2026-04-24):**
+> - **Wave 1:** ✅ T1, T2 done; ✅ T3 (`t3-wave-1-complete` @ `3641e97`); ✅ T9 (`t9-wave-1-complete`); ✅ T10 (`t10-wave-1-complete`); 🟡 T8 ~40% (tag exists but unverified).
+> - **Wave 3:** ✅ T4b (`t4b-wave-3-complete` @ `4ecfe3f`); ✅ T5 (`t5-wave-3-complete` @ `a30d9c6`). Plan: [`t4b-t5-completion.md`](t4b-t5-completion.md).
+> - **Pending:** Wave 2-early (T4a, T7), Wave 2-mid (T11), Wave 4 (T6 — unblocked by Wave 3 close).
 
 ---
 
@@ -15,17 +18,17 @@
 
 | # | Team slug | Wave | Agents | Spawn prompt location |
 |---|---|---|---|---|
-| T1 | `c1v-crawley-kb` | 1 | 4 | [`team-spawn-prompts.md`](team-spawn-prompts.md) §T1 |
-| T2 | `c1v-kb8-atlas` | 1 | 3 | [`team-spawn-prompts.md`](team-spawn-prompts.md) §T2 |
-| T3 | `c1v-runtime-prereqs` | 1 | 5 | ⚠️ [`team-spawn-prompts.md`](team-spawn-prompts.md) §T3 is **roster-only**; full spawn prompt needs promotion before dispatch |
+| T1 | `c1v-crawley-kb` | 1 | 4 | [`team-spawn-prompts.md`](team-spawn-prompts.md) §T1 — ✅ **COMPLETE 2026-04-24** |
+| T2 | `c1v-kb8-atlas` | 1 | 3 | [`team-spawn-prompts.md`](team-spawn-prompts.md) §T2 — ✅ **COMPLETE 2026-04-24** |
+| T3 | `c1v-runtime-prereqs` | 1 | 5 | [`team-spawn-prompts.md`](team-spawn-prompts.md) §T3 — ✅ **COMPLETE 2026-04-24** (`t3-wave-1-complete` @ `3641e97`) |
 | T4a | `c1v-m3-ffbd-n2-fmea-early` (folds M1 phase 2.5 Data Flows) | 2-early | 4 | v2.md §0.3.5 |
 | T4b | `c1v-m4-decision-net` (folds M7.b) | 3 | 4 | **This doc §T4b** — ✅ **COMPLETE 2026-04-24** (`t4b-wave-3-complete` @ `4ecfe3f`) |
 | T5 | `c1v-m5-formfunction` (M5 only — M6 HoQ moved to T6) | 3 | 3 | **This doc §T5** — ✅ **COMPLETE 2026-04-24** (`t5-wave-3-complete` @ `a30d9c6`) |
 | T6 | `c1v-synthesis` (folds M6 HoQ + M8.b FMEA-residual) | 4 | 6 | **This doc §T6** |
 | T7 | `c1v-module0-be` | 2-early | 4 | ⚠️ [`team-spawn-prompts.md`](team-spawn-prompts.md) §T7 is **roster-only**; full spawn prompt needs promotion before dispatch |
-| T8 | `c1v-reorg` | 1 | 4 | ⚠️ [`team-spawn-prompts.md`](team-spawn-prompts.md) §T8 is **roster-only**; full spawn prompt needs promotion before dispatch |
-| T9 | `c1v-kb-hygiene` | 1 | 4 | v2.md §0.2.5 |
-| T10 | `c1v-artifact-centralization` | 1 | 4 | v2.md §15.7 |
+| T8 | `c1v-reorg` | 1 | 4 | [`team-spawn-prompts.md`](team-spawn-prompts.md) §T8 — 🟡 ~40% peer-owned (tag `t8-wave-1-complete` exists, legitimacy unverified) |
+| T9 | `c1v-kb-hygiene` | 1 | 4 | v2.md §0.2.5 — ✅ **COMPLETE 2026-04-24** (`t9-wave-1-complete`) |
+| T10 | `c1v-artifact-centralization` | 1 | 4 | v2.md §15.7 — ✅ **COMPLETE 2026-04-24** (`t10-wave-1-complete`) |
 | T11 | `c1v-m2-nfr-resynth` | 2-mid | 3 | v2.md §0.3.6 |
 
 ---

@@ -559,14 +559,19 @@ Notes: Optimized for each stack
 - **Methodology correction:** `system-design/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases.
 - **Crawley source-of-truth:** `plans/research/crawley-book-findings.md` — agents read this; do NOT rescan the book.
 
-## In-Flight Team Status
+## Team Status (cumulative across sessions)
 
+- **Wave 1 — COMPLETE 2026-04-24:**
+  - **T1 `c1v-crawley-kb`** — ✅ done.
+  - **T2 `c1v-kb8-atlas`** — ✅ done (37-task multi-agent build closed).
+  - **T3 `c1v-runtime-prereqs`** — ✅ tag `t3-wave-1-complete` @ commit `3641e97`. Phase B ingest landed 2026-04-24 (0/3289 dedup no-op).
+  - **T9 `c1v-kb-hygiene`** — ✅ tag `t9-wave-1-complete`. 52 duplicate cross-cutting KBs deduped → `_shared/` pool + 117 relative symlinks; 9 KB folders renamed per v2 §0.4.3; Atlas consolidated to KB-9; 18 Crawley chapter excerpts patched into 7 KBs + `_shared/`, 0 fabricated.
+  - **T10 `c1v-artifact-centralization`** — ✅ tag `t10-wave-1-complete`. 13 Python artifact generators at `scripts/artifact-generators/` (9 migrated + 4 new Crawley); TS pipeline (invoker + config + manifest + BullMQ-optional) + `/api/projects/[id]/artifacts/manifest` endpoint; new FMEA viewer (255 LOC) per R-v2.3; `artifact-pipeline.tsx` extended (142→178 LOC). tsc green across product-helper.
+  - **T8 `c1v-reorg`** — 🟡 peer-owned ~40% (mapper shipped `plans/reorg-mapping.md` + 3 az-sweeps + pre-reorg snapshot; refactorer/rewirer/verifier pending). Tag `t8-wave-1-complete` exists but legitimacy is unverified (predates this swarm's policy of human-cut tags after gate review).
 - **Wave 3 — COMPLETE 2026-04-24:**
   - **T4b `c1v-m4-decision-net`** — tag `t4b-wave-3-complete` @ commit `4ecfe3f`. Ships `decision-net-agent.ts` + `interface-specs-agent.ts` + `decision_network.v1.json` + `interface_specs.v1.json` + `verify-t4b.ts`. 5/5 V4b gates green.
   - **T5 `c1v-m5-formfunction`** — tag `t5-wave-3-complete` @ commit `a30d9c6`. Ships `form-function-agent.ts` + 8-case test + `verify-t5.ts`; re-validates `form_function_map.v1.json`. 4/4 V5 gates green. Plan: `plans/t4b-t5-completion.md`.
-- **T8 `c1v-reorg`** ~40% done (mapper shipped `plans/reorg-mapping.md` + 3 az-sweeps + pre-reorg snapshot; refactorer/rewirer/verifier pending).
-- **T2 `c1v-kb8-atlas`** in-flight (37-task multi-agent build).
-- **Pending v2 teams:** T9 (KB hygiene), T10 (artifact-gen), T11 (NFR resynth), T6 (Wave 4 synthesis — unblocked by Wave 3 close).
+- **Pending v2 teams:** T4a (Wave 2-early M3 FFBD + M7.a + M8.a), T7 (Wave 2-early Module-0), T11 (Wave 2-mid NFR resynth), T6 (Wave 4 synthesis — unblocked by Wave 3 close).
 
 ## KB Corpus Gotchas (pre-T9-hygiene)
 
