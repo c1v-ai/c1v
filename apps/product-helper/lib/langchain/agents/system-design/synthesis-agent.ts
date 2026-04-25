@@ -221,10 +221,6 @@ export interface LoadedUpstream {
   rawBytes: Record<string, string>;
 }
 
-function readJson<T>(full: string): T {
-  return JSON.parse(readFileSync(full, 'utf8')) as T;
-}
-
 export function loadUpstream(
   repoRoot: string,
   overrides: Partial<UpstreamPaths> = {},
