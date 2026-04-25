@@ -900,7 +900,8 @@
               },
               "open_residual_risk": {
                 "type": "string",
-                "description": "x-ui-surface=section:Recommendation > Residual Risk — open residual risk text."
+                "default": "",
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — open residual risk text (may be empty when mitigation has fully landed)."
               }
             },
             "required": [
@@ -909,8 +910,7 @@
               "failure_mode",
               "rpn",
               "weighted_rpn",
-              "criticality_category",
-              "open_residual_risk"
+              "criticality_category"
             ],
             "additionalProperties": false,
             "description": "x-ui-surface=section:Recommendation > Residual Risk — verbatim flag from fmea_residual.v1.json (T6 guardrail)."

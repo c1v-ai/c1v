@@ -400,7 +400,7 @@ export function assembleArchitectureRecommendation(
     _phase_status: 'complete' as const,
     _upstream_refs: upstreamRefs,
     metadata: {
-      phase_number: 99,
+      phase_number: 12,
       phase_slug: 'synthesis-capstone',
       phase_name: 'Architecture Recommendation (Synthesis Capstone)',
       schema_version: '1.0.0',

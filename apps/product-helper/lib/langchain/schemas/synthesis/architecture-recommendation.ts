@@ -576,8 +576,10 @@ export const residualFlagSchema = z
       ),
     open_residual_risk: z
       .string()
+      .optional()
+      .default('')
       .describe(
-        'x-ui-surface=section:Recommendation > Residual Risk — open residual risk text.',
+        'x-ui-surface=section:Recommendation > Residual Risk — open residual risk text (may be empty when mitigation has fully landed).',
       ),
   })
   .describe(

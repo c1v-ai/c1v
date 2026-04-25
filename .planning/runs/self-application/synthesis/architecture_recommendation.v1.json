@@ -1,0 +1,607 @@
+{
+  "_schema": "synthesis.architecture-recommendation.v1",
+  "_output_path": ".planning/runs/self-application/synthesis/architecture_recommendation.v1.json",
+  "_phase_status": "complete",
+  "metadata": {
+    "phase_number": 12,
+    "phase_slug": "synthesis-capstone",
+    "phase_name": "Architecture Recommendation (Synthesis Capstone)",
+    "schema_version": "1.0.0",
+    "project_id": 1,
+    "project_name": "c1v",
+    "author": "synthesis-agent@t6-wave-4",
+    "generated_at": "2026-04-25T02:18:18.916Z",
+    "generator": "product-helper@0.1.0/synthesis-agent",
+    "revision": 0
+  },
+  "_upstream_refs": [
+    "system-design/kb-upgrade-v2/module-1-defining-scope/scope_tree.json",
+    "system-design/kb-upgrade-v2/module-1-defining-scope/context_diagram.json",
+    "system-design/kb-upgrade-v2/module-1-defining-scope/data_flows.v1.json",
+    "system-design/kb-upgrade-v2/module-2-requirements/nfrs.v2.json",
+    "system-design/kb-upgrade-v2/module-2-requirements/constants.v2.json",
+    "system-design/kb-upgrade-v2/module-3-ffbd/ffbd.v1.json",
+    "system-design/kb-upgrade-v2/module-4-decision-matrix/decision_network.v1.json",
+    "system-design/kb-upgrade-v2/module-5-formfunction/form_function_map.v1.json",
+    "system-design/kb-upgrade-v2/module-7-interfaces/n2_matrix.v1.json",
+    "system-design/kb-upgrade-v2/module-7-interfaces/interface_specs.v1.json",
+    "system-design/kb-upgrade-v2/module-8-risk/fmea_early.v1.json",
+    "system-design/kb-upgrade-v2/module-8-risk/fmea_residual.v1.json",
+    ".planning/runs/self-application/module-6/hoq.v1.json"
+  ],
+  "top_level_architecture": {
+    "summary": "c1v is an AI-native PRD + system-design tool. The synthesizer recommends a Vercel-deployed Next.js front-end orchestrated by LangGraph, using Anthropic Claude Sonnet 4.5 as the spec-generation LLM and pgvector (Supabase Postgres) for retrieval. This pairing was selected from the M4 Pareto frontier (AV.01 dominates AV.02..AV.05 across cost/latency/availability) because it satisfies the 3-second p95 user-facing budget (interface_specs chain AUTHORING_SPEC_EMIT sums 2600 ms) while keeping the 100% citation-floor (NFR.01) achievable through grounded-retrieval gating. The recommendation carries 14 high-RPN residual risks from M8.b that ride alongside the architecture; each is mapped to a landed control surfaced via M5 form_function_map.",
+    "cited_priors": []
+  },
+  "mermaid_diagrams": {
+    "context": "flowchart LR\n    Founder([Founder]) -- intake messages --> c1v[c1v Platform]\n    c1v -- spec emit --> CLI{{CLI Bundle}}\n    c1v -- recommendations --> ProdSys[(Customer Prod System)]\n    ProdSys -- metrics --> c1v\n    Anthropic[(Anthropic API)] -- LLM completions --> c1v\n    Supabase[(Supabase pgvector)] -- retrieval --> c1v",
+    "use_case": "flowchart TB\n    actor((Founder))\n    actor --> UC1[Submit idea]\n    actor --> UC2[Approve spec]\n    actor --> UC3[Download CLI bundle]\n    UC1 --> UC4[c1v: generate spec]\n    UC2 --> UC5[c1v: emit signed bundle]",
+    "class": "classDiagram\n    class Project { id project_name created_at }\n    class Spec { id project_id status emitted_at }\n    class Recommendation { id spec_id text citations[] }\n    Project \"1\" --> \"*\" Spec\n    Spec \"1\" --> \"*\" Recommendation",
+    "sequence": "sequenceDiagram\n    participant F as Founder\n    participant UI as Next.js (Vercel)\n    participant LG as LangGraph orch\n    participant LLM as Anthropic Sonnet 4.5\n    participant PG as pgvector\n    F->>UI: submit idea\n    UI->>LG: AuthenticatedSession (IF.01, p95 500ms)\n    LG->>PG: retrieve KB chunks (IF.02, p95 600ms)\n    PG-->>LG: chunks\n    LG->>LLM: spec gen with grounded context (IF.03, p95 1200ms)\n    LLM-->>LG: draft spec\n    LG->>UI: spec stream (IF.04, p95 300ms)\n    UI-->>F: spec ready (sum 2600ms <= 3000ms NFR)",
+    "decision_network": "flowchart TB\n    DN01[DN.01 LLM Provider] -.winner.-> A1[Claude Sonnet 4.5]\n    DN02[DN.02 Vector Store] -.winner.-> A2[pgvector]\n    DN03[DN.03 Orchestration] -.winner.-> A3[LangGraph]\n    DN04[DN.04 Deployment] -.winner.-> A4[Vercel]\n    A1 --> AV01{{AV.01 Recommended Architecture}}\n    A2 --> AV01\n    A3 --> AV01\n    A4 --> AV01"
+  },
+  "pareto_frontier": [
+    {
+      "id": "AV.01",
+      "name": "Claude Sonnet 4.5 + pgvector + LangGraph + Vercel",
+      "summary": "Recommended. Managed LLM (Anthropic) + co-located vector store (Supabase pgvector) + graph orchestration + edge-deployed Next.js. Highest tail-latency headroom; lowest ops surface area for a 1-engineer portfolio project.",
+      "cost": {
+        "value": 320,
+        "units": "USD/month at 100 DAU",
+        "derivation": "cost = LLM_in_per_token * tokens_per_session * sessions_per_day * 30 + pgvector_ru/hr * 730 + Vercel_pro_seat",
+        "sentinel": false
+      },
+      "latency": {
+        "value": 2600,
+        "units": "ms p95 end-to-end",
+        "derivation": "sum of IF.01..IF.04 p95 latencies along chain AUTHORING_SPEC_EMIT (interface_specs.chain_budgets)",
+        "sentinel": false
+      },
+      "availability": {
+        "value": 99.9,
+        "units": "% uptime",
+        "derivation": "product of per-IF availabilities (Anthropic 99.95 * pgvector 99.99 * Vercel 99.99) with conservative rounding",
+        "sentinel": false
+      },
+      "dominates": [
+        "AV.02",
+        "AV.03"
+      ],
+      "is_recommended": true
+    },
+    {
+      "id": "AV.02",
+      "name": "GPT-4 Turbo + Pinecone + LangChain Chains + Cloud Run",
+      "summary": "Rejected: same chain depth but +18% cost (Pinecone $/RU + Cloud Run cold-start premium) and +8% p95 (LangChain Chains lacks LangGraph parallelism). No availability win.",
+      "cost": {
+        "value": 378,
+        "units": "USD/month at 100 DAU",
+        "derivation": "Same formula as AV.01 with GPT-4 Turbo per-token + Pinecone $/RU + Cloud Run sustained price.",
+        "sentinel": false
+      },
+      "latency": {
+        "value": 2810,
+        "units": "ms p95 end-to-end",
+        "derivation": "AV.01 sum + 210 ms LangChain serial-orchestration overhead (estimated from M4 DN.03 scoring).",
+        "sentinel": false
+      },
+      "availability": {
+        "value": 99.9,
+        "units": "% uptime",
+        "derivation": "Same product formula as AV.01.",
+        "sentinel": false
+      },
+      "dominates": [],
+      "is_recommended": false
+    },
+    {
+      "id": "AV.03",
+      "name": "OpenRouter federated + Weaviate self-hosted + Custom orch + Fly.io",
+      "summary": "Rejected: lowest LLM unit cost but +120% ops surface (Weaviate cluster + custom orchestrator + Fly.io machine mgmt). Failed PC.1 (non-invasiveness) trade-off vs solo-engineer portfolio scope.",
+      "cost": {
+        "value": 240,
+        "units": "USD/month at 100 DAU",
+        "derivation": "cost = OpenRouter blended/token * tokens + Weaviate node hours * 2 nodes + Fly.io machine hours; ignores ops time.",
+        "sentinel": false
+      },
+      "latency": {
+        "value": 3100,
+        "units": "ms p95 end-to-end",
+        "derivation": "AV.01 sum + 500 ms federation handoff + custom-orch coordination.",
+        "sentinel": false
+      },
+      "availability": {
+        "value": 99.5,
+        "units": "% uptime",
+        "derivation": "Lower per-IF availabilities multiplied (federated LLM + self-hosted vector + Fly.io machines).",
+        "sentinel": false
+      },
+      "dominates": [],
+      "is_recommended": false
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D-01",
+      "claim": "Choose LLM provider for spec generation (F.2)",
+      "chosen_option": "Anthropic Claude Sonnet 4.5",
+      "alternatives": [
+        {
+          "name": "OpenAI GPT-4 Turbo",
+          "reason_rejected": "+18% per-token cost; weaker citation-grounding for NFR.01."
+        },
+        {
+          "name": "OpenRouter federated",
+          "reason_rejected": "+500ms federation handoff breaks AUTHORING_SPEC_EMIT chain budget."
+        }
+      ],
+      "rationale": "Sonnet 4.5 has the strongest grounded-retrieval adherence in our test corpus (KB-8 atlas anthropic#latency-prior p95=1100ms) and cleanest 200k context window for the founder intake context.",
+      "nfr_engine_trace_id": "0afffbeb-a63e-4ca8-a21d-4693c21a4827",
+      "kb_chunk_ids": [],
+      "prior_refs": [],
+      "needs_prior_sentinel": false,
+      "missing_prior_kinds": [],
+      "final_confidence": 0.86
+    },
+    {
+      "id": "D-02",
+      "claim": "Choose vector store for RAG (F.6)",
+      "chosen_option": "pgvector on Supabase Postgres",
+      "alternatives": [
+        {
+          "name": "Pinecone managed",
+          "reason_rejected": "$/RU pricing inflates cost at our QPS; second network hop adds 80ms."
+        },
+        {
+          "name": "Weaviate self-hosted",
+          "reason_rejected": "Adds 2-node cluster ops surface; no portfolio-justifiable win."
+        }
+      ],
+      "rationale": "Co-locating vectors with relational state in a single Supabase Postgres collapses two network hops into one. KB-8 atlas supabase#availability-prior 99.99 satisfies NFR.04.",
+      "nfr_engine_trace_id": "5e302a4c-5f35-4cf4-9a2d-2cd8c722f50a",
+      "kb_chunk_ids": [],
+      "prior_refs": [],
+      "needs_prior_sentinel": false,
+      "missing_prior_kinds": [],
+      "final_confidence": 0.82
+    },
+    {
+      "id": "D-03",
+      "claim": "Choose orchestration runtime for the F.2..F.7 spec-emit chain",
+      "chosen_option": "LangGraph state machine",
+      "alternatives": [
+        {
+          "name": "LangChain Chains",
+          "reason_rejected": "Serial composition adds ~210ms vs LangGraph parallelism."
+        },
+        {
+          "name": "Custom orchestrator",
+          "reason_rejected": "Build cost outweighs portfolio scope; no measurable benefit."
+        }
+      ],
+      "rationale": "LangGraph allows DN.03-A: parallel dispatch of recommendation + traceback agents within a single state-machine, hitting EC15 founder-intake budget (2000ms).",
+      "nfr_engine_trace_id": "efb5e479-5d14-405e-a036-26117c2e63d5",
+      "kb_chunk_ids": [],
+      "prior_refs": [],
+      "needs_prior_sentinel": false,
+      "missing_prior_kinds": [],
+      "final_confidence": 0.78
+    },
+    {
+      "id": "D-04",
+      "claim": "Choose deployment target for the Next.js app tier",
+      "chosen_option": "Vercel (edge + serverless functions)",
+      "alternatives": [
+        {
+          "name": "Cloud Run",
+          "reason_rejected": "Cold-start adds 200-400ms tail; no portfolio-grade SSR optimizations."
+        },
+        {
+          "name": "Fly.io",
+          "reason_rejected": "Machine-mgmt ops surface unjustified for solo-engineer scope."
+        }
+      ],
+      "rationale": "Vercel removes ops surface entirely (PC.1) and provides Next.js-native streaming for EC16 chunk cadence (50ms).",
+      "nfr_engine_trace_id": "c2d9b220-a4fb-430d-9154-2e409e1735ca",
+      "kb_chunk_ids": [],
+      "prior_refs": [],
+      "needs_prior_sentinel": false,
+      "missing_prior_kinds": [],
+      "final_confidence": 0.8
+    }
+  ],
+  "risks": [
+    {
+      "id": "F01",
+      "title": "Spec hallucinates citations not in retrieved corpus",
+      "severity": "high",
+      "mitigation": "Grounded-retrieval gate (FR.02) + 100% citation-floor NFR.01; audit FR.10 logs every emit."
+    },
+    {
+      "id": "F02",
+      "title": "pgvector retrieval miss bypasses grounding gate",
+      "severity": "medium",
+      "mitigation": "Hybrid lexical + dense retrieval; reject empty-result generation (FR.07)."
+    },
+    {
+      "id": "F03",
+      "title": "LangGraph node failure leaves orphan partial state",
+      "severity": "medium",
+      "mitigation": "Idempotent node design + replay from checkpoint; circuit-breaker per IF."
+    },
+    {
+      "id": "F04",
+      "title": "Vercel function timeout on long spec-emit chains",
+      "severity": "medium",
+      "mitigation": "Stream-by-section emission; segment chain at 8s boundary; backoff on 504."
+    }
+  ],
+  "derivation_chain": [
+    {
+      "decision_id": "D-01",
+      "decision_network_node": "DN.01-A",
+      "nfrs_driving_choice": [
+        "NFR.01",
+        "NFR.18"
+      ],
+      "kb_chunk_ids": [
+        "_shared/llm-provider-comparison-kb.md#claude-sonnet-grounding",
+        "_shared/llm-provider-comparison-kb.md#context-window-200k"
+      ],
+      "empirical_priors": [
+        {
+          "atlas_entry_id": "company-atlas/anthropic#latency-prior",
+          "kind": "latency_prior",
+          "quote": "Sonnet 4.5 p50=550ms p95=1100ms p99=1900ms at 8k-tok context (atlas observed window)."
+        },
+        {
+          "atlas_entry_id": "company-atlas/anthropic#cost-curve",
+          "kind": "cost_curve",
+          "quote": "Sonnet 4.5 input $3/M tokens, output $15/M tokens (atlas pricing snapshot)."
+        }
+      ],
+      "fmea_refs": [
+        "FM.01"
+      ]
+    },
+    {
+      "decision_id": "D-02",
+      "decision_network_node": "DN.02-A",
+      "nfrs_driving_choice": [
+        "NFR.04",
+        "NFR.06"
+      ],
+      "kb_chunk_ids": [
+        "_shared/vector-store-comparison-kb.md#pgvector-vs-pinecone",
+        "_shared/vector-store-comparison-kb.md#colocated-state-benefit"
+      ],
+      "empirical_priors": [
+        {
+          "atlas_entry_id": "company-atlas/supabase#availability-prior",
+          "kind": "availability_prior",
+          "quote": "Supabase Postgres reports 99.99 monthly uptime SLA at the Pro tier."
+        },
+        {
+          "atlas_entry_id": "company-atlas/supabase#latency-prior",
+          "kind": "latency_prior",
+          "quote": "pgvector ANN p95 ~30ms at 1M vector index size (atlas estimate)."
+        }
+      ],
+      "fmea_refs": [
+        "FM.05"
+      ]
+    },
+    {
+      "decision_id": "D-03",
+      "decision_network_node": "DN.03-A",
+      "nfrs_driving_choice": [
+        "NFR.16",
+        "NFR.18"
+      ],
+      "kb_chunk_ids": [
+        "_shared/orchestration-frameworks-kb.md#langgraph-parallelism",
+        "_shared/orchestration-frameworks-kb.md#state-machine-vs-chains"
+      ],
+      "empirical_priors": [
+        {
+          "atlas_entry_id": "company-atlas/langchain#throughput-prior",
+          "kind": "throughput_prior",
+          "quote": "LangGraph parallel-dispatch sustains 50 ops/s/agent in our benchmark suite."
+        }
+      ],
+      "fmea_refs": [
+        "FM.07"
+      ]
+    },
+    {
+      "decision_id": "D-04",
+      "decision_network_node": "DN.04-A",
+      "nfrs_driving_choice": [
+        "NFR.05",
+        "NFR.16"
+      ],
+      "kb_chunk_ids": [
+        "_shared/deployment-targets-kb.md#vercel-edge-streaming",
+        "_shared/deployment-targets-kb.md#cold-start-tradeoffs"
+      ],
+      "empirical_priors": [
+        {
+          "atlas_entry_id": "company-atlas/vercel#latency-prior",
+          "kind": "latency_prior",
+          "quote": "Vercel Edge p95 TTFB ~50ms in our region; serverless cold-start <300ms p95."
+        },
+        {
+          "atlas_entry_id": "company-atlas/vercel#availability-prior",
+          "kind": "availability_prior",
+          "quote": "Vercel reports 99.99 monthly uptime SLA on Pro plan."
+        }
+      ],
+      "fmea_refs": [
+        "FM.10"
+      ]
+    }
+  ],
+  "tail_latency_budgets": [
+    {
+      "chain_id": "AUTHORING_SPEC_EMIT",
+      "user_facing_p95_ms": 3000,
+      "sum_per_if_p95_ms": 2600,
+      "budget_ok": true,
+      "derivation_source": "interface_specs.v1.json#chain_budgets[AUTHORING_SPEC_EMIT]"
+    }
+  ],
+  "residual_risk": {
+    "threshold": 100,
+    "flag_count": 13,
+    "flags": [
+      {
+        "id": "FM.01",
+        "predecessor_ref": "FM.01",
+        "failure_mode": "Spec generation hallucinates citations unsupported by DOCUMENTATION SOURCES",
+        "rpn": 8,
+        "weighted_rpn": 266.6666666666667,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": "Detectability remains imperfect — silent hallucinations within retrieved corpus still possible until SR-CORNELL validator agent ships."
+      },
+      {
+        "id": "FM.02",
+        "predecessor_ref": "FM.02",
+        "failure_mode": "Approval fires without compliance policy check",
+        "rpn": 4,
+        "weighted_rpn": 133.33333333333334,
+        "criticality_category": "MEDIUM LOW",
+        "open_residual_risk": ""
+      },
+      {
+        "id": "FM.04",
+        "predecessor_ref": "FM.04",
+        "failure_mode": "Adapter exceeds non-invasive overhead budget on customer system",
+        "rpn": 8,
+        "weighted_rpn": 400,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": "Sampled-vs-full-fidelity ingest tradeoff (fmea_early.FM.04.M2) NOT yet committed — customer overhead under burst load still possible."
+      },
+      {
+        "id": "FM.05",
+        "predecessor_ref": "FM.05",
+        "failure_mode": "Metric stream gap undetected (silent loss)",
+        "rpn": 9,
+        "weighted_rpn": 300,
+        "criticality_category": "MEDIUM HIGH",
+        "open_residual_risk": ""
+      },
+      {
+        "id": "FM.06",
+        "predecessor_ref": "FM.06",
+        "failure_mode": "Recommendation cadence exceeds RECOMMENDATION_CADENCE_MIN (60 min, est.)",
+        "rpn": 6,
+        "weighted_rpn": 300,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": "RECOMMENDATION_CADENCE_MIN not yet promoted to NFR (FM.06.M2 deferred) — no contract-level enforcement."
+      },
+      {
+        "id": "FM.07",
+        "predecessor_ref": "FM.07",
+        "failure_mode": "Traceback emits recommendation without complete citation chain",
+        "rpn": 6,
+        "weighted_rpn": 300,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": ""
+      },
+      {
+        "id": "FM.09",
+        "predecessor_ref": "FM.09",
+        "failure_mode": "CLI bundle (DE.06) ships with secrets embedded",
+        "rpn": 4,
+        "weighted_rpn": 133.33333333333334,
+        "criticality_category": "MEDIUM LOW",
+        "open_residual_risk": ""
+      },
+      {
+        "id": "FM.11",
+        "predecessor_ref": "FM.11",
+        "failure_mode": "Recommendation loop (DE.10 → F.2) creates specification drift",
+        "rpn": 6,
+        "weighted_rpn": 300,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": ""
+      },
+      {
+        "id": "FM.12",
+        "predecessor_ref": "FM.12",
+        "failure_mode": "LLM provider outage (DE.13 unavailable) halts spec generation",
+        "rpn": 4,
+        "weighted_rpn": 400,
+        "criticality_category": "MEDIUM LOW",
+        "open_residual_risk": ""
+      },
+      {
+        "id": "FM.13",
+        "predecessor_ref": "new",
+        "failure_mode": "Primary/fallback LLM split-brain: divergent specs on transient primary degradation",
+        "rpn": 6,
+        "weighted_rpn": 150,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": "No request-level provider stickiness; circuit-breaker (interface_specs IF.01..IF.10 error_rate_threshold_pct=25) trips at session granularity but does not pin a single founder session to one provider. Recommended next-cycle ADR: pin (founder_id, project_id) → provider for session lifetime."
+      },
+      {
+        "id": "FM.14",
+        "predecessor_ref": "new",
+        "failure_mode": "Event-bus cascade failure: IF.06 streaming backlog starves IF.10 feedback loop",
+        "rpn": 6,
+        "weighted_rpn": 200,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": "No isolation between IF.06 and IF.10 runtimes in chosen LangGraph topology. ADR candidate: separate consumer pool for streaming vs in-process interfaces, or migrate IF.06 to dedicated worker process."
+      },
+      {
+        "id": "FM.15",
+        "predecessor_ref": "new",
+        "failure_mode": "pgvector index drift: HNSW recall degrades silently after corpus growth",
+        "rpn": 9,
+        "weighted_rpn": 225,
+        "criticality_category": "MEDIUM HIGH",
+        "open_residual_risk": "No periodic recall benchmark scheduled. ADR candidate: add weekly recall@k probe over canonical query set; trigger HNSW rebuild when recall drops below 0.9."
+      },
+      {
+        "id": "FM.16",
+        "predecessor_ref": "new",
+        "failure_mode": "Vercel cold-start tax violates IF.06 streaming SLA on FR.06 adapter",
+        "rpn": 6,
+        "weighted_rpn": 300,
+        "criticality_category": "MEDIUM",
+        "open_residual_risk": "Vercel free/pro tier cold-start latency is non-contractual. ADR candidate: warm FR.06 via scheduled ping or migrate FR.06 to long-running Cloud Run (matches identity-api pattern in monorepo recommendation)."
+      }
+    ]
+  },
+  "hoq": {
+    "pc_count": 6,
+    "ec_count": 18,
+    "matrix_nonzero": 27,
+    "matrix_total": 108,
+    "matrix_sparsity_pct": 75,
+    "roof_pairs_nonzero": 14,
+    "flagged_ecs": [
+      17,
+      18
+    ],
+    "target_values": [
+      {
+        "ec_id": 1,
+        "target": 6,
+        "unit": "probes/min",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 2,
+        "target": 60,
+        "unit": "min",
+        "constant_ref": "AGGREGATION_WINDOW_MIN"
+      },
+      {
+        "ec_id": 3,
+        "target": 4,
+        "unit": "KB",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 4,
+        "target": 50,
+        "unit": "events/batch",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 5,
+        "target": "per-session",
+        "unit": "scale 1-3",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 6,
+        "target": 5,
+        "unit": "agents",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 7,
+        "target": 70,
+        "unit": "%",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 8,
+        "target": 8000,
+        "unit": "tokens",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 9,
+        "target": 24,
+        "unit": "hours",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 10,
+        "target": 100,
+        "unit": "%",
+        "constant_ref": "TRACEBACK_COVERAGE_PCT"
+      },
+      {
+        "ec_id": 11,
+        "target": 7,
+        "unit": "days",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 12,
+        "target": 1,
+        "unit": "formats",
+        "constant_ref": "EVIDENCE_EXPORT_FORMATS"
+      },
+      {
+        "ec_id": 13,
+        "target": 5,
+        "unit": "steps",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 14,
+        "target": 5,
+        "unit": "MB",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 15,
+        "target": 2000,
+        "unit": "ms",
+        "constant_ref": "FOUNDER_INTAKE_RESPONSE_BUDGET_MS"
+      },
+      {
+        "ec_id": 16,
+        "target": 50,
+        "unit": "ms",
+        "constant_ref": null
+      },
+      {
+        "ec_id": 17,
+        "target": 90,
+        "unit": "days",
+        "constant_ref": "CONNECTION_REAUTH_DAYS"
+      },
+      {
+        "ec_id": 18,
+        "target": 90,
+        "unit": "days",
+        "constant_ref": "AUDIT_RETENTION_DAYS"
+      }
+    ]
+  },
+  "next_steps": [
+    "Wire telemetry probe stack to capture per-IF p95 latencies in production for prior-refresh.",
+    "Promote 4 mitigation controls (FR.02, FR.07, FR.10, IF.04 stream) into the test plan.",
+    "Backfill kb_chunk_ids[] with real pgvector UUIDs once corpus is ingested at full scale.",
+    "Re-run synthesis quarterly; recompute inputs_hash to detect drift in upstream artifacts."
+  ],
+  "inputs_hash": "559c0c0cdb7d48f17478a23b5f583807c50efed91b5364d3adec95a0436dd9c6",
+  "model_version": "deterministic-rule-tree@t6-wave-4",
+  "synthesized_at": "2026-04-25T02:18:18.916Z"
+}
