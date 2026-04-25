@@ -1,6 +1,6 @@
 # c1v × MIT-Crawley-Cornell — v2 Amendment
 
-> **Status:** DRAFT — awaiting David's review. No TaskCreate, no code, no commits until approved.
+> **Status:** ✅ SHIPPED 2026-04-24. All 12 teams closed (Wave 1, 2-early, 2-mid, 3, 4). Tag `synthesizer-wave-4-complete`. End-to-end self-application materialized at `.planning/runs/self-application/synthesis/architecture_recommendation.v1.json`. See [`plans/v2-release-notes.md`](v2-release-notes.md) for summary. Original status: DRAFT — awaiting David's review.
 > **Slug:** `c1v-MIT-Crawley-Cornell.v2`
 > **Supersedes (in v1):** §0, §5.3, §14 entirely; ADDS §0.2, §0.3, §0.4, §15. All other v1 sections stand.
 > **Author:** Bond (brainstorming session 2026-04-24 ~00:30-02:35 EDT)
@@ -989,7 +989,7 @@ Each gate requires:
 
 **Wave 3 (after Wave 2-mid gate):** T4b + T5 + M6 + M7.b + M8.b (5 teams, ~15 agents). ✅ **T4b + T5 SHIPPED 2026-04-24** (tags `t4b-wave-3-complete` `4ecfe3f`, `t5-wave-3-complete` `a30d9c6`); M6 / M7.b / M8.b folded into T6 (Wave 4). Reports: [`plans/t4b-outputs/`](t4b-outputs/), [`plans/t5-outputs/`](t5-outputs/).
 
-**Wave 4 (after Wave 3 gate):** T6 synthesis (4 agents). 🟡 **UNBLOCKED 2026-04-24 20:21 EDT** — pending dispatch.
+**Wave 4 (after Wave 3 gate):** T6 synthesis (6 agents). ✅ **SHIPPED 2026-04-24** — tag `synthesizer-wave-4-complete` @ `56532d4`. Ships M6 HoQ (10 commits `16bc96c..8c9a172`), M8.b FMEA-residual (`b7def3b`/`55d7737`/`629303e`/`aa55cf3`; 16 FMs, 13 high-RPN flags), `project_run_state` Drizzle table + migration `0013` + RLS (`3691617`; 6/6 smoke green), `build-all-headless.ts` E2E (`94f6c0e`; 14/14 tests, 15/15 artifacts, 61 schemas across 9 modules), and the synthesizer (`2a4a05b`/`15ffe20`/`a2ee9b8`/`56532d4` — `architecture_recommendation.v1.json` + `verify-t6.ts`; 6/6 V6 gates green). Cleanup `a4d1bb6` drops dead `readJson` + opens `plans/post-v2-followups.md`. Report: [`plans/t6-outputs/verification-report.md`](t6-outputs/verification-report.md).
 
 ### 14.5 Total scope
 
@@ -1002,6 +1002,7 @@ Each gate requires:
 ## Open Rulings Needed Before Dispatch
 
 **ALL RESOLVED 2026-04-24 09:52 EDT — v2 dispatch is UNBLOCKED.**
+**ALL EXECUTION COMPLETE 2026-04-24 — v2 SHIPPED end-to-end (Waves 1-4). See `plans/v2-release-notes.md`.**
 
 | # | Question | Ruling | Blocks |
 |---|---|---|---|
@@ -1018,3 +1019,19 @@ Each gate requires:
 Proposed dispatch readiness after: (a) David reviews this v2 doc, (b) answers rulings above, (c) approves the 4-wave restructure (vs v1's 2-wave), (d) confirms UI-freeze boundary for v2.
 
 Nothing spawns until explicit `/dispatch-v2` signal.
+
+---
+
+## CLOSEOUT (2026-04-24)
+
+v2 dispatched and shipped end-to-end. All 12 teams meet the canonical T3/T9/T10 verification bar (per-team tag + `verify-t<N>.ts` + `plans/t<N>-outputs/verification-report.md`). Final tag: **`synthesizer-wave-4-complete`** @ `56532d4`.
+
+**Execution-resolved §0.3.4 fold spec** — M6 HoQ + M8.b FMEA-residual folded into T6 (Wave 4) per critique iter 1; both shipped under that team. M7.b folded into T4b (Wave 3) and shipped at tag `t4b-wave-3-complete`.
+
+**Carry-overs (non-blocking, tracked in [`plans/post-v2-followups.md`](post-v2-followups.md)):**
+- `projects` table RLS hardening (defense-in-depth; not actively bleeding — Clerk gates routes).
+- `fmea_residual.summary.flagged_high_rpn` prose-vs-data drift (claims 14, file ships 13; synthesizer uses per-mode boolean = 13).
+- `kb_chunk_ids` placeholder UUIDs (real pgvector IDs replace once corpus ingests at full scale).
+- `weasyprint` PDF target (CI install only; generator degrades gracefully when absent).
+
+Frozen UI viewers (DecisionMatrix / FFBD / QFD / Interfaces / Diagram) remain frozen per UI-freeze ruling; FMEA viewer shipped as the single R-v2.3 exception.
