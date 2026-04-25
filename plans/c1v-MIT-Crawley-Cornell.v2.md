@@ -307,13 +307,13 @@ flowchart TD
 
 | Team | v1 | v2 |
 |---|---|---|
-| T4 | single team M3-FFBD-Gate-C + M4-decision-net-rework | **SPLIT.** T4a = M3 FFBD + M7.a N2 + M8.a FMEA-early (Wave 2-early). T4b = M4 decision-net rework + M7.b formal interface specs (Wave 3). ✅ **T4b COMPLETE 2026-04-24** — tag `t4b-wave-3-complete` @ `4ecfe3f`. Artifacts: `decision_network.v1.json`, `interface_specs.v1.json`. Plan: [`t4b-t5-completion.md`](t4b-t5-completion.md). |
-| T5 | Wave 2 | **Moves to Wave 3.** Scope is M5 form-function ONLY. NFR priorities drive form-function quality weights (depends on T11 resynth, NOT on FMEA-early directly). ✅ **T5 COMPLETE 2026-04-24** — tag `t5-wave-3-complete` @ `a30d9c6`. Artifact: `form_function_map.v1.json` (re-validated, not regenerated). |
-| T6 | Wave 2 | **Moves to Wave 4.** Scope extended to include M6 HoQ (consumes T4b decision_network winner) + M8.b FMEA-residual (residual risk on chosen architecture). Always terminal. M6 moved here (not T5) to resolve Wave-3 cross-team dep on decision_network. |
-| T7 | Wave 2 | **Moves to Wave 2-early.** Module 0 is intake (understanding), fires with M1. |
+| T4 | single team M3-FFBD-Gate-C + M4-decision-net-rework | **SPLIT.** T4a = M3 FFBD + M7.a N2 + M8.a FMEA-early (Wave 2-early). T4b = M4 decision-net rework + M7.b formal interface specs (Wave 3). ✅ **T4a COMPLETE 2026-04-24** — tag `t4a-wave-2-early-complete` @ `18e75c8`. Artifacts: `data_flows.v1.json`, `ffbd.v1.json`, `n2_matrix.v1.json`, `fmea_early.v1.json`. 6/6 V4a gates green; report at [`plans/t4a-outputs/verification-report.md`](t4a-outputs/verification-report.md). ✅ **T4b COMPLETE 2026-04-24** — tag `t4b-wave-3-complete` @ `4ecfe3f`. Artifacts: `decision_network.v1.json`, `interface_specs.v1.json`. Plan: [`t4b-t5-completion.md`](t4b-t5-completion.md); report: [`plans/t4b-outputs/verification-report.md`](t4b-outputs/verification-report.md). |
+| T5 | Wave 2 | **Moves to Wave 3.** Scope is M5 form-function ONLY. NFR priorities drive form-function quality weights (depends on T11 resynth, NOT on FMEA-early directly). ✅ **T5 COMPLETE 2026-04-24** — tag `t5-wave-3-complete` @ `a30d9c6`. Artifact: `form_function_map.v1.json` (re-validated, not regenerated); report: [`plans/t5-outputs/verification-report.md`](t5-outputs/verification-report.md). |
+| T6 | Wave 2 | **Moves to Wave 4.** Scope extended to include M6 HoQ (consumes T4b decision_network winner) + M8.b FMEA-residual (residual risk on chosen architecture). Always terminal. M6 moved here (not T5) to resolve Wave-3 cross-team dep on decision_network. **Unblocked since 2026-04-24 20:21 EDT** (Wave-3 close). |
+| T7 | Wave 2 | **Moves to Wave 2-early.** Module 0 is intake (understanding), fires with M1. ✅ **COMPLETE 2026-04-24** — tag `t7-wave-2-early-complete` @ `581afd9`. Ships M0 schemas + agents + signup-signals webhook + RLS migration. 7/7 V7 gates green (V7.7 SKIP-with-fail-forward — no M0 self-app artifact by design); report: [`plans/t7-outputs/verification-report.md`](t7-outputs/verification-report.md). |
 | T9 | — | **NEW Wave 1.** KB hygiene per §0.2. ✅ **COMPLETE 2026-04-24** — tag `t9-wave-1-complete`. 52 duplicate KBs deduped → `_shared/` pool + 117 symlinks; 9 KB folders renamed per §0.4.3; Atlas → KB-9; 18 Crawley excerpts patched into 7 KBs + `_shared/`. |
 | T10 | — | **NEW Wave 1.** Artifact-generator centralization per §15. ✅ **COMPLETE 2026-04-24** — tag `t10-wave-1-complete`. 13 Python generators at `scripts/artifact-generators/` (9 migrated + 4 new Crawley); TS pipeline + manifest endpoint; new FMEA viewer per R-v2.3. |
-| T11 `c1v-m2-nfr-resynth` | — | **NEW Wave 2-mid.** Re-runs M2 NFRs + Constants consuming M8.a. 3 agents (nfr-resynthesizer, constants-resynthesizer, schema-extender). |
+| T11 `c1v-m2-nfr-resynth` | — | **NEW Wave 2-mid.** Re-runs M2 NFRs + Constants consuming M8.a. 3 agents (nfr-resynthesizer, constants-resynthesizer, schema-extender). ✅ **COMPLETE 2026-04-24** — tag `t11-wave-2-mid-complete` @ `91f159e`. Ships NFR v2.1 (26 NFRs) + constants v2.1 (28 constants) + M2 `derivedFrom` discriminated union. 6/6 V11 gates green; report: [`plans/t11-outputs/verification-report.md`](t11-outputs/verification-report.md). Note: commit message on `020766a` claims 18/10/4 (NFR/FR/Final) but file ships 19/9/5; verifier records the drift. |
 | **Ownership of M6 / M7.b / M8.b** | — | Folded into T5 / T4b / T6 respectively as named agents. See team-spawn-prompts.md §T4b, §T5, §T6 for full per-agent specs. No separate micro-teams. |
 
 ### 0.3.5 T4a Team — `c1v-m3-ffbd-n2-fmea-early` (Wave 2-early)
@@ -983,13 +983,13 @@ Each gate requires:
 
 23 agents firing in parallel. Each agent's own commit discipline keeps diffs reviewable.
 
-**Wave 2-early (after Wave 1 gate):** T7 + M1-extended + T4a (3 teams, 10 agents).
+**Wave 2-early (after Wave 1 gate):** T7 + M1-extended + T4a (3 teams, 10 agents). ✅ **SHIPPED 2026-04-24** — tags `t4a-wave-2-early-complete` `18e75c8`, `t7-wave-2-early-complete` `581afd9`, roll-up `wave-2-early-complete`. Reports: [`plans/t4a-outputs/`](t4a-outputs/), [`plans/t7-outputs/`](t7-outputs/).
 
-**Wave 2-mid (after Wave 2-early gate):** T-new (2 agents).
+**Wave 2-mid (after Wave 2-early gate):** T-new (2 agents). ✅ **SHIPPED 2026-04-24** — tag `t11-wave-2-mid-complete` `91f159e`, roll-up `wave-2-mid-complete`. Report: [`plans/t11-outputs/`](t11-outputs/).
 
-**Wave 3 (after Wave 2-mid gate):** T4b + T5 + M6 + M7.b + M8.b (5 teams, ~15 agents). ✅ **T4b + T5 SHIPPED 2026-04-24** (tags `t4b-wave-3-complete` `4ecfe3f`, `t5-wave-3-complete` `a30d9c6`); M6 / M7.b / M8.b folded into T6 (Wave 4).
+**Wave 3 (after Wave 2-mid gate):** T4b + T5 + M6 + M7.b + M8.b (5 teams, ~15 agents). ✅ **T4b + T5 SHIPPED 2026-04-24** (tags `t4b-wave-3-complete` `4ecfe3f`, `t5-wave-3-complete` `a30d9c6`); M6 / M7.b / M8.b folded into T6 (Wave 4). Reports: [`plans/t4b-outputs/`](t4b-outputs/), [`plans/t5-outputs/`](t5-outputs/).
 
-**Wave 4 (after Wave 3 gate):** T6 synthesis (4 agents).
+**Wave 4 (after Wave 3 gate):** T6 synthesis (4 agents). 🟡 **UNBLOCKED 2026-04-24 20:21 EDT** — pending dispatch.
 
 ### 14.5 Total scope
 

@@ -1,5 +1,7 @@
 # HANDOFF — c1v-MIT-Crawley-Cornell v2 brainstorm
 
+> **STATUS UPDATE 2026-04-24 21:20 EDT — V2 EXECUTION 11/12 COMPLETE:** This handoff captures the v2 brainstorm session (2026-04-24 ~03:00 EDT). Since then, **all of Wave 1, Wave 2-early, Wave 2-mid, and Wave 3 have shipped** at the canonical T3/T9/T10 verification bar. Per-team tags: `t1*` `t2*` `t3-wave-1-complete` `t8-wave-1-complete` `t9-wave-1-complete` `t10-wave-1-complete` `t4a-wave-2-early-complete` `t7-wave-2-early-complete` `t11-wave-2-mid-complete` `t4b-wave-3-complete` `t5-wave-3-complete` (+ roll-ups `wave-2-early-complete` `wave-2-mid-complete`). Only T6 (Wave 4 synthesis) remains — unblocked since 20:21 EDT 2026-04-24. Statements below about "unstarted" / "no agents spawned" are historical truth at write-time; current authoritative team status lives in [`c1v-MIT-Crawley-Cornell.v2.md`](c1v-MIT-Crawley-Cornell.v2.md) §0.3.4 + project [`CLAUDE.md`](../CLAUDE.md) Team Status block.
+>
 > **Date:** 2026-04-24 (session 23:23 EDT 2026-04-23 through 02:55 EDT 2026-04-24)
 > **Participant:** David (user) + Bond (assistant)
 > **Deliverable produced this session:** [`plans/c1v-MIT-Crawley-Cornell.v2.md`](c1v-MIT-Crawley-Cornell.v2.md)
