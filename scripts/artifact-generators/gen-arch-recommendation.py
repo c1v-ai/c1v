@@ -67,6 +67,10 @@ _INLINE_CSS = """
   ul { padding-left: 1.25rem; }
   .tag { display: inline-block; background: #F18F01; color: #0B2C29;
          padding: .1rem .45rem; border-radius: 2px; font-size: .75rem; font-weight: 700; }
+  .mermaid { background: #ffffff; padding: 1rem; margin: 0; overflow: auto;
+             font-family: Consolas, 'Courier New', monospace; }
+  details > summary { cursor: pointer; font-size: .8rem; color: #5998C5;
+                      margin-top: .35rem; user-select: none; }
 """
 
 
@@ -94,28 +98,75 @@ def _render_html(
     risks = instance.get("risks") or []
     tradeoffs = instance.get("tradeoffs") or []
 
-    # Collect sibling artifacts in outputDir for inline embedding
+    # Collect figures: (a) sibling svg/mmd in output_dir, (b) .mmd files
+    # discovered by walking the parent dirs of every cited moduleReferences
+    # artifact path. Repo root is inferred from output_dir.
     artifact_sections: list[str] = []
+    seen_mmd: set[Path] = set()
+
     for svg_path in sorted(output_dir.glob("*.svg")):
         name = svg_path.stem
         artifact_sections.append(
             f'<figure class="fig">{_inline_svg(svg_path)}'
             f'<figcaption>{name}.svg</figcaption></figure>'
         )
+
+    # Walk module dirs cited in moduleReferences for .mmd siblings.
+    # output_dir is .planning/runs/self-application/synthesis/ — repo root
+    # is 4 parents up; fall back to cwd if structure differs.
+    repo_root = output_dir
+    for _ in range(4):
+        if repo_root.parent == repo_root:
+            break
+        repo_root = repo_root.parent
+
+    module_dirs: list[Path] = []
+    for m in modules:
+        artifact_rel = (m.get("artifact") or "").strip()
+        if not artifact_rel:
+            continue
+        candidate = (repo_root / artifact_rel).parent
+        if candidate.exists() and candidate not in module_dirs:
+            module_dirs.append(candidate)
+
+    for mdir in module_dirs:
+        for mmd_path in sorted(mdir.glob("*.mmd")):
+            if mmd_path in seen_mmd:
+                continue
+            seen_mmd.add(mmd_path)
+            try:
+                src = mmd_path.read_text(encoding="utf-8")
+            except Exception:
+                continue
+            rel = mmd_path.relative_to(repo_root) if repo_root in mmd_path.parents else mmd_path
+            artifact_sections.append(
+                '<figure class="fig">'
+                f'<pre class="mermaid">{_escape(src)}</pre>'
+                f'<figcaption>{_escape(str(rel))} '
+                '<details><summary>show source</summary>'
+                f'<pre><code>{_escape(src)}</code></pre></details>'
+                '</figcaption></figure>'
+            )
+
+    # Fall back: still glob output_dir for any .mmd dropped there
     for mmd_path in sorted(output_dir.glob("*.mmd")):
+        if mmd_path in seen_mmd:
+            continue
+        seen_mmd.add(mmd_path)
         try:
             src = mmd_path.read_text(encoding="utf-8")
         except Exception:
             continue
         artifact_sections.append(
-            f'<figure class="fig"><pre><code>{_escape(src)}</code></pre>'
-            f'<figcaption>{mmd_path.name} (Mermaid source — render externally)</figcaption></figure>'
+            '<figure class="fig">'
+            f'<pre class="mermaid">{_escape(src)}</pre>'
+            f'<figcaption>{mmd_path.name}</figcaption></figure>'
         )
 
     if not artifact_sections:
         warnings.append(
-            "gen-arch-recommendation: no sibling svg/mmd artifacts found in outputDir; "
-            "html will lack embedded figures"
+            "gen-arch-recommendation: no sibling svg/mmd artifacts found in outputDir "
+            "or in cited moduleReferences dirs; html will lack embedded figures"
         )
 
     module_rows = "\n".join(
@@ -172,8 +223,15 @@ def _render_html(
   </table>
 
   <h2>Embedded figures</h2>
-  {''.join(artifact_sections) if artifact_sections else '<p><em>No sibling artifacts found in outputDir.</em></p>'}
+  {''.join(artifact_sections) if artifact_sections else '<p><em>No sibling artifacts found in outputDir or referenced module dirs.</em></p>'}
 </div>
+<!-- Mermaid renderer (loaded from CDN; offline viewers see source via <pre>). -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {{
+    window.mermaid.initialize({{ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' }});
+  }}
+</script>
 </body>
 </html>
 """

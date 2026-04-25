@@ -25,6 +25,10 @@
   ul { padding-left: 1.25rem; }
   .tag { display: inline-block; background: #F18F01; color: #0B2C29;
          padding: .1rem .45rem; border-radius: 2px; font-size: .75rem; font-weight: 700; }
+  .mermaid { background: #ffffff; padding: 1rem; margin: 0; overflow: auto;
+             font-family: Consolas, 'Courier New', monospace; }
+  details > summary { cursor: pointer; font-size: .8rem; color: #5998C5;
+                      margin-top: .35rem; user-select: none; }
 </style>
 </head>
 <body>
@@ -91,7 +95,1904 @@ D-04: Vercel removes ops surface entirely (PC.1) and provides Next.js-native str
   </table>
 
   <h2>Embedded figures</h2>
-  <p><em>No sibling artifacts found in outputDir.</em></p>
+  <figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'lineColor': '#333333', 'primaryColor': '#ffffff', 'primaryTextColor': '#000000', 'fontSize': '14px' }, 'flowchart': { 'rankSpacing': 70, 'nodeSpacing': 25, 'curve': 'basis' }}}%%
+graph TD
+    %% === CENTER: The System (single node only — Rule R2) ===
+    subgraph boundary ["SYSTEM BOUNDARY"]
+        System["&lt;b&gt;THE SYSTEM&lt;/b&gt;"]
+    end
+
+    %% === EXTERNAL ENTITIES (16 — outside boundary, Rule R5) ===
+
+    %% Primary human actors
+    Founders["FOUNDERS"]
+    PMs["PRODUCT MANAGERS"]
+    Engineers["ENGINEERING TEAMS"]
+    Admins["TEAM ADMINS"]
+
+    %% Upstream data sources
+    ProductIdeas["PRODUCT IDEAS"]
+    ExistingCode["EXISTING CODEBASES"]
+    LiveMetrics["LIVE PERFORMANCE METRICS"]
+    DocsSources["DOCUMENTATION SOURCES"]
+
+    %% External systems + regulatory
+    LLMs["LLM PROVIDERS"]
+    Observability["OBSERVABILITY TOOLS"]
+    Compliance["COMPLIANCE FRAMEWORKS"]
+    Cloud["CLOUD PROVIDERS"]
+
+    %% Downstream consumers
+    IDE["IDE / CLI CLIENTS"]
+    VCS["VERSION CONTROL"]
+    CICD["CI/CD SYSTEMS"]
+    Identity["IDENTITY PROVIDERS"]
+
+    %% === INTERACTIONS (lowercase verb-phrases, comma-separated) ===
+
+    Founders --&gt;|"submits ideas, approves specs, initiates builds"| System
+    System --&gt;|"delivers specs, build roadmaps, progress dashboards"| Founders
+
+    PMs --&gt;|"reviews specs, coordinates teams, prioritizes features"| System
+    System --&gt;|"surfaces feature recommendations, audit trails, coordination signals"| PMs
+
+    Engineers --&gt;|"ingests specs, runs cli commands, connects existing systems"| System
+    System --&gt;|"emits specs, cli commands, tech-stack rationale"| Engineers
+
+    Admins --&gt;|"provisions orgs, manages seats, configures policies"| System
+    System --&gt;|"returns billing events, seat reports, policy acks"| Admins
+
+    ProductIdeas --&gt;|"provides one-sentence prompts, refined concepts"| System
+    ExistingCode --&gt;|"exposes source, dependencies, structure"| System
+    LiveMetrics --&gt;|"streams availability, throughput, latency"| System
+    DocsSources --&gt;|"provides vendor specs, rfcs, standards"| System
+
+    System --&gt;|"queries llms"| LLMs
+    LLMs --&gt;|"serves completions, embeddings, tool calls"| System
+
+    System --&gt;|"queries traces, logs, metrics"| Observability
+    Observability --&gt;|"serves telemetry, alerts, dashboards"| System
+
+    Compliance --&gt;|"provides soc2, hipaa, gdpr, pci-dss rules"| System
+    System --&gt;|"emits compliance evidence, audit trails"| Compliance
+
+    Cloud --&gt;|"exposes availability zones, pricing, service catalogs"| System
+
+    System --&gt;|"delivers cli commands, mcp tools, skill exports"| IDE
+    IDE --&gt;|"submits tool invocations, session context"| System
+
+    System --&gt;|"writes spec artifacts, commits, pr descriptions"| VCS
+    VCS --&gt;|"serves source trees, pr events, branch metadata"| System
+
+    System --&gt;|"publishes specs, gates, acceptance criteria"| CICD
+
+    Identity --&gt;|"authenticates users, issues tokens"| System
+
+    classDef system fill:#1a1a2e,stroke:#16213e,stroke-width:3px,color:#ffffff
+    classDef boundary fill:#f0f4f8,stroke:#1a1a2e,stroke-width:3px,stroke-dasharray:10 5
+    class System system
+    class boundary boundary
+</pre><figcaption>system-design/kb-upgrade-v2/module-1-defining-scope/context_diagram.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'lineColor': '#333333', 'primaryColor': '#ffffff', 'primaryTextColor': '#000000', 'fontSize': '14px' }, 'flowchart': { 'rankSpacing': 70, 'nodeSpacing': 25, 'curve': 'basis' }}}%%
+graph TD
+    %% === CENTER: The System (single node only — Rule R2) ===
+    subgraph boundary ["SYSTEM BOUNDARY"]
+        System["&lt;b&gt;THE SYSTEM&lt;/b&gt;"]
+    end
+
+    %% === EXTERNAL ENTITIES (16 — outside boundary, Rule R5) ===
+
+    %% Primary human actors
+    Founders["FOUNDERS"]
+    PMs["PRODUCT MANAGERS"]
+    Engineers["ENGINEERING TEAMS"]
+    Admins["TEAM ADMINS"]
+
+    %% Upstream data sources
+    ProductIdeas["PRODUCT IDEAS"]
+    ExistingCode["EXISTING CODEBASES"]
+    LiveMetrics["LIVE PERFORMANCE METRICS"]
+    DocsSources["DOCUMENTATION SOURCES"]
+
+    %% External systems + regulatory
+    LLMs["LLM PROVIDERS"]
+    Observability["OBSERVABILITY TOOLS"]
+    Compliance["COMPLIANCE FRAMEWORKS"]
+    Cloud["CLOUD PROVIDERS"]
+
+    %% Downstream consumers
+    IDE["IDE / CLI CLIENTS"]
+    VCS["VERSION CONTROL"]
+    CICD["CI/CD SYSTEMS"]
+    Identity["IDENTITY PROVIDERS"]
+
+    %% === INTERACTIONS (lowercase verb-phrases, comma-separated) ===
+
+    Founders --&gt;|"submits ideas, approves specs, initiates builds"| System
+    System --&gt;|"delivers specs, build roadmaps, progress dashboards"| Founders
+
+    PMs --&gt;|"reviews specs, coordinates teams, prioritizes features"| System
+    System --&gt;|"surfaces feature recommendations, audit trails, coordination signals"| PMs
+
+    Engineers --&gt;|"ingests specs, runs cli commands, connects existing systems"| System
+    System --&gt;|"emits specs, cli commands, tech-stack rationale"| Engineers
+
+    Admins --&gt;|"provisions orgs, manages seats, configures policies"| System
+    System --&gt;|"returns billing events, seat reports, policy acks"| Admins
+
+    ProductIdeas --&gt;|"provides one-sentence prompts, refined concepts"| System
+    ExistingCode --&gt;|"exposes source, dependencies, structure"| System
+    LiveMetrics --&gt;|"streams availability, throughput, latency"| System
+    DocsSources --&gt;|"provides vendor specs, rfcs, standards"| System
+
+    System --&gt;|"queries llms"| LLMs
+    LLMs --&gt;|"serves completions, embeddings, tool calls"| System
+
+    System --&gt;|"queries traces, logs, metrics"| Observability
+    Observability --&gt;|"serves telemetry, alerts, dashboards"| System
+
+    Compliance --&gt;|"provides soc2, hipaa, gdpr, pci-dss rules"| System
+    System --&gt;|"emits compliance evidence, audit trails"| Compliance
+
+    Cloud --&gt;|"exposes availability zones, pricing, service catalogs"| System
+
+    System --&gt;|"delivers cli commands, mcp tools, skill exports"| IDE
+    IDE --&gt;|"submits tool invocations, session context"| System
+
+    System --&gt;|"writes spec artifacts, commits, pr descriptions"| VCS
+    VCS --&gt;|"serves source trees, pr events, branch metadata"| System
+
+    System --&gt;|"publishes specs, gates, acceptance criteria"| CICD
+
+    Identity --&gt;|"authenticates users, issues tokens"| System
+
+    classDef system fill:#1a1a2e,stroke:#16213e,stroke-width:3px,color:#ffffff
+    classDef boundary fill:#f0f4f8,stroke:#1a1a2e,stroke-width:3px,stroke-dasharray:10 5
+    class System system
+    class boundary boundary
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 50, 'nodeSpacing': 20, 'curve': 'basis' }}}%%
+graph TD
+    Root["&lt;b&gt;ROOT NEED&lt;/b&gt;&lt;br/&gt;Turn one-sentence ideas or existing code&lt;br/&gt;into enterprise-grade specs &amp;amp; CLI commands&lt;br/&gt;— every tech-stack recommendation traces&lt;br/&gt;to availability, throughput, latency"]
+
+    %% === TOP-LEVEL BRANCHES ===
+    SpecGen["Spec Generation"]
+    CliGen["CLI Command Generation"]
+    TechStack["Tech-Stack Recommendation&lt;br/&gt;(Metric Traceback)"]
+    Feedback["Live Feedback Loop"]
+    Audit["Audit + Compliance"]
+    Integration["Integration Layer&lt;br/&gt;(Native / Non-Invasive)"]
+    Collab["Collaboration"]
+    IdentityAuth["Identity + Auth"]
+    CutScope["Cut from Scope&lt;br/&gt;(Parking Lot)"]
+
+    Root --&gt; SpecGen
+    Root --&gt; CliGen
+    Root --&gt; TechStack
+    Root --&gt; Feedback
+    Root --&gt; Audit
+    Root --&gt; Integration
+    Root --&gt; Collab
+    Root --&gt; IdentityAuth
+    Root -.-&gt; CutScope
+
+    %% === SPEC GENERATION ===
+    SG_Idea["From One-Sentence Idea"]
+    SG_Code["From Existing Codebase"]
+    SG_Templates["Spec Templates"]
+    SG_Ver["Spec Diff + Review UI"]
+    SpecGen --&gt; SG_Idea
+    SpecGen --&gt; SG_Code
+    SpecGen --&gt; SG_Templates
+    SpecGen --&gt; SG_Ver
+
+    I_Intake["Conversational intake agent"]:::atomic
+    I_Extract["Actor / UC / boundary extractor"]:::atomic
+    I_Validate["Fail-closed rule checker R1-R5"]:::atomic
+    SG_Idea --&gt; I_Intake
+    SG_Idea --&gt; I_Extract
+    SG_Idea --&gt; I_Validate
+
+    C_Clone["VCS connector (read-only clone)"]:::atomic
+    C_Parse["AST + dependency walker"]:::atomic
+    C_Infer["Boundary + actor inference from code"]:::atomic
+    SG_Code --&gt; C_Clone
+    SG_Code --&gt; C_Parse
+    SG_Code --&gt; C_Infer
+
+    T_PRD["PRD template"]:::atomic
+    T_OAS["OpenAPI template"]:::atomic
+    T_Infra["Infra-as-code template"]:::atomic
+    SG_Templates --&gt; T_PRD
+    SG_Templates --&gt; T_OAS
+    SG_Templates --&gt; T_Infra
+
+    V_Diff["Structural diff engine"]:::atomic
+    V_Review["Review + comment UI"]:::atomic
+    SG_Ver --&gt; V_Diff
+    SG_Ver --&gt; V_Review
+
+    %% === CLI GENERATION ===
+    Cli_Emit["Generator from spec"]:::atomic
+    Cli_Ctr["Command schemas"]:::atomic
+    Cli_Exp["SKILL.md + CLAUDE.md + MCP exports"]:::atomic
+    Cli_Q{"CLI emit latency target?"}:::question
+    CliGen --&gt; Cli_Emit
+    CliGen --&gt; Cli_Ctr
+    CliGen --&gt; Cli_Exp
+    CliGen --&gt; Cli_Q
+
+    %% === TECH-STACK ===
+    TS_Cat[("Tech registry with&lt;br/&gt;metric profiles")]:::known
+    TS_Match["NFR → tech mapper"]:::atomic
+    TS_Trace["Citation + rationale generator"]:::atomic
+    TS_Q{"How do we source&lt;br/&gt;availability baselines?"}:::question
+    TechStack --&gt; TS_Cat
+    TechStack --&gt; TS_Match
+    TechStack --&gt; TS_Trace
+    TechStack --&gt; TS_Q
+
+    %% === FEEDBACK LOOP ===
+    FB_Ing["Observability connectors&lt;br/&gt;(Datadog, Sentry, Grafana)"]:::atomic
+    FB_An["Drift + regression detector"]:::atomic
+    FB_Rec["Design-improvement generator"]:::atomic
+    FB_Prop["Feature-surfacing agent"]:::atomic
+    FB_Q{"What is real-time?&lt;br/&gt;Target latency budget?"}:::question
+    Feedback --&gt; FB_Ing
+    Feedback --&gt; FB_An
+    Feedback --&gt; FB_Rec
+    Feedback --&gt; FB_Prop
+    Feedback --&gt; FB_Q
+
+    %% === AUDIT ===
+    A_Trail["Append-only event log"]:::atomic
+    A_Exp["Evidence-pack exporter"]:::atomic
+    A_FW[("Compliance rule library&lt;br/&gt;SOC2, HIPAA, GDPR, PCI-DSS")]:::known
+    A_Q{"Which frameworks in v1?"}:::question
+    Audit --&gt; A_Trail
+    Audit --&gt; A_Exp
+    Audit --&gt; A_FW
+    Audit --&gt; A_Q
+
+    %% === INTEGRATION ===
+    In_VCS["GitHub / GitLab / Bitbucket connectors"]:::atomic
+    In_IDE["Claude Code / Cursor / CLI adapters"]:::atomic
+    In_LLM["Anthropic / OpenAI / local adapters"]:::atomic
+    In_Obs["Observability adapters"]:::atomic
+    In_CICD["GH Actions / CircleCI / Jenkins hooks"]:::atomic
+    In_Q{"Max overhead on&lt;br/&gt;observed systems?"}:::question
+    Integration --&gt; In_VCS
+    Integration --&gt; In_IDE
+    Integration --&gt; In_LLM
+    Integration --&gt; In_Obs
+    Integration --&gt; In_CICD
+    Integration --&gt; In_Q
+
+    %% === COLLABORATION ===
+    Col_Rev["Spec review UI + comments"]:::atomic
+    Col_Team["Org + workspace model"]:::atomic
+    Col_On["New-member onboarding flow"]:::atomic
+    Col_Coord["Task tracking against spec"]:::atomic
+    Collab --&gt; Col_Rev
+    Collab --&gt; Col_Team
+    Collab --&gt; Col_On
+    Collab --&gt; Col_Coord
+
+    %% === IDENTITY + AUTH ===
+    ID_SSO["OAuth / OIDC / SAML"]:::atomic
+    ID_RBAC["Role model"]:::atomic
+    ID_Keys["API key issuance + rotation"]:::atomic
+    IdentityAuth --&gt; ID_SSO
+    IdentityAuth --&gt; ID_RBAC
+    IdentityAuth --&gt; ID_Keys
+
+    %% === CUT FROM SCOPE (dashed branches) ===
+    CS_MT["Multi-tenant Billing"]:::cut
+    CS_MP["Spec Template Marketplace"]:::cut
+    CS_OP["On-Prem / Air-Gapped"]:::cut
+    CS_FT["Custom LLM Fine-Tuning"]:::cut
+    CS_HS["Expert Advisor Marketplace"]:::cut
+    CutScope -.-&gt; CS_MT
+    CutScope -.-&gt; CS_MP
+    CutScope -.-&gt; CS_OP
+    CutScope -.-&gt; CS_FT
+    CutScope -.-&gt; CS_HS
+
+    classDef atomic fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef question fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    classDef known fill:#e3f2fd,stroke:#1565c0,stroke-width:1px
+    classDef cut fill:#fafafa,stroke:#9e9e9e,stroke-dasharray:5 3,color:#9e9e9e
+</pre><figcaption>system-design/kb-upgrade-v2/module-1-defining-scope/scope_tree.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 50, 'nodeSpacing': 20, 'curve': 'basis' }}}%%
+graph TD
+    Root["&lt;b&gt;ROOT NEED&lt;/b&gt;&lt;br/&gt;Turn one-sentence ideas or existing code&lt;br/&gt;into enterprise-grade specs &amp;amp; CLI commands&lt;br/&gt;— every tech-stack recommendation traces&lt;br/&gt;to availability, throughput, latency"]
+
+    %% === TOP-LEVEL BRANCHES ===
+    SpecGen["Spec Generation"]
+    CliGen["CLI Command Generation"]
+    TechStack["Tech-Stack Recommendation&lt;br/&gt;(Metric Traceback)"]
+    Feedback["Live Feedback Loop"]
+    Audit["Audit + Compliance"]
+    Integration["Integration Layer&lt;br/&gt;(Native / Non-Invasive)"]
+    Collab["Collaboration"]
+    IdentityAuth["Identity + Auth"]
+    CutScope["Cut from Scope&lt;br/&gt;(Parking Lot)"]
+
+    Root --&gt; SpecGen
+    Root --&gt; CliGen
+    Root --&gt; TechStack
+    Root --&gt; Feedback
+    Root --&gt; Audit
+    Root --&gt; Integration
+    Root --&gt; Collab
+    Root --&gt; IdentityAuth
+    Root -.-&gt; CutScope
+
+    %% === SPEC GENERATION ===
+    SG_Idea["From One-Sentence Idea"]
+    SG_Code["From Existing Codebase"]
+    SG_Templates["Spec Templates"]
+    SG_Ver["Spec Diff + Review UI"]
+    SpecGen --&gt; SG_Idea
+    SpecGen --&gt; SG_Code
+    SpecGen --&gt; SG_Templates
+    SpecGen --&gt; SG_Ver
+
+    I_Intake["Conversational intake agent"]:::atomic
+    I_Extract["Actor / UC / boundary extractor"]:::atomic
+    I_Validate["Fail-closed rule checker R1-R5"]:::atomic
+    SG_Idea --&gt; I_Intake
+    SG_Idea --&gt; I_Extract
+    SG_Idea --&gt; I_Validate
+
+    C_Clone["VCS connector (read-only clone)"]:::atomic
+    C_Parse["AST + dependency walker"]:::atomic
+    C_Infer["Boundary + actor inference from code"]:::atomic
+    SG_Code --&gt; C_Clone
+    SG_Code --&gt; C_Parse
+    SG_Code --&gt; C_Infer
+
+    T_PRD["PRD template"]:::atomic
+    T_OAS["OpenAPI template"]:::atomic
+    T_Infra["Infra-as-code template"]:::atomic
+    SG_Templates --&gt; T_PRD
+    SG_Templates --&gt; T_OAS
+    SG_Templates --&gt; T_Infra
+
+    V_Diff["Structural diff engine"]:::atomic
+    V_Review["Review + comment UI"]:::atomic
+    SG_Ver --&gt; V_Diff
+    SG_Ver --&gt; V_Review
+
+    %% === CLI GENERATION ===
+    Cli_Emit["Generator from spec"]:::atomic
+    Cli_Ctr["Command schemas"]:::atomic
+    Cli_Exp["SKILL.md + CLAUDE.md + MCP exports"]:::atomic
+    Cli_Q{"CLI emit latency target?"}:::question
+    CliGen --&gt; Cli_Emit
+    CliGen --&gt; Cli_Ctr
+    CliGen --&gt; Cli_Exp
+    CliGen --&gt; Cli_Q
+
+    %% === TECH-STACK ===
+    TS_Cat[("Tech registry with&lt;br/&gt;metric profiles")]:::known
+    TS_Match["NFR → tech mapper"]:::atomic
+    TS_Trace["Citation + rationale generator"]:::atomic
+    TS_Q{"How do we source&lt;br/&gt;availability baselines?"}:::question
+    TechStack --&gt; TS_Cat
+    TechStack --&gt; TS_Match
+    TechStack --&gt; TS_Trace
+    TechStack --&gt; TS_Q
+
+    %% === FEEDBACK LOOP ===
+    FB_Ing["Observability connectors&lt;br/&gt;(Datadog, Sentry, Grafana)"]:::atomic
+    FB_An["Drift + regression detector"]:::atomic
+    FB_Rec["Design-improvement generator"]:::atomic
+    FB_Prop["Feature-surfacing agent"]:::atomic
+    FB_Q{"What is real-time?&lt;br/&gt;Target latency budget?"}:::question
+    Feedback --&gt; FB_Ing
+    Feedback --&gt; FB_An
+    Feedback --&gt; FB_Rec
+    Feedback --&gt; FB_Prop
+    Feedback --&gt; FB_Q
+
+    %% === AUDIT ===
+    A_Trail["Append-only event log"]:::atomic
+    A_Exp["Evidence-pack exporter"]:::atomic
+    A_FW[("Compliance rule library&lt;br/&gt;SOC2, HIPAA, GDPR, PCI-DSS")]:::known
+    A_Q{"Which frameworks in v1?"}:::question
+    Audit --&gt; A_Trail
+    Audit --&gt; A_Exp
+    Audit --&gt; A_FW
+    Audit --&gt; A_Q
+
+    %% === INTEGRATION ===
+    In_VCS["GitHub / GitLab / Bitbucket connectors"]:::atomic
+    In_IDE["Claude Code / Cursor / CLI adapters"]:::atomic
+    In_LLM["Anthropic / OpenAI / local adapters"]:::atomic
+    In_Obs["Observability adapters"]:::atomic
+    In_CICD["GH Actions / CircleCI / Jenkins hooks"]:::atomic
+    In_Q{"Max overhead on&lt;br/&gt;observed systems?"}:::question
+    Integration --&gt; In_VCS
+    Integration --&gt; In_IDE
+    Integration --&gt; In_LLM
+    Integration --&gt; In_Obs
+    Integration --&gt; In_CICD
+    Integration --&gt; In_Q
+
+    %% === COLLABORATION ===
+    Col_Rev["Spec review UI + comments"]:::atomic
+    Col_Team["Org + workspace model"]:::atomic
+    Col_On["New-member onboarding flow"]:::atomic
+    Col_Coord["Task tracking against spec"]:::atomic
+    Collab --&gt; Col_Rev
+    Collab --&gt; Col_Team
+    Collab --&gt; Col_On
+    Collab --&gt; Col_Coord
+
+    %% === IDENTITY + AUTH ===
+    ID_SSO["OAuth / OIDC / SAML"]:::atomic
+    ID_RBAC["Role model"]:::atomic
+    ID_Keys["API key issuance + rotation"]:::atomic
+    IdentityAuth --&gt; ID_SSO
+    IdentityAuth --&gt; ID_RBAC
+    IdentityAuth --&gt; ID_Keys
+
+    %% === CUT FROM SCOPE (dashed branches) ===
+    CS_MT["Multi-tenant Billing"]:::cut
+    CS_MP["Spec Template Marketplace"]:::cut
+    CS_OP["On-Prem / Air-Gapped"]:::cut
+    CS_FT["Custom LLM Fine-Tuning"]:::cut
+    CS_HS["Expert Advisor Marketplace"]:::cut
+    CutScope -.-&gt; CS_MT
+    CutScope -.-&gt; CS_MP
+    CutScope -.-&gt; CS_OP
+    CutScope -.-&gt; CS_FT
+    CutScope -.-&gt; CS_HS
+
+    classDef atomic fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef question fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    classDef known fill:#e3f2fd,stroke:#1565c0,stroke-width:1px
+    classDef cut fill:#fafafa,stroke:#9e9e9e,stroke-dasharray:5 3,color:#9e9e9e
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'lineColor': '#333333', 'primaryColor': '#ffffff', 'primaryTextColor': '#000000', 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 60, 'nodeSpacing': 18, 'curve': 'basis' }}}%%
+graph LR
+    %% === THE SYSTEM (use cases INSIDE boundary) ===
+    subgraph boundary ["THE SYSTEM"]
+        UC01["UC01: Generate Spec&lt;br/&gt;from One-Sentence Idea"]
+        UC02["UC02: Generate Spec&lt;br/&gt;from Existing Codebase"]
+        UC03["UC03: Review&lt;br/&gt;Generated Spec"]
+        UC04["UC04: Emit CLI&lt;br/&gt;Commands from Spec"]
+        UC05["UC05: Ingest Live&lt;br/&gt;Performance Metrics"]
+        UC06["UC06: Recommend&lt;br/&gt;Design Improvements"]
+        UC07["UC07: Proactively&lt;br/&gt;Surface Features"]
+        UC08["UC08: Trace Tech-Stack&lt;br/&gt;to Metric"]
+        UC09["UC09: Audit Spec Trail&lt;br/&gt;for Compliance"]
+        UC10["UC10: Coordinate Team&lt;br/&gt;Work Against Spec"]
+        UC11["UC11: Connect Existing&lt;br/&gt;Customer System"]
+        UC12["UC12: Export Spec to&lt;br/&gt;Downstream Tools"]
+        UC13["UC13: Configure&lt;br/&gt;LLM Provider"]
+        UC14["UC14: Authenticate&lt;br/&gt;via Identity Provider"]
+        UC15["UC15: Onboard New&lt;br/&gt;Team Member"]
+    end
+
+    %% === Primary human actors (LEFT of boundary) ===
+    Founders["FOUNDERS"]
+    PMs["PRODUCT MANAGERS"]
+    Engineers["ENGINEERING TEAMS"]
+    Admins["TEAM ADMINS"]
+
+    %% === External-system actors (RIGHT of boundary) ===
+    LLMs["LLM PROVIDERS"]
+    Observability["OBSERVABILITY TOOLS"]
+    VCS["VERSION CONTROL"]
+    Identity["IDENTITY PROVIDERS"]
+
+    %% === Actor → Use Case associations (solid lines) ===
+    Founders --&gt; UC01
+    Founders --&gt; UC14
+    PMs --&gt; UC03
+    PMs --&gt; UC07
+    PMs --&gt; UC09
+    PMs --&gt; UC10
+    Engineers --&gt; UC02
+    Engineers --&gt; UC04
+    Engineers --&gt; UC06
+    Engineers --&gt; UC08
+    Engineers --&gt; UC11
+    Engineers --&gt; UC12
+    Admins --&gt; UC13
+    Admins --&gt; UC15
+
+    UC01 --&gt; LLMs
+    UC02 --&gt; LLMs
+    UC02 --&gt; VCS
+    UC05 --&gt; Observability
+    UC12 --&gt; VCS
+    UC14 --&gt; Identity
+
+    %% === Include / Extend relationships (dashed) ===
+    UC01 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC08
+    UC02 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC08
+    UC02 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC11
+    UC04 -.-&gt;|"&lt;&lt;extend&gt;&gt;"| UC01
+    UC06 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC05
+    UC07 -.-&gt;|"&lt;&lt;extend&gt;&gt;"| UC06
+    UC09 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC10
+    UC03 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC14
+    UC15 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC13
+    UC15 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC14
+
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:2px
+    classDef uc fill:#f5f5f5,stroke:#000000,stroke-width:1px
+    class Founders,PMs,Engineers,Admins,LLMs,Observability,VCS,Identity actor
+    class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13,UC14,UC15 uc
+</pre><figcaption>system-design/kb-upgrade-v2/module-1-defining-scope/use_case_diagram.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'lineColor': '#333333', 'primaryColor': '#ffffff', 'primaryTextColor': '#000000', 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 60, 'nodeSpacing': 18, 'curve': 'basis' }}}%%
+graph LR
+    %% === THE SYSTEM (use cases INSIDE boundary) ===
+    subgraph boundary ["THE SYSTEM"]
+        UC01["UC01: Generate Spec&lt;br/&gt;from One-Sentence Idea"]
+        UC02["UC02: Generate Spec&lt;br/&gt;from Existing Codebase"]
+        UC03["UC03: Review&lt;br/&gt;Generated Spec"]
+        UC04["UC04: Emit CLI&lt;br/&gt;Commands from Spec"]
+        UC05["UC05: Ingest Live&lt;br/&gt;Performance Metrics"]
+        UC06["UC06: Recommend&lt;br/&gt;Design Improvements"]
+        UC07["UC07: Proactively&lt;br/&gt;Surface Features"]
+        UC08["UC08: Trace Tech-Stack&lt;br/&gt;to Metric"]
+        UC09["UC09: Audit Spec Trail&lt;br/&gt;for Compliance"]
+        UC10["UC10: Coordinate Team&lt;br/&gt;Work Against Spec"]
+        UC11["UC11: Connect Existing&lt;br/&gt;Customer System"]
+        UC12["UC12: Export Spec to&lt;br/&gt;Downstream Tools"]
+        UC13["UC13: Configure&lt;br/&gt;LLM Provider"]
+        UC14["UC14: Authenticate&lt;br/&gt;via Identity Provider"]
+        UC15["UC15: Onboard New&lt;br/&gt;Team Member"]
+    end
+
+    %% === Primary human actors (LEFT of boundary) ===
+    Founders["FOUNDERS"]
+    PMs["PRODUCT MANAGERS"]
+    Engineers["ENGINEERING TEAMS"]
+    Admins["TEAM ADMINS"]
+
+    %% === External-system actors (RIGHT of boundary) ===
+    LLMs["LLM PROVIDERS"]
+    Observability["OBSERVABILITY TOOLS"]
+    VCS["VERSION CONTROL"]
+    Identity["IDENTITY PROVIDERS"]
+
+    %% === Actor → Use Case associations (solid lines) ===
+    Founders --&gt; UC01
+    Founders --&gt; UC14
+    PMs --&gt; UC03
+    PMs --&gt; UC07
+    PMs --&gt; UC09
+    PMs --&gt; UC10
+    Engineers --&gt; UC02
+    Engineers --&gt; UC04
+    Engineers --&gt; UC06
+    Engineers --&gt; UC08
+    Engineers --&gt; UC11
+    Engineers --&gt; UC12
+    Admins --&gt; UC13
+    Admins --&gt; UC15
+
+    UC01 --&gt; LLMs
+    UC02 --&gt; LLMs
+    UC02 --&gt; VCS
+    UC05 --&gt; Observability
+    UC12 --&gt; VCS
+    UC14 --&gt; Identity
+
+    %% === Include / Extend relationships (dashed) ===
+    UC01 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC08
+    UC02 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC08
+    UC02 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC11
+    UC04 -.-&gt;|"&lt;&lt;extend&gt;&gt;"| UC01
+    UC06 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC05
+    UC07 -.-&gt;|"&lt;&lt;extend&gt;&gt;"| UC06
+    UC09 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC10
+    UC03 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC14
+    UC15 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC13
+    UC15 -.-&gt;|"&lt;&lt;include&gt;&gt;"| UC14
+
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:2px
+    classDef uc fill:#f5f5f5,stroke:#000000,stroke-width:1px
+    class Founders,PMs,Engineers,Admins,LLMs,Observability,VCS,Identity actor
+    class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13,UC14,UC15 uc
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    %% === F.2 : Generate Spec (UC01) ===
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F3Ref["[F.3 Ref]&lt;br/&gt;Review &amp;&lt;br/&gt;Approve Spec"]:::ref
+    F7Ref["[F.7 Ref]&lt;br/&gt;Trace to&lt;br/&gt;Metrics"]:::ref
+
+    F21["&lt;b&gt;F.2.1&lt;/b&gt;&lt;br/&gt;Persist Idea&lt;br/&gt;Prompt"]:::green
+    F22["&lt;b&gt;F.2.2&lt;/b&gt;&lt;br/&gt;Initiate Intake&lt;br/&gt;Session"]:::green
+    F23["&lt;b&gt;F.2.3&lt;/b&gt;&lt;br/&gt;Present Intake&lt;br/&gt;Question"]:::yellow
+    F24["&lt;b&gt;F.2.4&lt;/b&gt;&lt;br/&gt;Classify Idea&lt;br/&gt;Domain"]:::yellow
+    F25["&lt;b&gt;F.2.5&lt;/b&gt;&lt;br/&gt;Assemble Scope&lt;br/&gt;Outline"]:::green
+    F26["&lt;b&gt;F.2.6&lt;/b&gt;&lt;br/&gt;Draft Tech-Stack&lt;br/&gt;Recommendation"]:::yellow
+    F27["&lt;b&gt;F.2.7&lt;/b&gt;&lt;br/&gt;Invoke Metric&lt;br/&gt;Traceback"]:::yellow
+    F28["&lt;b&gt;F.2.8&lt;/b&gt;&lt;br/&gt;Assemble Spec&lt;br/&gt;Bundle"]:::green
+    F29["&lt;b&gt;F.2.9&lt;/b&gt;&lt;br/&gt;Validate Spec&lt;br/&gt;Schema"]:::green
+    F210["&lt;b&gt;F.2.10&lt;/b&gt;&lt;br/&gt;Emit Structured&lt;br/&gt;Error"]:::green
+    F211["&lt;b&gt;F.2.11&lt;/b&gt;&lt;br/&gt;Enforce Spec&lt;br/&gt;Timeout"]:::yellow
+    F212["&lt;b&gt;F.2.12&lt;/b&gt;&lt;br/&gt;Persist Spec&lt;br/&gt;Versioned"]:::green
+    F213["&lt;b&gt;F.2.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F214["&lt;b&gt;F.2.14&lt;/b&gt;&lt;br/&gt;Notify Reviewers"]:::green
+    F215["&lt;b&gt;F.2.15&lt;/b&gt;&lt;br/&gt;Return Spec&lt;br/&gt;Location"]:::green
+
+    IT2o((IT)):::gate
+    IT2c((IT)):::gate
+    AND2o((AND)):::gate
+    AND2c((AND)):::gate
+    OR2o((OR)):::gate
+    OR2c((OR)):::gate
+
+    D1(["Founder Answers"]):::data
+    D2(["LLM Completions"]):::data
+
+    D1 -.-&gt; F23
+    D2 -.-&gt; F24
+    D2 -.-&gt; F26
+
+    F1Ref --&gt; F21
+    F21 --&gt; F22 --&gt; IT2o
+    IT2o --&gt;|"≤ FOUNDER_INTAKE_RESPONSE_BUDGET_MS (2000 ms, est.)"| F23
+    F23 --&gt; F24 --&gt; IT2c
+    IT2c -.-&gt;|"PRECEDES · Until ≥ INTAKE_COMPLETENESS_THRESHOLD (0.85, est.)"| IT2o
+    IT2c --&gt;|"threshold met"| F25
+    F25 --&gt; AND2o
+    AND2o --&gt; F26 --&gt; AND2c
+    AND2o --&gt; F27 --&gt; F7Ref --&gt; AND2c
+    AND2c --&gt; F28 --&gt; F29 --&gt; OR2o
+    OR2o --&gt;|"valid"| F211
+    OR2o --&gt;|"invalid"| F210
+    F210 --&gt; OR2c
+    F211 --&gt;|"≤ SPEC_GENERATION_TIMEOUT_SEC (300s, est.)"| OR2c
+    OR2c --&gt; F212 --&gt; F213 --&gt; F214 --&gt; F215
+    F215 -.-&gt;|"PRECEDES · handoff to review"| F3Ref
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F2_generate_spec.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    %% === F.2 : Generate Spec (UC01) ===
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F3Ref["[F.3 Ref]&lt;br/&gt;Review &amp;&lt;br/&gt;Approve Spec"]:::ref
+    F7Ref["[F.7 Ref]&lt;br/&gt;Trace to&lt;br/&gt;Metrics"]:::ref
+
+    F21["&lt;b&gt;F.2.1&lt;/b&gt;&lt;br/&gt;Persist Idea&lt;br/&gt;Prompt"]:::green
+    F22["&lt;b&gt;F.2.2&lt;/b&gt;&lt;br/&gt;Initiate Intake&lt;br/&gt;Session"]:::green
+    F23["&lt;b&gt;F.2.3&lt;/b&gt;&lt;br/&gt;Present Intake&lt;br/&gt;Question"]:::yellow
+    F24["&lt;b&gt;F.2.4&lt;/b&gt;&lt;br/&gt;Classify Idea&lt;br/&gt;Domain"]:::yellow
+    F25["&lt;b&gt;F.2.5&lt;/b&gt;&lt;br/&gt;Assemble Scope&lt;br/&gt;Outline"]:::green
+    F26["&lt;b&gt;F.2.6&lt;/b&gt;&lt;br/&gt;Draft Tech-Stack&lt;br/&gt;Recommendation"]:::yellow
+    F27["&lt;b&gt;F.2.7&lt;/b&gt;&lt;br/&gt;Invoke Metric&lt;br/&gt;Traceback"]:::yellow
+    F28["&lt;b&gt;F.2.8&lt;/b&gt;&lt;br/&gt;Assemble Spec&lt;br/&gt;Bundle"]:::green
+    F29["&lt;b&gt;F.2.9&lt;/b&gt;&lt;br/&gt;Validate Spec&lt;br/&gt;Schema"]:::green
+    F210["&lt;b&gt;F.2.10&lt;/b&gt;&lt;br/&gt;Emit Structured&lt;br/&gt;Error"]:::green
+    F211["&lt;b&gt;F.2.11&lt;/b&gt;&lt;br/&gt;Enforce Spec&lt;br/&gt;Timeout"]:::yellow
+    F212["&lt;b&gt;F.2.12&lt;/b&gt;&lt;br/&gt;Persist Spec&lt;br/&gt;Versioned"]:::green
+    F213["&lt;b&gt;F.2.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F214["&lt;b&gt;F.2.14&lt;/b&gt;&lt;br/&gt;Notify Reviewers"]:::green
+    F215["&lt;b&gt;F.2.15&lt;/b&gt;&lt;br/&gt;Return Spec&lt;br/&gt;Location"]:::green
+
+    IT2o((IT)):::gate
+    IT2c((IT)):::gate
+    AND2o((AND)):::gate
+    AND2c((AND)):::gate
+    OR2o((OR)):::gate
+    OR2c((OR)):::gate
+
+    D1(["Founder Answers"]):::data
+    D2(["LLM Completions"]):::data
+
+    D1 -.-&gt; F23
+    D2 -.-&gt; F24
+    D2 -.-&gt; F26
+
+    F1Ref --&gt; F21
+    F21 --&gt; F22 --&gt; IT2o
+    IT2o --&gt;|"≤ FOUNDER_INTAKE_RESPONSE_BUDGET_MS (2000 ms, est.)"| F23
+    F23 --&gt; F24 --&gt; IT2c
+    IT2c -.-&gt;|"PRECEDES · Until ≥ INTAKE_COMPLETENESS_THRESHOLD (0.85, est.)"| IT2o
+    IT2c --&gt;|"threshold met"| F25
+    F25 --&gt; AND2o
+    AND2o --&gt; F26 --&gt; AND2c
+    AND2o --&gt; F27 --&gt; F7Ref --&gt; AND2c
+    AND2c --&gt; F28 --&gt; F29 --&gt; OR2o
+    OR2o --&gt;|"valid"| F211
+    OR2o --&gt;|"invalid"| F210
+    F210 --&gt; OR2c
+    F211 --&gt;|"≤ SPEC_GENERATION_TIMEOUT_SEC (300s, est.)"| OR2c
+    OR2c --&gt; F212 --&gt; F213 --&gt; F214 --&gt; F215
+    F215 -.-&gt;|"PRECEDES · handoff to review"| F3Ref
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F4Ref["[F.4 Ref]&lt;br/&gt;Emit CLI&lt;br/&gt;Bundle"]:::ref
+
+    F31["&lt;b&gt;F.3.1&lt;/b&gt;&lt;br/&gt;Enumerate&lt;br/&gt;Review Queue"]:::green
+    F32["&lt;b&gt;F.3.2&lt;/b&gt;&lt;br/&gt;Render Review&lt;br/&gt;Queue"]:::yellow
+    F33["&lt;b&gt;F.3.3&lt;/b&gt;&lt;br/&gt;Verify Review&lt;br/&gt;Permission"]:::green
+    F34["&lt;b&gt;F.3.4&lt;/b&gt;&lt;br/&gt;Load Spec&lt;br/&gt;Bundle"]:::green
+    F35["&lt;b&gt;F.3.5&lt;/b&gt;&lt;br/&gt;Render Spec&lt;br/&gt;View"]:::yellow
+    F36["&lt;b&gt;F.3.6&lt;/b&gt;&lt;br/&gt;Validate Revision&lt;br/&gt;Comment"]:::green
+    F37["&lt;b&gt;F.3.7&lt;/b&gt;&lt;br/&gt;Persist Review&lt;br/&gt;Comment"]:::green
+    F38["&lt;b&gt;F.3.8&lt;/b&gt;&lt;br/&gt;Transition Spec&lt;br/&gt;State"]:::yellow
+    F39["&lt;b&gt;F.3.9&lt;/b&gt;&lt;br/&gt;Gate CLI Emission&lt;br/&gt;on Approval"]:::green
+    F310["&lt;b&gt;F.3.10&lt;/b&gt;&lt;br/&gt;Notify Engineers&lt;br/&gt;of Approval"]:::green
+    F311["&lt;b&gt;F.3.11&lt;/b&gt;&lt;br/&gt;Notify Founder&lt;br/&gt;of Review"]:::green
+    F312["&lt;b&gt;F.3.12&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+
+    OR3o((OR)):::gate
+    OR3c((OR)):::gate
+
+    D1(["Spec Bundle&lt;br/&gt;from F.2"]):::data
+    D2(["Reviewer&lt;br/&gt;Comments"]):::data
+    D1 -.-&gt; F34
+    D2 -.-&gt; F36
+
+    F1Ref --&gt; F31
+    F31 --&gt;|"≤ REVIEW_QUEUE_LOAD_BUDGET_MS (800 ms, est.)"| F32 --&gt; F33 --&gt; F34
+    F34 --&gt;|"≤ SPEC_RENDER_BUDGET_MS (1500 ms, est.)"| F35 --&gt; F36 --&gt; F37
+    F37 --&gt;|"≤ STATE_TRANSITION_BUDGET_MS (500 ms, est.)"| F38 --&gt; OR3o
+    OR3o --&gt;|"approved"| F39 --&gt; F310 --&gt; OR3c
+    OR3o --&gt;|"rejected"| F311 --&gt; OR3c
+    OR3o --&gt;|"revisions_requested"| F311
+    OR3c --&gt; F312
+    F312 -.-&gt;|"PRECEDES · gated trigger to F.4"| F4Ref
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F3_review_spec.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F4Ref["[F.4 Ref]&lt;br/&gt;Emit CLI&lt;br/&gt;Bundle"]:::ref
+
+    F31["&lt;b&gt;F.3.1&lt;/b&gt;&lt;br/&gt;Enumerate&lt;br/&gt;Review Queue"]:::green
+    F32["&lt;b&gt;F.3.2&lt;/b&gt;&lt;br/&gt;Render Review&lt;br/&gt;Queue"]:::yellow
+    F33["&lt;b&gt;F.3.3&lt;/b&gt;&lt;br/&gt;Verify Review&lt;br/&gt;Permission"]:::green
+    F34["&lt;b&gt;F.3.4&lt;/b&gt;&lt;br/&gt;Load Spec&lt;br/&gt;Bundle"]:::green
+    F35["&lt;b&gt;F.3.5&lt;/b&gt;&lt;br/&gt;Render Spec&lt;br/&gt;View"]:::yellow
+    F36["&lt;b&gt;F.3.6&lt;/b&gt;&lt;br/&gt;Validate Revision&lt;br/&gt;Comment"]:::green
+    F37["&lt;b&gt;F.3.7&lt;/b&gt;&lt;br/&gt;Persist Review&lt;br/&gt;Comment"]:::green
+    F38["&lt;b&gt;F.3.8&lt;/b&gt;&lt;br/&gt;Transition Spec&lt;br/&gt;State"]:::yellow
+    F39["&lt;b&gt;F.3.9&lt;/b&gt;&lt;br/&gt;Gate CLI Emission&lt;br/&gt;on Approval"]:::green
+    F310["&lt;b&gt;F.3.10&lt;/b&gt;&lt;br/&gt;Notify Engineers&lt;br/&gt;of Approval"]:::green
+    F311["&lt;b&gt;F.3.11&lt;/b&gt;&lt;br/&gt;Notify Founder&lt;br/&gt;of Review"]:::green
+    F312["&lt;b&gt;F.3.12&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+
+    OR3o((OR)):::gate
+    OR3c((OR)):::gate
+
+    D1(["Spec Bundle&lt;br/&gt;from F.2"]):::data
+    D2(["Reviewer&lt;br/&gt;Comments"]):::data
+    D1 -.-&gt; F34
+    D2 -.-&gt; F36
+
+    F1Ref --&gt; F31
+    F31 --&gt;|"≤ REVIEW_QUEUE_LOAD_BUDGET_MS (800 ms, est.)"| F32 --&gt; F33 --&gt; F34
+    F34 --&gt;|"≤ SPEC_RENDER_BUDGET_MS (1500 ms, est.)"| F35 --&gt; F36 --&gt; F37
+    F37 --&gt;|"≤ STATE_TRANSITION_BUDGET_MS (500 ms, est.)"| F38 --&gt; OR3o
+    OR3o --&gt;|"approved"| F39 --&gt; F310 --&gt; OR3c
+    OR3o --&gt;|"rejected"| F311 --&gt; OR3c
+    OR3o --&gt;|"revisions_requested"| F311
+    OR3c --&gt; F312
+    F312 -.-&gt;|"PRECEDES · gated trigger to F.4"| F4Ref
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F3Ref["[F.3 Ref]&lt;br/&gt;Review &amp;&lt;br/&gt;Approve Spec"]:::ref
+
+    F41["&lt;b&gt;F.4.1&lt;/b&gt;&lt;br/&gt;Verify Spec&lt;br/&gt;Approved"]:::green
+    F42["&lt;b&gt;F.4.2&lt;/b&gt;&lt;br/&gt;Verify Emit&lt;br/&gt;Permission"]:::green
+    F43["&lt;b&gt;F.4.3&lt;/b&gt;&lt;br/&gt;Load Spec&lt;br/&gt;Bundle"]:::green
+    F44["&lt;b&gt;F.4.4&lt;/b&gt;&lt;br/&gt;Generate&lt;br/&gt;SKILL.md"]:::green
+    F45["&lt;b&gt;F.4.5&lt;/b&gt;&lt;br/&gt;Generate&lt;br/&gt;CLAUDE.md"]:::green
+    F46["&lt;b&gt;F.4.6&lt;/b&gt;&lt;br/&gt;Generate MCP&lt;br/&gt;Tool Definition"]:::green
+    F47["&lt;b&gt;F.4.7&lt;/b&gt;&lt;br/&gt;Package CLI&lt;br/&gt;Bundle"]:::green
+    F48["&lt;b&gt;F.4.8&lt;/b&gt;&lt;br/&gt;Sign CLI&lt;br/&gt;Bundle"]:::yellow
+    F49["&lt;b&gt;F.4.9&lt;/b&gt;&lt;br/&gt;Enforce CLI&lt;br/&gt;Timeout"]:::yellow
+    F410["&lt;b&gt;F.4.10&lt;/b&gt;&lt;br/&gt;Write Bundle&lt;br/&gt;to VCS"]:::green
+    F411["&lt;b&gt;F.4.11&lt;/b&gt;&lt;br/&gt;Deliver Bundle&lt;br/&gt;to Client"]:::green
+    F412["&lt;b&gt;F.4.12&lt;/b&gt;&lt;br/&gt;Require Receipt&lt;br/&gt;Token"]:::yellow
+    F413["&lt;b&gt;F.4.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F414["&lt;b&gt;F.4.14&lt;/b&gt;&lt;br/&gt;Return Bundle&lt;br/&gt;Location"]:::green
+
+    AND4o((AND)):::gate
+    AND4c((AND)):::gate
+    AND4bo((AND)):::gate
+    AND4bc((AND)):::gate
+
+    D1(["Approved&lt;br/&gt;Spec Bundle"]):::data
+    D2(["Signing Key&lt;br/&gt;(CC.R04)"]):::data
+    D3(["VCS&lt;br/&gt;Credentials"]):::data
+    D1 -.-&gt; F43
+    D2 -.-&gt; F48
+    D3 -.-&gt; F410
+
+    F1Ref --&gt; F41
+    F3Ref -.-&gt;|"PRECEDES · approval precedes"| F41
+    F41 --&gt; F42 --&gt; F43 --&gt; AND4o
+    AND4o --&gt; F44 --&gt; AND4c
+    AND4o --&gt; F45 --&gt; AND4c
+    AND4o --&gt; F46 --&gt; AND4c
+    AND4c --&gt; F47 --&gt; F48
+    F48 --&gt;|"≤ CLI_EMISSION_TIMEOUT_SEC (60s, est.)"| F49 --&gt; AND4bo
+    AND4bo --&gt; F410 --&gt; AND4bc
+    AND4bo --&gt; F411 --&gt; F412
+    F412 --&gt;|"receipt received"| AND4bc
+    AND4bc --&gt; F413 --&gt; F414
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F4_emit_cli.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F3Ref["[F.3 Ref]&lt;br/&gt;Review &amp;&lt;br/&gt;Approve Spec"]:::ref
+
+    F41["&lt;b&gt;F.4.1&lt;/b&gt;&lt;br/&gt;Verify Spec&lt;br/&gt;Approved"]:::green
+    F42["&lt;b&gt;F.4.2&lt;/b&gt;&lt;br/&gt;Verify Emit&lt;br/&gt;Permission"]:::green
+    F43["&lt;b&gt;F.4.3&lt;/b&gt;&lt;br/&gt;Load Spec&lt;br/&gt;Bundle"]:::green
+    F44["&lt;b&gt;F.4.4&lt;/b&gt;&lt;br/&gt;Generate&lt;br/&gt;SKILL.md"]:::green
+    F45["&lt;b&gt;F.4.5&lt;/b&gt;&lt;br/&gt;Generate&lt;br/&gt;CLAUDE.md"]:::green
+    F46["&lt;b&gt;F.4.6&lt;/b&gt;&lt;br/&gt;Generate MCP&lt;br/&gt;Tool Definition"]:::green
+    F47["&lt;b&gt;F.4.7&lt;/b&gt;&lt;br/&gt;Package CLI&lt;br/&gt;Bundle"]:::green
+    F48["&lt;b&gt;F.4.8&lt;/b&gt;&lt;br/&gt;Sign CLI&lt;br/&gt;Bundle"]:::yellow
+    F49["&lt;b&gt;F.4.9&lt;/b&gt;&lt;br/&gt;Enforce CLI&lt;br/&gt;Timeout"]:::yellow
+    F410["&lt;b&gt;F.4.10&lt;/b&gt;&lt;br/&gt;Write Bundle&lt;br/&gt;to VCS"]:::green
+    F411["&lt;b&gt;F.4.11&lt;/b&gt;&lt;br/&gt;Deliver Bundle&lt;br/&gt;to Client"]:::green
+    F412["&lt;b&gt;F.4.12&lt;/b&gt;&lt;br/&gt;Require Receipt&lt;br/&gt;Token"]:::yellow
+    F413["&lt;b&gt;F.4.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F414["&lt;b&gt;F.4.14&lt;/b&gt;&lt;br/&gt;Return Bundle&lt;br/&gt;Location"]:::green
+
+    AND4o((AND)):::gate
+    AND4c((AND)):::gate
+    AND4bo((AND)):::gate
+    AND4bc((AND)):::gate
+
+    D1(["Approved&lt;br/&gt;Spec Bundle"]):::data
+    D2(["Signing Key&lt;br/&gt;(CC.R04)"]):::data
+    D3(["VCS&lt;br/&gt;Credentials"]):::data
+    D1 -.-&gt; F43
+    D2 -.-&gt; F48
+    D3 -.-&gt; F410
+
+    F1Ref --&gt; F41
+    F3Ref -.-&gt;|"PRECEDES · approval precedes"| F41
+    F41 --&gt; F42 --&gt; F43 --&gt; AND4o
+    AND4o --&gt; F44 --&gt; AND4c
+    AND4o --&gt; F45 --&gt; AND4c
+    AND4o --&gt; F46 --&gt; AND4c
+    AND4c --&gt; F47 --&gt; F48
+    F48 --&gt;|"≤ CLI_EMISSION_TIMEOUT_SEC (60s, est.)"| F49 --&gt; AND4bo
+    AND4bo --&gt; F410 --&gt; AND4bc
+    AND4bo --&gt; F411 --&gt; F412
+    F412 --&gt;|"receipt received"| AND4bc
+    AND4bc --&gt; F413 --&gt; F414
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F6Ref["[F.6 Ref]&lt;br/&gt;Ingest Metrics&lt;br/&gt;&amp; Recommend"]:::ref
+
+    F51["&lt;b&gt;F.5.1&lt;/b&gt;&lt;br/&gt;Validate&lt;br/&gt;Endpoint URLs"]:::green
+    F52["&lt;b&gt;F.5.2&lt;/b&gt;&lt;br/&gt;Initiate IdP&lt;br/&gt;Handshake"]:::green
+    F53["&lt;b&gt;F.5.3&lt;/b&gt;&lt;br/&gt;Reject Write-&lt;br/&gt;Scope Grant"]:::green
+    F54["&lt;b&gt;F.5.4&lt;/b&gt;&lt;br/&gt;Persist Encrypted&lt;br/&gt;Credential"]:::green
+    F55["&lt;b&gt;F.5.5&lt;/b&gt;&lt;br/&gt;Establish VCS&lt;br/&gt;Handle"]:::green
+    F56["&lt;b&gt;F.5.6&lt;/b&gt;&lt;br/&gt;Establish Obs&lt;br/&gt;Handle"]:::green
+    F57["&lt;b&gt;F.5.7&lt;/b&gt;&lt;br/&gt;Probe Connection&lt;br/&gt;Health"]:::green
+    F58["&lt;b&gt;F.5.8&lt;/b&gt;&lt;br/&gt;Measure Customer&lt;br/&gt;Overhead"]:::red
+    F59["&lt;b&gt;F.5.9&lt;/b&gt;&lt;br/&gt;Reject on Overhead&lt;br/&gt;Violation"]:::red
+    F510["&lt;b&gt;F.5.10&lt;/b&gt;&lt;br/&gt;Enforce Connection&lt;br/&gt;Budget"]:::red
+    F511["&lt;b&gt;F.5.11&lt;/b&gt;&lt;br/&gt;Persist Connection&lt;br/&gt;Record"]:::green
+    F512["&lt;b&gt;F.5.12&lt;/b&gt;&lt;br/&gt;Schedule&lt;br/&gt;Reauthorization"]:::yellow
+    F513["&lt;b&gt;F.5.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F514["&lt;b&gt;F.5.14&lt;/b&gt;&lt;br/&gt;Return Connection&lt;br/&gt;Confirmation"]:::green
+
+    OR5o((OR)):::gate
+    OR5c((OR)):::gate
+    OR5bo((OR)):::gate
+    OR5bc((OR)):::gate
+    AND5o((AND)):::gate
+    AND5c((AND)):::gate
+
+    D1(["Endpoint URLs&lt;br/&gt;+ Creds"]):::data
+    D2(["IdP Token&lt;br/&gt;(read-only)"]):::data
+    D1 -.-&gt; F51
+    D2 -.-&gt; F54
+
+    F1Ref --&gt; F51 --&gt; F52 --&gt; OR5o
+    OR5o --&gt;|"write_scope_present"| F53 --&gt; OR5c
+    OR5o --&gt;|"read_only_scope"| F54 --&gt; AND5o
+    AND5o --&gt; F55 --&gt; AND5c
+    AND5o --&gt; F56 --&gt; AND5c
+    AND5c --&gt; F57 --&gt; F58 --&gt; OR5bo
+    OR5bo --&gt;|"overhead_exceeds_budget"| F59 --&gt; OR5bc
+    OR5bo --&gt;|"within_budget (≤ 2% est.)"| F510 --&gt; F511 --&gt; F512 --&gt; OR5bc
+    OR5bc --&gt; OR5c --&gt; F513 --&gt; F514
+    F514 -.-&gt;|"PRECEDES · downstream ingest"| F6Ref
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef red fill:#f8d7da,stroke:#dc3545,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F5_connect_system.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F1Ref["[F.1 Ref]&lt;br/&gt;Authenticate&lt;br/&gt;&amp; Authorize"]:::ref
+    F6Ref["[F.6 Ref]&lt;br/&gt;Ingest Metrics&lt;br/&gt;&amp; Recommend"]:::ref
+
+    F51["&lt;b&gt;F.5.1&lt;/b&gt;&lt;br/&gt;Validate&lt;br/&gt;Endpoint URLs"]:::green
+    F52["&lt;b&gt;F.5.2&lt;/b&gt;&lt;br/&gt;Initiate IdP&lt;br/&gt;Handshake"]:::green
+    F53["&lt;b&gt;F.5.3&lt;/b&gt;&lt;br/&gt;Reject Write-&lt;br/&gt;Scope Grant"]:::green
+    F54["&lt;b&gt;F.5.4&lt;/b&gt;&lt;br/&gt;Persist Encrypted&lt;br/&gt;Credential"]:::green
+    F55["&lt;b&gt;F.5.5&lt;/b&gt;&lt;br/&gt;Establish VCS&lt;br/&gt;Handle"]:::green
+    F56["&lt;b&gt;F.5.6&lt;/b&gt;&lt;br/&gt;Establish Obs&lt;br/&gt;Handle"]:::green
+    F57["&lt;b&gt;F.5.7&lt;/b&gt;&lt;br/&gt;Probe Connection&lt;br/&gt;Health"]:::green
+    F58["&lt;b&gt;F.5.8&lt;/b&gt;&lt;br/&gt;Measure Customer&lt;br/&gt;Overhead"]:::red
+    F59["&lt;b&gt;F.5.9&lt;/b&gt;&lt;br/&gt;Reject on Overhead&lt;br/&gt;Violation"]:::red
+    F510["&lt;b&gt;F.5.10&lt;/b&gt;&lt;br/&gt;Enforce Connection&lt;br/&gt;Budget"]:::red
+    F511["&lt;b&gt;F.5.11&lt;/b&gt;&lt;br/&gt;Persist Connection&lt;br/&gt;Record"]:::green
+    F512["&lt;b&gt;F.5.12&lt;/b&gt;&lt;br/&gt;Schedule&lt;br/&gt;Reauthorization"]:::yellow
+    F513["&lt;b&gt;F.5.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F514["&lt;b&gt;F.5.14&lt;/b&gt;&lt;br/&gt;Return Connection&lt;br/&gt;Confirmation"]:::green
+
+    OR5o((OR)):::gate
+    OR5c((OR)):::gate
+    OR5bo((OR)):::gate
+    OR5bc((OR)):::gate
+    AND5o((AND)):::gate
+    AND5c((AND)):::gate
+
+    D1(["Endpoint URLs&lt;br/&gt;+ Creds"]):::data
+    D2(["IdP Token&lt;br/&gt;(read-only)"]):::data
+    D1 -.-&gt; F51
+    D2 -.-&gt; F54
+
+    F1Ref --&gt; F51 --&gt; F52 --&gt; OR5o
+    OR5o --&gt;|"write_scope_present"| F53 --&gt; OR5c
+    OR5o --&gt;|"read_only_scope"| F54 --&gt; AND5o
+    AND5o --&gt; F55 --&gt; AND5c
+    AND5o --&gt; F56 --&gt; AND5c
+    AND5c --&gt; F57 --&gt; F58 --&gt; OR5bo
+    OR5bo --&gt;|"overhead_exceeds_budget"| F59 --&gt; OR5bc
+    OR5bo --&gt;|"within_budget (≤ 2% est.)"| F510 --&gt; F511 --&gt; F512 --&gt; OR5bc
+    OR5bc --&gt; OR5c --&gt; F513 --&gt; F514
+    F514 -.-&gt;|"PRECEDES · downstream ingest"| F6Ref
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef red fill:#f8d7da,stroke:#dc3545,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F5Ref["[F.5 Ref]&lt;br/&gt;Connect Customer&lt;br/&gt;System"]:::ref
+    F7Ref["[F.7 Ref]&lt;br/&gt;Trace to&lt;br/&gt;Metrics"]:::ref
+    F2Ref["[F.2 Ref]&lt;br/&gt;Generate Spec&lt;br/&gt;(next iteration)"]:::ref
+
+    F61["&lt;b&gt;F.6.1&lt;/b&gt;&lt;br/&gt;Persist Metric&lt;br/&gt;Sample"]:::green
+    F62["&lt;b&gt;F.6.2&lt;/b&gt;&lt;br/&gt;Enforce Customer&lt;br/&gt;Overhead Budget"]:::red
+    F63["&lt;b&gt;F.6.3&lt;/b&gt;&lt;br/&gt;Aggregate Metric&lt;br/&gt;Window"]:::yellow
+    F64["&lt;b&gt;F.6.4&lt;/b&gt;&lt;br/&gt;Compare Aggregate&lt;br/&gt;to Target"]:::yellow
+    F65["&lt;b&gt;F.6.5&lt;/b&gt;&lt;br/&gt;Compute Metric&lt;br/&gt;Deviation"]:::green
+    F66["&lt;b&gt;F.6.6&lt;/b&gt;&lt;br/&gt;Suppress Noise&lt;br/&gt;Deviations"]:::yellow
+    F67["&lt;b&gt;F.6.7&lt;/b&gt;&lt;br/&gt;Propose Candidate&lt;br/&gt;Improvements"]:::red
+    F68["&lt;b&gt;F.6.8&lt;/b&gt;&lt;br/&gt;Link Rec&lt;br/&gt;to Metric"]:::yellow
+    F69["&lt;b&gt;F.6.9&lt;/b&gt;&lt;br/&gt;Rank&lt;br/&gt;Recommendations"]:::yellow
+    F610["&lt;b&gt;F.6.10&lt;/b&gt;&lt;br/&gt;Cap Rec&lt;br/&gt;List"]:::green
+    F611["&lt;b&gt;F.6.11&lt;/b&gt;&lt;br/&gt;Deliver Rec&lt;br/&gt;List"]:::green
+    F612["&lt;b&gt;F.6.12&lt;/b&gt;&lt;br/&gt;Notify PM&lt;br/&gt;of Cycle"]:::green
+    F613["&lt;b&gt;F.6.13&lt;/b&gt;&lt;br/&gt;Persist Rec&lt;br/&gt;Action"]:::green
+    F614["&lt;b&gt;F.6.14&lt;/b&gt;&lt;br/&gt;Surface Feature&lt;br/&gt;Candidate"]:::red
+    F615["&lt;b&gt;F.6.15&lt;/b&gt;&lt;br/&gt;Enforce Read-&lt;br/&gt;Only Posture"]:::red
+    F616["&lt;b&gt;F.6.16&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+
+    IT6o((IT)):::gate
+    IT6c((IT)):::gate
+    OR6o((OR)):::gate
+    OR6c((OR)):::gate
+
+    D1(["Live Performance&lt;br/&gt;Metrics"]):::data
+    D2(["Spec Performance&lt;br/&gt;Targets"]):::data
+    D1 -.-&gt; F61
+    D2 -.-&gt; F64
+
+    F5Ref --&gt; IT6o
+    IT6o --&gt; F61
+    F61 --&gt;|"≤ MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT (2%, est.)"| F62
+    F62 --&gt;|"every AGGREGATION_WINDOW_MIN (60 min, est.)"| F63 --&gt; F64 --&gt; F65 --&gt; F66
+    F66 --&gt; F7Ref --&gt; F67 --&gt; F68 --&gt; F69 --&gt; F610 --&gt; F611 --&gt; F612 --&gt; F613 --&gt; OR6o
+    OR6o --&gt;|"missing_functionality"| F614
+    OR6o --&gt;|"not_missing"| F615
+    F614 -.-&gt;|"PRECEDES · next spec iteration"| F2Ref
+    F614 --&gt; OR6c
+    F615 --&gt; OR6c
+    OR6c --&gt; F616 --&gt; IT6c
+    IT6c -.-&gt;|"PRECEDES · Until project deactivates"| IT6o
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef red fill:#f8d7da,stroke:#dc3545,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F6_recommend.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F5Ref["[F.5 Ref]&lt;br/&gt;Connect Customer&lt;br/&gt;System"]:::ref
+    F7Ref["[F.7 Ref]&lt;br/&gt;Trace to&lt;br/&gt;Metrics"]:::ref
+    F2Ref["[F.2 Ref]&lt;br/&gt;Generate Spec&lt;br/&gt;(next iteration)"]:::ref
+
+    F61["&lt;b&gt;F.6.1&lt;/b&gt;&lt;br/&gt;Persist Metric&lt;br/&gt;Sample"]:::green
+    F62["&lt;b&gt;F.6.2&lt;/b&gt;&lt;br/&gt;Enforce Customer&lt;br/&gt;Overhead Budget"]:::red
+    F63["&lt;b&gt;F.6.3&lt;/b&gt;&lt;br/&gt;Aggregate Metric&lt;br/&gt;Window"]:::yellow
+    F64["&lt;b&gt;F.6.4&lt;/b&gt;&lt;br/&gt;Compare Aggregate&lt;br/&gt;to Target"]:::yellow
+    F65["&lt;b&gt;F.6.5&lt;/b&gt;&lt;br/&gt;Compute Metric&lt;br/&gt;Deviation"]:::green
+    F66["&lt;b&gt;F.6.6&lt;/b&gt;&lt;br/&gt;Suppress Noise&lt;br/&gt;Deviations"]:::yellow
+    F67["&lt;b&gt;F.6.7&lt;/b&gt;&lt;br/&gt;Propose Candidate&lt;br/&gt;Improvements"]:::red
+    F68["&lt;b&gt;F.6.8&lt;/b&gt;&lt;br/&gt;Link Rec&lt;br/&gt;to Metric"]:::yellow
+    F69["&lt;b&gt;F.6.9&lt;/b&gt;&lt;br/&gt;Rank&lt;br/&gt;Recommendations"]:::yellow
+    F610["&lt;b&gt;F.6.10&lt;/b&gt;&lt;br/&gt;Cap Rec&lt;br/&gt;List"]:::green
+    F611["&lt;b&gt;F.6.11&lt;/b&gt;&lt;br/&gt;Deliver Rec&lt;br/&gt;List"]:::green
+    F612["&lt;b&gt;F.6.12&lt;/b&gt;&lt;br/&gt;Notify PM&lt;br/&gt;of Cycle"]:::green
+    F613["&lt;b&gt;F.6.13&lt;/b&gt;&lt;br/&gt;Persist Rec&lt;br/&gt;Action"]:::green
+    F614["&lt;b&gt;F.6.14&lt;/b&gt;&lt;br/&gt;Surface Feature&lt;br/&gt;Candidate"]:::red
+    F615["&lt;b&gt;F.6.15&lt;/b&gt;&lt;br/&gt;Enforce Read-&lt;br/&gt;Only Posture"]:::red
+    F616["&lt;b&gt;F.6.16&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+
+    IT6o((IT)):::gate
+    IT6c((IT)):::gate
+    OR6o((OR)):::gate
+    OR6c((OR)):::gate
+
+    D1(["Live Performance&lt;br/&gt;Metrics"]):::data
+    D2(["Spec Performance&lt;br/&gt;Targets"]):::data
+    D1 -.-&gt; F61
+    D2 -.-&gt; F64
+
+    F5Ref --&gt; IT6o
+    IT6o --&gt; F61
+    F61 --&gt;|"≤ MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT (2%, est.)"| F62
+    F62 --&gt;|"every AGGREGATION_WINDOW_MIN (60 min, est.)"| F63 --&gt; F64 --&gt; F65 --&gt; F66
+    F66 --&gt; F7Ref --&gt; F67 --&gt; F68 --&gt; F69 --&gt; F610 --&gt; F611 --&gt; F612 --&gt; F613 --&gt; OR6o
+    OR6o --&gt;|"missing_functionality"| F614
+    OR6o --&gt;|"not_missing"| F615
+    F614 -.-&gt;|"PRECEDES · next spec iteration"| F2Ref
+    F614 --&gt; OR6c
+    F615 --&gt; OR6c
+    OR6c --&gt; F616 --&gt; IT6c
+    IT6c -.-&gt;|"PRECEDES · Until project deactivates"| IT6o
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef red fill:#f8d7da,stroke:#dc3545,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F2Ref["[F.2 Ref]&lt;br/&gt;Spec Generator&lt;br/&gt;(caller)"]:::ref
+    F6Ref["[F.6 Ref]&lt;br/&gt;Feedback Loop&lt;br/&gt;(caller)"]:::ref
+
+    F71["&lt;b&gt;F.7.1&lt;/b&gt;&lt;br/&gt;Receive Draft&lt;br/&gt;Recommendation"]:::green
+    F72["&lt;b&gt;F.7.2&lt;/b&gt;&lt;br/&gt;Parse&lt;br/&gt;Recommendation"]:::green
+    F73["&lt;b&gt;F.7.3&lt;/b&gt;&lt;br/&gt;Classify&lt;br/&gt;Capability Metric"]:::yellow
+    F74["&lt;b&gt;F.7.4&lt;/b&gt;&lt;br/&gt;Query Documentation&lt;br/&gt;Sources"]:::yellow
+    F75["&lt;b&gt;F.7.5&lt;/b&gt;&lt;br/&gt;Query Cloud&lt;br/&gt;Providers"]:::yellow
+    F76["&lt;b&gt;F.7.6&lt;/b&gt;&lt;br/&gt;Resolve Metric&lt;br/&gt;Value"]:::yellow
+    F77["&lt;b&gt;F.7.7&lt;/b&gt;&lt;br/&gt;Validate External&lt;br/&gt;Citation"]:::green
+    F78["&lt;b&gt;F.7.8&lt;/b&gt;&lt;br/&gt;Compute Traceback&lt;br/&gt;Confidence"]:::yellow
+    F79["&lt;b&gt;F.7.9&lt;/b&gt;&lt;br/&gt;Flag Low-Confidence&lt;br/&gt;Recommendation"]:::yellow
+    F710["&lt;b&gt;F.7.10&lt;/b&gt;&lt;br/&gt;Attach Traceback&lt;br/&gt;to Spec"]:::green
+    F711["&lt;b&gt;F.7.11&lt;/b&gt;&lt;br/&gt;Enforce Traceback&lt;br/&gt;Coverage"]:::green
+    F712["&lt;b&gt;F.7.12&lt;/b&gt;&lt;br/&gt;Record Traceback&lt;br/&gt;Triple"]:::green
+    F713["&lt;b&gt;F.7.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F714["&lt;b&gt;F.7.14&lt;/b&gt;&lt;br/&gt;Return Traced&lt;br/&gt;Recommendation"]:::green
+
+    AND7o((AND)):::gate
+    AND7c((AND)):::gate
+    OR7o((OR)):::gate
+    OR7c((OR)):::gate
+
+    D1(["Draft&lt;br/&gt;Recommendation"]):::data
+    D2(["Vendor Docs&lt;br/&gt;+ RFCs"]):::data
+    D3(["Cloud Provider&lt;br/&gt;SLAs"]):::data
+    D1 -.-&gt; F71
+    D2 -.-&gt; F74
+    D3 -.-&gt; F75
+
+    F2Ref --&gt; F71
+    F6Ref --&gt; F71
+    F71 --&gt; F72 --&gt; F73 --&gt; AND7o
+    AND7o --&gt; F74 --&gt; AND7c
+    AND7o --&gt; F75 --&gt; AND7c
+    AND7c --&gt; F76 --&gt; F77 --&gt; F78 --&gt; OR7o
+    OR7o --&gt;|"below_min_confidence"| F79 --&gt; OR7c
+    OR7o --&gt;|"meets_min_confidence"| F710
+    F710 --&gt;|"coverage ≥ TRACEBACK_COVERAGE_PCT (100%, FINAL)"| F711 --&gt; F712 --&gt; OR7c
+    OR7c --&gt; F713 --&gt; F714
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_F7_trace_metric.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px' }, 'flowchart': { 'rankSpacing': 55, 'nodeSpacing': 20 }}}%%
+graph LR
+    F2Ref["[F.2 Ref]&lt;br/&gt;Spec Generator&lt;br/&gt;(caller)"]:::ref
+    F6Ref["[F.6 Ref]&lt;br/&gt;Feedback Loop&lt;br/&gt;(caller)"]:::ref
+
+    F71["&lt;b&gt;F.7.1&lt;/b&gt;&lt;br/&gt;Receive Draft&lt;br/&gt;Recommendation"]:::green
+    F72["&lt;b&gt;F.7.2&lt;/b&gt;&lt;br/&gt;Parse&lt;br/&gt;Recommendation"]:::green
+    F73["&lt;b&gt;F.7.3&lt;/b&gt;&lt;br/&gt;Classify&lt;br/&gt;Capability Metric"]:::yellow
+    F74["&lt;b&gt;F.7.4&lt;/b&gt;&lt;br/&gt;Query Documentation&lt;br/&gt;Sources"]:::yellow
+    F75["&lt;b&gt;F.7.5&lt;/b&gt;&lt;br/&gt;Query Cloud&lt;br/&gt;Providers"]:::yellow
+    F76["&lt;b&gt;F.7.6&lt;/b&gt;&lt;br/&gt;Resolve Metric&lt;br/&gt;Value"]:::yellow
+    F77["&lt;b&gt;F.7.7&lt;/b&gt;&lt;br/&gt;Validate External&lt;br/&gt;Citation"]:::green
+    F78["&lt;b&gt;F.7.8&lt;/b&gt;&lt;br/&gt;Compute Traceback&lt;br/&gt;Confidence"]:::yellow
+    F79["&lt;b&gt;F.7.9&lt;/b&gt;&lt;br/&gt;Flag Low-Confidence&lt;br/&gt;Recommendation"]:::yellow
+    F710["&lt;b&gt;F.7.10&lt;/b&gt;&lt;br/&gt;Attach Traceback&lt;br/&gt;to Spec"]:::green
+    F711["&lt;b&gt;F.7.11&lt;/b&gt;&lt;br/&gt;Enforce Traceback&lt;br/&gt;Coverage"]:::green
+    F712["&lt;b&gt;F.7.12&lt;/b&gt;&lt;br/&gt;Record Traceback&lt;br/&gt;Triple"]:::green
+    F713["&lt;b&gt;F.7.13&lt;/b&gt;&lt;br/&gt;Write Audit&lt;br/&gt;Entry"]:::green
+    F714["&lt;b&gt;F.7.14&lt;/b&gt;&lt;br/&gt;Return Traced&lt;br/&gt;Recommendation"]:::green
+
+    AND7o((AND)):::gate
+    AND7c((AND)):::gate
+    OR7o((OR)):::gate
+    OR7c((OR)):::gate
+
+    D1(["Draft&lt;br/&gt;Recommendation"]):::data
+    D2(["Vendor Docs&lt;br/&gt;+ RFCs"]):::data
+    D3(["Cloud Provider&lt;br/&gt;SLAs"]):::data
+    D1 -.-&gt; F71
+    D2 -.-&gt; F74
+    D3 -.-&gt; F75
+
+    F2Ref --&gt; F71
+    F6Ref --&gt; F71
+    F71 --&gt; F72 --&gt; F73 --&gt; AND7o
+    AND7o --&gt; F74 --&gt; AND7c
+    AND7o --&gt; F75 --&gt; AND7c
+    AND7c --&gt; F76 --&gt; F77 --&gt; F78 --&gt; OR7o
+    OR7o --&gt;|"below_min_confidence"| F79 --&gt; OR7c
+    OR7o --&gt;|"meets_min_confidence"| F710
+    F710 --&gt;|"coverage ≥ TRACEBACK_COVERAGE_PCT (100%, FINAL)"| F711 --&gt; F712 --&gt; OR7c
+    OR7c --&gt; F713 --&gt; F714
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:1.5px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:1.5px,color:#000
+    classDef ref fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray:2 2,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px' }, 'flowchart': { 'rankSpacing': 60, 'nodeSpacing': 30, 'curve': 'basis' }}}%%
+graph LR
+    %% === F.0 : c1v — Top-Level Operational Flow ===
+    F1["&lt;b&gt;F.1&lt;/b&gt;&lt;br/&gt;Authenticate &amp;&lt;br/&gt;Authorize"]:::green
+    F2["&lt;b&gt;F.2&lt;/b&gt;&lt;br/&gt;Generate Spec"]:::yellow
+    F3["&lt;b&gt;F.3&lt;/b&gt;&lt;br/&gt;Review &amp;&lt;br/&gt;Approve Spec"]:::green
+    F4["&lt;b&gt;F.4&lt;/b&gt;&lt;br/&gt;Emit CLI Bundle"]:::yellow
+    F5["&lt;b&gt;F.5&lt;/b&gt;&lt;br/&gt;Connect Customer&lt;br/&gt;System"]:::red
+    F6["&lt;b&gt;F.6&lt;/b&gt;&lt;br/&gt;Ingest Metrics &amp;&lt;br/&gt;Recommend"]:::red
+    F7["&lt;b&gt;F.7&lt;/b&gt;&lt;br/&gt;Trace Recommendations&lt;br/&gt;to Metrics"]:::yellow
+
+    OR1o((OR)):::gate
+    OR1c((OR)):::gate
+    AND1o((AND)):::gate
+    AND1c((AND)):::gate
+    IT1o((IT)):::gate
+    IT1c((IT)):::gate
+
+    %% EFFBD data blocks (rounded)
+    D1(["Founder Idea&lt;br/&gt;Prompt"]):::data
+    D2(["Existing&lt;br/&gt;Codebase"]):::data
+    D3(["Compliance&lt;br/&gt;Policy"]):::data
+    D4(["Live Performance&lt;br/&gt;Metrics"]):::data
+    D5(["Docs + Cloud&lt;br/&gt;SLAs"]):::data
+
+    %% Data block feeds (angled)
+    D1 -.-&gt; F2
+    D2 -.-&gt; F2
+    D2 -.-&gt; F5
+    D3 -.-&gt; F3
+    D3 -.-&gt; F4
+    D4 -.-&gt; F6
+    D5 -.-&gt; F7
+
+    %% Trigger flow
+    F1 --&gt;|"founder authenticated"| F2
+    F2 --&gt;|"draft spec ready"| F3
+    F3 --&gt; OR1o
+    OR1o --&gt;|"approved"| F4
+    OR1o --&gt;|"revisions_requested"| F2
+    F4 -.-&gt;|"∼ on engineer's schedule&lt;br/&gt;(PRECEDES)"| F5
+    F5 --&gt; AND1o
+    AND1o --&gt;|"metrics available"| F6
+    AND1o --&gt;|"docs available"| F7
+    F6 --&gt;|"≤ RECOMMENDATION_CADENCE_MIN (60 min, est.)"| F7
+    F7 --&gt; IT1c
+    IT1c -.-&gt;|"PRECEDES · Until project deactivates"| IT1o
+    IT1o --&gt; F6
+    F7 -.-&gt;|"PRECEDES · improvement informs next spec"| F2
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#000
+    classDef red fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</pre><figcaption>system-design/kb-upgrade-v2/module-3-ffbd/ffbd_top_level.mmd <details><summary>show source</summary><pre><code>%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px' }, 'flowchart': { 'rankSpacing': 60, 'nodeSpacing': 30, 'curve': 'basis' }}}%%
+graph LR
+    %% === F.0 : c1v — Top-Level Operational Flow ===
+    F1["&lt;b&gt;F.1&lt;/b&gt;&lt;br/&gt;Authenticate &amp;&lt;br/&gt;Authorize"]:::green
+    F2["&lt;b&gt;F.2&lt;/b&gt;&lt;br/&gt;Generate Spec"]:::yellow
+    F3["&lt;b&gt;F.3&lt;/b&gt;&lt;br/&gt;Review &amp;&lt;br/&gt;Approve Spec"]:::green
+    F4["&lt;b&gt;F.4&lt;/b&gt;&lt;br/&gt;Emit CLI Bundle"]:::yellow
+    F5["&lt;b&gt;F.5&lt;/b&gt;&lt;br/&gt;Connect Customer&lt;br/&gt;System"]:::red
+    F6["&lt;b&gt;F.6&lt;/b&gt;&lt;br/&gt;Ingest Metrics &amp;&lt;br/&gt;Recommend"]:::red
+    F7["&lt;b&gt;F.7&lt;/b&gt;&lt;br/&gt;Trace Recommendations&lt;br/&gt;to Metrics"]:::yellow
+
+    OR1o((OR)):::gate
+    OR1c((OR)):::gate
+    AND1o((AND)):::gate
+    AND1c((AND)):::gate
+    IT1o((IT)):::gate
+    IT1c((IT)):::gate
+
+    %% EFFBD data blocks (rounded)
+    D1(["Founder Idea&lt;br/&gt;Prompt"]):::data
+    D2(["Existing&lt;br/&gt;Codebase"]):::data
+    D3(["Compliance&lt;br/&gt;Policy"]):::data
+    D4(["Live Performance&lt;br/&gt;Metrics"]):::data
+    D5(["Docs + Cloud&lt;br/&gt;SLAs"]):::data
+
+    %% Data block feeds (angled)
+    D1 -.-&gt; F2
+    D2 -.-&gt; F2
+    D2 -.-&gt; F5
+    D3 -.-&gt; F3
+    D3 -.-&gt; F4
+    D4 -.-&gt; F6
+    D5 -.-&gt; F7
+
+    %% Trigger flow
+    F1 --&gt;|"founder authenticated"| F2
+    F2 --&gt;|"draft spec ready"| F3
+    F3 --&gt; OR1o
+    OR1o --&gt;|"approved"| F4
+    OR1o --&gt;|"revisions_requested"| F2
+    F4 -.-&gt;|"∼ on engineer's schedule&lt;br/&gt;(PRECEDES)"| F5
+    F5 --&gt; AND1o
+    AND1o --&gt;|"metrics available"| F6
+    AND1o --&gt;|"docs available"| F7
+    F6 --&gt;|"≤ RECOMMENDATION_CADENCE_MIN (60 min, est.)"| F7
+    F7 --&gt; IT1c
+    IT1c -.-&gt;|"PRECEDES · Until project deactivates"| IT1o
+    IT1o --&gt; F6
+    F7 -.-&gt;|"PRECEDES · improvement informs next spec"| F2
+
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
+    classDef yellow fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#000
+    classDef red fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#000
+    classDef gate fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000
+    classDef data fill:#f5f5f5,stroke:#666666,stroke-dasharray:5 3,color:#000
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%% c1v Dual-Mode Platform — Top-level Data Flow Diagram
+%% Module 6 — Defining Interfaces (2026-04-20)
+%% Source: system-design/module-7-interfaces/n2_chart.json (IF-01..IF-32 + IF-EXT-01..IF-EXT-10)
+%% Every arrow label carries the data summary + EC budget driving it.
+
+flowchart LR
+    %% =============================================================
+    %% External actors (outside the c1v boundary)
+    %% =============================================================
+    subgraph EXT_ACTORS["External Actors"]
+        direction TB
+        FOUND[Founders / PMs /&lt;br/&gt;Engineers / Admins]
+        IDP[Identity Providers&lt;br/&gt;OIDC / SAML]
+        LLM[LLM Providers&lt;br/&gt;Anthropic / OpenAI / local]
+        VCS[Version Control&lt;br/&gt;git / HTTPS]
+        CUST[Customer Prod Systems +&lt;br/&gt;Observability Tools]
+        DOCS[Documentation Sources&lt;br/&gt;vendor specs, RFCs]
+        COMPLY[Compliance Frameworks&lt;br/&gt;SOC2 / HIPAA / GDPR]
+        CICD[CI / CD Systems]
+        CLOUD[Cloud Providers&lt;br/&gt;AWS / GCP / Azure]
+        IDE[IDE / CLI Clients&lt;br/&gt;Claude Code / Cursor]
+    end
+
+    %% =============================================================
+    %% c1v Dual-Mode Platform — 14 subsystems (SS1..SS14)
+    %% =============================================================
+    subgraph C1V["c1v Dual-Mode Platform"]
+        direction TB
+        SS1[SS1 Founder Web UI]
+        SS2[SS2 Session Manager&lt;br/&gt;mode lock: cloud default / local opt-in]
+        SS3[SS3 Agent Orchestrator&lt;br/&gt;LangGraph]
+        SS4[SS4 LLM Provider Layer]
+        SS5[SS5 Prompt Cache&lt;br/&gt;≥70% hit rate target]
+        SS6[SS6 Spec Generator&lt;br/&gt;Mermaid v1]
+        SS7[SS7 Traceback Store&lt;br/&gt;TTL 24h · refresh 7d]
+        SS8[SS8 CLI Bundle Emitter&lt;br/&gt;≤5 MB bundle]
+        SS9[SS9 Probe SDK&lt;br/&gt;customer-side]
+        SS10[SS10 Metrics Collector]
+        SS11[SS11 Metric Store&lt;br/&gt;60-min window]
+        SS12[SS12 Recommendation Engine]
+        SS13[SS13 Auth / Credential Vault&lt;br/&gt;90d rotation]
+        SS14[SS14 Audit Log Store&lt;br/&gt;90d retention]
+    end
+
+    %% =============================================================
+    %% External → c1v (inbound)
+    %% =============================================================
+    FOUND -- "IF-EXT-01 · UI events · HTTPS+SSE · ≤50 ms/chunk (EC16)" --&gt; SS1
+    IDP   -- "IF-EXT-02 · auth grant · OIDC/SAML · read-only scope (I.EXT.1)" --&gt; SS13
+    DOCS  -- "IF-EXT-06 · vendor specs · RAG retrieval · refresh 7d (EC11)" --&gt; SS7
+    CUST  -- "IF-EXT-05 · read-only handles · ≤2% overhead ceiling (EC1/EC3)" --&gt; SS9
+
+    %% =============================================================
+    %% c1v → External (outbound)
+    %% =============================================================
+    SS4  -- "IF-EXT-03 · prompts → completions · ≤8000 tok (EC8) · ≤50 ms/chunk (EC16)" --&gt; LLM
+    SS8  -- "IF-EXT-04 · signed CLI bundle · ≤5 MB (EC14)" --&gt; VCS
+    SS8  -- "IF-EXT-10 · SKILL.md + CLAUDE.md + MCP defs · signed artifact" --&gt; IDE
+    SS8  -- "IF-EXT-08 · spec as gate · GH Actions hooks" --&gt; CICD
+    SS4  -- "IF-EXT-09 · service catalogs + SLAs" --&gt; CLOUD
+    SS14 -- "IF-EXT-07 · compliance evidence export · 90d retention (EC18)" --&gt; COMPLY
+
+    %% =============================================================
+    %% c1v ↔ c1v (internal data flows — IF-01..IF-32)
+    %% =============================================================
+    %% UI boot + streaming
+    SS1  -- "IF-01 · login + mode select · HTTPS POST (EC15)" --&gt; SS2
+    SS2  -- "IF-02 · session + intake stream · SSE ≤50 ms/chunk (EC16)" --&gt; SS1
+    SS1  -- "IF-31 · spec approvals + edits (EC13)" --&gt; SS6
+    SS6  -- "IF-32 · rendered Mermaid artifacts (EC12/EC13)" --&gt; SS1
+
+    %% Orchestration
+    SS2  -- "IF-03 · dispatch (mode LOCKED before dispatch) · EC5↔EC6 roof" --&gt; SS3
+    SS3  -- "IF-04 · agent run state · ≤5 concurrent (EC6) · ≤8000 tok (EC8)" --&gt; SS2
+    SS2  -- "IF-09 · per-session routing policy (EC5, scale 2)" --&gt; SS4
+
+    %% Cache + LLM
+    SS3  -- "IF-05 · prompt hash + cache key (EC7)" --&gt; SS5
+    SS5  -- "IF-06 · hit payload / miss signal (≥70% hit target, EC7)" --&gt; SS3
+    SS3  -- "IF-07 · prompt + tools + ctx (cache-miss only, ≤8000 tok EC8)" --&gt; SS4
+    SS4  -- "IF-08 · completion + tool calls · streamed (EC8/EC16)" --&gt; SS3
+    SS5  -- "IF-10 · cache-assisted call (prefix reuse, EC7+EC8)" --&gt; SS4
+
+    %% Spec generation + citation gate
+    SS3  -- "IF-11 · generate spec req · Mermaid v1 (EC12) · 5 steps (EC13)" --&gt; SS6
+    SS6  -- "IF-12 · draft URI + pending-review (gated by IF-13/14)" --&gt; SS3
+    SS6  -- "IF-13 · citation check batch · HARD floor 100% (EC10)" --&gt; SS7
+    SS7  -- "IF-14 · traced citations · TTL=24h (EC9), refresh 7d (EC11)" --&gt; SS6
+
+    %% CLI emission
+    SS3  -- "IF-15 · emit CLI bundle req (citation-gate must PASS)" --&gt; SS8
+    SS8  -- "IF-16 · receipt + signature + VCS ref (EC14)" --&gt; SS3
+
+    %% Probe pipeline (customer boundary)
+    SS9  -- "IF-17 · probe payload · ≤6/min (EC1), ≤4 KB (EC3), batch ≥50 (EC4), 60-min flush (EC2)" --&gt; SS10
+    SS10 -- "IF-18 · backpressure + SDK config · reject-on-violation" --&gt; SS9
+    SS10 -- "IF-19 · aggregated write · 60-min window (EC2)" --&gt; SS11
+    SS11 -- "IF-20 · aggregated series + deviations · pull (EC2)" --&gt; SS12
+
+    %% Recommendation feedback
+    SS12 -- "IF-21 · citation lookup for recs (EC9/EC10)" --&gt; SS7
+    SS7  -- "IF-22 · cited refs (TTL 24h, EC9/EC10)" --&gt; SS12
+    SS12 -- "IF-23 · cited recommendation → next-iteration spec (F.6→F.2)" --&gt; SS3
+
+    %% Audit
+    SS3  -- "IF-24 · orchestration audit (EC18 90d)" --&gt; SS14
+    SS8  -- "IF-25 · CLI emission audit (EC18+EC14)" --&gt; SS14
+    SS10 -- "IF-26 · probe-rejection audit (EC18+EC1, I.EXT.9)" --&gt; SS14
+
+    %% Auth / Credentials
+    SS13 -- "IF-27 · signed session JWT (EC17)" --&gt; SS2
+    SS2  -- "IF-28 · rotation trigger · 90d cadence (EC17)" --&gt; SS13
+    SS13 -- "IF-29 · provider credentials + mode flag (EC17+EC5)" --&gt; SS4
+    SS13 -- "IF-30 · read-only VCS+Obs handles · WRITE-SCOPE REJECTED (UC11)" --&gt; SS9
+
+    %% =============================================================
+    %% Styling
+    %% =============================================================
+    classDef ui       fill:#E0E0FF,stroke:#333,stroke-width:1px;
+    classDef engine   fill:#FFE0E0,stroke:#333,stroke-width:1px;
+    classDef data     fill:#FFF3E0,stroke:#333,stroke-width:1px;
+    classDef platform fill:#E0FFE0,stroke:#333,stroke-width:1px;
+    classDef external fill:#F0F0F0,stroke:#555,stroke-dasharray: 5 5;
+    class SS1 ui;
+    class SS3,SS4,SS6,SS8,SS10,SS12 engine;
+    class SS5,SS7,SS11,SS14 data;
+    class SS2,SS13 platform;
+    class SS9 external;
+    class FOUND,IDP,LLM,VCS,CUST,DOCS,COMPLY,CICD,CLOUD,IDE external;
+</pre><figcaption>system-design/kb-upgrade-v2/module-7-interfaces/data_flow_diagram.mmd <details><summary>show source</summary><pre><code>%% c1v Dual-Mode Platform — Top-level Data Flow Diagram
+%% Module 6 — Defining Interfaces (2026-04-20)
+%% Source: system-design/module-7-interfaces/n2_chart.json (IF-01..IF-32 + IF-EXT-01..IF-EXT-10)
+%% Every arrow label carries the data summary + EC budget driving it.
+
+flowchart LR
+    %% =============================================================
+    %% External actors (outside the c1v boundary)
+    %% =============================================================
+    subgraph EXT_ACTORS["External Actors"]
+        direction TB
+        FOUND[Founders / PMs /&lt;br/&gt;Engineers / Admins]
+        IDP[Identity Providers&lt;br/&gt;OIDC / SAML]
+        LLM[LLM Providers&lt;br/&gt;Anthropic / OpenAI / local]
+        VCS[Version Control&lt;br/&gt;git / HTTPS]
+        CUST[Customer Prod Systems +&lt;br/&gt;Observability Tools]
+        DOCS[Documentation Sources&lt;br/&gt;vendor specs, RFCs]
+        COMPLY[Compliance Frameworks&lt;br/&gt;SOC2 / HIPAA / GDPR]
+        CICD[CI / CD Systems]
+        CLOUD[Cloud Providers&lt;br/&gt;AWS / GCP / Azure]
+        IDE[IDE / CLI Clients&lt;br/&gt;Claude Code / Cursor]
+    end
+
+    %% =============================================================
+    %% c1v Dual-Mode Platform — 14 subsystems (SS1..SS14)
+    %% =============================================================
+    subgraph C1V["c1v Dual-Mode Platform"]
+        direction TB
+        SS1[SS1 Founder Web UI]
+        SS2[SS2 Session Manager&lt;br/&gt;mode lock: cloud default / local opt-in]
+        SS3[SS3 Agent Orchestrator&lt;br/&gt;LangGraph]
+        SS4[SS4 LLM Provider Layer]
+        SS5[SS5 Prompt Cache&lt;br/&gt;≥70% hit rate target]
+        SS6[SS6 Spec Generator&lt;br/&gt;Mermaid v1]
+        SS7[SS7 Traceback Store&lt;br/&gt;TTL 24h · refresh 7d]
+        SS8[SS8 CLI Bundle Emitter&lt;br/&gt;≤5 MB bundle]
+        SS9[SS9 Probe SDK&lt;br/&gt;customer-side]
+        SS10[SS10 Metrics Collector]
+        SS11[SS11 Metric Store&lt;br/&gt;60-min window]
+        SS12[SS12 Recommendation Engine]
+        SS13[SS13 Auth / Credential Vault&lt;br/&gt;90d rotation]
+        SS14[SS14 Audit Log Store&lt;br/&gt;90d retention]
+    end
+
+    %% =============================================================
+    %% External → c1v (inbound)
+    %% =============================================================
+    FOUND -- "IF-EXT-01 · UI events · HTTPS+SSE · ≤50 ms/chunk (EC16)" --&gt; SS1
+    IDP   -- "IF-EXT-02 · auth grant · OIDC/SAML · read-only scope (I.EXT.1)" --&gt; SS13
+    DOCS  -- "IF-EXT-06 · vendor specs · RAG retrieval · refresh 7d (EC11)" --&gt; SS7
+    CUST  -- "IF-EXT-05 · read-only handles · ≤2% overhead ceiling (EC1/EC3)" --&gt; SS9
+
+    %% =============================================================
+    %% c1v → External (outbound)
+    %% =============================================================
+    SS4  -- "IF-EXT-03 · prompts → completions · ≤8000 tok (EC8) · ≤50 ms/chunk (EC16)" --&gt; LLM
+    SS8  -- "IF-EXT-04 · signed CLI bundle · ≤5 MB (EC14)" --&gt; VCS
+    SS8  -- "IF-EXT-10 · SKILL.md + CLAUDE.md + MCP defs · signed artifact" --&gt; IDE
+    SS8  -- "IF-EXT-08 · spec as gate · GH Actions hooks" --&gt; CICD
+    SS4  -- "IF-EXT-09 · service catalogs + SLAs" --&gt; CLOUD
+    SS14 -- "IF-EXT-07 · compliance evidence export · 90d retention (EC18)" --&gt; COMPLY
+
+    %% =============================================================
+    %% c1v ↔ c1v (internal data flows — IF-01..IF-32)
+    %% =============================================================
+    %% UI boot + streaming
+    SS1  -- "IF-01 · login + mode select · HTTPS POST (EC15)" --&gt; SS2
+    SS2  -- "IF-02 · session + intake stream · SSE ≤50 ms/chunk (EC16)" --&gt; SS1
+    SS1  -- "IF-31 · spec approvals + edits (EC13)" --&gt; SS6
+    SS6  -- "IF-32 · rendered Mermaid artifacts (EC12/EC13)" --&gt; SS1
+
+    %% Orchestration
+    SS2  -- "IF-03 · dispatch (mode LOCKED before dispatch) · EC5↔EC6 roof" --&gt; SS3
+    SS3  -- "IF-04 · agent run state · ≤5 concurrent (EC6) · ≤8000 tok (EC8)" --&gt; SS2
+    SS2  -- "IF-09 · per-session routing policy (EC5, scale 2)" --&gt; SS4
+
+    %% Cache + LLM
+    SS3  -- "IF-05 · prompt hash + cache key (EC7)" --&gt; SS5
+    SS5  -- "IF-06 · hit payload / miss signal (≥70% hit target, EC7)" --&gt; SS3
+    SS3  -- "IF-07 · prompt + tools + ctx (cache-miss only, ≤8000 tok EC8)" --&gt; SS4
+    SS4  -- "IF-08 · completion + tool calls · streamed (EC8/EC16)" --&gt; SS3
+    SS5  -- "IF-10 · cache-assisted call (prefix reuse, EC7+EC8)" --&gt; SS4
+
+    %% Spec generation + citation gate
+    SS3  -- "IF-11 · generate spec req · Mermaid v1 (EC12) · 5 steps (EC13)" --&gt; SS6
+    SS6  -- "IF-12 · draft URI + pending-review (gated by IF-13/14)" --&gt; SS3
+    SS6  -- "IF-13 · citation check batch · HARD floor 100% (EC10)" --&gt; SS7
+    SS7  -- "IF-14 · traced citations · TTL=24h (EC9), refresh 7d (EC11)" --&gt; SS6
+
+    %% CLI emission
+    SS3  -- "IF-15 · emit CLI bundle req (citation-gate must PASS)" --&gt; SS8
+    SS8  -- "IF-16 · receipt + signature + VCS ref (EC14)" --&gt; SS3
+
+    %% Probe pipeline (customer boundary)
+    SS9  -- "IF-17 · probe payload · ≤6/min (EC1), ≤4 KB (EC3), batch ≥50 (EC4), 60-min flush (EC2)" --&gt; SS10
+    SS10 -- "IF-18 · backpressure + SDK config · reject-on-violation" --&gt; SS9
+    SS10 -- "IF-19 · aggregated write · 60-min window (EC2)" --&gt; SS11
+    SS11 -- "IF-20 · aggregated series + deviations · pull (EC2)" --&gt; SS12
+
+    %% Recommendation feedback
+    SS12 -- "IF-21 · citation lookup for recs (EC9/EC10)" --&gt; SS7
+    SS7  -- "IF-22 · cited refs (TTL 24h, EC9/EC10)" --&gt; SS12
+    SS12 -- "IF-23 · cited recommendation → next-iteration spec (F.6→F.2)" --&gt; SS3
+
+    %% Audit
+    SS3  -- "IF-24 · orchestration audit (EC18 90d)" --&gt; SS14
+    SS8  -- "IF-25 · CLI emission audit (EC18+EC14)" --&gt; SS14
+    SS10 -- "IF-26 · probe-rejection audit (EC18+EC1, I.EXT.9)" --&gt; SS14
+
+    %% Auth / Credentials
+    SS13 -- "IF-27 · signed session JWT (EC17)" --&gt; SS2
+    SS2  -- "IF-28 · rotation trigger · 90d cadence (EC17)" --&gt; SS13
+    SS13 -- "IF-29 · provider credentials + mode flag (EC17+EC5)" --&gt; SS4
+    SS13 -- "IF-30 · read-only VCS+Obs handles · WRITE-SCOPE REJECTED (UC11)" --&gt; SS9
+
+    %% =============================================================
+    %% Styling
+    %% =============================================================
+    classDef ui       fill:#E0E0FF,stroke:#333,stroke-width:1px;
+    classDef engine   fill:#FFE0E0,stroke:#333,stroke-width:1px;
+    classDef data     fill:#FFF3E0,stroke:#333,stroke-width:1px;
+    classDef platform fill:#E0FFE0,stroke:#333,stroke-width:1px;
+    classDef external fill:#F0F0F0,stroke:#555,stroke-dasharray: 5 5;
+    class SS1 ui;
+    class SS3,SS4,SS6,SS8,SS10,SS12 engine;
+    class SS5,SS7,SS11,SS14 data;
+    class SS2,SS13 platform;
+    class SS9 external;
+    class FOUND,IDP,LLM,VCS,CUST,DOCS,COMPLY,CICD,CLOUD,IDE external;
+</code></pre></details></figcaption></figure><figure class="fig"><pre class="mermaid">%% c1v Dual-Mode Platform — Sequence Diagrams
+%% Module 6 — Defining Interfaces (2026-04-20)
+%% Source: system-design/module-6-qfd/interfaces_handoff.json (cross-interface coordination constraints)
+%%
+%% One diagram per QFD roof negative pair. Each diagram shows HOW M6 resolves the tradeoff
+%% via an interface contract that coordinates the two conflicting ECs.
+%%
+%% Four diagrams:
+%%   SEQ-1 — EC1↔EC2 + EC2↔EC4  (Probe SDK ↔ Collector joint tuning)
+%%   SEQ-2 — EC9↔EC11            (Traceback cache invalidation inside SS7)
+%%   SEQ-3 — EC5↔EC6             (Session lock → parallel dispatch)
+%%   SEQ-4 — EC10 hard floor      (Citation-gated CLI emission)
+
+%% ====================================================================
+%% SEQ-1 — Probe SDK ↔ Collector joint tuning
+%% Resolves:
+%%   EC1↔EC2 (-1): probe frequency ↔ aggregation window
+%%   EC2↔EC4 (-1): aggregation window ↔ batch size
+%% M6 resolution: joint tuning contract + time-based flush fallback on IF-17/IF-18.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS9  as SS9 Probe SDK&lt;br/&gt;(customer-side)
+    participant SS10 as SS10 Metrics Collector
+    participant SS11 as SS11 Metric Store
+
+    Note over SS9,SS10: IF-18 initial config push (collector owns EC1+EC2+EC4 jointly)
+    SS10-&gt;&gt;SS9: cfg{probe_freq=6/min (EC1), aggregation_window=60 min (EC2), batch_size=50 (EC4), flush_fallback=10}
+
+    loop every probe tick (≤6/min, EC1)
+        SS9-&gt;&gt;SS9: enqueue event (payload ≤4 KB, EC3)
+        alt batch reaches 50 events (EC4 satisfied)
+            SS9-&gt;&gt;SS10: IF-17 probe payload (batch=50)
+        else 60-min window elapses without batch fill (roof EC2↔EC4)
+            SS9-&gt;&gt;SS10: IF-17 TIME-BASED FLUSH (batch≥flush_fallback)
+            Note right of SS9: Prevents batch-starvation when probe_freq too low for window
+        end
+    end
+
+    SS10-&gt;&gt;SS10: aggregate (60-min window, EC2)
+    SS10-&gt;&gt;SS11: IF-19 aggregated write
+    alt probe_freq &gt; 6/min OR payload &gt; 4 KB (overhead violation)
+        SS10-&gt;&gt;SS9: IF-18 backpressure · REJECT · cfg{probe_freq↓}
+        SS10--&gt;&gt;SS10: IF-26 audit probe-rejection (I.EXT.9)
+    end
+
+%% ====================================================================
+%% SEQ-2 — Traceback cache invalidation (EC9↔EC11, STRONGEST roof negative -2)
+%% Resolves: TTL=24h + refresh_cadence=7d. Invalidation event = vendor doc refresh triggers
+%% expiry of every cache entry keyed to the refreshed doc.
+%% M6 resolution: intra-SS7 invalidation protocol (cache ↔ fetcher inside one subsystem).
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS3  as SS3 Agent Orchestrator
+    participant SS6  as SS6 Spec Generator
+    participant CA   as SS7.cache&lt;br/&gt;(TTL 24h · EC9)
+    participant FE   as SS7.fetcher&lt;br/&gt;(refresh 7d · EC11)
+    participant DOCS as Documentation Sources&lt;br/&gt;(I.EXT.5)
+
+    Note over CA,FE: Cache and fetcher live inside SS7 — invalidation is intra-subsystem
+
+    SS6-&gt;&gt;CA: IF-13 citation_check(claim)
+    alt cache HIT and not expired (age &lt; 24h, EC9)
+        CA--&gt;&gt;SS6: IF-14 traced citation
+    else cache MISS or expired
+        CA-&gt;&gt;FE: fetch(source_uri)
+        FE-&gt;&gt;DOCS: GET vendor doc
+        DOCS--&gt;&gt;FE: doc content
+        FE-&gt;&gt;CA: write(citation, fetched_at=now)
+        CA--&gt;&gt;SS6: IF-14 traced citation
+    end
+
+    Note over FE: Every 7d per source (EC11)
+    FE-&gt;&gt;DOCS: refresh(source_uri)
+    DOCS--&gt;&gt;FE: new doc content (hash changed?)
+    alt new hash
+        FE-&gt;&gt;CA: INVALIDATE all entries keyed to source_uri
+        Note right of CA: Resolves EC9↔EC11 roof (-2): stale TTL is not allowed to outlive refresh
+        CA--&gt;&gt;SS3: invalidation event (for in-flight specs)
+    else same hash
+        FE-&gt;&gt;CA: extend fetched_at (no invalidation needed)
+    end
+
+%% ====================================================================
+%% SEQ-3 — Session lock → parallel dispatch (EC5↔EC6 -1)
+%% Resolves: routing policy MUST be written before dispatch (avoids race between
+%% per-request routing and parallel dispatch decisions).
+%% M6 resolution: synchronous IF-09 (SS2→SS4 policy write) before IF-03 returns.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS1  as SS1 Founder Web UI
+    participant SS2  as SS2 Session Manager
+    participant SS13 as SS13 Credential Vault
+    participant SS4  as SS4 LLM Provider Layer
+    participant SS3  as SS3 Agent Orchestrator
+
+    SS1-&gt;&gt;SS2: IF-01 login + mode select (cloud | local)
+    SS2-&gt;&gt;SS13: auth principal
+    SS13--&gt;&gt;SS2: IF-27 signed session JWT (EC17)
+
+    Note over SS2: lock_mode(cloud | local) · mode pin per session (EC5)
+    SS2-&gt;&gt;SS4: IF-09 routing policy write&lt;br/&gt;(scale=2 per-session, EC5)
+    SS13-&gt;&gt;SS4: IF-29 provider credentials (for selected mode)
+    SS4--&gt;&gt;SS2: ack(routing_set=true)
+
+    Note over SS2,SS3: EC5↔EC6 resolution — dispatch cannot occur before routing is confirmed
+    SS2-&gt;&gt;SS3: IF-03 dispatch(principal, locked_mode, intake_payload)
+    activate SS3
+
+    par up to 5 parallel agents (EC6)
+        SS3-&gt;&gt;SS4: IF-07 LLM call · agent A (≤8000 tok EC8)
+        SS3-&gt;&gt;SS4: IF-07 LLM call · agent B (≤8000 tok EC8)
+        SS3-&gt;&gt;SS4: IF-07 LLM call · agent C (≤8000 tok EC8)
+    end
+    SS3--&gt;&gt;SS2: IF-04 agent run state
+    deactivate SS3
+
+    Note over SS3: If dispatch were issued before IF-09 ack, agents could fan out to the wrong provider — the invariant BLOCKS that.
+
+%% ====================================================================
+%% SEQ-4 — Citation-gated CLI emission (EC10 hard floor, rank 4)
+%% Resolves: 100% citation floor is a HARD gate — emission MUST NOT fire with
+%% any unresolved claim. Shows SS6→SS7 check → SS3 review outcome → SS8 emit/block.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS1 as SS1 Founder Web UI
+    participant SS3 as SS3 Agent Orchestrator
+    participant SS6 as SS6 Spec Generator
+    participant SS7 as SS7 Traceback Store
+    participant SS8 as SS8 CLI Bundle Emitter
+    participant SS14 as SS14 Audit Log Store
+    participant VCS as Version Control&lt;br/&gt;(I.EXT.3)
+
+    SS3-&gt;&gt;SS6: IF-11 generate spec(requirements)
+    SS6-&gt;&gt;SS6: draft spec (Mermaid v1, EC12)
+
+    Note over SS6,SS7: EC10 HARD FLOOR — every claim must resolve
+    SS6-&gt;&gt;SS7: IF-13 citation_check(claims[])
+    SS7--&gt;&gt;SS6: IF-14 citations[] + unresolved[]
+
+    alt unresolved.length &gt; 0
+        SS6--&gt;&gt;SS3: IF-12 draft · pending_review=true · citation_miss=N
+        SS3-&gt;&gt;SS14: IF-24 audit(citation_miss)
+        SS3--&gt;&gt;SS1: IF-02 "spec blocked: N unresolved citations"
+        Note right of SS3: EMISSION BLOCKED. No IF-15 fires.
+    else unresolved.length == 0 (EC10 = 100% satisfied)
+        SS6--&gt;&gt;SS3: IF-12 draft · pending_review=true · citations_ok
+        SS3-&gt;&gt;SS1: IF-02 render spec for approval
+        SS1-&gt;&gt;SS6: IF-31 approve
+        SS6--&gt;&gt;SS1: IF-32 rendered Mermaid (review)
+
+        SS3-&gt;&gt;SS8: IF-15 emit CLI bundle(spec_uri)&lt;br/&gt;(citation-gate PASSED)
+        SS8-&gt;&gt;SS8: package + sign (≤5 MB, EC14)
+        SS8-&gt;&gt;VCS: IF-EXT-04 signed commit
+        SS8--&gt;&gt;SS3: IF-16 receipt + signature + vcs_ref
+        SS3-&gt;&gt;SS14: IF-24 audit(emission_success)
+        SS8-&gt;&gt;SS14: IF-25 audit(bundle_id, hash, signer, vcs_commit)
+        SS3--&gt;&gt;SS1: IF-02 "CLI bundle ready"
+    end
+</pre><figcaption>system-design/kb-upgrade-v2/module-7-interfaces/sequence_diagrams.mmd <details><summary>show source</summary><pre><code>%% c1v Dual-Mode Platform — Sequence Diagrams
+%% Module 6 — Defining Interfaces (2026-04-20)
+%% Source: system-design/module-6-qfd/interfaces_handoff.json (cross-interface coordination constraints)
+%%
+%% One diagram per QFD roof negative pair. Each diagram shows HOW M6 resolves the tradeoff
+%% via an interface contract that coordinates the two conflicting ECs.
+%%
+%% Four diagrams:
+%%   SEQ-1 — EC1↔EC2 + EC2↔EC4  (Probe SDK ↔ Collector joint tuning)
+%%   SEQ-2 — EC9↔EC11            (Traceback cache invalidation inside SS7)
+%%   SEQ-3 — EC5↔EC6             (Session lock → parallel dispatch)
+%%   SEQ-4 — EC10 hard floor      (Citation-gated CLI emission)
+
+%% ====================================================================
+%% SEQ-1 — Probe SDK ↔ Collector joint tuning
+%% Resolves:
+%%   EC1↔EC2 (-1): probe frequency ↔ aggregation window
+%%   EC2↔EC4 (-1): aggregation window ↔ batch size
+%% M6 resolution: joint tuning contract + time-based flush fallback on IF-17/IF-18.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS9  as SS9 Probe SDK&lt;br/&gt;(customer-side)
+    participant SS10 as SS10 Metrics Collector
+    participant SS11 as SS11 Metric Store
+
+    Note over SS9,SS10: IF-18 initial config push (collector owns EC1+EC2+EC4 jointly)
+    SS10-&gt;&gt;SS9: cfg{probe_freq=6/min (EC1), aggregation_window=60 min (EC2), batch_size=50 (EC4), flush_fallback=10}
+
+    loop every probe tick (≤6/min, EC1)
+        SS9-&gt;&gt;SS9: enqueue event (payload ≤4 KB, EC3)
+        alt batch reaches 50 events (EC4 satisfied)
+            SS9-&gt;&gt;SS10: IF-17 probe payload (batch=50)
+        else 60-min window elapses without batch fill (roof EC2↔EC4)
+            SS9-&gt;&gt;SS10: IF-17 TIME-BASED FLUSH (batch≥flush_fallback)
+            Note right of SS9: Prevents batch-starvation when probe_freq too low for window
+        end
+    end
+
+    SS10-&gt;&gt;SS10: aggregate (60-min window, EC2)
+    SS10-&gt;&gt;SS11: IF-19 aggregated write
+    alt probe_freq &gt; 6/min OR payload &gt; 4 KB (overhead violation)
+        SS10-&gt;&gt;SS9: IF-18 backpressure · REJECT · cfg{probe_freq↓}
+        SS10--&gt;&gt;SS10: IF-26 audit probe-rejection (I.EXT.9)
+    end
+
+%% ====================================================================
+%% SEQ-2 — Traceback cache invalidation (EC9↔EC11, STRONGEST roof negative -2)
+%% Resolves: TTL=24h + refresh_cadence=7d. Invalidation event = vendor doc refresh triggers
+%% expiry of every cache entry keyed to the refreshed doc.
+%% M6 resolution: intra-SS7 invalidation protocol (cache ↔ fetcher inside one subsystem).
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS3  as SS3 Agent Orchestrator
+    participant SS6  as SS6 Spec Generator
+    participant CA   as SS7.cache&lt;br/&gt;(TTL 24h · EC9)
+    participant FE   as SS7.fetcher&lt;br/&gt;(refresh 7d · EC11)
+    participant DOCS as Documentation Sources&lt;br/&gt;(I.EXT.5)
+
+    Note over CA,FE: Cache and fetcher live inside SS7 — invalidation is intra-subsystem
+
+    SS6-&gt;&gt;CA: IF-13 citation_check(claim)
+    alt cache HIT and not expired (age &lt; 24h, EC9)
+        CA--&gt;&gt;SS6: IF-14 traced citation
+    else cache MISS or expired
+        CA-&gt;&gt;FE: fetch(source_uri)
+        FE-&gt;&gt;DOCS: GET vendor doc
+        DOCS--&gt;&gt;FE: doc content
+        FE-&gt;&gt;CA: write(citation, fetched_at=now)
+        CA--&gt;&gt;SS6: IF-14 traced citation
+    end
+
+    Note over FE: Every 7d per source (EC11)
+    FE-&gt;&gt;DOCS: refresh(source_uri)
+    DOCS--&gt;&gt;FE: new doc content (hash changed?)
+    alt new hash
+        FE-&gt;&gt;CA: INVALIDATE all entries keyed to source_uri
+        Note right of CA: Resolves EC9↔EC11 roof (-2): stale TTL is not allowed to outlive refresh
+        CA--&gt;&gt;SS3: invalidation event (for in-flight specs)
+    else same hash
+        FE-&gt;&gt;CA: extend fetched_at (no invalidation needed)
+    end
+
+%% ====================================================================
+%% SEQ-3 — Session lock → parallel dispatch (EC5↔EC6 -1)
+%% Resolves: routing policy MUST be written before dispatch (avoids race between
+%% per-request routing and parallel dispatch decisions).
+%% M6 resolution: synchronous IF-09 (SS2→SS4 policy write) before IF-03 returns.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS1  as SS1 Founder Web UI
+    participant SS2  as SS2 Session Manager
+    participant SS13 as SS13 Credential Vault
+    participant SS4  as SS4 LLM Provider Layer
+    participant SS3  as SS3 Agent Orchestrator
+
+    SS1-&gt;&gt;SS2: IF-01 login + mode select (cloud | local)
+    SS2-&gt;&gt;SS13: auth principal
+    SS13--&gt;&gt;SS2: IF-27 signed session JWT (EC17)
+
+    Note over SS2: lock_mode(cloud | local) · mode pin per session (EC5)
+    SS2-&gt;&gt;SS4: IF-09 routing policy write&lt;br/&gt;(scale=2 per-session, EC5)
+    SS13-&gt;&gt;SS4: IF-29 provider credentials (for selected mode)
+    SS4--&gt;&gt;SS2: ack(routing_set=true)
+
+    Note over SS2,SS3: EC5↔EC6 resolution — dispatch cannot occur before routing is confirmed
+    SS2-&gt;&gt;SS3: IF-03 dispatch(principal, locked_mode, intake_payload)
+    activate SS3
+
+    par up to 5 parallel agents (EC6)
+        SS3-&gt;&gt;SS4: IF-07 LLM call · agent A (≤8000 tok EC8)
+        SS3-&gt;&gt;SS4: IF-07 LLM call · agent B (≤8000 tok EC8)
+        SS3-&gt;&gt;SS4: IF-07 LLM call · agent C (≤8000 tok EC8)
+    end
+    SS3--&gt;&gt;SS2: IF-04 agent run state
+    deactivate SS3
+
+    Note over SS3: If dispatch were issued before IF-09 ack, agents could fan out to the wrong provider — the invariant BLOCKS that.
+
+%% ====================================================================
+%% SEQ-4 — Citation-gated CLI emission (EC10 hard floor, rank 4)
+%% Resolves: 100% citation floor is a HARD gate — emission MUST NOT fire with
+%% any unresolved claim. Shows SS6→SS7 check → SS3 review outcome → SS8 emit/block.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS1 as SS1 Founder Web UI
+    participant SS3 as SS3 Agent Orchestrator
+    participant SS6 as SS6 Spec Generator
+    participant SS7 as SS7 Traceback Store
+    participant SS8 as SS8 CLI Bundle Emitter
+    participant SS14 as SS14 Audit Log Store
+    participant VCS as Version Control&lt;br/&gt;(I.EXT.3)
+
+    SS3-&gt;&gt;SS6: IF-11 generate spec(requirements)
+    SS6-&gt;&gt;SS6: draft spec (Mermaid v1, EC12)
+
+    Note over SS6,SS7: EC10 HARD FLOOR — every claim must resolve
+    SS6-&gt;&gt;SS7: IF-13 citation_check(claims[])
+    SS7--&gt;&gt;SS6: IF-14 citations[] + unresolved[]
+
+    alt unresolved.length &gt; 0
+        SS6--&gt;&gt;SS3: IF-12 draft · pending_review=true · citation_miss=N
+        SS3-&gt;&gt;SS14: IF-24 audit(citation_miss)
+        SS3--&gt;&gt;SS1: IF-02 "spec blocked: N unresolved citations"
+        Note right of SS3: EMISSION BLOCKED. No IF-15 fires.
+    else unresolved.length == 0 (EC10 = 100% satisfied)
+        SS6--&gt;&gt;SS3: IF-12 draft · pending_review=true · citations_ok
+        SS3-&gt;&gt;SS1: IF-02 render spec for approval
+        SS1-&gt;&gt;SS6: IF-31 approve
+        SS6--&gt;&gt;SS1: IF-32 rendered Mermaid (review)
+
+        SS3-&gt;&gt;SS8: IF-15 emit CLI bundle(spec_uri)&lt;br/&gt;(citation-gate PASSED)
+        SS8-&gt;&gt;SS8: package + sign (≤5 MB, EC14)
+        SS8-&gt;&gt;VCS: IF-EXT-04 signed commit
+        SS8--&gt;&gt;SS3: IF-16 receipt + signature + vcs_ref
+        SS3-&gt;&gt;SS14: IF-24 audit(emission_success)
+        SS8-&gt;&gt;SS14: IF-25 audit(bundle_id, hash, signer, vcs_commit)
+        SS3--&gt;&gt;SS1: IF-02 "CLI bundle ready"
+    end
+</code></pre></details></figcaption></figure>
 </div>
+<!-- Mermaid renderer (loaded from CDN; offline viewers see source via <pre>). -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    window.mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  }
+</script>
 </body>
 </html>

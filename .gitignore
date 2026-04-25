@@ -97,3 +97,7 @@ docs/CESYS525*
 
 # Sandbox / parked experiments (safety net for future forks)
 _sandbox/
+
+# Python venvs (artifact-generators local env)
+.venv/
+**/.venv/
