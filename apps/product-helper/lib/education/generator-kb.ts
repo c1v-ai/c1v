@@ -88,7 +88,8 @@ ${catalog.entities
 ### Constraint & Relationship Patterns
 - **Foreign keys**: Always define with ON DELETE action (CASCADE for children, SET NULL for optional refs, RESTRICT to prevent orphans)
 - **Indexes**: All foreign keys (PG does NOT auto-index FKs), columns in WHERE/ORDER BY, partial indexes for filtered queries
-- One-to-many: FK on the "many" side. Many-to-many: Junction table with composite unique.`);
+- One-to-many: FK on the "many" side. Many-to-many: Junction table with composite unique.
+- **Direction rule**: Always model FK relationships as \`one-to-many\` from the parent's perspective. If \`Child belongs_to Parent\`, that's \`Parent one-to-many Child\` (FK on Child). Never use \`many-to-one\` — it is auto-normalized but adds a wasted token.`);
 
   // Multi-tenancy for B2B
   if (context?.market === 'b2b' || context?.market === 'b2b2c') {

@@ -12,12 +12,23 @@
  * @module lib/langchain/agents/__tests__/schema-extraction-agent.test.ts
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+
+jest.mock('../../config', () => ({
+  createClaudeAgent: jest.fn(),
+}));
+
 import {
   buildSchemaExtractionPromptText,
+  databaseSchemaSchema,
+  extractDatabaseSchema,
   formatInterfacePayloadsSection,
+  inferCardinalityFromString,
   type SchemaExtractionContext,
 } from '../schema-extraction-agent';
+import { createClaudeAgent } from '../../config';
+
+const mockedCreate = createClaudeAgent as jest.MockedFunction<typeof createClaudeAgent>;
 
 function baseContext(): SchemaExtractionContext {
   return {
@@ -153,5 +164,97 @@ describe('schema format helper — isolated', () => {
     );
     expect(out).toContain('- **IF-01**: A → B — payload: x');
     expect(out).not.toContain('[undefined]');
+  });
+});
+
+describe('extractDatabaseSchema — runtime', () => {
+  beforeEach(() => {
+    mockedCreate.mockReset();
+  });
+
+  it('normalizes many-to-one to one-to-many via Zod transform', async () => {
+    const llmEntities = {
+      entities: [
+        {
+          name: 'Worker',
+          description: 'A field worker',
+          fields: [
+            {
+              name: 'id',
+              type: 'uuid',
+              nullable: false,
+              constraints: ['PRIMARY KEY'],
+              description: 'PK',
+            },
+          ],
+          relationships: [
+            {
+              type: 'many-to-one',
+              targetEntity: 'Organization',
+              foreignKey: 'organization_id',
+              description: 'belongs to Organization',
+            },
+          ],
+          indexes: [],
+        },
+      ],
+      enums: [],
+    };
+    // Simulate LangChain `withStructuredOutput` — invoke returns the
+    // Zod-parsed (post-transform) shape. The transform on
+    // databaseRelationshipSchema.type rewrites many-to-one → one-to-many.
+    mockedCreate.mockReturnValue({
+      invoke: jest
+        .fn<() => Promise<unknown>>()
+        .mockResolvedValue(databaseSchemaSchema.parse(llmEntities)),
+    } as never);
+
+    const ctx: SchemaExtractionContext = {
+      ...baseContext(),
+      dataEntities: [
+        { name: 'Worker', attributes: ['id'], relationships: ['belongs_to Organization'] },
+      ],
+    };
+    const result = await extractDatabaseSchema(ctx);
+    expect(result.entities[0].relationships[0].type).toBe('one-to-many');
+
+    // Direct schema-level assertion: the transform fires on parse.
+    const parsed = databaseSchemaSchema.parse(llmEntities);
+    expect(parsed.entities[0].relationships[0].type).toBe('one-to-many');
+  });
+
+  it('falls back to inferCardinalityFromString when both LLM attempts fail', async () => {
+    mockedCreate.mockReturnValue({
+      invoke: jest.fn<() => Promise<unknown>>().mockResolvedValue({}),
+    } as never);
+
+    const ctx: SchemaExtractionContext = {
+      ...baseContext(),
+      dataEntities: [
+        {
+          name: 'Worker',
+          attributes: ['name'],
+          relationships: ['belongs_to Organization'],
+        },
+      ],
+    };
+    const result = await extractDatabaseSchema(ctx);
+    expect(result.entities).toHaveLength(1);
+    expect(result.entities[0].relationships[0].type).toBe('one-to-many');
+    expect(result.entities[0].relationships[0].targetEntity).toBe('belongs_to Organization');
+  });
+
+  it('inferCardinalityFromString covers junction, has_one, and default branches', () => {
+    expect(inferCardinalityFromString('junction Worker-Organization')).toBe('many-to-many');
+    expect(inferCardinalityFromString('many-to-many Tag')).toBe('many-to-many');
+    expect(inferCardinalityFromString('m2m Tag')).toBe('many-to-many');
+    expect(inferCardinalityFromString('pivot table')).toBe('many-to-many');
+    expect(inferCardinalityFromString('has_one Profile')).toBe('one-to-one');
+    expect(inferCardinalityFromString('one-to-one Profile')).toBe('one-to-one');
+    expect(inferCardinalityFromString('1:1 Profile')).toBe('one-to-one');
+    expect(inferCardinalityFromString('belongs_to Organization')).toBe('one-to-many');
+    expect(inferCardinalityFromString('assigned_to Supervisor')).toBe('one-to-many');
+    expect(inferCardinalityFromString('has_many Workers')).toBe('one-to-many');
+    expect(inferCardinalityFromString('references Foo')).toBe('one-to-many');
   });
 });

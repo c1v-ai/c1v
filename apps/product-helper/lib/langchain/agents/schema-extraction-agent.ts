@@ -42,7 +42,12 @@ const databaseFieldSchema = z.object({
 
 const databaseRelationshipSchema = z.object({
   name: z.string().optional().describe('Optional relationship name for documentation'),
-  type: z.enum(['one-to-one', 'one-to-many', 'many-to-many']).describe('Cardinality of the relationship'),
+  type: z
+    .enum(['one-to-one', 'one-to-many', 'many-to-many', 'many-to-one'])
+    .transform((t) => (t === 'many-to-one' ? 'one-to-many' : t))
+    .describe(
+      'Cardinality. Express FK relationships as one-to-many from the PARENT side; many-to-one is auto-normalized.',
+    ),
   targetEntity: z.string().describe('Name of the related entity (e.g., "User", "Order")'),
   foreignKey: z.string().describe('Field name that holds the foreign key (e.g., "user_id")'),
   targetKey: z.string().optional().describe('Target entity key field (defaults to "id")'),
@@ -366,7 +371,7 @@ Add id (uuid), created_at, updated_at to every entity.`;
     ],
     indexes: [],
     relationships: e.relationships.map(r => ({
-      type: 'many-to-many' as const,
+      type: inferCardinalityFromString(r),
       targetEntity: r,
       foreignKey: `${r.toLowerCase().replace(/\s+/g, '_')}_id`,
       description: `References ${r}`,
@@ -379,6 +384,23 @@ Add id (uuid), created_at, updated_at to every entity.`;
     version: '1.0.0',
     generatedAt: new Date().toISOString(),
   };
+}
+
+/**
+ * Infer cardinality from a free-text relationship string supplied by the
+ * upstream extractor. Used by the deterministic fallback path when both
+ * LLM attempts fail. Default is `one-to-many` because most belongs_to /
+ * assigned_to / has_many phrasings normalize to that direction once the
+ * FK is placed on the child.
+ */
+export function inferCardinalityFromString(
+  rel: string,
+): 'one-to-one' | 'one-to-many' | 'many-to-many' {
+  const r = rel.toLowerCase();
+  if (/(many[\s_-]to[\s_-]many|\bm2m\b|\bjunction\b|\bpivot\b|both directions)/.test(r))
+    return 'many-to-many';
+  if (/(has[\s_-]one|one[\s_-]to[\s_-]one|\b1:1\b)/.test(r)) return 'one-to-one';
+  return 'one-to-many';
 }
 
 /**
