@@ -230,10 +230,40 @@ def _render_html(
             "or in cited moduleReferences dirs; html will lack embedded figures"
         )
 
-    module_rows = "\n".join(
-        f"<tr><td>{_escape(m.get('module', ''))}</td><td>{_escape(m.get('artifact', ''))}</td></tr>"
-        for m in modules
-    ) or "<tr><td colspan='2'>(none)</td></tr>"
+    _viewer_exts = (".xlsx", ".pdf", ".pptx", ".md", ".mmd", ".html", ".csv")
+
+    def _row_for(m: dict) -> str:
+        mod_label = _escape(m.get("module", ""))
+        artifact_rel = (m.get("artifact") or "").strip()
+        if not artifact_rel:
+            return f"<tr><td>{mod_label}</td><td></td><td></td></tr>"
+        abs_path = (repo_root / artifact_rel).resolve()
+        artifact_link = (
+            f'<a href="file://{abs_path}">{_escape(artifact_rel)}</a>'
+            if abs_path.exists()
+            else _escape(artifact_rel)
+        )
+        # Sibling viewers in the same dir
+        viewer_links: list[str] = []
+        if abs_path.exists():
+            sib_dir = abs_path.parent
+            for sib in sorted(sib_dir.iterdir()):
+                if not sib.is_file() or sib == abs_path:
+                    continue
+                if sib.suffix.lower() not in _viewer_exts:
+                    continue
+                viewer_links.append(
+                    f'<a href="file://{sib.resolve()}" '
+                    f'style="display:inline-block;background:#F0F4F7;'
+                    f'padding:.05rem .35rem;margin:.1rem .15rem .1rem 0;'
+                    f'border-radius:2px;font-size:.75rem;text-decoration:none;'
+                    f'color:#0B2C29;border:1px solid #dcdcdc">'
+                    f'{_escape(sib.name)}</a>'
+                )
+        viewers_cell = "".join(viewer_links) if viewer_links else '<span style="color:#999;font-size:.8rem">—</span>'
+        return f"<tr><td>{mod_label}</td><td>{artifact_link}</td><td>{viewers_cell}</td></tr>"
+
+    module_rows = "\n".join(_row_for(m) for m in modules) or "<tr><td colspan='3'>(none)</td></tr>"
 
     risk_rows = "\n".join(
         f"<tr><td>{_escape(r.get('id', ''))}</td><td>{_escape(r.get('description', ''))}</td></tr>"
@@ -267,7 +297,7 @@ def _render_html(
 
   <h2>Referenced module outputs</h2>
   <table>
-    <thead><tr><th>Module</th><th>Artifact</th></tr></thead>
+    <thead><tr><th>Module</th><th>Artifact (click to open)</th><th>Sibling viewers</th></tr></thead>
     <tbody>{module_rows}</tbody>
   </table>
 
