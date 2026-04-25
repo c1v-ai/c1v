@@ -74,6 +74,78 @@ _INLINE_CSS = """
 """
 
 
+_MMD_DIAGRAM_KEYWORDS = (
+    "sequenceDiagram", "flowchart", "graph", "classDiagram", "stateDiagram",
+    "stateDiagram-v2", "erDiagram", "journey", "gantt", "pie", "gitGraph",
+    "mindmap", "timeline", "quadrantChart", "C4Context", "C4Container",
+)
+
+
+def _split_multidiagram_mmd(src: str) -> list[str]:
+    """Split a .mmd file containing multiple diagrams into one block per diagram.
+
+    Some authored files bundle several diagrams separated by %% comment headers.
+    Mermaid only renders one diagram per block, so we split before each
+    diagram-keyword line. Leading comments stay with the following diagram.
+    """
+    lines = src.splitlines(keepends=True)
+    boundaries: list[int] = []
+    for i, line in enumerate(lines):
+        stripped = line.lstrip()
+        if not stripped or stripped.startswith("%%"):
+            continue
+        first_token = stripped.split()[0] if stripped.split() else ""
+        if first_token in _MMD_DIAGRAM_KEYWORDS:
+            boundaries.append(i)
+    if len(boundaries) <= 1:
+        return [src]
+
+    blocks: list[str] = []
+    # Walk back from each boundary to include any preceding contiguous %% lines
+    starts: list[int] = []
+    for b in boundaries:
+        s = b
+        while s > 0 and (lines[s - 1].lstrip().startswith("%%") or lines[s - 1].strip() == ""):
+            s -= 1
+        # Don't pull in lines that already belong to the previous block
+        if starts and s < starts[-1] + 1:
+            s = boundaries[len(starts) - 1] + 1 if len(starts) - 1 < len(boundaries) else b
+        starts.append(s if not starts else max(s, starts[-1] + 1))
+
+    for idx, start in enumerate(starts):
+        end = starts[idx + 1] if idx + 1 < len(starts) else len(lines)
+        block = "".join(lines[start:end]).strip()
+        if block:
+            blocks.append(block)
+    return blocks or [src]
+
+
+def _emit_mmd_figure(src: str, caption: str) -> str:
+    """Render one or more <figure> blocks for a .mmd source. Multi-diagram
+    files are split into separate Mermaid blocks so each renders cleanly."""
+    blocks = _split_multidiagram_mmd(src)
+    if len(blocks) == 1:
+        return (
+            '<figure class="fig">'
+            f'<pre class="mermaid">{_escape(blocks[0])}</pre>'
+            f'<figcaption>{caption} '
+            '<details><summary>show source</summary>'
+            f'<pre><code>{_escape(blocks[0])}</code></pre></details>'
+            '</figcaption></figure>'
+        )
+    parts: list[str] = []
+    for i, block in enumerate(blocks, 1):
+        parts.append(
+            '<figure class="fig">'
+            f'<pre class="mermaid">{_escape(block)}</pre>'
+            f'<figcaption>{caption} (diagram {i} of {len(blocks)}) '
+            '<details><summary>show source</summary>'
+            f'<pre><code>{_escape(block)}</code></pre></details>'
+            '</figcaption></figure>'
+        )
+    return "".join(parts)
+
+
 def _b64_data_uri(path: Path, mime: str) -> str:
     data = path.read_bytes()
     return f"data:{mime};base64,{base64.b64encode(data).decode('ascii')}"
@@ -139,14 +211,7 @@ def _render_html(
             except Exception:
                 continue
             rel = mmd_path.relative_to(repo_root) if repo_root in mmd_path.parents else mmd_path
-            artifact_sections.append(
-                '<figure class="fig">'
-                f'<pre class="mermaid">{_escape(src)}</pre>'
-                f'<figcaption>{_escape(str(rel))} '
-                '<details><summary>show source</summary>'
-                f'<pre><code>{_escape(src)}</code></pre></details>'
-                '</figcaption></figure>'
-            )
+            artifact_sections.append(_emit_mmd_figure(src, _escape(str(rel))))
 
     # Fall back: still glob output_dir for any .mmd dropped there
     for mmd_path in sorted(output_dir.glob("*.mmd")):
@@ -157,11 +222,7 @@ def _render_html(
             src = mmd_path.read_text(encoding="utf-8")
         except Exception:
             continue
-        artifact_sections.append(
-            '<figure class="fig">'
-            f'<pre class="mermaid">{_escape(src)}</pre>'
-            f'<figcaption>{mmd_path.name}</figcaption></figure>'
-        )
+        artifact_sections.append(_emit_mmd_figure(src, _escape(mmd_path.name)))
 
     if not artifact_sections:
         warnings.append(
