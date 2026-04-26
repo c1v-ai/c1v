@@ -558,7 +558,7 @@ Notes: Optimized for each stack
 - **v2 release notes:** `plans/v2-release-notes.md` (commit `7e2b202`) — end-to-end summary: shipped/deferred/portfolio-artifact.
 - **Post-v2 backlog:** `plans/post-v2-followups.md` — `projects` table RLS hardening, fmea_residual prose-vs-data drift, kb_chunk_ids placeholders, weasyprint PDF.
 - **v2 handoff:** `plans/HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md` — transcript + verbatim quotes + locked decisions.
-- **Methodology correction:** `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases. Canonical-resolution audit at `plans/v21-outputs/ta1/methodology-canonical.md` (NOTE: that audit names `plans/kb-upgrade-v2/...` as canonical, but on current disk the only file is the `system-design/` path; physical relocation deferred to follow-up).
+- **Methodology correction:** `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases. Canonical home declared at `plans/v21-outputs/ta1/methodology-canonical.md` (2026-04-26 reconciliation revoked the original 2026-04-25 lock — that lock was built on hallucinated disk facts; see audit doc for details).
 - **Crawley source-of-truth:** `plans/research/crawley-book-findings.md` — agents read this; do NOT rescan the book.
 
 ## Team Status (cumulative across sessions)
