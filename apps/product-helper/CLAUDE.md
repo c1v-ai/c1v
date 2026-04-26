@@ -6,6 +6,8 @@
 
 AI-native PRD generation tool that teaches systems engineering methodology while guiding users through professional requirements creation.
 
+> **Design contract:** [`DESIGN.md`](./DESIGN.md) is the source-of-truth for design tokens (colors, typography, spacing, radius) and component patterns. Extracted from the live deploy at prd.c1v.ai. Match exactly when writing UI — no liberties with CSS, no interpretation. If a token in DESIGN.md disagrees with code, the discrepancy is a finding to surface, not silently reconcile.
+
 ## Tech Stack
 
 - **Framework:** Next.js 15 (App Router, RSC, Turbopack)
