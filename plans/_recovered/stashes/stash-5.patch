@@ -1,0 +1,174 @@
+diff --git a/apps/product-helper/lib/db/schema.ts b/apps/product-helper/lib/db/schema.ts
+index c9aa207..58ce5d1 100644
+--- a/apps/product-helper/lib/db/schema.ts
++++ b/apps/product-helper/lib/db/schema.ts
+@@ -251,10 +251,18 @@ export const conversations = pgTable('conversations', {
+   role: varchar('role', { length: 20 }).notNull(),
+   content: text('content').notNull(),
+   tokens: integer('tokens'),
++  // TA1 v2.1: row kind ('message' default; 'pending_answer' for system OpenQuestions)
++  kind: varchar('kind', { length: 32 }).notNull().default('message'),
++  // TA1 v2.1: reply target — points at the pending_answer row this row answers
++  parentId: integer('parent_id'),
++  // TA1 v2.1: OpenQuestion payload { source, computed_options, math_trace }
++  metadata: jsonb('metadata'),
+   createdAt: timestamp('created_at').notNull().defaultNow(),
+ }, (table) => ({
+   projectIdIdx: index('conversations_project_id_idx').on(table.projectId),
+   createdAtIdx: index('conversations_created_at_idx').on(table.createdAt),
++  parentIdIdx: index('conversations_parent_id_idx').on(table.parentId),
++  kindIdx: index('conversations_kind_idx').on(table.kind),
+ }));
+ 
+ // LangGraph State Checkpointing
+diff --git a/apps/product-helper/lib/langchain/agents/system-design/fmea-residual-agent.ts b/apps/product-helper/lib/langchain/agents/system-design/fmea-residual-agent.ts
+index e990f8d..033e017 100644
+--- a/apps/product-helper/lib/langchain/agents/system-design/fmea-residual-agent.ts
++++ b/apps/product-helper/lib/langchain/agents/system-design/fmea-residual-agent.ts
+@@ -248,3 +248,43 @@ export async function runFmeaResidualAgent(
+ 
+ export { fmeaResidualSchema };
+ export const FMEA_RESIDUAL_AGENT_VERSION = '1.0.0-t6';
++
++import type { OpenQuestionEvent } from '@/lib/chat/system-question-bridge.types';
++
++/**
++ * Emitter contract — runtime caller supplies the bridge.surfaceOpenQuestion
++ * binding. Agent calls `emit` for residual flag decisions that fall below
++ * the confidence threshold (e.g. ambiguous detectability scoring on a
++ * surviving FM, unresolved decision_anchor on a 'new' FM).
++ */
++export type FmeaResidualOpenQuestionEmitter = (
++  ev: Omit<OpenQuestionEvent, 'source'>,
++) => Promise<unknown>;
++
++/** Confidence threshold for residual FM scoring decisions. */
++export const FMEA_RESIDUAL_OPEN_QUESTION_CONFIDENCE_THRESHOLD = 0.9;
++
++/**
++ * Decision-point hook for low-confidence residual FM rows. When emit is
++ * provided AND final_confidence < threshold, surfaces the question and
++ * returns true so the caller can either drop or placeholder the row.
++ */
++export async function maybeSurfaceResidualOpenQuestion(args: {
++  emit?: FmeaResidualOpenQuestionEmitter;
++  project_id: number;
++  final_confidence: number;
++  question: string;
++  computed_options?: unknown[];
++  math_trace?: string;
++  threshold?: number;
++}): Promise<boolean> {
++  const t = args.threshold ?? FMEA_RESIDUAL_OPEN_QUESTION_CONFIDENCE_THRESHOLD;
++  if (!args.emit || args.final_confidence >= t) return false;
++  await args.emit({
++    project_id: args.project_id,
++    question: args.question,
++    computed_options: args.computed_options,
++    math_trace: args.math_trace,
++  });
++  return true;
++}
+diff --git a/apps/product-helper/lib/langchain/agents/system-design/hoq-agent.ts b/apps/product-helper/lib/langchain/agents/system-design/hoq-agent.ts
+index fea334e..a58eb43 100644
+--- a/apps/product-helper/lib/langchain/agents/system-design/hoq-agent.ts
++++ b/apps/product-helper/lib/langchain/agents/system-design/hoq-agent.ts
+@@ -40,6 +40,46 @@ import {
+ 
+ export const HOQ_AGENT_VERSION = '1.0.0-t6';
+ 
++import type { OpenQuestionEvent } from '@/lib/chat/system-question-bridge.types';
++
++/**
++ * Emitter contract — runtime caller supplies the bridge.surfaceOpenQuestion
++ * binding. Agent calls `emit` for relationship-matrix or target-value
++ * decisions that need user input. Partial QFD is acceptable: missing rows
++ * surface in chat instead of throwing.
++ */
++export type HoqOpenQuestionEmitter = (
++  ev: Omit<OpenQuestionEvent, 'source'>,
++) => Promise<unknown>;
++
++/** Confidence threshold for HoQ cell/target-value decisions. */
++export const HOQ_OPEN_QUESTION_CONFIDENCE_THRESHOLD = 0.9;
++
++/**
++ * Decision-point hook for HoQ cells / target-values that fall below the
++ * confidence threshold. Caller continues building the rest of the matrix
++ * after a successful emission.
++ */
++export async function maybeSurfaceHoqOpenQuestion(args: {
++  emit?: HoqOpenQuestionEmitter;
++  project_id: number;
++  final_confidence: number;
++  question: string;
++  computed_options?: unknown[];
++  math_trace?: string;
++  threshold?: number;
++}): Promise<boolean> {
++  const t = args.threshold ?? HOQ_OPEN_QUESTION_CONFIDENCE_THRESHOLD;
++  if (!args.emit || args.final_confidence >= t) return false;
++  await args.emit({
++    project_id: args.project_id,
++    question: args.question,
++    computed_options: args.computed_options,
++    math_trace: args.math_trace,
++  });
++  return true;
++}
++
+ /**
+  * Compute weights_check for Phase 1. Sums relative_importance and produces
+  * the `passes` flag at given tolerance.
+diff --git a/apps/product-helper/lib/langchain/agents/system-design/nfr-resynth-agent.ts b/apps/product-helper/lib/langchain/agents/system-design/nfr-resynth-agent.ts
+index cfd1c47..8fee8df 100644
+--- a/apps/product-helper/lib/langchain/agents/system-design/nfr-resynth-agent.ts
++++ b/apps/product-helper/lib/langchain/agents/system-design/nfr-resynth-agent.ts
+@@ -26,6 +26,47 @@
+  */
+ 
+ import type { DerivedFrom } from '../../schemas/module-2/requirements-table-base';
++import type { OpenQuestionEvent } from '@/lib/chat/system-question-bridge.types';
++
++/**
++ * Emitter contract — runtime caller (Wave-A langgraph-wirer) supplies the
++ * bridge.surfaceOpenQuestion binding. Agent code calls `emit` whenever an
++ * NFR/constant decision evaluates below the confidence threshold OR an
++ * upstream FMEA-early row carries an ambiguous mitigation. Partial
++ * emissions are acceptable; missing rows surface in chat for the user.
++ */
++export type NfrOpenQuestionEmitter = (
++  ev: Omit<OpenQuestionEvent, 'source'>,
++) => Promise<unknown>;
++
++/** Confidence threshold below which the agent emits an OpenQuestion. */
++export const NFR_OPEN_QUESTION_CONFIDENCE_THRESHOLD = 0.9;
++
++/**
++ * Decision-point hook: agent code calls this where it would otherwise emit
++ * a placeholder or skip a low-confidence row. If `emit` is provided AND
++ * `final_confidence < threshold`, an OpenQuestion is surfaced and the
++ * caller continues with the partial matrix; otherwise the call is a no-op.
++ */
++export async function maybeSurfaceNfrOpenQuestion(args: {
++  emit?: NfrOpenQuestionEmitter;
++  project_id: number;
++  final_confidence: number;
++  question: string;
++  computed_options?: unknown[];
++  math_trace?: string;
++  threshold?: number;
++}): Promise<boolean> {
++  const t = args.threshold ?? NFR_OPEN_QUESTION_CONFIDENCE_THRESHOLD;
++  if (!args.emit || args.final_confidence >= t) return false;
++  await args.emit({
++    project_id: args.project_id,
++    question: args.question,
++    computed_options: args.computed_options,
++    math_trace: args.math_trace,
++  });
++  return true;
++}
+ 
+ export interface NfrResynthInputs {
+   fmeaEarlyPath: string;
