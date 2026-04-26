@@ -8,10 +8,7 @@
  * `synthesis_status !== 'ready'`.
  *
  * Replaces the failure mode called out in EC-V21-A.16: 13 red
- * `[INSUFFICIENT (found:X, all:Y)]` rows on the Sequence Diagrams tab when
- * the upstream artifact has not synthesized yet. The unified empty state
- * is per-section, not per-tab — the page-level wrapper renders it before
- * any tab is mounted.
+ * `[INSUFFICIENT (found:X, all:Y)]` rows on the Sequence Diagrams tab.
  */
 
 import { Workflow } from 'lucide-react';

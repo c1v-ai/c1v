@@ -6,10 +6,6 @@
  * rendering the unified <EmptySectionState> when the upstream Mermaid source
  * has not been generated yet — replacing the legacy raw-Mermaid-source-as-text
  * failure mode called out in EC-V21-A.16.
- *
- * Callers (e.g. tech-stack section's Infrastructure Mermaid block, the
- * Architecture & Database section) should branch on the presence of the
- * Mermaid source string and render this wrapper for the empty branch.
  */
 
 import { GitBranch } from 'lucide-react';
@@ -17,9 +13,7 @@ import { EmptySectionState } from '@/components/projects/sections/empty-section-
 
 export interface DiagramViewerEmptyWrapperProps {
   projectId: number;
-  /** Diagram label, used in the headline ("<diagramName> not generated yet"). */
   diagramName?: string;
-  /** Override methodology copy. Defaults to a generic Mermaid-diagram explainer. */
   methodologyCopy?: string;
 }
 
