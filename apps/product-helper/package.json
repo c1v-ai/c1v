@@ -28,6 +28,7 @@
     "schemas:generate": "npx tsx lib/langchain/schemas/generate-all.ts"
   },
   "dependencies": {
+    "@dbml/core": "^7.1.1",
     "@langchain/anthropic": "0.3.14",
     "@langchain/community": "0.3.26",
     "@langchain/core": "0.3.40",

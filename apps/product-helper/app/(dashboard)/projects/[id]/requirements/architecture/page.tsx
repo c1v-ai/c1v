@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
-import { ArchitectureSection } from '@/components/projects/sections/architecture-section';
+import { ArchitectureAndDatabaseSection } from '@/components/projects/sections/architecture-and-database-section';
 
 function SectionSkeleton() {
   return (
@@ -15,7 +15,7 @@ function SectionSkeleton() {
 async function SectionLoader({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
-  return <ArchitectureSection project={project as any} />;
+  return <ArchitectureAndDatabaseSection project={project as any} />;
 }
 
 interface PageProps {

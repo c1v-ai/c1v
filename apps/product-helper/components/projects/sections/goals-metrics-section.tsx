@@ -7,15 +7,12 @@
  * Part of the PRD content depth (Wave 2, B03).
  */
 
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   Target,
-  MessageSquare,
-  ArrowRight,
   TrendingUp,
 } from 'lucide-react';
+import { EmptySectionState } from './empty-section-state';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,33 +41,14 @@ interface GoalsMetricsSectionProps {
 // Empty State
 // ---------------------------------------------------------------------------
 
-function EmptyState({ projectId, status }: { projectId: number; status: string }) {
-  const message =
-    status === 'intake'
-      ? 'Continue the intake chat to extract goals and success metrics.'
-      : 'No goals extracted yet. Describe what success looks like in the chat.';
-
+function EmptyState({ projectId }: { projectId: number; status: string }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-center py-16">
-          <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
-          <h3 className="text-lg font-semibold mb-2 text-foreground">
-            No Goals & Metrics
-          </h3>
-          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
-            {message}
-          </p>
-          <Button asChild>
-            <Link href={`/projects/${projectId}/chat`}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Start Chat
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <EmptySectionState
+      icon={Target}
+      sectionName="Goals & Metrics"
+      methodologyCopy="Run Deep Synthesis to extract project goals and pair each with measurable success criteria."
+      projectId={projectId}
+    />
   );
 }
 
