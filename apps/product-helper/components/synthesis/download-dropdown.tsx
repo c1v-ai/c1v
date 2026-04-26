@@ -78,15 +78,32 @@ export function DownloadDropdown({
 
   const hasArtifacts = artifacts.length > 0;
 
-  function handleRetry(kind: string) {
-    // TODO(TB1): wire retry endpoint — POST /api/projects/[id]/synthesize/retry
-    // with body { kind }. For now we surface a stub toast so the affordance
-    // is reviewable in v2.1 Wave A.
+  async function handleRetry(kind: string) {
     setPendingRetryKind(kind);
-    toast(
-      `Retry for ${labelFor(kind)} ships in v2.1 Wave B (project ${projectId}).`,
-    );
-    setTimeout(() => setPendingRetryKind(null), 1200);
+    try {
+      const res = await fetch(
+        `/api/projects/${projectId}/artifacts/${encodeURIComponent(kind)}/retry`,
+        { method: 'POST' },
+      );
+      if (res.status === 202) {
+        toast.success(`Retry queued for ${labelFor(kind)}.`);
+      } else {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        toast.error(
+          body.error
+            ? `Retry failed: ${body.error}`
+            : `Retry failed (status ${res.status}).`,
+        );
+      }
+    } catch (err) {
+      toast.error(
+        `Retry failed: ${err instanceof Error ? err.message : 'network error'}`,
+      );
+    } finally {
+      setPendingRetryKind(null);
+    }
   }
 
   return (
