@@ -16,12 +16,9 @@
  * @module lib/dbml/sql-to-dbml
  */
 
-// Importing without types — `@dbml/core` ships a CJS bundle with no
-// TypeScript declarations.
-//
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import dbmlCore from '@dbml/core';
+// `@dbml/core` ships only named exports (verified against 7.1.1):
+// `{ importer, exporter, Parser, ModelExporter, ... }`. No default export.
+import { importer as dbmlImporter } from '@dbml/core';
 
 interface SchemaColumnInput {
   name: string;
@@ -170,8 +167,7 @@ export function transpileSchemaToDbml(schema: SchemaInput | null | undefined): T
   let dbml: string;
   try {
     // dbml-core API: importer.import(content, format) → DBML string
-    const importer = (dbmlCore as { importer: { import: (sql: string, fmt: string) => string } }).importer;
-    dbml = importer.import(ddl, 'postgres');
+    dbml = dbmlImporter.import(ddl, 'postgres');
   } catch (err) {
     // Importer rejected our DDL — fall back to inline-comment dump so the
     // operator at least sees the source. This is the "unsupported → emit
