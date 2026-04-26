@@ -1,0 +1,5 @@
+# Sidecar-only deps. Generator deps live in
+# scripts/artifact-generators/requirements.txt and are pip-installed first.
+flask==3.0.3
+gunicorn==23.0.0
+supabase==2.10.0

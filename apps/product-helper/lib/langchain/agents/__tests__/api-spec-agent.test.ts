@@ -248,7 +248,10 @@ describe('generateAPISpecification — runtime', () => {
     const invoke = jest.fn<() => Promise<unknown>>().mockResolvedValue(threeKeyShape);
     mockedCreateClaudeAgent.mockReturnValue({ invoke } as never);
 
-    const spec = await generateAPISpecification(runtimeContext());
+    // twoStage: false — pin legacy single-call path; this test verifies
+    // the legacy retry+fallback chain (Wave D Step D-3 added a two-stage
+    // default; this test predates that and asserts the legacy contract).
+    const spec = await generateAPISpecification(runtimeContext(), { twoStage: false });
 
     // 2 entities × 3 fallback endpoints (list, create, get) = 6
     expect(spec.endpoints.length).toBeGreaterThanOrEqual(6);
@@ -284,7 +287,8 @@ describe('generateAPISpecification — runtime', () => {
     const invoke = jest.fn<() => Promise<unknown>>().mockResolvedValue(fullShape);
     mockedCreateClaudeAgent.mockReturnValue({ invoke } as never);
 
-    const spec = await generateAPISpecification(runtimeContext());
+    // twoStage: false — see prior test rationale.
+    const spec = await generateAPISpecification(runtimeContext(), { twoStage: false });
 
     expect(invoke).toHaveBeenCalledTimes(1); // No retry, no fallback
     expect(spec.endpoints).toHaveLength(26);
