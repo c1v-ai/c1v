@@ -1,11 +1,12 @@
 /**
  * Generate Interfaces Node
  *
- * Purpose: Generate Interface definitions (Step 6) including Data Flow Diagram,
- * N2 Chart, Sequence Diagrams, and Interface Matrix from conversation history,
- * FFBD data, and use cases.
- *
- * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
+ * v2.1 Wave A RE-WIRE (langgraph-wirer / handoff Issue 21): node now invokes
+ * `interface-specs-agent` (M7.b) when N2 matrix data is on state and persists
+ * `interface_specs.v1` to `project_artifacts(kind='interface_specs_v1')`. The
+ * legacy `extractInterfaces` path is preserved for back-compat with the
+ * FROZEN `components/system-design/interfaces-viewer.tsx`
+ * (`extractedData.interfaces` data path); both paths run.
  *
  * @module graphs/nodes/generate-interfaces
  */
@@ -17,7 +18,9 @@ import {
   calculateCompleteness,
 } from '../types';
 import { extractInterfaces } from '../../agents/interfaces-agent';
+import { runInterfaceSpecsAgent } from '../../agents/system-design/interface-specs-agent';
 import { formatMessagesAsText } from '../utils';
+import { persistArtifact } from './_persist-artifact';
 
 // ============================================================
 // Main Node Function
@@ -112,10 +115,51 @@ export async function generateInterfaces(
 
     console.log(`[GENERATE_INTERFACES] Interfaces extraction succeeded`);
 
-    // Merge interfaces result into extractedData
+    // v2.1 Wave A RE-WIRE — additionally invoke interface-specs-agent (M7.b)
+    // when N2 matrix data is present on state. Persists to
+    // project_artifacts(kind='interface_specs_v1').
+    const ed = state.extractedData as Record<string, unknown> | undefined;
+    const n2 = ed?.['n2Matrix'] as { rows?: unknown[] } | undefined;
+    let interfaceSpecsResult: unknown = ed?.['interfaceSpecs'];
+    if (n2 && Array.isArray(n2.rows) && n2.rows.length > 0) {
+      try {
+        interfaceSpecsResult = runInterfaceSpecsAgent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          n2Matrix: { rows: n2.rows as any },
+          producedAt: new Date().toISOString(),
+          producedBy: 'langgraph:generate_interfaces',
+          systemName: state.projectName,
+          outputPath: `runtime://project/${state.projectId}/interface_specs.v1.json`,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          upstreamRefs: { n2_matrix: 'runtime' } as any,
+        });
+        await persistArtifact({
+          projectId: state.projectId,
+          kind: 'interface_specs_v1',
+          status: 'ready',
+          result: interfaceSpecsResult,
+        });
+        console.log('[GENERATE_INTERFACES] interface-specs-agent re-wire emit OK');
+      } catch (e) {
+        const reason = e instanceof Error ? e.message : 'unknown';
+        console.warn('[GENERATE_INTERFACES] interface-specs-agent re-wire FAILED (non-fatal for legacy):', reason);
+        await persistArtifact({
+          projectId: state.projectId,
+          kind: 'interface_specs_v1',
+          status: 'failed',
+          failureReason: reason,
+        });
+      }
+    } else {
+      await persistArtifact({ projectId: state.projectId, kind: 'interface_specs_v1', status: 'pending' });
+    }
+
+    // Merge interfaces result + interface_specs.v1 into extractedData
     const updatedExtractedData = {
       ...state.extractedData,
       interfaces: result,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      interfaceSpecs: interfaceSpecsResult as any,
     };
 
     // Recompute completeness and artifact readiness
