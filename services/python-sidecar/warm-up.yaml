@@ -1,0 +1,36 @@
+# Cloud Scheduler cron — pings sidecar /healthz every 5 min.
+#
+# Per R-V21.12: Cloud Run cold-start can exceed 30s on first request after
+# scale-to-zero. Hitting /healthz keeps at least one instance warm so
+# EC-V21-A.2 cold-start p95 < 15s holds in practice.
+#
+# Apply:
+#   gcloud scheduler jobs create http python-sidecar-warmup \
+#     --location us-central1 \
+#     --schedule "*/5 * * * *" \
+#     --uri "https://python-sidecar-<HASH>-uc.a.run.app/healthz" \
+#     --http-method GET \
+#     --oidc-service-account-email warmup-invoker@<PROJECT_ID>.iam.gserviceaccount.com
+#
+# Cost note: Cloud Scheduler is $0.10/job/month; sidecar runtime for a 200ms
+# /healthz call * 288/day is negligible. If cold-start p95 still > 15s after
+# warm-up, flip cloud-run.yaml minScale 0 → 1 (≈ $3/mo).
+
+apiVersion: scheduler.cnrm.cloud.google.com/v1beta1
+kind: SchedulerJob
+metadata:
+  name: python-sidecar-warmup
+  namespace: c1v-platform
+spec:
+  description: "Warm-keep python-sidecar Cloud Run service to bound cold-start p95"
+  schedule: "*/5 * * * *"
+  timeZone: "Etc/UTC"
+  httpTarget:
+    uri: "https://python-sidecar-PLACEHOLDER-uc.a.run.app/healthz"
+    httpMethod: GET
+    oidcToken:
+      serviceAccountRef:
+        external: "warmup-invoker@PROJECT_ID.iam.gserviceaccount.com"
+  retryConfig:
+    retryCount: 1
+    maxRetryDuration: "30s"

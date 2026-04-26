@@ -78,10 +78,6 @@ export async function kickoffSynthesisGraph(
     upstreamShas: {},
   });
 
-  // Pre-create pending rows for every expected artifact kind so TA2's
-  // /api/projects/[id]/artifacts/manifest renders the placeholder set
-  // immediately. Each GENERATE_* node will overwrite its row to `ready` or
-  // `failed` on completion.
   for (const kind of EXPECTED_ARTIFACT_KINDS) {
     try {
       await upsertArtifactStatus({
@@ -121,15 +117,6 @@ export async function kickoffSynthesisGraph(
     );
     errored = true;
   }
-
-  // TODO(TA3 sidecar): Cloud Run sidecar trigger. Once
-  // `services/python-sidecar/orchestrator.py` lands and `RENDER_SIDECAR_URL`
-  // is set, each GENERATE_* node fires `POST /run-render` to render binary
-  // formats (PDF / PPTX / xlsx / PNG); the sidecar updates the corresponding
-  // project_artifacts rows out-of-band via service role. Per D-V21.24, the
-  // sidecar is render-only — orchestration + LLM stays in Vercel/LangGraph.
-  // For now, this kickoff function returns when the graph completes; binary
-  // renders happen lazily on first download or are skipped pre-sidecar.
 
   return { inputsHash, finalState, errored };
 }
