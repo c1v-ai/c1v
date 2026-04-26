@@ -35,6 +35,44 @@
   - Update the CTA label semantics: when on the synthesis page, the button POSTs; when on a sub-page (FMEA / Data Flows / etc.), the link navigates to the synthesis page where the user clicks the actual trigger.
 - **Status:** OPEN; **NOT covered by v2.2 scope** (Wave C/E both assume synthesis runs end-to-end). v2.2 day-0 should NOT start until P7 lands. Recommend a v2.1.1 hotfix track.
 - **Repro steps:** (a) `pnpm dev --filter=product-helper`; (b) navigate to any in-progress project (e.g. project=33); (c) visit any system-design page; (d) click `[Run Deep Synthesis →]`; (e) observe loop into synthesis page; (f) note no POST fires (DevTools Network tab confirms — only GET on the synthesis page itself).
+- **Code-walk evidence (David's investigation 2026-04-26):** `grep -rn "fetch.*synthesize\|method.*POST.*synthesize" components/ app/` returns ZERO hits anywhere in app/components — only `/settings`, `/sign-out`, `/delete` carry form actions. [`empty-section-state.tsx:51`](../apps/product-helper/components/projects/sections/empty-section-state.tsx#L51) is the smoking gun: `const href = ctaHref ?? \`/projects/${projectId}/synthesis\`` — a `<Link>`, not a form.
+- **Why all System Architecture viewers show empty (project=33 specific):** the `[POST_INTAKE] Generation complete: 6/6 succeeded` line in the dev console is the LEGACY intake-graph generators writing to `extractedData` blob (user_stories, problem-statement, etc. — pre-v2.1 surface). The v2.1 M3-M8 synthesis-stage artifacts (`decision_network`, `ffbd`, `qfd`, `fmea_*`, `form_function`, `interfaces`) live in `project_artifacts` and only populate after `/synthesize` is POSTed — which never happens.
+
+## P8 — `@dbml/core` default-import is broken (NEW 2026-04-26)
+
+- **Source:** Surfaced 2026-04-26 in David's project=33 console review. Browser webpack squawk: `Attempted import error: '@dbml/core' does not contain a default export`.
+- **Diagnosis:** [`apps/product-helper/lib/dbml/sql-to-dbml.ts:24`](../apps/product-helper/lib/dbml/sql-to-dbml.ts#L24) does `// @ts-ignore` + `import dbmlCore from '@dbml/core'` then casts to `(dbmlCore as { importer: ... }).importer`. **`@dbml/core@7.1.1` ships named exports only** (`{ importer, exporter, Parser, ModelExporter, ... }`). No default export. Verified via `node -e "const m = require('@dbml/core'); console.log(typeof m.default, typeof m.importer)"` → `undefined object`.
+- **Symptom today:** webpack warning only — the surrounding `architecture-and-database-section.tsx` falls through to the empty-state branch (no schema to transpile yet because P7 blocks synthesis). The moment a project actually has an approved schema and tries to render DBML, the page crashes on `Cannot read properties of undefined (reading 'import')`.
+- **Why v2.1 verifier missed it:** EC-V21-A.6 verifier never exercised this path because no project ever reached schema-approval (because P7 blocks synthesis). Latent crash hidden behind the trigger gap.
+- **Fix:** one-line import flip:
+  ```ts
+  // BEFORE (broken):
+  // @ts-ignore
+  import dbmlCore from '@dbml/core';
+  const importer = (dbmlCore as { importer: ... }).importer;
+
+  // AFTER (cleaner):
+  import { importer as dbmlImporter } from '@dbml/core';
+  // or:
+  import * as dbmlCore from '@dbml/core';
+  ```
+- **Test:** add a smoke test that exercises `transpileSchemaToDbml({ tables: [...] })` against a 2-table fixture and asserts the DBML output parses round-trip.
+- **Status:** OPEN; CO-BLOCKER with P7 (both ship in same v2.1.1 hotfix branch). Independent fix paths — Bug 2 doesn't need Bug 1 to land first.
+
+## P9 — Verifier process gap: integration-bridges had no owner (NEW 2026-04-26)
+
+- **Source:** Surfaced 2026-04-26 as the root-cause analysis behind P7. TA2 (UI ownership) verifier and TA3 (API ownership) verifier each tested their half in isolation; neither owned the click-through bridge between them.
+- **Pattern (v2.1):**
+  | Verifier | Tested | Did NOT test |
+  |---|---|---|
+  | TA2 (UI) | "synthesis page renders empty state pre-synthesis" ✅ | the click-through that goes from empty state → POST → ready state |
+  | TA3 (API) | "POST `/api/projects/[id]/synthesize` works" via integration test fixture ✅ | whether any UI element actually fires that POST |
+  | EC-V21-A.1 | "New project N → 5-section synthesis renders" — satisfied by writing fixture rows directly to `project_artifacts` | the user-flow click-through |
+- **Same shape as v2 RLS gap:** P3 (in [`post-v2-followups.md`](post-v2-followups.md)) was the `projects` table RLS — TA1's verifier tested its tables in isolation, no team owned cross-table RLS verification.
+- **v2.2 protection:** v2.2 spawn-prompts already include `qa-e-verifier`'s "Wave A↔E implementation-independence proof" which exercises the DI-swap end-to-end via `intake-graph.ta1-integration.test.ts`. But that's only one bridge. Other v2.2 bridges (TC1's eval-harness ↔ TE1's engine; TC1's typed schemas ↔ TE1's engine.json validators) need explicit click-through coverage.
+- **Mitigation (v2.1.1 hotfix scope):** add an EC-V21-A.1+ Playwright test that clicks the synthesis CTA and asserts (a) network POST to `/api/projects/[id]/synthesize` fires, (b) `project_artifacts` rows transition `pending → ready/failed` within poll window. Without this, v2.2 is one careless dispatch from the same shape of bug.
+- **v2.2 process change:** every team in v2.2 spawn-prompts must explicitly own AT LEAST ONE bridge to ANOTHER team. TC1↔TE1 bridges: typed schemas + LangSmith dataset → both owned by `eval-harness` (TC1) on the producer side and `engine-stories` / `engine-prod-swap` (TE1) on the consumer side. Add a §"Cross-team bridges" subsection to v2.2 spawn-prompts before dispatch.
+- **Status:** OPEN process learning; mitigation lands in v2.1.1 hotfix branch (Playwright EC-V21-A.1+) AND in v2.2 spawn-prompts pre-dispatch (cross-team bridges subsection).
 
 ## P6 — Prompt-caching not propagating through `ChatAnthropic.bindTools()` (NEW 2026-04-26)
 
