@@ -42,6 +42,26 @@ AI-native PRD generation tool that teaches systems engineering methodology while
 - **Data/Types:** `lib/education/knowledge-bank.ts`
 - **Methodology:** 6-step PRD flow: Context Diagram -> Use Case Diagram -> Scope Tree -> UCBD -> Functional Requirements -> SysML Activity Diagram
 
+### Project Artifacts Table (`lib/db/schema/project-artifacts.ts`)
+
+Per-tenant artifact persistence for synthesis outputs. Replaces the previous "single `extractedData` blob" pattern for synthesis-stage artifacts (legacy M0–M2 intake data still lives in `extractedData`; M3–M8 + synthesis live here).
+
+- **Shape:** one row per `(project_id, artifact_kind)`. Columns include `synthesis_status` (`pending` | `running` | `succeeded` | `failed` | `needs_user_input`), `sha256` (content hash for idempotency), `storage_url` (signed URL to Supabase Storage), `inputs_hash` (deterministic re-run key), `created_at`, `updated_at`.
+- **RLS:** tenant-scoped via `project_id` → `projects.organization_id` → session role. Read access is RLS-gated; write access is service-role only (sidecar writer).
+- **Sidecar writer pattern:** TA3's Cloud Run Python sidecar (`services/python-sidecar/orchestrator.py`) owns writes — it renders the artifact, uploads to Storage, and updates the row via service-role. TA1 owns the table schema + RLS + read-side queries (`getLatestSynthesis`, `getProjectArtifacts`).
+- **Query helpers:** `apps/product-helper/lib/db/queries.ts` exports `getLatestSynthesis(projectId)` and `getProjectArtifacts(projectId)` — both honor RLS.
+
+### Open-Question Chat Bridge (`lib/chat/system-question-bridge.ts`)
+
+Transport for system-generated open questions (M2 NFR clarifications, QFD disambiguations, FMEA risk follow-ups) into the user-facing chat thread.
+
+- **Producers (v2.1):** M2 NFR emitter (when `final_confidence < 0.90`), HoQ emitter (M6, on conflicting customer-engineering signals), FMEA-residual emitter (M8.b, on unresolved risk).
+- **Producers (v2.2):** Wave E `surface-gap.ts` (engine-driven gap-fill).
+- **Bridge contract:** `emitOpenQuestion(input)` validates against `system-question-bridge.types.ts` Zod, persists into the chat thread (assistant message), and updates the open-questions ledger.
+- **Ledger keys:** `extractedData.openQuestions.{requirements | qfdResolved | riskResolved}`. Each entry: `{ id, question, source, status: 'open' | 'resolved' | 'deferred', resolvedBy?, resolvedAt? }`.
+- **Latency target:** p95 < 2s end-to-end (emit → chat row visible). Anchored by EC-V21-A.4.
+- **Wave A ↔ Wave E handshake:** the bridge is the SHARED transport. Wave A producers ship in v2.1; Wave E `surface-gap.ts` producer ships in v2.2. See `plans/v21-outputs/ta1/handshake-spec.md` for the full contract.
+
 ### Key Directories
 ```
 app/
@@ -79,6 +99,24 @@ lib/
 - 402 responses handled in Quick Start dialog (upgrade prompt) and chat (toast with upgrade link)
 - Credits display: User dropdown shows usage bar (free) or plan name (paid); Account settings page shows Usage & Plan card with progress bar and upgrade/manage CTA
 
+### Synthesis Pipeline (v2.1 — Wave A shipped Apr 25, 2026)
+
+Vercel-side kickoff + status surface for the Cloud Run sidecar (`services/python-sidecar/`). Boundary locked by **D-V21.24**: Vercel hosts LangGraph orchestration and all LLM calls; the sidecar is per-artifact rendering only.
+
+- **Routes:**
+  - `POST /api/projects/[id]/synthesize` — deducts 1000 credits (D-V21.10), idempotent within a 5-min window, pre-creates 7 `synthesis_status='pending'` rows, fires the LangGraph kickoff via Next.js `after()`. Returns 202 with `{synthesis_id, expected_artifacts, status_url}`.
+  - `GET /api/projects/[id]/synthesize/status` — per-artifact poll with signed URLs for ready rows. Target < 100ms p95.
+  - `GET /api/projects/[id]/artifacts/manifest` — merges legacy filesystem manifest with v2.1 `dbArtifacts`. Versioned via `manifest_contract_version: 'v1'` (canonical contract: `plans/v21-outputs/ta3/manifest-contract.md`).
+- **Helpers:**
+  - `lib/billing/synthesis-tier.ts` — `checkSynthesisAllowance(teamId)`; Wave-A pre-stub. Env var `SYNTHESIS_FREE_TIER_GATE` = `log_only` (default) | `enabled` | `disabled`. TB1 ships the real DB-backed implementation and flips the default to `enabled`.
+  - `lib/storage/supabase-storage.ts` — `getSignedUrl(storagePath, ttl?, cache?)`. 30-day TTL per D-V21.08. Per-request cache is mandatory; module-scoped caches would leak signed URLs across tenants.
+  - `lib/synthesis/artifacts-bridge.ts` — TA1 ↔ TA3 indirection over `project_artifacts`. Single-edit point: when TA1's Drizzle queries land, this file collapses to a re-export. `EXPECTED_ARTIFACT_KINDS` is the canonical list (7 kinds; sidecar may emit optional extras).
+  - `lib/synthesis/kickoff.ts` — fire-and-forget LangGraph entry. TA1's `langgraph-wirer` owns per-node `POST /run-render` calls.
+
+**Failure semantics:** the sidecar always returns HTTP 200 (per-artifact `ok: false` for failures). The 5xx surface is reserved for malformed requests. Status route degrades gracefully when TA1's queries module is missing — empty `dbArtifacts` rather than a 500.
+
+**Manifest contract version:** if you change the `/artifacts/manifest` response shape, follow the bump rules in `plans/v21-outputs/ta3/manifest-contract.md` §2 — TA2's download dropdown pins to `v1` and breaks loudly on a `v2` shape change.
+
 ## Conventions
 
 - **API routes:** `app/api/[domain]/[id]/route.ts` pattern
@@ -100,6 +138,7 @@ lib/
 - **System-Design Viewers** — 5 routes at `/projects/[id]/system-design/{decision-matrix,ffbd,qfd,interfaces}/page.tsx` + `/diagrams` (Mermaid). Data source: `project.projectData.intakeState.extractedData.{decisionMatrix,ffbd,qfd,interfaces}`. Viewer components in `components/system-design/` + `components/diagrams/diagram-viewer.tsx`.
 - **Requirements & Backend Section Viewers** — 7 routes at `/projects/[id]/requirements/{problem-statement,system-overview,goals-metrics,user-stories,architecture,tech-stack,nfr}/` + 4 backend routes at `/projects/[id]/backend/{schema,api-spec,guidelines,infrastructure}/`. 13 section components in `components/projects/sections/`.
 - **Artifact Pipeline component** — `components/project/overview/artifact-pipeline.tsx`. v2 plan extends this to read `artifacts.manifest.jsonl` download links (manifest-read only).
+- **Synthesis Pipeline kickoff** (Wave A — Apr 25, 2026) — `POST /api/projects/[id]/synthesize` + `GET /synthesize/status` + extended `GET /artifacts/manifest`. Boundary D-V21.24: Vercel orchestrates, Cloud Run renders. Helpers in `lib/billing/synthesis-tier.ts`, `lib/storage/supabase-storage.ts`, `lib/synthesis/{artifacts-bridge,kickoff}.ts`. Sidecar at `services/python-sidecar/` (separate README). Manifest contract v1 frozen at `plans/v21-outputs/ta3/manifest-contract.md`.
 
 ## UI Freeze
 
@@ -117,7 +156,11 @@ Active for v2 cycle. See `plans/c1v-MIT-Crawley-Cornell.md` §9 + v2 §15.5.
 
 ## System-Design Data Path
 
-All 4 system-design routes read from `(project as any).projectData?.intakeState?.extractedData?.<module>`. **TODO:** the `any` cast is a type hole — type it properly when extending the shape. Single `extractedData` blob — not separate artifacts per module. Crawley pivot / v2 pipeline must EXTEND this shape (add `extractedData.decisionNetwork`, `.formFunction`, `.fmea`), not replace it.
+**Pre-Wave-A (legacy):** all 4 system-design routes read from `(project as any).projectData?.intakeState?.extractedData?.<module>`. Single `extractedData` blob — not separate artifacts per module.
+
+**Post-Wave-A (v2.1):** synthesis artifacts (M3–M8 + architecture-recommendation keystone) now live in the `project_artifacts` table (see `### Project Artifacts Table` above). Routes read via `getLatestSynthesis(projectId)` / `getProjectArtifacts(projectId)` from `lib/db/queries.ts`. Legacy M0–M2 intake data continues to live in `extractedData` (open-questions ledger, NFR scratch, intake state) — those reads are unchanged.
+
+**TODO:** the `any` cast on `extractedData` is a type hole — type it properly when extending the shape. Crawley pivot / v2 pipeline EXTENDS the legacy shape (added `extractedData.openQuestions.{requirements | qfdResolved | riskResolved}` for the chat-bridge ledger); synthesis-stage shapes live on `project_artifacts` instead.
 
 ## Dev Quirks
 

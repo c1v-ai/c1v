@@ -547,7 +547,7 @@ Notes: Optimized for each stack
 ## Methodology Stack (L1/L2/L3)
 
 - **L1 Deepened KBs** — `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/` — LLM instructions + schemas + xlsx templates. What agents retrieve from.
-- **L2 v2 artifacts** — `system-design/kb-upgrade-v2/module-{1..7}/` — JSON + xlsx + pptx + mmd OUTPUT of running L1 on c1v-itself (self-application).
+- **L2 v2 artifacts** — `plans/kb-upgrade-v2/module-{1..8}/` — JSON + xlsx + pptx + mmd OUTPUT of running L1 on c1v-itself (self-application).
 - **L3 v3 deltas** — `plans/v3_revised/` — Apr 20 foundation re-set; delta files only, never expanded to artifacts.
 - **Handoff contract:** every v2 JSON has `_schema` + `_upstream_refs` + `_output_path` fields — follow these to navigate module dependencies, don't re-derive.
 
@@ -558,7 +558,7 @@ Notes: Optimized for each stack
 - **v2 release notes:** `plans/v2-release-notes.md` (commit `7e2b202`) — end-to-end summary: shipped/deferred/portfolio-artifact.
 - **Post-v2 backlog:** `plans/post-v2-followups.md` — `projects` table RLS hardening, fmea_residual prose-vs-data drift, kb_chunk_ids placeholders, weasyprint PDF.
 - **v2 handoff:** `plans/HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md` — transcript + verbatim quotes + locked decisions.
-- **Methodology correction:** `system-design/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases.
+- **Methodology correction:** `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases. Canonical-resolution audit at `plans/v21-outputs/ta1/methodology-canonical.md` (NOTE: that audit names `plans/kb-upgrade-v2/...` as canonical, but on current disk the only file is the `system-design/` path; physical relocation deferred to follow-up).
 - **Crawley source-of-truth:** `plans/research/crawley-book-findings.md` — agents read this; do NOT rescan the book.
 
 ## Team Status (cumulative across sessions)
@@ -582,8 +582,8 @@ Notes: Optimized for each stack
   - **hoq-agent** — 10 commits `16bc96c`..`8c9a172`. M6 HoQ schemas (6 phases) + agent + `hoq.v1.json` (6 PCs × 18 ECs, 27 nonzero matrix cells, 14 roof pairs) + xlsx artifact via `gen-qfd.py`. Created `qfd-legacy.schema.json` adapter (frozen `qfd.schema.json` untouched).
   - **fmea-residual-agent** — 4 commits `b7def3b` / `55d7737` / `629303e` / `aa55cf3`. M8.b `fmea_residual.v1.json` (16 FMs: 4 new + 12 surviving from `fmea_early`; 13 high-RPN flagged per source-of-truth boolean) + `gen-fmea.py variant=residual` extension + xlsx with stoplight sheet.
   - **drizzle-runstate** — commit `3691617`. `project_run_state` Drizzle table + migration `0013_project_run_state.sql` + RLS policies (5 total). 6/6 RLS smoke tests green against local Supabase :54322. **Surfaced gap:** `projects` table has RLS enabled but zero tenant policies — EXISTS gates from non-owner roles return 0 rows. Deferred to `plans/post-v2-followups.md` (P3 security pass).
-  - **build-all-headless** — commit `94f6c0e`. E2E smoke pipeline at `apps/product-helper/scripts/build-all-headless.ts` + minimal stub-project fixture + 14/14 jest tests in <0.5s. Verifies 15/15 expected artifacts emit + 61 schemas across 9 modules + synthesis register clean. Per-module schema preload routes pending (only m4 ships HTTP route today).
-  - **synthesizer** — 4 commits `2a4a05b` / `15ffe20` / `a2ee9b8` / `56532d4`. **Portfolio keystone:** `architecture_recommendation.v1.json` with derivation_chain (4 decisions D-01..D-04 against winning DN nodes), 3 Pareto alternatives (AV.01 recommended = Sonnet 4.5 + pgvector + LangGraph + Vercel; $320/mo; 2600ms p95; 99.9% avail), 7 atlas empirical_priors across 4 KB-9 companies (anthropic/supabase/langchain/vercel), embedded fmea_residual flags + HoQ target-values + tail-latency consistency check. Verifier `scripts/verify-t6.ts` 6/6 V6 gates green; report at `plans/t6-outputs/verification-report.md`. Deterministic `inputs_hash` enables byte-identical re-runs. Cleanup commit `a4d1bb6` dropped unused readJson helper + captured RLS gap.
+  - **build-all-headless** — commit `94f6c0e`. E2E smoke pipeline at `apps/product-helper/__tests__/build-all-headless.test.ts` + minimal stub-project fixture + 14/14 jest tests in <0.5s. Verifies 15/15 expected artifacts emit + 61 schemas across 9 modules + synthesis register clean. Per-module schema preload routes pending (only m4 ships HTTP route today).
+  - **synthesizer** — 4 commits `2a4a05b` / `15ffe20` / `a2ee9b8` / `56532d4`. **Portfolio keystone:** `architecture_recommendation.v1.json` with derivation_chain (4 decisions D-01..D-04 against winning DN nodes), 3 Pareto alternatives (AV.01 recommended = Sonnet 4.5 + pgvector + LangGraph + Vercel; $320/mo; 2600ms p95; 99.9% avail), 7 atlas empirical_priors across 4 KB-9 companies (anthropic/supabase/langchain/vercel), embedded fmea_residual flags + HoQ target-values + tail-latency consistency check. Verifier `apps/product-helper/scripts/verify-t6.ts` 6/6 V6 gates green; report at `plans/t6-outputs/verification-report.md`. Deterministic `inputs_hash` enables byte-identical re-runs. Cleanup commit `a4d1bb6` dropped unused readJson helper + captured RLS gap.
   - **plan-updater** — commit `7e2b202`. v1 §11 R1 (Crawley ToC) + R6 (React Flow vs Mermaid) marked resolved; v1 §12 Exit Criteria annotated SATISFIED with commit SHAs; v2 doc flipped DRAFT→SHIPPED with new CLOSEOUT section; new `plans/v2-release-notes.md` (142 lines).
 
 ## KB Corpus History (RESOLVED — Wave-1 close)
