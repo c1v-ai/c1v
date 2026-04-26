@@ -45,13 +45,8 @@ export async function generateN2(state: IntakeState): Promise<Partial<IntakeStat
     );
 
     await persistArtifact({ projectId: state.projectId, kind: ARTIFACT_KIND, status: 'ready', result });
-    return {
-      extractedData: {
-        ...state.extractedData,
-        n2Matrix: result,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-    };
+    // Synthesis artifacts persist to project_artifacts (above), NOT extractedData.
+    return {};
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'unknown';
     console.error('[GENERATE_n2] failed:', reason);

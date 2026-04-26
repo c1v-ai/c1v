@@ -53,13 +53,8 @@ export async function generateDataFlows(
       result,
     });
 
-    return {
-      extractedData: {
-        ...state.extractedData,
-        dataFlows: result,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-    };
+    // Synthesis artifacts persist to project_artifacts (above), NOT extractedData.
+    return {};
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'unknown';
     console.error('[GENERATE_data_flows] failed:', reason);
