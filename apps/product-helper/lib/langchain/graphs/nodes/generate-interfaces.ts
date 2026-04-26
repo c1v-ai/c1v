@@ -154,12 +154,14 @@ export async function generateInterfaces(
       await persistArtifact({ projectId: state.projectId, kind: 'interface_specs_v1', status: 'pending' });
     }
 
-    // Merge interfaces result + interface_specs.v1 into extractedData
+    // Legacy interfaces result lands in extractedData (FROZEN interfaces-viewer.tsx
+    // data path). interface_specs.v1 (synthesis artifact) persists to
+    // project_artifacts above — do NOT add to extractedData per Bond
+    // architectural correction.
+    void interfaceSpecsResult; // referenced for sentinel; not stored on state.
     const updatedExtractedData = {
       ...state.extractedData,
       interfaces: result,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      interfaceSpecs: interfaceSpecsResult as any,
     };
 
     // Recompute completeness and artifact readiness

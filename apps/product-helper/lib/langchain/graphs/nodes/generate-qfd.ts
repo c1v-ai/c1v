@@ -146,12 +146,12 @@ export async function generateQFD(
       await persistArtifact({ projectId: state.projectId, kind: 'hoq_v1', status: 'pending' });
     }
 
-    // Merge QFD result + hoq.v1 into extractedData
+    // Legacy QFD result lands in extractedData (FROZEN qfd-viewer.tsx data path).
+    // hoq.v1 (synthesis artifact) persists to project_artifacts above —
+    // do NOT add to extractedData per Bond architectural correction.
     const updatedExtractedData = {
       ...state.extractedData,
       qfd: result,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      hoq: hoqResult as any,
     };
 
     // Recompute completeness and artifact readiness

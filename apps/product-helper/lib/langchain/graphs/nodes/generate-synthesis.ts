@@ -126,13 +126,8 @@ export async function generateSynthesis(
       inputsHash,
     });
 
-    return {
-      extractedData: {
-        ...state.extractedData,
-        architectureRecommendation: result,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-    };
+    // Synthesis artifacts persist to project_artifacts (above), NOT extractedData.
+    return {};
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'unknown';
     console.error('[GENERATE_synthesis] failed:', reason);
