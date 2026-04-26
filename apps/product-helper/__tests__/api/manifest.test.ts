@@ -5,6 +5,7 @@
  * withProjectAuth seam (404), reproduced here via the mock.
  */
 
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NextRequest } from 'next/server';
 
 const mockGetProjectArtifacts = jest.fn();
@@ -39,6 +40,10 @@ jest.mock('@/lib/api/with-project-auth', () => ({
 const buildReq = () =>
   new NextRequest('http://localhost/api/projects/42/artifacts/manifest', { method: 'GET' });
 const buildCtx = (id = '42') => ({ params: Promise.resolve({ id }) });
+
+// Indirect specifier — tsc bundler resolution chokes on App-Router `[id]`
+// segments in static import literals. Jest resolves at runtime via `@/*`.
+const ROUTE_MANIFEST = '@/app/api/projects/[id]/artifacts/manifest/route';
 
 describe('GET /api/projects/[id]/artifacts/manifest — v2.1 extension', () => {
   beforeEach(() => {
@@ -86,9 +91,7 @@ describe('GET /api/projects/[id]/artifacts/manifest — v2.1 extension', () => {
       },
     ]);
 
-    const { GET } = await import(
-      '@/app/api/projects/[id]/artifacts/manifest/route'
-    );
+    const { GET } = (await import(ROUTE_MANIFEST)) as typeof import('../../app/api/projects/[id]/artifacts/manifest/route');
     const res = await GET(buildReq(), buildCtx() as any);
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -121,9 +124,7 @@ describe('GET /api/projects/[id]/artifacts/manifest — v2.1 extension', () => {
       },
     ]);
 
-    const { GET } = await import(
-      '@/app/api/projects/[id]/artifacts/manifest/route'
-    );
+    const { GET } = (await import(ROUTE_MANIFEST)) as typeof import('../../app/api/projects/[id]/artifacts/manifest/route');
     const res = await GET(buildReq(), buildCtx() as any);
     const body = await res.json();
     expect(mockGetSignedUrl).not.toHaveBeenCalled();
@@ -137,9 +138,7 @@ describe('GET /api/projects/[id]/artifacts/manifest — v2.1 extension', () => {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     });
 
-    const { GET } = await import(
-      '@/app/api/projects/[id]/artifacts/manifest/route'
-    );
+    const { GET } = (await import(ROUTE_MANIFEST)) as typeof import('../../app/api/projects/[id]/artifacts/manifest/route');
     const res = await GET(buildReq(), buildCtx('999') as any);
     expect(res.status).toBe(404);
     expect(mockGetProjectArtifacts).not.toHaveBeenCalled();
@@ -148,9 +147,7 @@ describe('GET /api/projects/[id]/artifacts/manifest — v2.1 extension', () => {
 
   it('empty project (no DB artifacts, no run dir) returns empty arrays + version pin', async () => {
     mockGetProjectArtifacts.mockResolvedValue([]);
-    const { GET } = await import(
-      '@/app/api/projects/[id]/artifacts/manifest/route'
-    );
+    const { GET } = (await import(ROUTE_MANIFEST)) as typeof import('../../app/api/projects/[id]/artifacts/manifest/route');
     const res = await GET(buildReq(), buildCtx() as any);
     const body = await res.json();
     expect(body.manifest_contract_version).toBe('v1');

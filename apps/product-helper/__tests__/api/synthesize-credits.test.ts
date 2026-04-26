@@ -2,6 +2,7 @@
  * Tests for POST /api/projects/[id]/synthesize — credit + idempotency surface.
  */
 
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NextRequest } from 'next/server';
 
 const mockCheckAndDeductCredits = jest.fn();
@@ -68,6 +69,11 @@ const buildReq = () =>
   new NextRequest('http://localhost/api/projects/42/synthesize', { method: 'POST' });
 const buildCtx = () => ({ params: Promise.resolve({ id: '42' }) });
 
+// Indirect specifier — tsc's bundler resolver chokes on the literal `[id]`
+// segment in App-Router-style paths. Jest resolves these at runtime via the
+// `@/*` moduleNameMapper, so the indirection is type-erased only.
+const ROUTE_POST = '@/app/api/projects/[id]/synthesize/route';
+
 describe('POST /api/projects/[id]/synthesize — credits + idempotency', () => {
   beforeEach(() => {
     afterCalls.length = 0;
@@ -88,9 +94,7 @@ describe('POST /api/projects/[id]/synthesize — credits + idempotency', () => {
       creditLimit: 2500,
     });
 
-    const { POST } = await import(
-      '@/app/api/projects/[id]/synthesize/route'
-    );
+    const { POST } = (await import(ROUTE_POST)) as typeof import('../../app/api/projects/[id]/synthesize/route');
     const res = await POST(buildReq(), buildCtx() as any);
     expect(res.status).toBe(402);
     const body = await res.json();
@@ -106,9 +110,7 @@ describe('POST /api/projects/[id]/synthesize — credits + idempotency', () => {
       creditLimit: 2500,
     });
 
-    const { POST } = await import(
-      '@/app/api/projects/[id]/synthesize/route'
-    );
+    const { POST } = (await import(ROUTE_POST)) as typeof import('../../app/api/projects/[id]/synthesize/route');
     const res = await POST(buildReq(), buildCtx() as any);
     expect(res.status).toBe(202);
     const body = await res.json();
@@ -141,9 +143,7 @@ describe('POST /api/projects/[id]/synthesize — credits + idempotency', () => {
       plan_name: 'Free',
     });
 
-    const { POST } = await import(
-      '@/app/api/projects/[id]/synthesize/route'
-    );
+    const { POST } = (await import(ROUTE_POST)) as typeof import('../../app/api/projects/[id]/synthesize/route');
     const res = await POST(buildReq(), buildCtx() as any);
     expect(res.status).toBe(402);
     const body = await res.json();
@@ -170,9 +170,7 @@ describe('POST /api/projects/[id]/synthesize — credits + idempotency', () => {
       },
     ]);
 
-    const { POST } = await import(
-      '@/app/api/projects/[id]/synthesize/route'
-    );
+    const { POST } = (await import(ROUTE_POST)) as typeof import('../../app/api/projects/[id]/synthesize/route');
     const res = await POST(buildReq(), buildCtx() as any);
     expect(res.status).toBe(202);
     const body = await res.json();

@@ -4,6 +4,7 @@
  * transitions and signed-URL surfacing.
  */
 
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NextRequest } from 'next/server';
 
 const mockGetProjectArtifacts = jest.fn();
@@ -79,6 +80,12 @@ const buildGetReq = () =>
   new NextRequest('http://localhost/api/projects/42/synthesize/status', { method: 'GET' });
 const buildCtx = () => ({ params: Promise.resolve({ id: '42' }) });
 
+// Indirect specifiers — tsc bundler resolution chokes on App-Router `[id]`
+// segments in static import literals. Jest resolves at runtime via the `@/*`
+// moduleNameMapper.
+const ROUTE_POST = '@/app/api/projects/[id]/synthesize/route';
+const ROUTE_STATUS = '@/app/api/projects/[id]/synthesize/status/route';
+
 describe('synthesize lifecycle (POST → status poll)', () => {
   beforeEach(() => {
     afterCalls.length = 0;
@@ -100,7 +107,7 @@ describe('synthesize lifecycle (POST → status poll)', () => {
   it('POST → 202 with pending rows; status GET returns pending statuses', async () => {
     mockGetProjectArtifacts.mockResolvedValueOnce([]); // POST idempotency-check (no recent rows)
 
-    const { POST } = await import('@/app/api/projects/[id]/synthesize/route');
+    const { POST } = (await import(ROUTE_POST)) as typeof import('../../app/api/projects/[id]/synthesize/route');
     const postRes = await POST(buildPostReq(), buildCtx() as any);
     expect(postRes.status).toBe(202);
 
@@ -122,7 +129,7 @@ describe('synthesize lifecycle (POST → status poll)', () => {
       }))
     );
 
-    const { GET } = await import('@/app/api/projects/[id]/synthesize/status/route');
+    const { GET } = (await import(ROUTE_STATUS)) as typeof import('../../app/api/projects/[id]/synthesize/status/route');
     const statusRes = await GET(buildGetReq(), buildCtx() as any);
     expect(statusRes.status).toBe(200);
     const body = await statusRes.json();
@@ -170,7 +177,7 @@ describe('synthesize lifecycle (POST → status poll)', () => {
       },
     ]);
 
-    const { GET } = await import('@/app/api/projects/[id]/synthesize/status/route');
+    const { GET } = (await import(ROUTE_STATUS)) as typeof import('../../app/api/projects/[id]/synthesize/status/route');
     const res = await GET(buildGetReq(), buildCtx() as any);
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -206,7 +213,7 @@ describe('synthesize lifecycle (POST → status poll)', () => {
         createdAt: new Date(), updatedAt: new Date(),
       },
     ]);
-    const { GET } = await import('@/app/api/projects/[id]/synthesize/status/route');
+    const { GET } = (await import(ROUTE_STATUS)) as typeof import('../../app/api/projects/[id]/synthesize/status/route');
     const res = await GET(buildGetReq(), buildCtx() as any);
     const body = await res.json();
     expect(body.overall_status).toBe('pending');
@@ -224,7 +231,7 @@ describe('synthesize lifecycle (POST → status poll)', () => {
         createdAt: new Date(), updatedAt: new Date(),
       },
     ]);
-    const { GET } = await import('@/app/api/projects/[id]/synthesize/status/route');
+    const { GET } = (await import(ROUTE_STATUS)) as typeof import('../../app/api/projects/[id]/synthesize/status/route');
     const res1 = await GET(buildGetReq(), buildCtx() as any);
     expect((await res1.json()).overall_status).toBe('failed');
 
