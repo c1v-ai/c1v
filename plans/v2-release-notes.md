@@ -207,7 +207,7 @@ Cost is instrumented for visibility in `apps/product-helper/lib/observability/sy
 - **D-V21.13** Crawley schemas + **D-V21.18 through D-V21.23** Wave E sub-decisions — locked, honored by v2.2
 - **P7** Crawley schemas + **P9** methodology drift — kept open in [`plans/post-v2-followups.md`](post-v2-followups.md)
 
-v2.2 spec stub: [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md).
+v2.2 spec stub: [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md) — DRAFT created 2026-04-26 (3 streams: Wave C / Wave E / Pre-Wave-E inventory + post-v2.1 P2/P3/P5 backlog). Inherits-by-reference from v2.1 §Wave C (lines 362–400) and §Wave E (lines 439–523); honors the Wave A↔E handshake contract at v2.1 lines 498–504 verbatim. Ship gate: `load-test-tb1.ts` projection ≤ $320/mo at 100 DAU (AV.01 portfolio target).
 
 ## v2.1 verification reports
 
