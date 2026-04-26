@@ -37,20 +37,20 @@ P2 (deferred fs-side-effects refactors) collapsed to ✅ — 0 agents required r
 | TC1 | `c1v-crawley-schema-closeout` | C | 5 | langchain-engineer | **This doc §TC1** |
 | TE1 | `c1v-kb-runtime-engine` | E | 7 | langchain-engineer | **This doc §TE1** |
 
-**Total: 2 teams, 12 agents, 2 dispatch waves (TC1 first, TE1 second — see §Sequencing below).**
+**Total: 2 teams, 19 agents, 2 dispatch waves (TC1 first, TE1 second — see §Sequencing below).**
 
 Per-team role coverage (mandated, mirrors v2.1 pattern):
 - **QA / verifier (every team):** `qa-engineer` agent gates that team's exit criteria from v2.2 master plan and tags `t<slug>-wave-<N>-complete` on green. Non-fix verifier — log failures, surface, do NOT auto-fix.
 - **Documentation (every team):** `documentation-engineer` agent updates README / CLAUDE.md / inline JSDoc / runbooks scoped to that team's surfaces. TE1's docs agent additionally writes the v2.2 release notes + plan closeout (folding the v2.1 `plan-updater` role into TE1 since TE1 is the last team to ship in v2.2).
 
-Per-team subagent_type composition:
-| Team | LangChain | DB | Backend | UI/UX | Cache | Obs | QA | Docs | **Total** |
-|---|---|---|---|---|---|---|---|---|---|
-| TC1 | 2 | 1 | — | — | — | — | 1 | 1 | **5** |
-| TE1 | 3 | 1 | 1 | 1 | — | — | 1 | 1 | **7** |
-| **Total** | **5** | **2** | **1** | **1** | **0** | **0** | **2** | **2** | **12** |
+Per-team subagent_type composition (matches actual Step 2 rosters below):
+| Team | LangChain | DB | Backend | UI/UX | QA | Docs | **Total** |
+|---|---|---|---|---|---|---|---|
+| TC1 | 3 | 1 | — | — | 2 | 1 | **7** |
+| TE1 | 6 | 2 | 1 | 1 | 1 | 1 | **12** |
+| **Total** | **9** | **3** | **1** | **1** | **3** | **2** | **19** |
 
-(No `cache-engineer` or `observability-engineer` slots in v2.2 — Wave B already shipped that surface in v2.1. The prompt-caching bug P6 is filed as a separate cost-lever investigation, not a v2.2 team.)
+(No `cache-engineer` or `observability-engineer` slots in v2.2 — Wave B already shipped that surface in v2.1. The prompt-caching bug P6 is filed as a separate cost-lever investigation, not a v2.2 team. TC1's 2 QA = `methodology-page` (qa-engineer per Step 2 row) + `qa-c-verifier`.)
 
 ---
 
@@ -68,6 +68,9 @@ If owner has 2 streams, parallel is fine — the Wave A↔E handshake contract p
 - **Wave 2 (this doc):** TE1 alone. HARD-DEP on `tc1-wave-c-complete` (consumes Wave C's typed schemas + LangSmith dataset). Estimated ~7-10 days. Ship gate: tag `te1-wave-e-complete`.
 - **Closeout (this doc):** TE1's docs agent writes v2.2 release notes + plan flip + post-v2.1-followups update + closeout. Mirrors v2.1's TB1 closeout pattern.
 
+**Aggregate v2.2 timeline (serial — recommended for single-stream owner):** ~12-17 days (TC1 5-7 + TE1 7-10).
+**Aggregate v2.2 timeline (parallel — if 2 streams available):** ~7-10 days (TE1 alone is critical path; TC1 finishes before TE1 since Wave E HARD-DEPs on TC1's typed schemas + LangSmith dataset). Wave A↔E contract pin (v2.1 lines 498-504, FROZEN) prevents drift between parallel streams. Day-0 inventory's "~7-10 days" estimate refers to Wave E alone — see §"What changed since v2.1 spawn prompts" table.
+
 ---
 
 ## Dispatch rules (inherited from v2.1 verbatim)
@@ -81,12 +84,15 @@ If owner has 2 streams, parallel is fine — the Wave A↔E handshake contract p
    - TC1: no HARD-DEPs (parallel with anything that doesn't touch `lib/langchain/schemas/module-{2,3,4,5}/`).
    - TE1: HARD-DEPs on `tc1-wave-c-complete` (consumes typed schemas + eval dataset) AND `wave-e-pre-rewrite-2026-04-26` (snapshot anchor).
 7. **Reference-from-master-plan:** Every team's `context.authoritative_spec` points at the relevant section of [`c1v-MIT-Crawley-Cornell.v2.2.md`](../../plans/c1v-MIT-Crawley-Cornell.v2.2.md) (which inherits-by-reference from v2.1 §Wave C / §Wave E). Decision IDs (`D-V21.NN`) and exit-criterion IDs (`EC-V21-<wave>.NN`) are the canonical lock points; spawn-prompt deliverables map 1:1 to ECs.
+8. **Day-0 inventory required-reading (TE1 only):** Every TE1 agent prompt MUST include the Day-0 inventory path (`plans/wave-e-day-0-inventory.md`) in `context.required_reading[]`. `qa-e-verifier` asserts every TE1 Agent prompt body contains the literal substring `wave-e-day-0-inventory.md` — FAIL on missing. (This was previously framed as EC-V21-E.0(iii); moved here per critique #4 — it's dispatch policy, not a checkable artifact.)
 
 ---
 
 ## TC1 — c1v-crawley-schema-closeout (Wave C)
 
 **Scope:** Typed-schema layer for Crawley discipline (D-V21.13). 10 new module-{2,3,4,5} schemas + `mathDerivationMatrixSchema` (Option Y per [REQUIREMENTS-crawley §5](../../plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md)) + 10 Drizzle migrations + LangSmith eval harness (≥30 graded examples per agent) + `/about/methodology` page surfacing METHODOLOGY-CORRECTION.md (closes v2.1 P9). Honors v2.1 §Wave C verbatim (lines 362-400).
+
+> **D-V21.13 scope clarification:** The decision is named "Module-5 schema delivery" but the 10-schema deliverable spans M2/3/4/5 per [REQUIREMENTS-crawley §5](../../plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md). The matrix schema lives in `module-5/_matrix.ts` but is consumed cross-module; `module-2/3/4` extensions are the consumers. Locked decision ID is inviolable — wording stays; scope is broader than the name.
 
 **EC-V21-C.0 preflight (BLOCKING):** Namespace resolution. `module-5-form-function/` exists on disk and contains the existing form-function-map schema. Default plan: rename `module-5-form-function/` → `module-5/` and absorb the existing `form-function-map.ts` as `phase-3-form-function-concept.ts`. All importers updated; tsc green; `register schemas` returns no duplicate keys. Alternative if rename rejected: namespace new work as `module-5-crawley/`. **`namespace-resolver` agent runs FIRST** and blocks the other 4 TC1 agents until C.0 closes.
 
@@ -118,7 +124,13 @@ TeamCreate({
 })
 ```
 
-### Step 2: Spawn agents (5 parallel, with namespace-resolver blocking the other 4)
+### Step 2: Spawn agents (7 total — 5 deliverable + QA + Docs; staged parallel behind `namespace-resolver`)
+
+**Dispatch sequence:**
+- **T0:** `TeamCreate` + spawn `namespace-resolver`.
+- **T0+ε** (after `namespace-resolver` green): spawn `crawley-schemas`, `crawley-migrations`, `eval-harness`, `methodology-page` in parallel.
+- **T1** (after all 4 above green): spawn `qa-c-verifier` + `docs-c` in parallel.
+
 
 | Agent name | subagent_type | Role | Blocks |
 |---|---|---|---|
@@ -143,12 +155,15 @@ TeamCreate({
 **EC-V21-E.0 preflight (BLOCKING):**
 - (i) ✅ done 2026-04-25 (source plan path rewrite committed)
 - (ii) ✅ done 2026-04-26 (`wave-e-pre-rewrite-2026-04-26` @ `a7f8a7c`)
-- (iii) **Day-0 inventory consumption** — every TE1 agent reads [`plans/wave-e-day-0-inventory.md`](../../plans/wave-e-day-0-inventory.md) BEFORE writing any code; honors the existing `decision_audit` shape, the existing `kb_chunks` + ivfflat index, and the existing T9 `_shared/` symlink graph. Do NOT re-create what already ships.
+- Day-0 inventory consumption is enforced as **dispatch rule #8**, not an EC (process, not artifact — moved per critique #4).
+
+**TE1 Day-0 prereq (NEW per critique #5 — blocks `engine-prod-swap`):**
+- **Baseline-capture sub-task** — before `engine-prod-swap` runs, scrape `synthesis_metrics_total{module="m2",impl="llm-only"}` from the v2.1 7-day rolling Sentry window and freeze to `plans/v21-outputs/observability/sentry-baseline-2026-04-25.json`. If that file does not yet exist on disk, `engine-core` writes it as part of EC-V21-E.1 setup before any engine wiring lands. `qa-e-verifier` consumes this file as the EC-V21-E.13 baseline source-of-truth.
 
 **Dependencies:**
 - HARD-DEP on `tc1-wave-c-complete` (typed schemas + LangSmith dataset)
 - HARD-DEP on `wave-e-pre-rewrite-2026-04-26` (snapshot anchor)
-- Internal sequencing: `engine-core` (G1+G3) blocks `engine-context` (G4) blocks `audit-writer` (G5 finish) — the rest run parallel.
+- Internal sequencing: `engine-core` (G1+G3) blocks `engine-context` (G4) blocks `audit-writer` (G5 finish). `engine-stories` runs parallel with `audit-writer` (rationale: golden tests can snapshot expected EngineOutput shape directly without invoking a live engine — critique #10). Other agents run parallel post-`engine-core`.
 
 **Honors:** D-V21.18 through D-V21.23. Inherits-by-reference from v2.1 §Wave E content + ECs + Wave A↔E handshake contract pin.
 
@@ -179,7 +194,13 @@ TeamCreate({
       "GENERATE_constants output: constants slice of same file (Zod-pinned)",
       "nfr_engine_contract_version: 'v1' on each node's output envelope",
       "Failure semantics: final_confidence < 0.90 + decision.llm_assist false + no fallback rule → emit { status: 'needs_user_input', computed_options, math_trace } and route to system-question-bridge.ts (NOT thrown error)",
-      "Implementation independence: __tests__/langchain/graphs/intake-graph.test.ts must pass with both v2.1 LLM-only agent AND v2.2 nfrEngineInterpreter.evaluate(...) behind GENERATE_nfr"
+      "Implementation independence: __tests__/langchain/graphs/intake-graph.ta1-integration.test.ts must pass with both v2.1 LLM-only agent AND v2.2 nfrEngineInterpreter.evaluate(...) behind GENERATE_nfr (test filename verified against on-disk reality 2026-04-26 — supersedes v2.1 line 504's stale `intake-graph.test.ts` reference)"
+    ],
+    nfr_node_swap_mechanism_LOCKED: [
+      "Choice: DI pattern — intake-graph.ts accepts nfrImpl?: 'llm' | 'engine' arg with default 'llm' (v2.1) → 'engine' (v2.2 post-swap)",
+      "Test consequence: __tests__/langchain/graphs/intake-graph.ta1-integration.test.ts runs both implementations explicitly via the param (one describe block per impl)",
+      "Rationale: env-var swap is module-load-time and brittle under jest module-cache; fixture-override + _setNfrImpl() test-only hooks pollute the public surface; DI is the cleanest swap and consumed identically by qa-e-verifier's implementation-independence proof",
+      "engine-prod-swap consumes this as a hard constraint — agent does NOT improvise an alternative pattern"
     ],
     out_of_scope: [
       "P6 prompt-caching bug investigation (separate cost-lever track, not Wave E)",
@@ -191,24 +212,32 @@ TeamCreate({
 })
 ```
 
-### Step 2: Spawn agents (9 total — 7 deliverable + QA + Docs)
+### Step 2: Spawn agents (12 total — 10 deliverable + QA + Docs; staged parallel)
+
+**Dispatch sequence:**
+- **T0:** `TeamCreate` + spawn `engine-core` (gates the rest of TE1).
+- **T0+ε** (after `engine-core` green): spawn `engine-context`, `engine-fail-closed`, `engine-gap-fill`, `engine-pgvector`, `engine-stories`, `kb-rewrite`, `provenance-ui` in parallel. (`engine-stories` no longer blocks on `audit-writer` per critique #10 — golden tests snapshot expected EngineOutput shape directly.)
+- **T1** (after `engine-context` green): spawn `audit-writer`.
+- **T2** (after all 9 above green): spawn `engine-prod-swap` (LAST deliverable — consumes everything).
+- **T3** (after `engine-prod-swap` green): spawn `qa-e-verifier`.
+- **T4** (FAIL-CLOSED — only if `qa-e-verifier` reports all ECs green): spawn `docs-e-and-closeout`.
 
 | Agent name | subagent_type | Role (EC pinned) | Blocks |
 |---|---|---|---|
-| `engine-core` | langchain-engineer | EC-V21-E.1: G1 NFREngineInterpreter + G3 PredicateDSL; refactor `clarification-detector.heuristicCheck()` to consume engine | blocks `engine-context`, `engine-fail-closed`, `engine-gap-fill` |
-| `engine-context` | langchain-engineer | EC-V21-E.2: G4 ArtifactReader + ContextResolver; tested against 5 representative phase decisions | blocks `audit-writer`, `engine-stories` |
-| `audit-writer` | database-engineer | EC-V21-E.3 finish: extend shipped `decision_audit` table via DELTA migration with NFR-engine fields (`matched_rule_id`, `inputs_used`, `modifiers_applied`, `final_confidence`, `override_history`); engine-side `writeAuditRow()`; verify hash chain; RLS unchanged | blocks `engine-stories` |
+| `engine-core` | langchain-engineer | EC-V21-E.1: G1 NFREngineInterpreter + G3 PredicateDSL; refactor `clarification-detector.heuristicCheck()` to consume engine. **Also writes** `plans/v21-outputs/observability/sentry-baseline-2026-04-25.json` (TE1 Day-0 prereq baseline-capture) if not yet on disk | blocks all other deliverable agents until G1+G3 land |
+| `engine-context` | langchain-engineer | EC-V21-E.2: G4 ArtifactReader + ContextResolver; tested against 5 representative phase decisions | blocks `audit-writer` (writer needs ContextResolver to resolve audit-row inputs); does NOT block `engine-stories` (decoupled per critique #10) |
+| `audit-writer` | database-engineer | EC-V21-E.3 finish: extend shipped `decision_audit` table via DELTA migration with NFR-engine fields (`matched_rule_id`, `inputs_used`, `modifiers_applied`, `final_confidence`, `override_history`); engine-side `writeAuditRow()`; verify hash chain; RLS unchanged | — |
 | `engine-fail-closed` | langchain-engineer | EC-V21-E.4: G6 fail-closed rules loader + runner; all phase files' STOP GAP checklists machine-readable | — |
 | `engine-gap-fill` | langchain-engineer | EC-V21-E.5: G7 surface-gap.ts producer (NOT collapsed into system-question-bridge.ts — surface-gap is producer, bridge is shared transport per v2.1 contract pin) | — |
 | `engine-pgvector` | database-engineer | EC-V21-E.6: verify embeddings populated in shipped `kb_chunks` + add RLS to `kb_chunks` + optional HNSW upgrade; `searchKB(query, topK, filter?) → KBChunk[]` p95 < 200ms | — |
-| `engine-stories` | langchain-engineer | EC-V21-E.7 + .8: G10 PII redaction + G11 dynamic model routing + 13 engine.json rule trees authored + golden tests ≥5 fixtures each | — |
+| `engine-stories` | langchain-engineer | EC-V21-E.7 + .8: G10 PII redaction + G11 dynamic model routing + 13 engine.json rule trees authored + golden tests ≥5 fixtures each. Golden fixtures snapshot expected `EngineOutput` shape directly (no live engine call required at authorship time) | — |
 | `kb-rewrite` | backend-architect | EC-V21-E.9 + .10 + .11: 80 phase files rewritten to schema-first 6-section shape across M1-M7 with `_legacy_2026-04-26/` snapshot for rollback; 5 schema extensions landed (delegate to TC1 if shape overlap) | — |
 | `provenance-ui` | ui-ux-engineer | EC-V21-E.11 finish: LangGraph nodes for "why this value?" UI; every auto-filled NFR/constant exposes matched rule + math trace + override-history button (reuses existing `components/chat/`-style panels per D-V21.23) | — |
-| `engine-prod-swap` | langchain-engineer | EC-V21-E.12 + .13: swap `GENERATE_nfr` + `GENERATE_constants` internals to `nfrEngineInterpreter.evaluate(...)` behind v2.1's frozen contract pin; verify ≥60% LLM call rate drop on M2; both intake-graph.test.ts assertions pass with new internals | runs LAST among deliverable agents |
-| `qa-e-verifier` | qa-engineer | Gates EC-V21-E.0–.13; tags `te1-wave-e-complete` on green; runs Wave A↔E implementation-independence proof | runs after all 9 above |
-| `docs-e-and-closeout` | documentation-engineer | Updates `apps/product-helper/CLAUDE.md` engine section + JSDoc on G1-G11; appends Wave E entry to v2-release-notes.md; flips v2.2 master plan DRAFT → SHIPPED with CLOSEOUT section; updates [`post-v2.1-followups.md`](post-v2.1-followups.md) (P5 stranded trees + any new findings); writes `plans/v22-release-notes.md` mirroring v2.1 release-notes pattern | runs after `qa-e-verifier` green |
+| `engine-prod-swap` | langchain-engineer | EC-V21-E.12 + .13: swap `GENERATE_nfr` + `GENERATE_constants` internals to `nfrEngineInterpreter.evaluate(...)` via the **DI pattern locked in `nfr_node_swap_mechanism_LOCKED`** (NOT env-var or fixture-override — agent does not improvise). Verify ≥60% LLM call rate drop on M2 against the **baseline at `plans/v21-outputs/observability/sentry-baseline-2026-04-25.json`**; both `intake-graph.ta1-integration.test.ts` assertions pass with new internals | runs LAST among deliverable agents |
+| `qa-e-verifier` | qa-engineer | Gates EC-V21-E.0–.13; tags `te1-wave-e-complete` on green; runs Wave A↔E implementation-independence proof. **EC-V21-E.13 measurement methodology (locked):** scrape `synthesis_metrics_total{module="m2",impl="engine-first"}` from a 7-day rolling window post-`engine-prod-swap`; pass criterion `(baseline_calls - postswap_calls) / baseline_calls >= 0.60` with non-overlapping confidence intervals; verifier runs `scripts/verify-llm-call-rate-drop.ts --baseline=plans/v21-outputs/observability/sentry-baseline-2026-04-25.json --postswap=<live> --threshold=0.60` | runs after all 10 deliverable agents above |
+| `docs-e-and-closeout` | documentation-engineer | Updates `apps/product-helper/CLAUDE.md` engine section + JSDoc on G1-G11; appends Wave E entry to v2-release-notes.md; flips v2.2 master plan DRAFT → SHIPPED with CLOSEOUT section; updates [`post-v2.1-followups.md`](post-v2.1-followups.md) (P5 stranded trees + any new findings); writes `plans/v22-release-notes.md` mirroring v2.1 release-notes pattern | **HARD-DEP on `te1-wave-e-complete` tag from `qa-e-verifier` (FAIL-CLOSED — does NOT run if any EC red)** |
 
-(Total team size = 11; scope-deliverable agents = 9; QA + Docs = 2.)
+(Total team size = 12; scope-deliverable agents = 10; QA + Docs = 2.)
 
 **Per-agent prompt template:** mirror v2.1 [TA1 agent prompts](team-spawn-prompts-v2.1.md) — `name`, `subagent_type`, `inline_skills: [code-quality, langchain-patterns, testing-strategies, database-patterns]` (DB-anchored agents add `security-patterns`), `prompt` body with EC pin + Day-0 inventory required-reading + canonical-skill-injection-header (auto-applied via `dispatch-helper.ts`).
 
@@ -225,6 +254,14 @@ When `te1-wave-e-complete` tag green:
    - P5 (stranded `kb-upgrade-v2/` partial trees) → resolve via Option (a) or (b) per stub recommendation
    - Any new follow-ups surfaced during TE1 execution
 5. Roll-up tag: `v2.2-shipped` @ TE1's final commit. Push to origin.
+
+**Rollback semantics (if `qa-e-verifier` reports any EC red — per critique #8):**
+- Master plan `c1v-MIT-Crawley-Cornell.v2.2.md` stays DRAFT — NO flip.
+- `docs-e-and-closeout` does NOT run (HARD-DEP on green `te1-wave-e-complete` tag).
+- Failed EC(s) get filed in [`plans/post-v2.1-followups.md`](../../plans/post-v2.1-followups.md) as v2.3 carry-over with the failure shape captured.
+- Branch state preserved; no rollback to `wave-e-pre-rewrite-2026-04-26` snapshot tag unless explicit human decision (the snapshot tag is a recovery option, not an automatic trigger).
+- v2.2 release notes (`v22-release-notes.md`) NOT written — partial-green doc-state must not lie about completeness.
+- Roll-up tag `v2.2-shipped` NOT created.
 6. Cost-target gate: `scripts/load-test-tb1.ts` projection ≤ $320/mo at 100 DAU verified by `qa-e-verifier`. If miss, file as v2.3 follow-up (P6 cache-bug investigation gets priority bump in v2.3).
 
 ---
