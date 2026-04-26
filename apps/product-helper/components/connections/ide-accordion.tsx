@@ -42,7 +42,7 @@ const IDE_CONFIGS: IdeConfig[] = [
     description: 'Official Claude CLI with MCP support',
     status: 'recommended',
     getCommand: (slug, mcpUrl, apiKey) =>
-      `claude mcp add ${slug} ${mcpUrl} --key ${apiKey} --scope project`,
+      `claude mcp add ${slug} ${mcpUrl} --transport http --header "Authorization: Bearer ${apiKey}" --scope project`,
     instructions: [
       'Open your terminal in your project folder',
       'Paste and run the command below',

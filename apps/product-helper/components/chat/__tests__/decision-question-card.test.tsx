@@ -26,7 +26,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import * as React from 'react';
 
 import { DecisionQuestionCard } from '../decision-question-card';
-import type { GapMarkerPayload } from '@/lib/langchain/engines/surface-gap';
+import type { GapMarkerPayload } from '../../../lib/langchain/engines/surface-gap';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Element-tree helpers — traverse the React element returned by calling a
