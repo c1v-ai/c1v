@@ -1,6 +1,6 @@
 # c1v × MIT-Crawley-Cornell — v2.1 Amendment (Runtime Wiring + UI Surfacing + iter-3 API-Spec Fix)
 
-> **Status:** ✅ READY-FOR-EXECUTION — David greenlit 2026-04-25 22:01 EDT after iter-2 critique closed (14/14 issues resolved, see `plans/c1v-MIT-Crawley-Cornell.v2.1.critique.md`). Dispatch Wave 1 (TA1 + TA2 + TA3 + TD1, 21 agents in parallel) authorized. Wave 2 (TB1, 5 agents) gates on `t{a1,a2,a3,d1}-wave-a-complete` tag set.
+> **Status:** ✅ SHIPPED 2026-04-26 — all 5 ship-gate tags green (`ta1-wave-a-complete` `0a30d46`, `ta2-wave-a-complete` `1da5ac0`, `ta3-wave-a-complete` `e2d58b2`, `td1-wave-d-complete` `bb1f443`, `tb1-wave-b-complete` `e56d37f`). 26 agents dispatched across 5 teams. v2.1 SHIP GATE CLEARED. See CLOSEOUT section at end of this doc, [`plans/v21-outputs/release/v2.1-shipped.md`](v21-outputs/release/v2.1-shipped.md), and v2.1 summary block in [`plans/v2-release-notes.md`](v2-release-notes.md). Waves C + E carried to [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md).
 > **Slug:** `c1v-MIT-Crawley-Cornell.v2.1`
 > **Scope cut (locked 2026-04-25 16:31 EDT):** v2.1 ships **Waves A + B + D only**. Waves C (Crawley typed schemas + eval harness + methodology page) and E (KB runtime architecture rewrite) are **deferred to v2.2**. Their content is preserved in this doc for reference but marked `📦 DEFERRED TO v2.2`; v2.2 stub at [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md). Rationale: Wave A delivers the portfolio moat (per-tenant synthesis story in the running app); Waves B + D harden + fix iter-3; Waves C + E are quality/depth upgrades that benefit from validated Wave-A behavior before they land.
 > **Supersedes (in v2):** §0.4 (folder numbering claim that "T8+T9 merged renumber") — partially superseded; v2.1 acknowledges the on-disk renumber landed but the schema-source-of-truth side is incomplete (10 Crawley schemas not delivered — moved to v2.2). v2.1 reorganizes around **3 concurrent Waves (A/B/D) shipping in v2.1**, with Wave C + Wave E content preserved-but-deferred to v2.2. Wave A = Runtime Wiring + UI Surfacing; Wave B = Hardening + Cost; Wave D = iter-3 API-Spec Two-Stage Fix.
@@ -780,15 +780,98 @@ flowchart LR
 
 v2.1 SHIPPED when ALL of:
 
-- [ ] **EC-V21.0** All Wave A exit criteria green (EC-V21-A.0 through .16)
-- [ ] **EC-V21.1** Wave D iter-3 fix shipped + regression-pinned (EC-V21-D.1 through .5)
-- [ ] **EC-V21.2** Wave B exit criteria green (EC-V21-B.1 through .6)
+- [x] **EC-V21.0** All Wave A exit criteria green (EC-V21-A.0 through .16) — `ta1-wave-a-complete` `0a30d46` + `ta2-wave-a-complete` `1da5ac0` + `ta3-wave-a-complete` `e2d58b2`
+- [x] **EC-V21.1** Wave D iter-3 fix shipped + regression-pinned (EC-V21-D.1 through .5) — `td1-wave-d-complete` `bb1f443`
+- [x] **EC-V21.2** Wave B exit criteria green (EC-V21-B.1 through .6) — `tb1-wave-b-complete` `e56d37f`
 - [ ] ~~**EC-V21.3** Wave C exit criteria green~~ — 📦 DEFERRED to v2.2; not part of v2.1 ship gate
 - [ ] ~~**EC-V21.4** Wave E exit criteria green~~ — 📦 DEFERRED to v2.2; not part of v2.1 ship gate
-- [ ] **EC-V21.5** This v2.1 doc flipped DRAFT → SHIPPED with new CLOSEOUT section listing per-EC commit SHAs
-- [ ] **EC-V21.6** [`plans/v2-release-notes.md`](v2-release-notes.md) appended with v2.1 summary block (note Wave C + E deferred to v2.2)
-- [ ] **EC-V21.7** [`plans/post-v2-followups.md`](post-v2-followups.md) updated: P1-P9 closed by v2.1 (P7 + P9 deferred to v2.2); new follow-ups (if any) added
+- [x] **EC-V21.5** This v2.1 doc flipped DRAFT → SHIPPED with new CLOSEOUT section listing per-EC commit SHAs — see CLOSEOUT below
+- [x] **EC-V21.6** [`plans/v2-release-notes.md`](v2-release-notes.md) appended with v2.1 summary block (note Wave C + E deferred to v2.2)
+- [x] **EC-V21.7** [`plans/post-v2-followups.md`](post-v2-followups.md) updated: P1-P9 closed by v2.1 (P7 + P9 deferred to v2.2); new follow-ups (if any) added
 - [ ] ~~**EC-V21.8** kb-runtime-architecture.md flipped DRAFT → SHIPPED~~ — 📦 DEFERRED to v2.2 ship gate; source plan stays DRAFT through v2.1 cycle
+
+---
+
+## CLOSEOUT — v2.1 SHIPPED 2026-04-26
+
+**Final tag:** `tb1-wave-b-complete` @ `e56d37f`. 5 teams, 26 agents, ~6 hours wall-clock.
+
+### Ship-gate tags
+
+| Wave | Team | Tag | Commit |
+|---|---|---|---|
+| A | TA1 `c1v-runtime-wiring` | `ta1-wave-a-complete` | `0a30d46` |
+| A | TA2 `c1v-synthesis-ui` | `ta2-wave-a-complete` | `1da5ac0` |
+| A | TA3 `c1v-cloudrun-sidecar` | `ta3-wave-a-complete` | `e2d58b2` |
+| D | TD1 `c1v-apispec-iter3` | `td1-wave-d-complete` | `bb1f443` |
+| B | TB1 `c1v-hardening` | `tb1-wave-b-complete` | `e56d37f` |
+
+### Per-EC commit SHAs
+
+**Wave A — Per-tenant runtime wiring + UI surfacing:**
+- EC-V21-A.0 preflight (0011 collision + agent audit + paths): `b1ac561` migration reconcile, `4c8504d`/`5d7bf05` audit + atlas + methodology, `590cd5b`/`cd21be1`/`15ee155` P10 stale-path
+- EC-V21-A.2 TA3 sidecar `/run-render`: tag `e2d58b2`
+- EC-V21-A.3 TA2 RecommendationViewer + provenance + downloads: `ce14763` / `c953954`, `feeb15b` / `81a2162`
+- EC-V21-A.4 TA1 system-question-bridge + M2/M6/M8 emitter hooks: `86712ad`
+- EC-V21-A.5 TA2 FMEA route in nav + project_artifacts read: `30def2f`
+- EC-V21-A.6 TA2 N2 sub-tab on Interfaces + sequence disclosure: `e0a2d62`
+- EC-V21-A.7 TA1 CLAUDE.md preflight P10 path corrections: `590cd5b`, `82753e0`, `cd21be1`, `15ee155`
+- EC-V21-A.8 TA1 atlas re-ingest unblock (`kb_chunks = 424`): `4c8504d` / `5d7bf05`
+- EC-V21-A.9 TA2 archive viewers (data_flows, open_questions) + bundle ZIP: `1f82ea4`
+- EC-V21-A.10 TA2 collapse arch-diagram + db-schema duplicate: `efcd425`, `e500a88` / `5f8cb8d`, `a8ba785`
+- EC-V21-A.11 TA2 Diagrams page → inline Tech Stack relocation: rolled into TA2 tag `1da5ac0`
+- EC-V21-A.12 TA1 content-addressed `inputs_hash` (deterministic, key-order-insensitive): `a7f0bc7` / `4d5aced`
+- EC-V21-A.13 TA1 `project_artifacts` 12-column ledger: TA1 wave-a-table producer @ `7ae0650`
+- EC-V21-A.14 TA1 RLS enabled + 4 policies + 9/9 RLS smoke tests: TA1 wave-a-table producer @ `7ae0650`
+- EC-V21-A.16 TA2 `EmptySectionState` + 5 sibling wrappers: `4c033d4`/`7e1e8b9`/`542b48b`, `5690b35`, `952e3cd`/`38891a7`
+- Wave-A↔E pin discriminated-union envelope (`ok` + `needs_user_input`): `a7f0bc7` / `4d5aced`
+- D-V21.24 boundary (Vercel ↔ Cloud Run): rolled into TA3 tag `e2d58b2`
+
+**Wave D — iter-3 API-spec two-stage refactor:**
+- EC-V21-D.1 preflight log + branch decision: `ac85cf1`
+- EC-V21-D.2 stage-1 schema + agent stage-1 path: `a09deea` (fixture), `beaf8cf` (stage-2 engine), `a5d8bb9` (two-stage wire)
+- EC-V21-D.3 full two-stage assembled output: `fba7dcb` (regression replay), `bb1f443` (legacy-path pin)
+- EC-V21-D.4 fixture-replay regression test pinned to project=33: `fba7dcb`, `2310674`
+- EC-V21-D.5 token-cost delta (83% output-token reduction → 75% cost reduction): `e2d58b2`
+
+**Wave B — Hardening + cost/reliability:**
+- EC-V21-B.1 inputs_hash cache (≥30% hit on 10×5 synthetic): `dd4d5d6`
+- EC-V21-B.2 lazy-gen (defer 4-of-7; ≥50% post-intake p95 drop on deferred subset): `dd4d5d6`
+- EC-V21-B.3 Free hard-cap 1/mo + Plus unlimited tier gate: `d22ed6e`
+- EC-V21-B.4 30s circuit-breaker + per-artifact retry (NO canned fall-back per D-V21.17): `a56cad9`, `0a5ac3d`
+- EC-V21-B.5 Sentry observability for 7 v2 agents (p50/p95/p99 + token cost): `de581b3`
+- EC-V21-B.6 Cost telemetry instrumentation (no gate; ~$330/mo informational): `de581b3`
+- TB1 verifier 6/6 EC green: `e56d37f`
+
+**Closeout — v2.1 ship-gate doc flips (this commit set):**
+- EC-V21.5 this v2.1 doc DRAFT → SHIPPED + CLOSEOUT section: TB1 docs commit
+- EC-V21.6 [`plans/v2-release-notes.md`](v2-release-notes.md) v2.1 summary block: TB1 docs commit
+- EC-V21.7 [`plans/post-v2-followups.md`](post-v2-followups.md) updated (P1-P9 closed; P7+P9 carried to v2.2): TB1 docs commit
+- New: [`plans/v21-outputs/release/v2.1-shipped.md`](v21-outputs/release/v2.1-shipped.md) — single-page authoritative summary
+
+### Cost figures (informational; not a ship gate per David 2026-04-25 21:09 EDT)
+
+- Wave-A unoptimized projection: ~$924/mo at 100 DAU baseline.
+- Wave-B optimized projection: ~$330/mo at 100 DAU baseline (cache + lazy-gen + tier gate).
+- TD1 token reduction on api-spec gen: 83% output-token → 75% cost reduction on that agent.
+
+### Latency figures
+
+- TA1 chat-bridge p95 < 2s.
+- TB1 lazy-gen post-intake p95 ≥ 50% drop on deferred subset (4-of-7 artifacts).
+- TB1 circuit-breaker fires at 30s ± 1s.
+
+### Portfolio artifact
+
+`.planning/runs/self-application/synthesis/architecture_recommendation.v1.json` — byte-frozen self-application keystone (unchanged from v2). Per-tenant equivalents now produced by every project through the same pipeline (TA1 GENERATE_* nodes + TA3 sidecar + TA2 viewer + TB1 cache/lazy/gate/breaker/observability).
+
+### Deferred to v2.2
+
+📦 [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md) is the forward-pointer for everything carried over:
+- **Wave C** — Crawley typed schemas (10) + eval harness + methodology page (was `EC-V21.3` in this doc; preserved as `📦 DEFERRED TO v2.2` sections above)
+- **Wave E** — KB runtime architecture rewrite: deterministic-rule-tree-first NFR engine + pgvector + decision_audit + multi-turn gap-fill + "why this value?" UI (was `EC-V21.4` + `EC-V21.8` in this doc; preserved as `📦 DEFERRED TO v2.2` sections above)
+- **D-V21.13** Crawley schemas + **D-V21.18 through D-V21.23** Wave E sub-decisions — locked here, honored by v2.2
+- **P7** Crawley schemas (post-v2 backlog) and **P9** methodology drift — kept open in [`plans/post-v2-followups.md`](post-v2-followups.md)
 
 ---
 

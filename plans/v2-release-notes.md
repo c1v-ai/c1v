@@ -140,3 +140,81 @@ This is the moat — a deterministic LLM system for architecture design, grounde
 - [`plans/t10-outputs/verification-report.md`](t10-outputs/verification-report.md)
 - [`plans/t11-outputs/verification-report.md`](t11-outputs/verification-report.md)
 - [`plans/reorg-verification-report.md`](reorg-verification-report.md) (T8)
+
+---
+
+# v2.1 Amendment — Release Notes (Appended 2026-04-26)
+
+**Date:** 2026-04-26
+**Final tag:** `tb1-wave-b-complete` @ `e56d37f`
+**Plan:** [`c1v-MIT-Crawley-Cornell.v2.1.md`](c1v-MIT-Crawley-Cornell.v2.1.md) (DRAFT → SHIPPED)
+**Single-page summary:** [`v21-outputs/release/v2.1-shipped.md`](v21-outputs/release/v2.1-shipped.md)
+
+5 teams shipped in v2.1, 26 agents dispatched, ~6 hours wall-clock from Wave-A spawn to v2.1 ship gate. The v2 keystone artifact (`architecture_recommendation.v1.json`) is no longer trapped on disk — every project now produces its own per-tenant synthesis through the runtime LangGraph, with PDF + PPTX + XLSX downloads, FMEA + N2 + Open-Questions surfaced in the UI, the iter-3 API-spec regression fixed, and a hardened cost/reliability layer (cache + lazy-gen + tier gate + circuit-breaker + Sentry).
+
+## What shipped — v2.1 (Waves A + B + D)
+
+### Wave A — Per-tenant runtime wiring + UI surfacing
+
+| Team | Tag | Commit | Deliverable |
+|------|-----|--------|-------------|
+| TA1 `c1v-runtime-wiring` | `ta1-wave-a-complete` | `0a30d46` | LangGraph GENERATE_* nodes wiring T4b/T5/T6 agents + `project_artifacts` Drizzle table + RLS (4 policies) + content-addressed `inputs_hash` + `system-question-bridge` transport + 0011 migration collision reconciled + Wave-A↔E discriminated-union envelope |
+| TA2 `c1v-synthesis-ui` | `ta2-wave-a-complete` | `1da5ac0` | `RecommendationViewer` + 5 sections + provenance + downloads + `EmptySectionState` + 5 sibling wrappers + FMEA route in nav + N2 sub-tab + archive viewers + bundle ZIP + Architecture+Database section merge + DBML transpiler |
+| TA3 `c1v-cloudrun-sidecar` | `ta3-wave-a-complete` | `e2d58b2` | Cloud Run sidecar `/run-render` + Supabase Storage signed-URL helper + Vercel ↔ Cloud Run boundary (D-V21.24) |
+
+### Wave D — iter-3 API-spec two-stage refactor
+
+| Team | Tag | Commit | Deliverable |
+|------|-----|--------|-------------|
+| TD1 `c1v-apispec-iter3` | `td1-wave-d-complete` | `bb1f443` | Stage-1 flat-operation schema + stage-2 deterministic CRUD-shape expansion engine + project=33 fixture + regression test pinned + 83% output-token / 75% cost reduction |
+
+### Wave B — Hardening + cost/reliability
+
+| Team | Tag | Commit | Deliverable |
+|------|-----|--------|-------------|
+| TB1 `c1v-hardening` | `tb1-wave-b-complete` | `e56d37f` | `synthesis-cache` (inputs_hash, ≥30% hit) + `lazy-gen` (defer 4-of-7) + `synthesis-tier` (Free 1/mo + Plus∞) + `circuit-breaker` (30s, no canned fall-back) + `synthesis-metrics` (Sentry, 7 v2 agents) + load-test harness + cost-telemetry runbook |
+
+## Per-EC commit SHAs
+
+See [`v21-outputs/release/v2.1-shipped.md`](v21-outputs/release/v2.1-shipped.md) for the full per-EC table. Wave-by-wave headlines:
+- **Wave A:** EC-V21-A.0 / .2-.16 + Wave-A↔E pin + D-V21.24 boundary
+- **Wave D:** EC-V21-D.1-.5
+- **Wave B:** EC-V21-B.1-.6
+- **Closeout:** EC-V21.5 (this plan flip), EC-V21.6 (these notes), EC-V21.7 (post-v2-followups update)
+
+## Cost figures (informational; NOT a ship gate per David 2026-04-25 21:09 EDT)
+
+- Wave-A unoptimized projection: **~$924/mo** at 100 DAU baseline.
+- Wave-B optimized projection: **~$330/mo** at 100 DAU baseline (cache + lazy-gen + tier gate).
+- TD1 token reduction on api-spec gen: **83% output-token → 75% cost reduction** on that agent.
+
+Cost is instrumented for visibility in `apps/product-helper/lib/observability/synthesis-metrics.ts` + Sentry dashboards under `plans/v21-outputs/tb1/sentry-dashboards/`. There are NO alert thresholds in v2.1; operators read the dashboard, no on-call paging on $/mo.
+
+## Latency figures
+
+- TA1 chat-bridge p95 < 2s (DB-write green in producer suite).
+- TB1 lazy-gen post-intake p95 reduced ≥ 50% on the deferred subset (4-of-7 artifacts) vs Wave-A baseline.
+- TB1 circuit-breaker fires at 30s ± 1s (verified by hanging-mock test).
+
+## Portfolio artifact
+
+`.planning/runs/self-application/synthesis/architecture_recommendation.v1.json` — byte-frozen self-application keystone (unchanged from v2). **Per-tenant equivalents now produced by every project** through the same deterministic pipeline (TA1 GENERATE_* nodes + TA3 sidecar render + TA2 viewer + TB1 hardening). The portfolio moat — "deterministic LLM system for architecture design, grounded in math, with provenance per decision" — is now visible in the running app for every user.
+
+## What was deferred to v2.2
+
+- **Wave C** — Crawley typed schemas (10) + eval harness + methodology page (was `EC-V21.3`)
+- **Wave E** — KB runtime architecture rewrite: deterministic-rule-tree-first NFR engine + pgvector + decision_audit + multi-turn gap-fill + "why this value?" UI (was `EC-V21.4` + `EC-V21.8`)
+- **D-V21.13** Crawley schemas + **D-V21.18 through D-V21.23** Wave E sub-decisions — locked, honored by v2.2
+- **P7** Crawley schemas + **P9** methodology drift — kept open in [`plans/post-v2-followups.md`](post-v2-followups.md)
+
+v2.2 spec stub: [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md).
+
+## v2.1 verification reports
+
+- [`plans/v21-outputs/ta1/verification-report.md`](v21-outputs/ta1/verification-report.md) — 9/9 EC gates green; 48 tests
+- [`plans/v21-outputs/ta2/verification-report.md`](v21-outputs/ta2/verification-report.md) — full green, 37/37 jest, 0 hex literals, 0 FROZEN modifications
+- [`plans/v21-outputs/ta3/verification-report.md`](v21-outputs/ta3/verification-report.md) — sidecar EC gates
+- [`plans/v21-outputs/td1/verification-report.md`](v21-outputs/td1/verification-report.md) — Wave D EC gates + token-cost delta
+- [`plans/v21-outputs/tb1/verification-report.md`](v21-outputs/tb1/verification-report.md) — 6/6 EC green; load test 10×5
+- [`plans/v21-outputs/tb1/cost-telemetry-runbook.md`](v21-outputs/tb1/cost-telemetry-runbook.md) — operator runbook
+
