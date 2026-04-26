@@ -51,13 +51,8 @@ export async function generateFmeaEarly(
     );
 
     await persistArtifact({ projectId: state.projectId, kind: ARTIFACT_KIND, status: 'ready', result });
-    return {
-      extractedData: {
-        ...state.extractedData,
-        fmeaEarly: result,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-    };
+    // Synthesis artifacts persist to project_artifacts (above), NOT extractedData.
+    return {};
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'unknown';
     console.error('[GENERATE_fmea_early] failed:', reason);
