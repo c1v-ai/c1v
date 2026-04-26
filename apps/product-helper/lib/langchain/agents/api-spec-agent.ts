@@ -24,6 +24,10 @@ import type {
   InterfaceMatrixRowProjection,
   SubsystemProjection,
 } from '../schemas/projections';
+import {
+  stage1ApiSpecSchema,
+  type Stage1ApiSpec,
+} from '../schemas/api-spec/stage1-operation';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -672,3 +676,169 @@ export function validateAPISpecification(spec: APISpecification): {
 
 // Export schema for testing
 export { apiSpecificationSchema, endpointSchema };
+
+// ============================================================
+// Stage-1 emission path (Wave D Step D-1, Decision D-V21.12)
+//
+// Emits a flat list of operation stubs (≤ 8 scalar keys per op) — no
+// nested JSON-schemas. Stage-2 (deterministic CRUD-shape mapper, separate
+// agent) expands the flat list into the full nested
+// `apiSpecificationSchema` shape without invoking the LLM again.
+//
+// Background: production observed `stop_reason='max_tokens'` on
+// project=33 (live preflight, plans/v21-outputs/td1/preflight-log.md):
+// only 22 of ~30 endpoints emitted, trailing `errorHandling` truncated.
+// Per-endpoint nested schema (`responseBody`, `requestBody.schema`) was
+// the multiplier. Splitting concentrates the LLM on the operation index
+// and lets deterministic code emit the bulky envelopes.
+//
+// `generateAPISpecification` (the existing top-level entrypoint) is NOT
+// modified here — wiring stage-1 → stage-2 → output-validation against
+// the preserved `apiSpecificationSchema` happens in subsequent Wave-D
+// steps under the `stage2-deterministic-expansion` agent.
+// ============================================================
+
+function buildStage1ApiSpecPrompt(
+  projectContext?: import('../../education/reference-data/types').KBProjectContext,
+): string {
+  return `You are an expert API architect generating a REST API operation index from PRD data.
+
+${getAPISpecKnowledge(projectContext)}
+
+## Project Context
+Project Name: {projectName}
+Vision: {projectVision}
+
+## Use Cases
+{useCasesText}
+
+## Data Entities
+{dataEntitiesText}
+
+## Tech Stack Context
+{techStackText}
+{interfaceMatrixSection}
+
+## Required Output Structure (Stage 1 — flat operation index)
+
+Emit ONLY these top-level keys:
+- baseUrl: string (e.g., "/api/v1")
+- version: string (e.g., "1.0.0")
+- authType: one of 'none' | 'api_key' | 'bearer' | 'oauth2' | 'basic' | 'jwt'
+- operations: array — every endpoint as a FLAT row (no nested schemas)
+
+For each operation include EXACTLY:
+- path (string, OpenAPI braces for path params)
+- method ('GET'|'POST'|'PUT'|'PATCH'|'DELETE')
+- operationId (camelCase, unique)
+- description (one line)
+- auth (boolean)
+- tags (array of strings)
+- sourceUseCases (optional array of UC ids for traceability)
+
+Do NOT emit requestBody, responseBody, errorCodes, parameters, or any nested
+JSON-schemas. Stage 2 generates those deterministically from path + method.
+
+## Coverage Requirements
+- One operation per use case (cover every UC).
+- CRUD operations for each data entity (~5 per entity).
+- Action endpoints for state transitions (POST /orders/{id}/cancel).
+- GET /health (auth=false).
+- Authentication endpoints (POST /auth/login, POST /auth/refresh) if login/signup
+  use cases exist.
+- Search endpoints for entities with complex filtering.{stepsCoverageAddendum}
+
+## Naming Rules (from KB)
+- Plural nouns; lowercase hyphen-separated; max 2 nesting levels.
+- camelCase operationId, unique across the spec.
+- Tag by subsystem name where Subsystems are present, else entity name.
+
+## Authentication Inference (from KB)
+- API-to-API → api_key.
+- User sessions → bearer (JWT).
+- No login flows → none.
+- Public endpoints (signup, /health, public listings) have auth=false on the row.
+
+Generate the complete flat operation index now.`;
+}
+
+/**
+ * Compose the stage-1 prompt from a context object. Pure function — exported
+ * for unit + snapshot testing.
+ */
+export function buildStage1ApiSpecPromptText(
+  context: APISpecGenerationContext,
+): string {
+  const useCasesText = context.useCases
+    .map((uc, idx) => {
+      const preconditions = uc.preconditions?.length
+        ? `\n   Preconditions: ${uc.preconditions.join(', ')}`
+        : '';
+      const postconditions = uc.postconditions?.length
+        ? `\n   Postconditions: ${uc.postconditions.join(', ')}`
+        : '';
+      return `${idx + 1}. ${uc.id}: ${uc.name}\n   Actor: ${uc.actor}\n   Description: ${uc.description}${preconditions}${postconditions}`;
+    })
+    .join('\n\n');
+
+  const dataEntitiesText = context.dataEntities
+    .map((entity, idx) => {
+      const attrs = entity.attributes.length > 0
+        ? `Attributes: ${entity.attributes.join(', ')}`
+        : 'Attributes: (none specified)';
+      const rels = entity.relationships.length > 0
+        ? `\n   Relationships: ${entity.relationships.join('; ')}`
+        : '';
+      return `${idx + 1}. ${entity.name}\n   ${attrs}${rels}`;
+    })
+    .join('\n\n');
+
+  const techStackText = context.techStack
+    ? `Backend: ${context.techStack.backend || 'Not specified'}\nDatabase: ${context.techStack.database || 'Not specified'}\nAuth: ${context.techStack.auth || 'JWT/Bearer (inferred)'}`
+    : 'Not specified (use modern REST best practices with JWT authentication)';
+
+  const visionText =
+    context.projectVision.length > 1500
+      ? context.projectVision.slice(0, 1500) + '...'
+      : context.projectVision;
+
+  const interfaceSection = formatInterfaceMatrixSection(
+    context.interfaceMatrix,
+    context.subsystems,
+  );
+  const interfaceMatrixSection = interfaceSection ? `\n\n${interfaceSection}` : '';
+
+  const stepsCoverageAddendum = formatInterfaceInstructionAddendum(context.interfaceMatrix);
+
+  return buildStage1ApiSpecPrompt(context.projectContext)
+    .replace('{projectName}', context.projectName)
+    .replace('{projectVision}', visionText)
+    .replace('{useCasesText}', useCasesText || '(No use cases provided)')
+    .replace('{dataEntitiesText}', dataEntitiesText || '(No data entities provided)')
+    .replace('{techStackText}', techStackText)
+    .replace('{interfaceMatrixSection}', interfaceMatrixSection)
+    .replace('{stepsCoverageAddendum}', stepsCoverageAddendum);
+}
+
+/**
+ * Generate a stage-1 (flat-operation-list) API spec. Intended to be invoked
+ * by the stage-2 deterministic-expansion agent — exported here so D-3 wiring
+ * is a one-line import. NOT yet called from `generateAPISpecification`; that
+ * swap is a later Wave-D step.
+ */
+export async function generateStage1ApiSpec(
+  context: APISpecGenerationContext,
+): Promise<Stage1ApiSpec> {
+  const stage1Model = createClaudeAgent(stage1ApiSpecSchema, 'generate_api_spec_stage1', {
+    temperature: 0.2,
+    // Flat list — per-op output is ~80 chars vs ~400 in the nested schema.
+    // 4000 maxTokens easily covers 50+ operations with headroom.
+    maxTokens: 4000,
+  });
+  const prompt = buildStage1ApiSpecPromptText(context);
+  const result = await stage1Model.invoke(prompt);
+  return result as unknown as Stage1ApiSpec;
+}
+
+export { stage1ApiSpecSchema };
+export type { Stage1ApiSpec };
