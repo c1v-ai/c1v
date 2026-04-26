@@ -9,17 +9,14 @@
  * Team: Frontend (Agent 2.1: UI Engineer)
  */
 
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Users,
   Shield,
   Database,
-  MessageSquare,
-  ArrowRight,
 } from 'lucide-react';
+import { EmptySectionState } from './empty-section-state';
 
 
 // ---------------------------------------------------------------------------
@@ -309,33 +306,14 @@ function DataEntitiesSummary({ entities }: { entities: DataEntity[] }) {
 // Empty State
 // ---------------------------------------------------------------------------
 
-function EmptyState({ projectId, status }: { projectId: number; status: string }) {
-  const message =
-    status === 'intake'
-      ? 'Complete the intake chat to generate system overview data.'
-      : 'No system data extracted yet. Start a chat to begin gathering requirements.';
-
+function EmptyState({ projectId }: { projectId: number; status: string }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-center py-16">
-          <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
-          <h3 className="text-lg font-semibold mb-2 text-foreground">
-            No System Overview Data
-          </h3>
-          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
-            {message}
-          </p>
-          <Button asChild>
-            <Link href={`/projects/${projectId}/chat`}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Start Chat
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <EmptySectionState
+      icon={Users}
+      sectionName="System Overview"
+      methodologyCopy="Run Deep Synthesis to consolidate the actor table, system boundaries, and data-entity summary into a single overview."
+      projectId={projectId}
+    />
   );
 }
 

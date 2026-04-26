@@ -7,18 +7,15 @@
  * Part of the PRD Overview accordion sections.
  */
 
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Users,
-  MessageSquare,
-  ArrowRight,
   Target,
   AlertTriangle,
   User,
 } from 'lucide-react';
+import { EmptySectionState } from './empty-section-state';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,33 +72,14 @@ const PROFICIENCY_CONFIG: Record<string, { label: string; bgColor: string; textC
 // Empty State
 // ---------------------------------------------------------------------------
 
-function EmptyState({ projectId, status }: { projectId: number; status: string }) {
-  const message =
-    status === 'intake'
-      ? 'Continue the intake chat to identify target users and personas.'
-      : 'No target users identified yet. Describe who will use your product in the chat.';
-
+function EmptyState({ projectId }: { projectId: number; status: string }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-center py-16">
-          <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
-          <h3 className="text-lg font-semibold mb-2 text-foreground">
-            No Target Users
-          </h3>
-          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
-            {message}
-          </p>
-          <Button asChild>
-            <Link href={`/projects/${projectId}/chat`}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Start Chat
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <EmptySectionState
+      icon={Users}
+      sectionName="Target Users"
+      methodologyCopy="Run Deep Synthesis to identify target users, their goals, demographics, and pain points from the intake conversation."
+      projectId={projectId}
+    />
   );
 }
 
