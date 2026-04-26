@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
+import { getProjectArtifacts } from '@/lib/db/queries';
 import { FMEAViewer } from '@/components/system-design/fmea-viewer';
 
 function SectionSkeleton() {
@@ -13,38 +14,61 @@ function SectionSkeleton() {
   );
 }
 
+function EmptyState() {
+  return (
+    <div className="rounded-lg border bg-card p-12 text-center">
+      <div className="mx-auto max-w-md space-y-3">
+        <h2 className="text-lg font-semibold text-foreground">
+          Failure Mode &amp; Effects Analysis
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          FMEA hasn&apos;t been generated yet. Run Deep Synthesis to populate
+          the early and residual risk passes.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 async function FMEAContent({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
 
-  // See apps/product-helper/CLAUDE.md → "System-Design Data Path" — single
-  // extractedData blob, accessed via `any` cast until upstream types land.
+  // v2.1 (D-V21.17): prefer per-tenant artifacts from project_artifacts.
+  // No fallback to a canned exemplar.
+  const artifacts = await getProjectArtifacts(projectId);
+  const earlyReady = artifacts.some(
+    (a) => a.artifactKind === 'fmea_early_xlsx' && a.synthesisStatus === 'ready',
+  );
+  const residualReady = artifacts.some(
+    (a) => a.artifactKind === 'fmea_residual_xlsx' && a.synthesisStatus === 'ready',
+  );
+
+  // Back-compat: legacy intake captured FMEA on `extractedData` before
+  // synthesis-stage artifacts moved to project_artifacts. NOT canned data —
+  // it's the tenant's own pre-v2.1 capture.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extracted = (project as any).projectData?.intakeState?.extractedData;
-  const early = extracted?.fmeaEarly ?? null;
-  const residual = extracted?.fmeaResidual ?? null;
+  const legacyEarly = extracted?.fmeaEarly ?? null;
+  const legacyResidual = extracted?.fmeaResidual ?? null;
 
-  if (!early && !residual) {
-    return (
-      <div className="rounded-lg border bg-card p-12 text-center">
-        <div className="mx-auto max-w-md space-y-3">
-          <h2 className="text-lg font-semibold text-foreground">
-            Failure Mode & Effects Analysis
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            FMEA not yet generated. Complete the Wave-2 early pass or Wave-4
-            residual pass to populate this view.
-          </p>
-        </div>
-      </div>
-    );
+  const hasArtifact = earlyReady || residualReady;
+  const hasLegacy = !!(legacyEarly || legacyResidual);
+
+  if (!hasArtifact && !hasLegacy) {
+    return <EmptyState />;
   }
 
-  // Resolve manifest-relative artifact paths via the download API.
   const artifactUrlFor = (relPath: string) =>
     `/api/projects/${projectId}/artifacts/download?path=${encodeURIComponent(relPath)}`;
 
-  return <FMEAViewer early={early} residual={residual} artifactUrlFor={artifactUrlFor} />;
+  return (
+    <FMEAViewer
+      early={legacyEarly}
+      residual={legacyResidual}
+      artifactUrlFor={artifactUrlFor}
+    />
+  );
 }
 
 interface PageProps {
