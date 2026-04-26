@@ -1,5 +1,7 @@
 -- Migration: conversations pending_answer columns — TA1 system-question-bridge
 -- Created: 2026-04-25
+-- Renumbered: 0014 -> 0015 on 2026-04-26 (collision with 0014_project_artifacts).
+-- Sequence: 0011a/0011b -> 0012 -> 0013 -> 0014 (project_artifacts) -> 0015 (this).
 -- Brief: TA1 c1v-runtime-wiring Wave-A. v2.1 EC-V21-A.4 open-question chat bridge.
 --
 -- Purpose:
