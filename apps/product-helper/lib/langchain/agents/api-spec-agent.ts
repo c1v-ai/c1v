@@ -1,16 +1,78 @@
 /**
  * API Specification Generator Agent (Phase 10.1)
  *
- * Purpose: Generate REST API specifications from use cases and data entities
- * Pattern: Structured output with Zod schema validation
- * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
+ * Purpose: Generate REST API specifications from use cases and data entities.
+ * Team:    AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
- * Uses Claude Sonnet via central config for deterministic generation.
- * Analyzes use cases and data entities to produce:
- * - RESTful endpoints covering all use cases
- * - Request/response schemas based on data entities
- * - Authentication configuration
- * - Error handling patterns
+ * ## Architecture — Two-Stage Generation (v2.1 Wave D, EC-V21-D.1..5)
+ *
+ * As of TD1 (`td1-wave-d-complete` @ `bb1f443`), this agent runs a two-stage
+ * pipeline that replaces the legacy single-call structured-output path.
+ * The single-call path was hitting `stop_reason='max_tokens'` on real
+ * projects (e.g. project=33, ~25 endpoints × deeply nested CRUD shapes),
+ * because the LLM was asked to emit both the endpoint *index* AND the full
+ * request/response Zod-validated shapes in one shot. The output token
+ * budget grew as O(endpoints × schema-cardinality) and ran past the cap.
+ *
+ * ### Stage 1 — LLM emits flat operation list (`Stage1ApiSpec[]`)
+ *
+ * Schema:    `stage1ApiSpecSchema` from `../schemas/api-spec/stage1-operation`
+ * Per-op:    `{ path, method, description, auth, tags, operationId,
+ *               sourceUseCases? }` (≤8 scalar keys, ~80 chars each)
+ * Token cap: 4000 (vs legacy 12000 — well clear of the cutoff)
+ * Entry:     `generateStage1ApiSpec(context)`
+ *
+ * Stage 1's only job is to enumerate the API surface. Request/response
+ * shapes are intentionally NOT asked of the model.
+ *
+ * ### Stage 2 — Deterministic CRUD-shape expansion (zero LLM calls)
+ *
+ * Module:  `./api-spec/stage2-expansion.ts` → `stage2ExpansionEngine`
+ * Input:   `Stage1ApiSpec` × `EntitySchema[]` (from `context.dataEntities`)
+ * Rules:   (HTTP method, path-param presence, owning entity) → request +
+ *          response JSON schema. See `stage2-expansion.ts` JSDoc for the
+ *          full mapping table and how to add non-CRUD verb mappings.
+ * Output:  Full nested `APISpecification` shape — same contract the legacy
+ *          path produced.
+ * Cost:    $0 LLM (Wave D Step D-5: ~75% total cost reduction observed).
+ *
+ * ### Output validation — `apiSpecificationSchema` is PRESERVED
+ *
+ * `apiSpecificationSchema` (currently declared at line 135 of this file)
+ * is NOT removed. Stage-2's assembled output is parsed through it before
+ * return — this catches any drift between stage-2's mapping table and the
+ * `APISpecification` type contract. The schema's role shifted from
+ * "structured-output prompt to the LLM" to "post-assembly output validator".
+ * On parse failure or any other stage-1/stage-2 error, the agent silently
+ * falls back to the legacy single-call path so existing projects never
+ * regress.
+ *
+ * ### Feature flag rollout — `API_SPEC_TWO_STAGE`
+ *
+ * Per EC-V21-D.2 (default-on-new / default-off-existing pattern):
+ *
+ *   env `API_SPEC_TWO_STAGE` unset       → two-stage (default ON for new)
+ *   env `API_SPEC_TWO_STAGE=off`         → legacy single-call path
+ *   `options.twoStage = false`           → legacy (per-call override; pass
+ *                                          this from existing-project call
+ *                                          sites until the spec is re-gen'd)
+ *   `options.twoStage = true`            → force two-stage
+ *
+ * Two pre-existing tests of the legacy retry+fallback chain are pinned
+ * with `twoStage: false` so the legacy contract stays under regression as
+ * long as the env flag is honoured (see `__tests__/api-spec-agent.test.ts`).
+ *
+ * ## References
+ *
+ * - Plan:        `plans/c1v-MIT-Crawley-Cornell.v2.1.md` §Wave D
+ * - Pattern doc: `plans/v21-outputs/td1/two-stage-pattern.md`
+ * - Decision:    D-V21.12 (two-stage extraction for schema-bloat regressions)
+ * - ECs:         EC-V21-D.1 (stage-1 schema), D.2 (env flag), D.3 (regression
+ *                fixture), D.4 (verifier), D.5 (zero LLM calls in stage-2)
+ * - Tag:         `td1-wave-d-complete` @ `bb1f443`
+ *
+ * Edits to this JSDoc are documentation-only; do NOT modify pipeline logic
+ * here. Mapping rule changes live in `./api-spec/stage2-expansion.ts`.
  */
 
 import { createClaudeAgent } from '../config';
