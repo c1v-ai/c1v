@@ -20,6 +20,13 @@
  * deterministic; production runtime can swap in LISTEN/NOTIFY without
  * changing the surface.
  *
+ * Wave A ↔ Wave E handshake: this bridge is the SHARED transport. v2.1
+ * Wave-A producers (M2 NFR / M6 HoQ / M8 fmea-residual) ship now;
+ * v2.2 Wave-E `surface-gap.ts` reuses this same `surfaceOpenQuestion`
+ * surface. See `plans/v21-outputs/ta1/handshake-spec.md` for the
+ * authoritative contract (envelope shape, version-flag bump rules,
+ * failure-path test fixtures). Anchored by EC-V21-A.4 (≤ 2s p95).
+ *
  * @module lib/chat/system-question-bridge
  */
 

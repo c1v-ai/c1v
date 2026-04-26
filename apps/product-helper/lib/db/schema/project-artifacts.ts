@@ -34,6 +34,14 @@
  * Migration: `0014_project_artifacts.sql` (manual SQL — drizzle-kit broken
  * per repo CLAUDE.md).
  *
+ * Cross-refs:
+ *   - `plans/v21-outputs/ta1/handshake-spec.md` — Wave A ↔ Wave E contract pin
+ *     (envelope shape that lands here when synthesis_status='ready').
+ *   - `plans/v21-outputs/ta1/atlas-reingest-runbook.md` — operator runbook for
+ *     the upstream KB ingest that feeds `inputs_hash`.
+ *   - `lib/synthesis/artifacts-bridge.ts` — single re-export point for the
+ *     three reader queries; TA3 sidecar imports from here.
+ *
  * @module lib/db/schema/project-artifacts
  */
 

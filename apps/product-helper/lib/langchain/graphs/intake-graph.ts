@@ -205,39 +205,78 @@ async function generateInterfaces(state: IntakeState): Promise<Partial<IntakeSta
 }
 
 // ============================================================
-// v2.1 Wave A — 7 NEW node placeholders (langgraph-wirer)
+// v2.1 Wave A — 7 NEW node wrappers (langgraph-wirer)
 // ============================================================
+/**
+ * Wave-A system-design fan: 7 nodes chained linearly after `generate_interfaces`.
+ * Each wrapper lazy-imports its `./nodes/generate-*.ts` implementation to keep
+ * graph build-time light; concrete agent invocation + Zod-validated output
+ * shape live in those node files.
+ *
+ * Disposition table (graph-node ↔ agent ↔ output):
+ *   generate_data_flows       → data-flows-agent           → data_flows.v1.json (M1 phase-2.5)
+ *   generate_form_function    → form-function-agent        → form_function_map.v1.json (M5)
+ *   generate_decision_network → decision-net-agent         → decision_network.v1.json (M4)
+ *   generate_n2               → n2-agent                   → n2_matrix.v1.json (M7.a)
+ *   generate_fmea_early       → fmea-early-agent           → fmea_early.v1.json (M8.a)
+ *   generate_fmea_residual    → fmea-residual-agent        → fmea_residual.v1.json (M8.b)
+ *   generate_synthesis        → architecture-recommendation-agent
+ *                                                          → architecture_recommendation.v1.json
+ *
+ * Persistence: all 7 nodes write through `lib/synthesis/artifacts-bridge.ts`
+ * to the `project_artifacts` table (NOT `extractedData`); see
+ * `lib/db/schema/project-artifacts.ts` JSDoc for the row contract.
+ *
+ * Contract-pin envelope (Wave A ↔ Wave E handshake): does NOT apply to these
+ * 7 nodes. The `nfr_engine_contract_version: 'v1'` envelope lives only on
+ * the M2 NFR + constants slice of `extract_data` (see
+ * `plans/v21-outputs/ta1/handshake-spec.md` for the full spec).
+ *
+ * Position in chain: linear, in disposition-table order, gated entry from
+ * `generate_interfaces` and exiting to `END` after `generate_synthesis`.
+ *
+ * Failure semantics: throw on Zod-validation failure of agent output (graph
+ * error path). Soft "needs_user_input" failures from the Wave-E engine are
+ * NOT in scope for these 7 nodes — they only fire on M2 NFR/constants.
+ */
 
+/** Wraps `data-flows-agent`; emits `data_flows.v1.json` (M1 phase-2.5). */
 async function generateDataFlows(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateDataFlows: impl } = await import('./nodes/generate-data-flows');
   return impl(state);
 }
 
+/** Wraps `form-function-agent`; emits `form_function_map.v1.json` (M5). */
 async function generateFormFunction(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateFormFunction: impl } = await import('./nodes/generate-form-function');
   return impl(state);
 }
 
+/** Wraps `decision-net-agent`; emits `decision_network.v1.json` (M4). Sibling to `generate_decision_matrix` — both ship per critique iter-1. */
 async function generateDecisionNetwork(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateDecisionNetwork: impl } = await import('./nodes/generate-decision-network');
   return impl(state);
 }
 
+/** Wraps `n2-agent`; emits `n2_matrix.v1.json` (M7.a). */
 async function generateN2(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateN2: impl } = await import('./nodes/generate-n2');
   return impl(state);
 }
 
+/** Wraps `fmea-early-agent`; emits `fmea_early.v1.json` (M8.a; pre-mitigation). */
 async function generateFmeaEarly(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateFmeaEarly: impl } = await import('./nodes/generate-fmea-early');
   return impl(state);
 }
 
+/** Wraps `fmea-residual-agent`; emits `fmea_residual.v1.json` (M8.b; post-mitigation; high-RPN flagged for the synthesis viewer). */
 async function generateFmeaResidual(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateFmeaResidual: impl } = await import('./nodes/generate-fmea-residual');
   return impl(state);
 }
 
+/** Wraps `architecture-recommendation-agent`; emits `architecture_recommendation.v1.json` (portfolio keystone — derivation_chain + alternatives + embedded fmea/HoQ). */
 async function generateSynthesis(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateSynthesis: impl } = await import('./nodes/generate-synthesis');
   return impl(state);
