@@ -18,6 +18,24 @@
 - **Source:** Handoff Issue 18 — TD1.preflight-and-stage1-schema captures both `preflight-log-fixture.md` and `preflight-log-live.md`. If divergent, production = reality on branch decision.
 - **Resolution:** Verified 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4. Live preflight log line 75 explicitly states "None. Fixture replay (offline sizing) was consistent with the cutoff hypothesis; live replay confirms it definitively. No drift carried into v2.2 followups." Fixture's "cannot determine stop_reason" caveat was an honest scope-of-method note (offline replay can't measure live API metadata), not a divergence. The CUTOFF (max_tokens) branch decision holds.
 
+## P7 — UI trigger missing: `[Run Deep Synthesis →]` CTAs don't actually POST (CRITICAL — v2.1 production bug, NEW 2026-04-26)
+
+- **Source:** Surfaced 2026-04-26 via project=33 inspection at localhost:3000. User reports empty states everywhere (Synthesis / Decision Network / Data Flows / FMEA / etc.) on a project that should have synthesis content.
+- **Symptom:** Every empty state ships a `[Run Deep Synthesis →]` CTA. Clicking it from any system-design page navigates to `/projects/<id>/synthesis` — which renders ANOTHER empty state (5 instances of the same CTA). User loops; synthesis never triggers.
+- **Diagnosis:**
+  - **Backend route exists ✅** — [`apps/product-helper/app/api/projects/[id]/synthesize/route.ts`](../apps/product-helper/app/api/projects/%5Bid%5D/synthesize/route.ts) (TA3 commit `4e64ddb`): credits + idempotency + `kickoffSynthesisGraph()` via Next.js `after()`.
+  - **LangGraph nodes exist ✅** — [`intake-graph.ts`](../apps/product-helper/lib/langchain/graphs/intake-graph.ts): `generate_synthesis`, `generate_data_flows`, `generate_fmea_early`, `generate_fmea_residual`, `generate_decision_network`, `generate_form_function`, `generate_qfd`, `generate_n2`, `generate_interfaces`, `generate_ffbd`.
+  - **Viewers exist ✅** — synthesis/FMEA/Decision Network/Data Flows pages all `getProjectArtifacts()` from the table (TA2 commit `c953954`).
+  - **UI POST trigger MISSING ❌** — grep across `apps/product-helper/components/{synthesis,projects/sections}/` returns ZERO `fetch('/api/projects/.../synthesize'`, ZERO `<form action>`, ZERO `onClick` synthesis triggers, ZERO server actions. The `[Run Deep Synthesis →]` button in [`empty-section-state.tsx`](../apps/product-helper/components/projects/sections/empty-section-state.tsx) is a `<Link>` that just navigates to the synthesis page (line 51: `const href = ctaHref ?? \`/projects/${projectId}/synthesis\``).
+- **Why v2.1 verifier missed it:** TA2 verifier asserted "synthesis page renders empty state pre-synthesis" (✅). TA3 verifier asserted "POST /api/projects/[id]/synthesize works" via integration test fixture (✅). EC-V21-A.1 ("New project N → synthesis page renders the user's own 5-section synthesis") was tested by writing fixture rows directly to `project_artifacts`, never by user-flow click-through. **Integration gap between TA2 (UI ownership) and TA3 (API ownership) — neither team's verifier covered the bridge.**
+- **Impact:** v2.1 ship-gate cleared, but no user can actually synthesize a project from the UI. Production projects are stuck in pre-synthesis empty states forever. Cost telemetry shows zero per-tenant LLM spend (matches the symptom — no synthesis is firing). Critical user-facing bug; v2.1 is functionally unshipped from a user-flow perspective despite tag-state.
+- **Fix scope:** Small. Add a server action OR `<form action="/api/projects/[id]/synthesize" method="POST">` button to:
+  - The synthesis page empty-state ([`components/synthesis/empty-state.tsx`](../apps/product-helper/components/synthesis/empty-state.tsx)) — primary trigger.
+  - Optionally each section's empty state CTA (`empty-section-state.tsx`) — but secondary; primary entry through synthesis page is enough.
+  - Update the CTA label semantics: when on the synthesis page, the button POSTs; when on a sub-page (FMEA / Data Flows / etc.), the link navigates to the synthesis page where the user clicks the actual trigger.
+- **Status:** OPEN; **NOT covered by v2.2 scope** (Wave C/E both assume synthesis runs end-to-end). v2.2 day-0 should NOT start until P7 lands. Recommend a v2.1.1 hotfix track.
+- **Repro steps:** (a) `pnpm dev --filter=product-helper`; (b) navigate to any in-progress project (e.g. project=33); (c) visit any system-design page; (d) click `[Run Deep Synthesis →]`; (e) observe loop into synthesis page; (f) note no POST fires (DevTools Network tab confirms — only GET on the synthesis page itself).
+
 ## P6 — Prompt-caching not propagating through `ChatAnthropic.bindTools()` (NEW 2026-04-26)
 
 - **Source:** Surfaced 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4 bonus finding; live preflight log [`v21-outputs/td1/preflight-log-live.md`](v21-outputs/td1/preflight-log-live.md) line 81.
