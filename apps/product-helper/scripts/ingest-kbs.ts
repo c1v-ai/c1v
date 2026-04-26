@@ -13,9 +13,10 @@
  *   4. Hands the batch to `embedChunks()` which handles dedup + embed +
  *      upsert.
  *
- * KB-8 Atlas bodies (under `8-stacks-and-priors-atlas/`) are picked up
- * the same way. KB-9 AI-sysdesign markdown lands once T2 scraper produces
- * it; this walker will discover it automatically via the top-level folder.
+ * KB-9 Atlas bodies (under `9-stacks-atlas/`, post-T9 rename from
+ * `8-stacks-and-priors-atlas/`) are picked up the same way. The walker
+ * discovers folders by top-level slug, so the rename is path-only — no
+ * walker logic change required.
  *
  * Usage:
  *   OPENAI_API_KEY=sk-... POSTGRES_URL=... pnpm tsx scripts/ingest-kbs.ts
