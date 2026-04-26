@@ -21,6 +21,7 @@
 
 import { createHash } from 'node:crypto';
 
+import { withAgentMetricsSync } from '@/lib/observability/synthesis-metrics';
 import {
   phase14Schema,
   phase15Schema,
@@ -249,6 +250,23 @@ export async function recordAudit(
 }
 
 export const DECISION_NET_AGENT_VERSION = '1.0.0-t4b';
+
+/**
+ * Metrics-wrapped validator entry-point. Records latency + success in
+ * synthesis-metrics under agent='decision-net'. Use this from runtime
+ * call-sites (LangGraph node, API routes); call the bare
+ * `validateDecisionNetworkArtifact` only from offline scripts where the
+ * counters would be misleading.
+ */
+export function validateDecisionNetworkArtifactWithMetrics(
+  raw: unknown,
+  ctx: { project_id?: number } = {},
+): DecisionNetworkV1 {
+  return withAgentMetricsSync(
+    { agent: 'decision-net', project_id: ctx.project_id },
+    () => validateDecisionNetworkArtifact(raw),
+  );
+}
 
 /** Produce hash chain prev for `PriorBinding` rows. */
 export function computePriorBindingChain(bindings: PriorBinding[]): PriorBinding[] {

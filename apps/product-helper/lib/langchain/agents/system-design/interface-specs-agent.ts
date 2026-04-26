@@ -18,6 +18,7 @@
  * @module lib/langchain/agents/system-design/interface-specs-agent
  */
 
+import { withAgentMetricsSync } from '@/lib/observability/synthesis-metrics';
 import {
   interfaceSpecsV1Schema,
   type InterfaceSpec,
@@ -122,6 +123,12 @@ export function buildFrontChainBudget(interfaces: InterfaceSpec[]) {
 }
 
 export function runInterfaceSpecsAgent(input: InterfaceSpecsAgentInput): InterfaceSpecsV1 {
+  return withAgentMetricsSync({ agent: 'interface-specs' }, () =>
+    runInterfaceSpecsAgentInner(input),
+  );
+}
+
+function runInterfaceSpecsAgentInner(input: InterfaceSpecsAgentInput): InterfaceSpecsV1 {
   const interfaces = input.n2Matrix.rows.map(buildInterfaceSpec);
   const frontChainBudget = buildFrontChainBudget(interfaces);
 

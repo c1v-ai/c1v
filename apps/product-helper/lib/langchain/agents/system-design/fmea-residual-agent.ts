@@ -23,6 +23,7 @@
  */
 
 import type { ChatAnthropic } from '@langchain/anthropic';
+import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import {
   fmeaResidualSchema,
   computeWeightedRpn,
@@ -138,6 +139,15 @@ export function summarizeResidual(
 }
 
 export async function runFmeaResidualAgent(
+  input: FmeaResidualAgentInput,
+  opts: { llm?: ChatAnthropic; stub?: FmeaResidual } = {},
+): Promise<FmeaResidual> {
+  return withAgentMetrics({ agent: 'fmea-residual' }, () =>
+    runFmeaResidualAgentInner(input, opts),
+  );
+}
+
+async function runFmeaResidualAgentInner(
   input: FmeaResidualAgentInput,
   opts: { llm?: ChatAnthropic; stub?: FmeaResidual } = {},
 ): Promise<FmeaResidual> {
