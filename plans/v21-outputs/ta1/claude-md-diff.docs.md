@@ -4,7 +4,16 @@
 
 **Scope:** add two new sections under `## Architecture` and amend the existing `## System-Design Data Path` section. NO new top-level sections beyond the two named in the TA1 spec.
 
-**Coordination with TA3:** TA3's spawn-prompt referenced a sibling `plans/v21-outputs/ta3/claude-md-diff.md` but no such file exists on disk as of `wave-a/ta1-docs` branch start. This diff is therefore standalone. If TA3 ships a diff later, both must be reviewed together for conflicts in the `## Architecture` section anchor.
+**Coordination with TA3:** TA3's `plans/v21-outputs/ta3/claude-md-diff.md` (commit `62b5a41`) is also pending David review. The two diffs are non-overlapping by design:
+
+| | TA1 (this diff) | TA3 |
+|---|---|---|
+| Anchor | Under `## Architecture` (after Education, before Key Directories) | After `### Credit System`, before `## Conventions` |
+| New subsections | `### Project Artifacts Table`, `### Open-Question Chat Bridge` | `### Synthesis Pipeline` |
+| Touches `## System-Design Data Path`? | YES — amends to note synthesis lives in `project_artifacts` post-Wave-A | NO (TA3 explicitly disclaims) |
+| Touches `## Deployed Features`? | NO | YES (one bullet) |
+
+TA3's draft documents the kickoff/status/manifest *routes* (Vercel side); this draft documents the *table + bridge* (data + transport). They are complementary. Recommend David reviews them as a pair.
 
 ---
 
