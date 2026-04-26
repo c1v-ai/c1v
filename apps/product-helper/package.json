@@ -25,13 +25,15 @@
     "db:stop": "supabase stop",
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
-    "schemas:generate": "npx tsx lib/langchain/schemas/generate-all.ts"
+    "schemas:generate": "npx tsx lib/langchain/schemas/generate-all.ts",
+    "or": "tsx scripts/or.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "0.3.14",
     "@langchain/community": "0.3.26",
     "@langchain/core": "0.3.40",
     "@langchain/langgraph": "0.2.60",
+    "@openrouter/ai-sdk-provider": "^0.5.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-collapsible": "1.1.12",
     "@radix-ui/react-dialog": "1.1.15",
@@ -84,7 +86,9 @@
     "@jest/globals": "30.2.0",
     "@playwright/test": "1.57.0",
     "@types/jest": "30.0.0",
+    "@types/js-yaml": "^4.0.9",
     "jest": "30.2.0",
+    "js-yaml": "^4.1.1",
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "tsx": "4.21.0"

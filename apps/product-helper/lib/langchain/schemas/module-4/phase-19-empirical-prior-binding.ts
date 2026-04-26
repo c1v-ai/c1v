@@ -37,7 +37,7 @@ export const priorBindingSchema = z
         }),
         z.object({
           source: z.literal('nfr'),
-          nfr_id: z.string().regex(/^NFR-[A-Z0-9]{2,}$/i),
+          nfr_id: z.string().regex(/^NFR\.[0-9]{2,}$/),
         }),
         z.object({
           source: z.literal('fmea'),

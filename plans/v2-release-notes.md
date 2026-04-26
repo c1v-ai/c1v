@@ -92,7 +92,7 @@ T10 generators (13) emit downstream: pptx / xlsx / mmd / svg / pdf / html per mo
 
 ### `projects` table RLS hardening
 
-Tracked in [`plans/post-v2-followups.md`](post-v2-followups.md). `projects` has `ENABLE ROW LEVEL SECURITY` but ships zero tenant policies; downstream EXISTS-gated policies (e.g., on `project_run_state`) cannot fire from non-owner Postgres roles. Not actively bleeding — Clerk auth gates routes (defense-in-depth, not the only barrier). Pre-dates T6. Recommended for the post-v2 P3 security pass.
+Tracked in [`plans/post-v2-followups.md`](post-v2-followups.md). `projects` has `ENABLE ROW LEVEL SECURITY` but ships zero tenant policies; downstream EXISTS-gated policies (e.g., on `project_run_state`) cannot fire from non-owner Postgres roles. Not actively bleeding — JWT session-cookie middleware gates routes (defense-in-depth, not the only barrier). Pre-dates T6. Recommended for the post-v2 P3 security pass.
 
 ### Producer-drift in `fmea_residual.summary.flagged_high_rpn`
 

@@ -35,7 +35,7 @@ export type InterfaceId = z.infer<typeof interfaceIdSchema>;
 
 export const slaDerivationSourceSchema = z
   .union([
-    z.object({ kind: z.literal('nfr'), nfr_id: z.string().min(1) }),
+    z.object({ kind: z.literal('nfr'), nfr_id: z.string().regex(/^NFR\.[0-9]{2,}$/) }),
     z.object({ kind: z.literal('kb-8-atlas'), entry_path: z.string().min(3), field_path: z.string().min(1) }),
     z.object({ kind: z.literal('fmea'), fmea_row_id: z.string().min(1), detectability_requirement: z.string().min(1) }),
   ])

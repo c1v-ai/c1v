@@ -136,8 +136,8 @@
     {
       "name": "architecture_recommendation.html",
       "ext": ".html",
-      "sha256": "99b35fdcad783cc5a19c43e785070205c50f7e5059843899cfdd1acf7c009447",
-      "bytes": 103204
+      "sha256": "689ecb6cdad2eb4e68f1f26596e94eb8fc42e881b1bd2b3cb0ed0fb8999d649a",
+      "bytes": 124105
     },
     {
       "name": "architecture_recommendation.v1.json",
@@ -147,8 +147,8 @@
     {
       "name": "artifacts.manifest.jsonl",
       "ext": ".jsonl",
-      "sha256": "e75c159fe35c81f6cecd2558198a540befdc32455694b7f413fe9ff84dce1396",
-      "bytes": 1821
+      "sha256": "49a60abb5ebec73cb14ab23a1acc8d08e6357102282dc8a24476fd48c3557e12",
+      "bytes": 3087
     }
   ],
   "manifest": [
@@ -206,6 +206,48 @@
       ],
       "ok": true,
       "elapsedMs": 2
+    },
+    {
+      "timestamp": "2026-04-25T05:11:49.892Z",
+      "generator": "gen-arch-recommendation",
+      "instance": "arch-recommendation-gen-input.json",
+      "outputs": [
+        {
+          "target": "html",
+          "path": "/Users/davidancor/Projects/c1v/.planning/runs/self-application/synthesis/architecture_recommendation.html",
+          "sha256": "99b35fdcad783cc5a19c43e785070205c50f7e5059843899cfdd1acf7c009447",
+          "bytes": 103204
+        },
+        {
+          "target": "json-enriched",
+          "path": "/Users/davidancor/Projects/c1v/.planning/runs/self-application/synthesis/architecture_recommendation.json-enriched.json",
+          "sha256": "ea77c2732889c30f012017cdd19560bea2b1e59767619c0f49492448b7c4f858",
+          "bytes": 43326
+        }
+      ],
+      "ok": true,
+      "elapsedMs": 5
+    },
+    {
+      "timestamp": "2026-04-25T05:18:46.213Z",
+      "generator": "gen-arch-recommendation",
+      "instance": "arch-recommendation-gen-input.json",
+      "outputs": [
+        {
+          "target": "html",
+          "path": "/Users/davidancor/Projects/c1v/.planning/runs/self-application/synthesis/architecture_recommendation.html",
+          "sha256": "d289552fc2572d498571a948718ca0063b20119bc04901206337287cc7fed279",
+          "bytes": 103930
+        },
+        {
+          "target": "json-enriched",
+          "path": "/Users/davidancor/Projects/c1v/.planning/runs/self-application/synthesis/architecture_recommendation.json-enriched.json",
+          "sha256": "e06794806236cabb44175234796f761ac0e245f0cf00c791ef5e9a5c47f543f8",
+          "bytes": 44156
+        }
+      ],
+      "ok": true,
+      "elapsedMs": 6
     }
   ]
 }
