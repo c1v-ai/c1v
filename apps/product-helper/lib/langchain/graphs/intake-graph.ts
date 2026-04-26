@@ -197,11 +197,50 @@ async function generateQFD(state: IntakeState): Promise<Partial<IntakeState>> {
 
 /**
  * Generate Interfaces Node (Step 6)
- * Extracts subsystems, data flows, N2 chart, and sequence diagrams
+ * v2.1 Wave A: AUGMENTED to additionally invoke interface-specs-agent (M7.b).
  */
 async function generateInterfaces(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateInterfaces: generateInterfacesImpl } = await import('./nodes/generate-interfaces');
   return generateInterfacesImpl(state);
+}
+
+// ============================================================
+// v2.1 Wave A — 7 NEW node placeholders (langgraph-wirer)
+// ============================================================
+
+async function generateDataFlows(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateDataFlows: impl } = await import('./nodes/generate-data-flows');
+  return impl(state);
+}
+
+async function generateFormFunction(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateFormFunction: impl } = await import('./nodes/generate-form-function');
+  return impl(state);
+}
+
+async function generateDecisionNetwork(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateDecisionNetwork: impl } = await import('./nodes/generate-decision-network');
+  return impl(state);
+}
+
+async function generateN2(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateN2: impl } = await import('./nodes/generate-n2');
+  return impl(state);
+}
+
+async function generateFmeaEarly(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateFmeaEarly: impl } = await import('./nodes/generate-fmea-early');
+  return impl(state);
+}
+
+async function generateFmeaResidual(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateFmeaResidual: impl } = await import('./nodes/generate-fmea-residual');
+  return impl(state);
+}
+
+async function generateSynthesis(state: IntakeState): Promise<Partial<IntakeState>> {
+  const { generateSynthesis: impl } = await import('./nodes/generate-synthesis');
+  return impl(state);
 }
 
 // ============================================================
@@ -389,6 +428,15 @@ export function buildIntakeGraph() {
     .addNode('generate_decision_matrix', generateDecisionMatrix)
     .addNode('generate_qfd', generateQFD)
     .addNode('generate_interfaces', generateInterfaces)
+    // v2.1 Wave A — 7 NEW nodes (langgraph-wirer; D-V21.25 coexistence preserved
+    // for generate_decision_network alongside existing generate_decision_matrix).
+    .addNode('generate_data_flows', generateDataFlows)
+    .addNode('generate_form_function', generateFormFunction)
+    .addNode('generate_decision_network', generateDecisionNetwork)
+    .addNode('generate_n2', generateN2)
+    .addNode('generate_fmea_early', generateFmeaEarly)
+    .addNode('generate_fmea_residual', generateFmeaResidual)
+    .addNode('generate_synthesis', generateSynthesis)
     // ============================================================
     // Add Entry Edge
     // ============================================================
@@ -432,8 +480,23 @@ export function buildIntakeGraph() {
       routeAfterDecisionMatrix,
       ['generate_qfd', END]
     )
+    // Legacy intake terminus.
     .addEdge('generate_qfd', END)
-    .addEdge('generate_interfaces', END)
+    // v2.1 Wave A — synthesis chain (7 NEW nodes). Routes from
+    // `generate_interfaces` into the system-design fan: data_flows →
+    // form_function (after FFBD/FMEA already on state) → decision_network →
+    // n2 → fmea_early → fmea_residual → synthesis (keystone) → END.
+    // This linear order is the dependency order; persistence to
+    // project_artifacts happens in each node so partial chains still produce
+    // observable rows.
+    .addEdge('generate_interfaces', 'generate_data_flows')
+    .addEdge('generate_data_flows', 'generate_form_function')
+    .addEdge('generate_form_function', 'generate_decision_network')
+    .addEdge('generate_decision_network', 'generate_n2')
+    .addEdge('generate_n2', 'generate_fmea_early')
+    .addEdge('generate_fmea_early', 'generate_fmea_residual')
+    .addEdge('generate_fmea_residual', 'generate_synthesis')
+    .addEdge('generate_synthesis', END)
     // ============================================================
     // Add Simple Edges
     // ============================================================
