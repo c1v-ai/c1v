@@ -34,12 +34,37 @@ import { markDeferredArtifacts } from '@/lib/jobs/lazy-gen';
 
 export interface SynthesisKickoffArgs {
   projectId: number;
-  projectName: string;
-  projectVision: string;
   teamId: number;
+  /**
+   * Project name. Optional because the route-level caller doesn't have it
+   * (the route only owns auth + credit deduction); when absent we fall back
+   * to `Project ${projectId}` so the intake-state still constructs.
+   */
+  projectName?: string;
+  /**
+   * Project vision. Optional — see projectName note. Empty string by
+   * default so the graph's intake-state shape is preserved.
+   */
+  projectVision?: string;
   /** Optional pre-populated extractedData (used for fixture / re-run paths). */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extractedData?: any;
+  /**
+   * Acting user. Threaded through for audit / future per-user policy hooks
+   * (e.g. RLS service-role swap). Optional today.
+   */
+  userId?: number;
+  /**
+   * UUID minted by the route to correlate this run across logs + the UI's
+   * `?just_started=1` redirect target. Optional today (pre-route a stub
+   * caller may omit it).
+   */
+  synthesisId?: string;
+  /**
+   * Pre-computed inputs hash from the route. When omitted, kickoff
+   * computes its own content-addressed hash from intake state.
+   */
+  inputsHash?: string;
 }
 
 export interface SynthesisKickoffResult {
@@ -75,17 +100,23 @@ export async function kickoffSynthesisGraph(
   args: SynthesisKickoffArgs,
 ): Promise<SynthesisKickoffResult> {
   // Cache key — content-addressed on intake payload only (NO project_id /
-  // team_id / user identifiers per TB1 PII isolation guardrail).
+  // team_id / user identifiers per TB1 PII isolation guardrail). Route may
+  // pre-compute and pass `args.inputsHash` for cache-key alignment per
+  // EC-V21-A.12; otherwise we compute it here from the intake payload.
+  const projectName = args.projectName ?? `Project ${args.projectId}`;
+  const projectVision = args.projectVision ?? '';
   const cacheableIntake = {
-    projectName: args.projectName,
-    projectVision: args.projectVision,
+    projectName,
+    projectVision,
     extractedData: args.extractedData ?? null,
   };
 
-  const inputsHash = computeInputsHash({
-    intake: cacheableIntake,
-    upstreamShas: {},
-  });
+  const inputsHash =
+    args.inputsHash ??
+    computeInputsHash({
+      intake: cacheableIntake,
+      upstreamShas: {},
+    });
 
   for (const kind of EXPECTED_ARTIFACT_KINDS) {
     try {
@@ -136,8 +167,8 @@ export async function kickoffSynthesisGraph(
 
   const state = createInitialState(
     args.projectId,
-    args.projectName,
-    args.projectVision,
+    projectName,
+    projectVision,
     args.teamId,
     args.extractedData ? { extractedData: args.extractedData } : undefined,
   );
