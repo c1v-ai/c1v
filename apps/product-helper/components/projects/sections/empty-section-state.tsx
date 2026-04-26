@@ -9,6 +9,20 @@
  *
  * Honors D-V21.17 (no canned data) — methodology copy is generic, no
  * exemplar values like "AV.01 / Sonnet 4.5 / pgvector / Vercel" leak in.
+ *
+ * IMPORTANT (P7 — UI synthesize-trigger contract, 2026-04-26):
+ * Sub-page CTAs rendered by this component are NAVIGATIONAL ONLY. The CTA
+ * is a `<Link>` to `/projects/[id]/synthesis` (or an explicit `ctaHref`
+ * override) — it does NOT POST to `/api/projects/[id]/synthesize`. The
+ * actual synthesis trigger lives on the synthesis page, in
+ * `components/synthesis/empty-state.tsx` + `run-synthesis-button.tsx`,
+ * via a server action. There is exactly ONE canonical trigger surface in
+ * the app; introducing another (e.g. converting this component's CTA into
+ * a form-with-action) would create duplicate POST surfaces, break the
+ * route's 5-min idempotency guarantee for double-clicks, and fail the
+ * `qa-th1-verifier` greps. If you need a section to surface synthesis
+ * differently, route the user IN to the synthesis page where the trigger
+ * lives — do not re-introduce the trigger here.
  */
 
 import Link from 'next/link';

@@ -10,6 +10,13 @@
  * Per D-V21.17 the methodology copy is generic — no canned exemplar values
  * (no "AV.01" / "Sonnet 4.5" / "pgvector" / "Vercel" / "Anthropic" leaks).
  * The verifier sweeps for those strings.
+ *
+ * P7 (UI synthesize-trigger, 2026-04-26): the actual synthesis trigger now
+ * lives at the TOP of this empty state via <RunSynthesisButton/>. The 5
+ * <EmptySectionState/> CTAs below are intentionally still <Link>s pointing
+ * to /projects/[id]/synthesis — they are NAVIGATION ONLY, funnelling users
+ * into this page where the single canonical trigger lives. Adding another
+ * trigger surface anywhere else will fail the qa-th1-verifier grep.
  */
 
 import {
@@ -21,6 +28,7 @@ import {
 } from 'lucide-react';
 
 import { EmptySectionState } from '@/components/projects/sections/empty-section-state';
+import { RunSynthesisButton } from '@/components/synthesis/run-synthesis-button';
 
 interface SynthesisEmptyStateProps {
   projectId: number;
@@ -62,13 +70,20 @@ const SECTIONS = [
 export function SynthesisEmptyState({ projectId }: SynthesisEmptyStateProps) {
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
+      <div className="space-y-3">
         <h1 className="text-3xl font-bold text-foreground">Synthesis</h1>
         <p className="text-sm text-muted-foreground max-w-2xl">
-          Your project hasn&apos;t been synthesized yet. Run Deep Synthesis to
-          derive an architecture recommendation grounded in your requirements,
-          decisions, and risk register.
+          Your project hasn&apos;t been synthesized yet. Click{' '}
+          <span className="font-medium text-foreground">
+            Run Deep Synthesis
+          </span>{' '}
+          below to derive an architecture recommendation grounded in your
+          requirements, decisions, and risk register. The five sections below
+          preview what will be generated.
         </p>
+        <div className="pt-1">
+          <RunSynthesisButton projectId={projectId} />
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {SECTIONS.map((section) => (
