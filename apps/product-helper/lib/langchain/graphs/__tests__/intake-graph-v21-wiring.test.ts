@@ -117,15 +117,17 @@ describe('v2.1 Wave A — generate_synthesis keystone node', () => {
 
     const out = await generateSynthesis(state);
     expect(out.error).toBeUndefined();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ed = out.extractedData as any;
-    expect(ed?.architectureRecommendation).toBeDefined();
-    expect(ed.architectureRecommendation.inputs_hash).toMatch(/^[0-9a-f]{64}$/);
+    // Per Bond architectural correction: synthesis result lives in
+    // project_artifacts ONLY — assert via the persistArtifact call.
+    expect(out.extractedData).toBeUndefined();
     expect(persistArtifactMock).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: 'recommendation_json',
         status: 'ready',
         inputsHash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        result: expect.objectContaining({
+          inputs_hash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        }),
       }),
     );
   });
@@ -142,12 +144,21 @@ describe('v2.1 Wave A — generate_synthesis keystone node', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const state = mkState({ extractedData: ed as any });
 
-    const a = await generateSynthesis(state);
-    const b = await generateSynthesis(state);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ha = (a.extractedData as any).architectureRecommendation.inputs_hash;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const hb = (b.extractedData as any).architectureRecommendation.inputs_hash;
-    expect(ha).toBe(hb);
+    persistArtifactMock.mockClear();
+    await generateSynthesis(state);
+    const firstHash = persistArtifactMock.mock.calls.find(
+      (c) => (c[0] as { kind: string; status: string }).kind === 'recommendation_json' &&
+             (c[0] as { kind: string; status: string }).status === 'ready',
+    )?.[0] as { inputsHash: string } | undefined;
+
+    persistArtifactMock.mockClear();
+    await generateSynthesis(state);
+    const secondHash = persistArtifactMock.mock.calls.find(
+      (c) => (c[0] as { kind: string; status: string }).kind === 'recommendation_json' &&
+             (c[0] as { kind: string; status: string }).status === 'ready',
+    )?.[0] as { inputsHash: string } | undefined;
+
+    expect(firstHash?.inputsHash).toBeDefined();
+    expect(firstHash?.inputsHash).toBe(secondHash?.inputsHash);
   });
 });
