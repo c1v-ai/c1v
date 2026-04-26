@@ -248,3 +248,43 @@ export async function runFmeaResidualAgent(
 
 export { fmeaResidualSchema };
 export const FMEA_RESIDUAL_AGENT_VERSION = '1.0.0-t6';
+
+import type { OpenQuestionEvent } from '@/lib/chat/system-question-bridge.types';
+
+/**
+ * Emitter contract — runtime caller supplies the bridge.surfaceOpenQuestion
+ * binding. Agent calls `emit` for residual flag decisions that fall below
+ * the confidence threshold (e.g. ambiguous detectability scoring on a
+ * surviving FM, unresolved decision_anchor on a 'new' FM).
+ */
+export type FmeaResidualOpenQuestionEmitter = (
+  ev: Omit<OpenQuestionEvent, 'source'>,
+) => Promise<unknown>;
+
+/** Confidence threshold for residual FM scoring decisions. */
+export const FMEA_RESIDUAL_OPEN_QUESTION_CONFIDENCE_THRESHOLD = 0.9;
+
+/**
+ * Decision-point hook for low-confidence residual FM rows. When emit is
+ * provided AND final_confidence < threshold, surfaces the question and
+ * returns true so the caller can either drop or placeholder the row.
+ */
+export async function maybeSurfaceResidualOpenQuestion(args: {
+  emit?: FmeaResidualOpenQuestionEmitter;
+  project_id: number;
+  final_confidence: number;
+  question: string;
+  computed_options?: unknown[];
+  math_trace?: string;
+  threshold?: number;
+}): Promise<boolean> {
+  const t = args.threshold ?? FMEA_RESIDUAL_OPEN_QUESTION_CONFIDENCE_THRESHOLD;
+  if (!args.emit || args.final_confidence >= t) return false;
+  await args.emit({
+    project_id: args.project_id,
+    question: args.question,
+    computed_options: args.computed_options,
+    math_trace: args.math_trace,
+  });
+  return true;
+}

@@ -40,6 +40,46 @@ import {
 
 export const HOQ_AGENT_VERSION = '1.0.0-t6';
 
+import type { OpenQuestionEvent } from '@/lib/chat/system-question-bridge.types';
+
+/**
+ * Emitter contract — runtime caller supplies the bridge.surfaceOpenQuestion
+ * binding. Agent calls `emit` for relationship-matrix or target-value
+ * decisions that need user input. Partial QFD is acceptable: missing rows
+ * surface in chat instead of throwing.
+ */
+export type HoqOpenQuestionEmitter = (
+  ev: Omit<OpenQuestionEvent, 'source'>,
+) => Promise<unknown>;
+
+/** Confidence threshold for HoQ cell/target-value decisions. */
+export const HOQ_OPEN_QUESTION_CONFIDENCE_THRESHOLD = 0.9;
+
+/**
+ * Decision-point hook for HoQ cells / target-values that fall below the
+ * confidence threshold. Caller continues building the rest of the matrix
+ * after a successful emission.
+ */
+export async function maybeSurfaceHoqOpenQuestion(args: {
+  emit?: HoqOpenQuestionEmitter;
+  project_id: number;
+  final_confidence: number;
+  question: string;
+  computed_options?: unknown[];
+  math_trace?: string;
+  threshold?: number;
+}): Promise<boolean> {
+  const t = args.threshold ?? HOQ_OPEN_QUESTION_CONFIDENCE_THRESHOLD;
+  if (!args.emit || args.final_confidence >= t) return false;
+  await args.emit({
+    project_id: args.project_id,
+    question: args.question,
+    computed_options: args.computed_options,
+    math_trace: args.math_trace,
+  });
+  return true;
+}
+
 /**
  * Compute weights_check for Phase 1. Sums relative_importance and produces
  * the `passes` flag at given tolerance.
