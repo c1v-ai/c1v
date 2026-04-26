@@ -1,6 +1,6 @@
 # c1v × MIT-Crawley-Cornell — v2.1 Amendment (Runtime Wiring + UI Surfacing + iter-3 API-Spec Fix)
 
-> **Status:** 📝 DRAFT — awaiting David's review. No code, no TaskCreate, no agent dispatch until approved.
+> **Status:** ✅ READY-FOR-EXECUTION — David greenlit 2026-04-25 22:01 EDT after iter-2 critique closed (14/14 issues resolved, see `plans/c1v-MIT-Crawley-Cornell.v2.1.critique.md`). Dispatch Wave 1 (TA1 + TA2 + TA3 + TD1, 21 agents in parallel) authorized. Wave 2 (TB1, 5 agents) gates on `t{a1,a2,a3,d1}-wave-a-complete` tag set.
 > **Slug:** `c1v-MIT-Crawley-Cornell.v2.1`
 > **Scope cut (locked 2026-04-25 16:31 EDT):** v2.1 ships **Waves A + B + D only**. Waves C (Crawley typed schemas + eval harness + methodology page) and E (KB runtime architecture rewrite) are **deferred to v2.2**. Their content is preserved in this doc for reference but marked `📦 DEFERRED TO v2.2`; v2.2 stub at [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md). Rationale: Wave A delivers the portfolio moat (per-tenant synthesis story in the running app); Waves B + D harden + fix iter-3; Waves C + E are quality/depth upgrades that benefit from validated Wave-A behavior before they land.
 > **Supersedes (in v2):** §0.4 (folder numbering claim that "T8+T9 merged renumber") — partially superseded; v2.1 acknowledges the on-disk renumber landed but the schema-source-of-truth side is incomplete (10 Crawley schemas not delivered — moved to v2.2). v2.1 reorganizes around **3 concurrent Waves (A/B/D) shipping in v2.1**, with Wave C + Wave E content preserved-but-deferred to v2.2. Wave A = Runtime Wiring + UI Surfacing; Wave B = Hardening + Cost; Wave D = iter-3 API-Spec Two-Stage Fix.
@@ -48,7 +48,7 @@ After v2.1, every user who creates a project sees their own 5-section synthesis 
 
 **P9 — Methodology drift between docs and on-disk module numbering.** [`METHODOLOGY-CORRECTION.md`](../.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md) (canonical, 2026-04-20) specifies three-pass ordering with FMEA instrumental between Pass 1 (FFBD) and Pass 2 (Requirements synthesis). On-disk M-numbering still flows M1→M8 with FMEA terminal at M8.b. Documentation says one thing; module folder structure says another; agents read the folder structure and skip the methodology doc. v2.1 must either reconcile or formally accept the drift and document the why.
 
-**P10 — Stale CLAUDE.md path claim.** Project [`CLAUDE.md`](../CLAUDE.md) says L2 v2 artifacts live at `system-design/kb-upgrade-v2/module-{1..7}/`. That path **does not exist** on disk. Actual location: [`plans/kb-upgrade-v2/module-{1..8}/`](kb-upgrade-v2/) (full module-1..8 set; M8 risk added). Note: a partial copy at `.claude/plans/kb-upgrade-v2/` carries only modules 1-6 (verified 2026-04-25) and is being converted to a redirect stub by EC-V21-A.0(d). Agents reading CLAUDE.md follow a dead path on first navigation.
+**P10 — Stale CLAUDE.md path claim.** Project [`CLAUDE.md`](../CLAUDE.md) says L2 v2 artifacts live at `system-design/kb-upgrade-v2/module-{1..7}/`. That path **does not exist** on disk. Actual location: [`plans/kb-upgrade-v2/module-{1..8}/`](kb-upgrade-v2/) (full module-1..8 set; M8 risk added). Note: a duplicate copy at `.claude/plans/kb-upgrade-v2/` also carries the full module 1-8 set (byte-identical to `plans/kb-upgrade-v2/`, verified 2026-04-25 21:40 EDT) and is being converted to a redirect stub by EC-V21-A.0(d) — canonical = `plans/kb-upgrade-v2/` because it is the non-`.claude` working tree intended for cross-Claude visibility, NOT because the `.claude/` copy is missing modules. Agents reading CLAUDE.md follow a dead path on first navigation.
 
 ---
 
@@ -283,7 +283,7 @@ The ideation doc lists 10 open questions (Dimension A–O). v2.1 locks defaults 
 - `lib/db/migrations/000X_project_artifacts.sql` — RLS + tenant isolation per T6 `project_run_state` pattern (RLS from day-one — do NOT mirror `projects` table policies, which carry the documented post-v2 RLS gap). **Number assigned by Wave A Step A-0 migrations audit (NOT hardcoded 0014); the migrations folder has a pre-existing collision at 0011 (`0011_kb_chunks.sql` + `0011_decision_audit.sql` share the number) that must be reconciled before adding new numbers, otherwise `drizzle-kit migrate` apply order is nondeterministic.**
 - `services/python-sidecar/orchestrator.py` — Cloud Run task entrypoint for **per-artifact rendering only** per **D-V21.24** (locked 2026-04-25 19:50 EDT; reconciled at lines 244 + 552 per critique iter-2 Issue 8). Receives `POST /run-render` with `{project_id, artifact_kind, agent_output_payload}` from Vercel-side LangGraph; invokes the canonical Python generator for that artifact (`gen-arch-recommendation` / `gen-qfd` / `gen-fmea` / etc. under `scripts/artifact-generators/`); writes binary blob to Supabase Storage + updates `project_artifacts` row via service-role client. Sidecar does NOT host LangGraph or run LLM calls — both stay Vercel-side for unified Anthropic SDK metering + Sentry instrumentation (TB1). Cold-start budget (R-V21.12 < 15s p95) applies only to render path. **BullMQ deferred to a future wave** — scaffolding at `lib/artifact-generators/queue.ts` (dormant since T10) stays in tree as opt-in for future scale; not wired in v2.1.
 - `services/python-sidecar/Dockerfile` + Cloud Run config — runs weasyprint + python-pptx + the canonical `gen-arch-recommendation` / `gen-qfd` / `gen-fmea` generators
-- `app/api/projects/[id]/synthesize/route.ts` — POST trigger; deducts 1000 credits per D-V21.10; fires `POST /run-synthesis` to Cloud Run orchestrator and returns 202 immediately
+- `app/api/projects/[id]/synthesize/route.ts` — POST trigger; deducts 1000 credits per D-V21.10; **kicks off the Vercel-side LangGraph (intake-graph.ts) asynchronously per D-V21.24** (does NOT POST to Cloud Run directly — the LangGraph's GENERATE_* nodes individually fire `POST /run-render` to the sidecar with `{project_id, artifact_kind, agent_output_payload}` as each node's output completes); returns 202 immediately with status_url
 - `app/api/projects/[id]/synthesize/status/route.ts` — GET status-polling endpoint; returns per-artifact `synthesis_status` from `project_artifacts` (UI polls every 3s until all ready)
 - `app/api/projects/[id]/export/bundle/route.ts` — streamed ZIP via `archiver`
 
@@ -297,7 +297,7 @@ The ideation doc lists 10 open questions (Dimension A–O). v2.1 locks defaults 
 - [`app/(dashboard)/projects/[id]/system-design/interfaces/page.tsx`](../apps/product-helper/app/(dashboard)/projects/%5Bid%5D/system-design/interfaces/page.tsx) — promote N2 chart sub-tab; add "Why incomplete?" disclosure
 - [`components/projects/sections/architecture-section.tsx`](../apps/product-helper/components/projects/sections/architecture-section.tsx) — merge with schema-section; rename to architecture-and-database-section
 - [`lib/db/queries.ts`](../apps/product-helper/lib/db/queries.ts) — add `getProjectArtifacts(projectId)`, `getLatestSynthesis(projectId)`
-- [`CLAUDE.md`](../CLAUDE.md) — fix stale path claim (P10): `system-design/kb-upgrade-v2/module-{1..7}/` → `plans/kb-upgrade-v2/module-{1..8}/` (full self-app module set lives at `plans/kb-upgrade-v2/`; the `.claude/plans/kb-upgrade-v2/` copy carries only modules 1-6 and is converted to a one-line redirect stub by EC-V21-A.0(d) — verified on disk 2026-04-25)
+- [`CLAUDE.md`](../CLAUDE.md) — fix stale path claim (P10): `system-design/kb-upgrade-v2/module-{1..7}/` → `plans/kb-upgrade-v2/module-{1..8}/` (canonical module set lives at `plans/kb-upgrade-v2/`; the `.claude/plans/kb-upgrade-v2/` copy is a byte-identical duplicate with the full 1-8 set and is converted to a one-line redirect stub by EC-V21-A.0(d) — canonical chosen because `plans/` is the non-`.claude` working tree, NOT because of any missing modules; verified on disk 2026-04-25 21:40 EDT)
 - [`scripts/ingest-kbs.ts`](../apps/product-helper/scripts/ingest-kbs.ts) — point at consolidated `9-stacks-atlas/` path; run Phase B ingest into `kb_chunks` (clears P-list "atlas not embedded for runtime retrieval" finding)
 
 **Tests added:**
@@ -305,10 +305,10 @@ The ideation doc lists 10 open questions (Dimension A–O). v2.1 locks defaults 
 - `__tests__/api/manifest.test.ts` — PDF/PPTX URLs returned from `project_artifacts`
 - `__tests__/db/project-artifacts-rls.test.ts` — cross-tenant access blocked
 - `__tests__/api/synthesize-status.test.ts` — Cloud Run trigger + status-polling lifecycle (no BullMQ)
-- `__tests__/langchain/graphs/intake-graph.test.ts` — 6 new GENERATE_* nodes invoke agents and persist outputs
+- `__tests__/langchain/graphs/intake-graph.test.ts` — 7 new GENERATE_* nodes (`generate_form_function`, `generate_decision_network`, `generate_fmea_early`, `generate_fmea_residual`, `generate_data_flows`, `generate_n2_matrix`, `generate_synthesis`) invoke agents and persist outputs; 2 RE-WIRED nodes (`generate_qfd` → hoq-agent, `generate_interfaces` → interface-specs-agent) emit per the new internals
 
 **Wave A exit criteria:**
-- [ ] **EC-V21-A.0** **Migrations + agents audit (preflight, blocking).** (a) Reconcile pre-existing `0011_kb_chunks.sql` + `0011_decision_audit.sql` number collision — rename one to `0011a_*` / `0011b_*` (or merge logically); confirm `drizzle-kit migrate` applies all migrations in deterministic order. (b) Audit `lib/langchain/agents/system-design/*-agent.ts` + `architecture-recommendation-agent.ts` for filesystem side effects; any `fs.writeFile`/`fs.readFile` calls move to graph-node-driven persistence. (c) Verify `lib/langchain/graphs/intake-graph.ts` is the canonical graph file (NOT `lib/langgraph/`). (d) METHODOLOGY-CORRECTION.md canonical path resolved. Currently exists at BOTH `.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` AND `plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` (verified on disk 2026-04-25; `system-design/METHODOLOGY-CORRECTION.md` does NOT exist). Default: keep `plans/kb-upgrade-v2/` as canonical (only path with full module-1..8 set on disk); convert `.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` to a one-line redirect stub. CLAUDE.md path-claim row (P10) updated in the same commit.
+- [ ] **EC-V21-A.0** **Migrations + agents audit (preflight, blocking).** (a) Reconcile pre-existing `0011_kb_chunks.sql` + `0011_decision_audit.sql` number collision — rename one to `0011a_*` / `0011b_*` (or merge logically); confirm `drizzle-kit migrate` applies all migrations in deterministic order. (b) Audit `lib/langchain/agents/system-design/*-agent.ts` + `architecture-recommendation-agent.ts` for filesystem side effects; any `fs.writeFile`/`fs.readFile` calls move to graph-node-driven persistence. (c) Verify `lib/langchain/graphs/intake-graph.ts` is the canonical graph file (NOT `lib/langgraph/`). (d) METHODOLOGY-CORRECTION.md canonical path resolved. Currently exists at BOTH `.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` AND `plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` (verified on disk 2026-04-25 21:40 EDT — the two trees are byte-identical and BOTH carry the full module 1-8 set; `system-design/METHODOLOGY-CORRECTION.md` does NOT exist). Default: keep `plans/kb-upgrade-v2/` as canonical (non-`.claude` working tree, intended for cross-Claude visibility — NOT because the `.claude/` copy is missing modules); convert `.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` to a one-line redirect stub. CLAUDE.md path-claim row (P10) updated in the same commit.
 - [ ] **EC-V21-A.1** New project=N with non-trivial intake produces tenant-specific archRec (D-01..D-04 reflect tenant choices, not c1v); synthesis page renders the user's own 5-section synthesis
 - [ ] **EC-V21-A.2** PDF + PPTX generation works per-tenant for all 7 v2 artifact families (single 12-slide deck for archRec, 4-6 slide variants for supporting); rendered via Cloud Run Python sidecar
 - [ ] **EC-V21-A.3** FMEA route surfaces in left rail; renders the user's own `fmea_early` + `fmea_residual` from `project_artifacts`; legible empty state pre-synthesis (no exemplar fall-back)
@@ -488,7 +488,7 @@ The source plan targets `apps/product-helper/.planning/phases/15 - Knowledge-ban
 
 **Integration with Wave A:**
 
-The 6 GENERATE_* nodes Wave A wires inherit Wave E's engine for the M2 NFR + constants slice. Concretely:
+Wave A's 9 GENERATE_* nodes inherit Wave E's engine for the M2 NFR + constants slice (specifically the upstream `extract_data` re-wire that currently invokes the M2 NFR agent — Wave A leaves the LLM-agent path in place; Wave E swaps internals behind the same envelope). Concretely:
 - `GENERATE_nfr` (currently calls existing M2 NFR agent that uses LLM-only synthesis) — switches to `nfrEngineInterpreter.evaluate(decision, context)` once Wave E ships the M2 engine.json. Until then, falls back to LLM agent (no Wave A regression).
 - `GENERATE_constants` (currently bundled inside NFR agent) — extracted into a dedicated node that reads from constants.engine.json
 - All 6 nodes route through `pickModel()` instead of direct LLM imports — no behavior change initially, but enables Wave-E cost optimization (heuristic = 0 LLM calls)
@@ -681,21 +681,25 @@ sequenceDiagram
   participant U as User
   participant API as POST /api/projects/N/synthesize
   participant CG as creditsGate (1000 credits)
-  participant CR as Cloud Run orchestrator (LangGraph + LLM + Python renders)
+  participant LG as Vercel-side LangGraph (intake-graph.ts — orchestration + LLM)
+  participant CR as Cloud Run sidecar (per-artifact Python renders only — D-V21.24)
   participant DB as project_artifacts (Postgres + Storage)
   U->>API: trigger Deep Synthesis
   API->>CG: deduct 1000 credits
   CG-->>API: ok
-  API->>CR: POST /run-synthesis (project_id) — fire-and-forget Cloud Run task
+  API->>DB: pre-create 'pending' rows for 7 artifact kinds
+  API->>LG: kick off LangGraph async (waitUntil / queue)
   API-->>U: 202 accepted (poll for status)
-  CR->>CR: extractData → FFBD → DM → IF → QFD (existing chain)
-  CR->>CR: GENERATE_decision_network
-  CR->>CR: GENERATE_form_function
-  CR->>CR: GENERATE_fmea_residual
-  CR->>CR: GENERATE_hoq
-  CR->>CR: GENERATE_synthesizer
-  CR->>CR: render PDF/PPTX (parallel × 7 inside same task)
-  CR->>DB: write JSON envelopes + binary blobs to Storage + status='ready' per artifact
+  LG->>LG: extractData → FFBD → DM → IF → QFD (existing chain)
+  LG->>LG: GENERATE_decision_network → ... → GENERATE_synthesis (9 graph-node touches per disposition table)
+  Note over LG,CR: Each GENERATE_* node fires POST /run-render<br/>with {project_id, artifact_kind, agent_output_payload}
+  LG->>CR: POST /run-render (artifact_kind=recommendation_html, agent_output_payload=...)
+  CR->>CR: gen-arch-recommendation.py renders HTML/PDF
+  CR->>DB: write blob to Storage + status='ready' for that artifact
+  LG->>CR: POST /run-render (artifact_kind=hoq_xlsx, ...)
+  CR->>CR: gen-qfd.py renders xlsx
+  CR->>DB: write + status='ready'
+  Note over LG,CR: ... repeats per artifact_kind (7 total)
   loop poll every 3s
     U->>DB: GET /api/projects/N/synthesize/status
     DB-->>U: per-artifact status (pending/ready/failed)
