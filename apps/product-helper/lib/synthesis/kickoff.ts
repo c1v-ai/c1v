@@ -29,6 +29,8 @@ import type { IntakeState } from '@/lib/langchain/graphs/types';
 import { upsertArtifactStatus } from '@/lib/db/queries';
 import { EXPECTED_ARTIFACT_KINDS } from '@/lib/db/schema/project-artifacts';
 import { computeInputsHash } from '@/lib/langchain/graphs/contracts/inputs-hash';
+import { tryServeFromCache } from '@/lib/cache/synthesis-cache';
+import { markDeferredArtifacts } from '@/lib/jobs/lazy-gen';
 
 export interface SynthesisKickoffArgs {
   projectId: number;
@@ -44,6 +46,10 @@ export interface SynthesisKickoffResult {
   inputsHash: string;
   finalState: IntakeState;
   errored: boolean;
+  /** Artifact kinds satisfied from the inputs-hash cache (TB1 EC-V21-B.1). */
+  cacheHitKinds: string[];
+  /** Artifact kinds marked `deferred` for lazy on-view rendering (TB1 EC-V21-B.2). */
+  deferredKinds: string[];
 }
 
 /**
@@ -68,20 +74,19 @@ export interface SynthesisKickoffResult {
 export async function kickoffSynthesisGraph(
   args: SynthesisKickoffArgs,
 ): Promise<SynthesisKickoffResult> {
+  // Cache key — content-addressed on intake payload only (NO project_id /
+  // team_id / user identifiers per TB1 PII isolation guardrail).
+  const cacheableIntake = {
+    projectName: args.projectName,
+    projectVision: args.projectVision,
+    extractedData: args.extractedData ?? null,
+  };
+
   const inputsHash = computeInputsHash({
-    intake: {
-      projectId: args.projectId,
-      projectName: args.projectName,
-      projectVision: args.projectVision,
-      extractedData: args.extractedData ?? null,
-    },
+    intake: cacheableIntake,
     upstreamShas: {},
   });
 
-  // Pre-create pending rows for every expected artifact kind so TA2's
-  // /api/projects/[id]/artifacts/manifest renders the placeholder set
-  // immediately. Each GENERATE_* node will overwrite its row to `ready` or
-  // `failed` on completion.
   for (const kind of EXPECTED_ARTIFACT_KINDS) {
     try {
       await upsertArtifactStatus({
@@ -98,6 +103,37 @@ export async function kickoffSynthesisGraph(
     }
   }
 
+  // TB1 EC-V21-B.1 — try to satisfy artifacts from the inputs-hash cache.
+  // On hit, COPY storagePath/sha256/format onto the new project's rows
+  // (no blob duplication) and skip the matching GENERATE_* nodes.
+  let cacheHitKinds: string[] = [];
+  try {
+    const { satisfiedKinds } = await tryServeFromCache(args.projectId, {
+      intake: cacheableIntake,
+    });
+    cacheHitKinds = satisfiedKinds;
+  } catch (e) {
+    console.warn(
+      `[kickoffSynthesisGraph] cache lookup failed (non-fatal):`,
+      e instanceof Error ? e.message : e,
+    );
+  }
+
+  // TB1 EC-V21-B.2 — mark on_view artifacts as `deferred`. These are NOT
+  // generated post-intake; they wait for the first download hit. Skip any
+  // kind already satisfied from cache.
+  const cacheHitSet = new Set(cacheHitKinds);
+  let deferredKinds: string[] = [];
+  try {
+    const allDeferred = await markDeferredArtifacts(args.projectId, inputsHash);
+    deferredKinds = allDeferred.filter((k) => !cacheHitSet.has(k));
+  } catch (e) {
+    console.warn(
+      `[kickoffSynthesisGraph] markDeferredArtifacts failed (non-fatal):`,
+      e instanceof Error ? e.message : e,
+    );
+  }
+
   const state = createInitialState(
     args.projectId,
     args.projectName,
@@ -108,28 +144,26 @@ export async function kickoffSynthesisGraph(
 
   let finalState: IntakeState = state;
   let errored = false;
-  try {
-    finalState = await invokeIntakeGraph(state, {
-      debug: process.env.NODE_ENV !== 'production',
-      maxIterations: 100,
-    });
-    if (finalState.error) errored = true;
-  } catch (e) {
-    console.error(
-      `[kickoffSynthesisGraph] graph invocation threw:`,
-      e instanceof Error ? e.message : e,
-    );
-    errored = true;
+
+  // Full cache hit on every expected kind => skip graph invocation entirely.
+  // Eager rows are already `ready` from cache; deferred rows render on view.
+  const fullyCached =
+    cacheHitKinds.length === EXPECTED_ARTIFACT_KINDS.length;
+  if (!fullyCached) {
+    try {
+      finalState = await invokeIntakeGraph(state, {
+        debug: process.env.NODE_ENV !== 'production',
+        maxIterations: 100,
+      });
+      if (finalState.error) errored = true;
+    } catch (e) {
+      console.error(
+        `[kickoffSynthesisGraph] graph invocation threw:`,
+        e instanceof Error ? e.message : e,
+      );
+      errored = true;
+    }
   }
 
-  // TODO(TA3 sidecar): Cloud Run sidecar trigger. Once
-  // `services/python-sidecar/orchestrator.py` lands and `RENDER_SIDECAR_URL`
-  // is set, each GENERATE_* node fires `POST /run-render` to render binary
-  // formats (PDF / PPTX / xlsx / PNG); the sidecar updates the corresponding
-  // project_artifacts rows out-of-band via service role. Per D-V21.24, the
-  // sidecar is render-only — orchestration + LLM stays in Vercel/LangGraph.
-  // For now, this kickoff function returns when the graph completes; binary
-  // renders happen lazily on first download or are skipped pre-sidecar.
-
-  return { inputsHash, finalState, errored };
+  return { inputsHash, finalState, errored, cacheHitKinds, deferredKinds };
 }
