@@ -104,6 +104,19 @@ export type {
   NewProjectRunStateRow,
   RevisionDelta,
 } from './project-run-state';
+
+// TA1 v2.1 Wave A — per-tenant synthesis artifact metadata (D-V21.04)
+export {
+  projectArtifacts,
+  SYNTHESIS_STATUSES,
+  EXPECTED_ARTIFACT_KINDS,
+} from './project-artifacts';
+export type {
+  ProjectArtifactRow,
+  NewProjectArtifactRow,
+  SynthesisStatus,
+  ExpectedArtifactKind,
+} from './project-artifacts';
 export type {
   TracebackCitation,
   NewTracebackCitation,
