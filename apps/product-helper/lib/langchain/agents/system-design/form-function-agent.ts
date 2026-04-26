@@ -32,7 +32,7 @@ import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import {
   formFunctionMapV1Schema,
   type FormFunctionMapV1,
-} from '@/lib/langchain/schemas/module-5-form-function';
+} from '@/lib/langchain/schemas/module-5';
 import type { FfbdV1 } from '@/lib/langchain/schemas/module-3/ffbd-v1';
 import type { FmeaEarly } from '@/lib/langchain/schemas/module-8-risk/fmea-early';
 

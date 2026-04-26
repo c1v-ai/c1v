@@ -76,7 +76,7 @@ const cases: Case[] = [
     expected: 0,
     build: (root) =>
       scaffold(root, {
-        schemaModules: ['module-2-requirements', 'module-5-form-function'],
+        schemaModules: ['module-2-requirements', 'module-5'],
         kbModules: ['2-requirements', '5-form-function'],
         v2Artifacts: {
           'module-2/x.json': {
@@ -172,8 +172,8 @@ function unitTests(): string[] {
     if (JSON.stringify(a) !== JSON.stringify(b)) failures.push(`unit:${label} expected ${JSON.stringify(b)} got ${JSON.stringify(a)}`);
   };
 
-  eq('parseModuleDir module-5-form-function', parseModuleDir('module-5-form-function', 'module-'), {
-    n: 5, slug: 'form-function', dirname: 'module-5-form-function',
+  eq('parseModuleDir module-5 (no slug, post-rename)', parseModuleDir('module-5', 'module-'), {
+    n: 5, slug: null, dirname: 'module-5',
   });
   eq('parseModuleDir module-2 (no slug)', parseModuleDir('module-2', 'module-'), {
     n: 2, slug: null, dirname: 'module-2',

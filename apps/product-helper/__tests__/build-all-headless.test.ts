@@ -36,7 +36,7 @@ import { MODULE_1_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-1';
 import { MODULE_2_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-2';
 import { MODULE_3_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-3';
 import { MODULE_4_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-4';
-import { MODULE_5_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-5-form-function';
+import { MODULE_5_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-5';
 import { MODULE_6_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-6-hoq';
 import { MODULE_7_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-7-interfaces';
 import { MODULE_8_PHASE_SCHEMAS } from '@/lib/langchain/schemas/module-8-risk';
@@ -53,7 +53,7 @@ const REGISTRIES: ModuleRegistry[] = [
   { module: 'module-2', registry: MODULE_2_PHASE_SCHEMAS as any },
   { module: 'module-3', registry: MODULE_3_PHASE_SCHEMAS as any },
   { module: 'module-4', registry: MODULE_4_PHASE_SCHEMAS as any },
-  { module: 'module-5-form-function', registry: MODULE_5_PHASE_SCHEMAS as any },
+  { module: 'module-5', registry: MODULE_5_PHASE_SCHEMAS as any },
   { module: 'module-6-hoq', registry: MODULE_6_PHASE_SCHEMAS as any },
   { module: 'module-7-interfaces', registry: MODULE_7_PHASE_SCHEMAS as any },
   { module: 'module-8-risk', registry: MODULE_8_PHASE_SCHEMAS as any },

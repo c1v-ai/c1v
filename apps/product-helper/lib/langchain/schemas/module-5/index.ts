@@ -7,7 +7,7 @@
  * Math attribution: `Q(f,g) = s·(1-k)` cites Stevens/Myers/Constantine
  * 1974 + Bass/Clements/Kazman 2021 — NEVER Crawley. See `_shared.ts`.
  *
- * @module lib/langchain/schemas/module-5-form-function
+ * @module lib/langchain/schemas/module-5
  */
 
 import type { z } from 'zod';

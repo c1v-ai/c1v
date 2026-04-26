@@ -6,7 +6,7 @@
  * concepts" — no winner is declared here (T4b decision_network owns
  * winner-selection).
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-6-concept-alternatives
+ * @module lib/langchain/schemas/module-5/phase-6-concept-alternatives
  */
 
 import { z } from 'zod';

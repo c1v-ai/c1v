@@ -20,7 +20,7 @@ import { MODULE_1_PHASE_SCHEMAS } from './module-1';
 import { MODULE_2_PHASE_SCHEMAS } from './module-2';
 import { MODULE_3_PHASE_SCHEMAS } from './module-3';
 import { MODULE_4_PHASE_SCHEMAS } from './module-4';
-import { MODULE_5_PHASE_SCHEMAS } from './module-5-form-function';
+import { MODULE_5_PHASE_SCHEMAS } from './module-5';
 import { MODULE_7_PHASE_SCHEMAS } from './module-7-interfaces';
 import { MODULE_8_PHASE_SCHEMAS } from './module-8-risk';
 import { MODULE_8_ATLAS_SCHEMAS } from './atlas';
@@ -74,7 +74,7 @@ const MODULE_1_OUTPUT_DIR = join(OUTPUT_DIR, 'module-1');
 const MODULE_2_OUTPUT_DIR = join(OUTPUT_DIR, 'module-2');
 const MODULE_3_OUTPUT_DIR = join(OUTPUT_DIR, 'module-3');
 const MODULE_4_OUTPUT_DIR = join(OUTPUT_DIR, 'module-4');
-const MODULE_5_OUTPUT_DIR = join(OUTPUT_DIR, 'module-5-form-function');
+const MODULE_5_OUTPUT_DIR = join(OUTPUT_DIR, 'module-5');
 const MODULE_7_OUTPUT_DIR = join(OUTPUT_DIR, 'module-7-interfaces');
 const MODULE_8_RISK_OUTPUT_DIR = join(OUTPUT_DIR, 'module-8-risk');
 const ATLAS_OUTPUT_DIR = join(OUTPUT_DIR, 'atlas');
@@ -152,7 +152,7 @@ function main(): void {
     const filename = `${slug}.schema.json`;
     const outputPath = join(MODULE_5_OUTPUT_DIR, filename);
     writeFileSync(outputPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
-    console.log(`✔ ${name.padEnd(30)} → module-5-form-function/${filename}`);
+    console.log(`✔ ${name.padEnd(30)} → module-5/${filename}`);
   }
 
   // Module 7 Interfaces schemas (N² matrix v1)
@@ -204,7 +204,7 @@ function main(): void {
     MODULE_8_ATLAS_SCHEMAS.length +
     SYNTHESIS_SCHEMAS.length;
   console.log(
-    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_0_PHASE_SCHEMAS.length} module-0 + ${MODULE_1_PHASE_SCHEMAS.length} module-1 + ${MODULE_2_PHASE_SCHEMAS.length} module-2 + ${MODULE_3_PHASE_SCHEMAS.length} module-3 + ${MODULE_4_PHASE_SCHEMAS.length} module-4 + ${MODULE_5_PHASE_SCHEMAS.length} module-5-form-function + ${MODULE_7_PHASE_SCHEMAS.length} module-7 + ${MODULE_8_PHASE_SCHEMAS.length} module-8-risk + ${MODULE_8_ATLAS_SCHEMAS.length} atlas + ${SYNTHESIS_SCHEMAS.length} synthesis) → ${OUTPUT_DIR}`,
+    `\nGenerated ${total} schemas (${SCHEMAS.length} legacy + ${MODULE_0_PHASE_SCHEMAS.length} module-0 + ${MODULE_1_PHASE_SCHEMAS.length} module-1 + ${MODULE_2_PHASE_SCHEMAS.length} module-2 + ${MODULE_3_PHASE_SCHEMAS.length} module-3 + ${MODULE_4_PHASE_SCHEMAS.length} module-4 + ${MODULE_5_PHASE_SCHEMAS.length} module-5 + ${MODULE_7_PHASE_SCHEMAS.length} module-7 + ${MODULE_8_PHASE_SCHEMAS.length} module-8-risk + ${MODULE_8_ATLAS_SCHEMAS.length} atlas + ${SYNTHESIS_SCHEMAS.length} synthesis) → ${OUTPUT_DIR}`,
   );
 }
 

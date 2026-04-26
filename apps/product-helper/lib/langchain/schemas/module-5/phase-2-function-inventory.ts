@@ -5,7 +5,7 @@
  * resolve against the upstream ffbd.v1 functions[] by id. The top-level
  * refine (phase 7 handoff) enforces resolution across all phases.
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-2-function-inventory
+ * @module lib/langchain/schemas/module-5/phase-2-function-inventory
  */
 
 import { z } from 'zod';

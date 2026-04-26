@@ -11,7 +11,7 @@
  * Any schema field that attaches a `source` tag to a Q-scoring path MUST NOT
  * carry `Crawley` as its source (verifier T5 enforces via grep).
  *
- * @module lib/langchain/schemas/module-5-form-function/_shared
+ * @module lib/langchain/schemas/module-5/_shared
  */
 
 import { z } from 'zod';

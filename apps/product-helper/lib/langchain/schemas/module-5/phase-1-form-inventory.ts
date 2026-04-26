@@ -11,7 +11,7 @@
  * affected function needs redundant forms. Phase 1 surfaces this via the
  * optional `redundancy_source_fm` back-link on each form.
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-1-form-inventory
+ * @module lib/langchain/schemas/module-5/phase-1-form-inventory
  */
 
 import { z } from 'zod';

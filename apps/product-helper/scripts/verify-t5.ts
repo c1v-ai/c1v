@@ -9,7 +9,7 @@
  *          + every redundancy_source_fm cites an FM.NN that exists in
  *          fmea_early.v1
  *   V5.4   Crawley not cited as math source in form-function-agent.ts or
- *          module-5-form-function/** (math is Stevens1974 + Bass2021 only)
+ *          module-5/** (math is Stevens1974 + Bass2021 only)
  *
  * Run from apps/product-helper:
  *   pnpm tsx scripts/verify-t5.ts
@@ -18,7 +18,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { formFunctionMapV1Schema } from '../lib/langchain/schemas/module-5-form-function';
+import { formFunctionMapV1Schema } from '../lib/langchain/schemas/module-5';
 
 const APP_ROOT = join(__dirname, '..');
 const REPO_ROOT = join(APP_ROOT, '..', '..');
@@ -30,7 +30,7 @@ const FMEA_PATH = join(SD_ROOT, 'module-8-risk', 'fmea_early.v1.json');
 
 const TEST_FILE = join(APP_ROOT, 'lib/langchain/agents/system-design/__tests__/form-function-agent.test.ts');
 const AGENT_FILE = join(APP_ROOT, 'lib/langchain/agents/system-design/form-function-agent.ts');
-const SCHEMA_DIR = join(APP_ROOT, 'lib/langchain/schemas/module-5-form-function');
+const SCHEMA_DIR = join(APP_ROOT, 'lib/langchain/schemas/module-5');
 
 type Result = { gate: string; pass: boolean; detail: string };
 const results: Result[] = [];
@@ -121,7 +121,7 @@ try {
   if (offenders.length > 0) {
     record('V5.4', false, `${offenders.length} Crawley-as-math-source occurrence(s): ${offenders.slice(0, 3).join(' | ')}`);
   } else {
-    record('V5.4', true, `Crawley never used as math-citation source in form-function-agent.ts + module-5-form-function/**`);
+    record('V5.4', true, `Crawley never used as math-citation source in form-function-agent.ts + module-5/**`);
   }
 }
 

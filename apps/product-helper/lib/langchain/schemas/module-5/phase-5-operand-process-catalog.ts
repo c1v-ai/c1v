@@ -6,7 +6,7 @@
  * so downstream HoQ (T6) can lift engineering-characteristics without
  * re-derivation. Pure Crawley content — no Q math lives here.
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-5-operand-process-catalog
+ * @module lib/langchain/schemas/module-5/phase-5-operand-process-catalog
  */
 
 import { z } from 'zod';

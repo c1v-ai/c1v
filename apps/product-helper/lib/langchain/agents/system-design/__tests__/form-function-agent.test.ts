@@ -18,7 +18,7 @@ import {
   deriveRedundancyRequiredFunctions,
   type FormFunctionAgentInput,
 } from '../form-function-agent';
-import type { FormFunctionMapV1 } from '@/lib/langchain/schemas/module-5-form-function';
+import type { FormFunctionMapV1 } from '@/lib/langchain/schemas/module-5';
 import type { FfbdV1 } from '@/lib/langchain/schemas/module-3/ffbd-v1';
 import type { FmeaEarly } from '@/lib/langchain/schemas/module-8-risk/fmea-early';
 

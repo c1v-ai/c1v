@@ -11,7 +11,7 @@
  * `source` enum in _shared.mathCitationSchema. Attribution grep test
  * in verify-t5 also scans for "Crawley" on this file to double-gate.
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-4-concept-quality-scoring
+ * @module lib/langchain/schemas/module-5/phase-4-concept-quality-scoring
  */
 
 import { z } from 'zod';

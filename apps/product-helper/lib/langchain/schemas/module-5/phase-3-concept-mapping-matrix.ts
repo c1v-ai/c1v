@@ -5,7 +5,7 @@
  * with no quality score yet (scores land in Phase 4). Phase 3 only
  * establishes the topology; Phase 7 handoff refines surjectivity.
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-3-concept-mapping-matrix
+ * @module lib/langchain/schemas/module-5/phase-3-concept-mapping-matrix
  */
 
 import { z } from 'zod';

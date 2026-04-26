@@ -16,7 +16,7 @@
  * phase-1 forms (primary + redundant). Verifier checks this cross-artifact
  * against fmea_early.v1 candidate_mitigation strings.
  *
- * @module lib/langchain/schemas/module-5-form-function/phase-7-form-function-handoff
+ * @module lib/langchain/schemas/module-5/phase-7-form-function-handoff
  */
 
 import { z } from 'zod';
