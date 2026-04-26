@@ -28,6 +28,10 @@ import {
   stage1ApiSpecSchema,
   type Stage1ApiSpec,
 } from '../schemas/api-spec/stage1-operation';
+import {
+  stage2ExpansionEngine,
+  type EntitySchema,
+} from './api-spec/stage2-expansion';
 
 // ============================================================
 // Zod Schemas for LLM Structured Output
@@ -352,8 +356,57 @@ export function buildAPISpecPromptText(context: APISpecGenerationContext): strin
  * ```
  */
 export async function generateAPISpecification(
-  context: APISpecGenerationContext
+  context: APISpecGenerationContext,
+  options?: { twoStage?: boolean },
 ): Promise<APISpecification> {
+  // ============================================================
+  // Two-stage flow (Wave D Step D-3, Decision D-V21.12)
+  //
+  // Feature flag `API_SPEC_TWO_STAGE`:
+  //   - 'off'                → legacy single-call path (preserved below).
+  //   - 'on' | undefined     → two-stage (default for new projects).
+  //   - explicit `options.twoStage` overrides env (call sites supply `false`
+  //     for existing projects per EC-V21-D.2 — avoid silent re-gen drift).
+  //
+  // Output validation: the assembled stage-1 + stage-2 result is parsed
+  // against `apiSpecificationSchema` (preserved at line 131 — NOT removed).
+  // A parse failure short-circuits to the legacy path so projects never
+  // regress to a broken response shape.
+  // ============================================================
+  const envFlag = process.env.API_SPEC_TWO_STAGE;
+  const twoStage =
+    options?.twoStage ?? (envFlag === undefined ? true : envFlag !== 'off');
+
+  if (twoStage) {
+    try {
+      const stage1 = await generateStage1ApiSpec(context);
+      const entities: EntitySchema[] = context.dataEntities.map((e) => ({
+        name: e.name,
+        attributes: e.attributes,
+        relationships: e.relationships,
+      }));
+      const assembled = stage2ExpansionEngine(stage1, entities);
+      // Parse against the preserved validator — NEVER ship a malformed spec.
+      const validated = apiSpecificationSchema.parse(assembled);
+      return {
+        ...(validated as APISpecification),
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          generatorVersion: '2.0.0-two-stage',
+          endpointCount: validated.endpoints.length,
+          useCasesCovered: context.useCases.map((uc) => uc.id),
+          entitiesReferenced: context.dataEntities.map((e) => e.name),
+        },
+      };
+    } catch (error) {
+      console.warn(
+        '[APISpec] Two-stage path failed, falling back to legacy single-call:',
+        (error as Error).message?.slice(0, 200),
+      );
+      // Fall through to legacy path.
+    }
+  }
+
   const structuredModel = createClaudeAgent(apiSpecificationSchema, 'generate_api_specification', {
     temperature: 0.2,
     maxTokens: 12000, // ~30 endpoints with nested response schemas; was 8000
