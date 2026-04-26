@@ -251,10 +251,18 @@ export const conversations = pgTable('conversations', {
   role: varchar('role', { length: 20 }).notNull(),
   content: text('content').notNull(),
   tokens: integer('tokens'),
+  // TA1 v2.1: row kind ('message' default; 'pending_answer' for system OpenQuestions)
+  kind: varchar('kind', { length: 32 }).notNull().default('message'),
+  // TA1 v2.1: reply target — points at the pending_answer row this row answers
+  parentId: integer('parent_id'),
+  // TA1 v2.1: OpenQuestion payload { source, computed_options, math_trace }
+  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => ({
   projectIdIdx: index('conversations_project_id_idx').on(table.projectId),
   createdAtIdx: index('conversations_created_at_idx').on(table.createdAt),
+  parentIdIdx: index('conversations_parent_id_idx').on(table.parentId),
+  kindIdx: index('conversations_kind_idx').on(table.kind),
 }));
 
 // LangGraph State Checkpointing
