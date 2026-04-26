@@ -1,0 +1,47 @@
+# Sentry Dashboard: System overview (TB1 / EC-V21-B.5)
+#
+# Cross-cutting signals: route latency, cold starts, cache hit rate,
+# deferred-artifact gen-on-view counters.
+title: c1v Synthesis — System Overview
+panels:
+  - id: route_synthesize_post_p95
+    title: POST /synthesize p95 latency
+    type: timeseries
+    query:
+      event: 'route_hit:synthesize_post'
+      aggregation: p95(extra.latency_ms)
+      group_by: time(5m)
+  - id: route_status_get_p95
+    title: GET /synthesize/status p95 latency
+    type: timeseries
+    query:
+      event: 'route_hit:synthesize_status_get'
+      aggregation: p95(extra.latency_ms)
+      group_by: time(5m)
+  - id: route_manifest_get_p95
+    title: GET /artifacts/manifest p95 latency
+    type: timeseries
+    query:
+      event: 'route_hit:artifacts_manifest_get'
+      aggregation: p95(extra.latency_ms)
+      group_by: time(5m)
+  - id: cold_starts
+    title: Cloud Run cold starts (count/hour)
+    type: timeseries
+    query:
+      event: 'cold_start'
+      aggregation: count()
+      group_by: [tag.component, time(1h)]
+  - id: cache_hit_rate_global
+    title: Global cache hit rate (%)
+    type: bignum
+    query:
+      event: 'agent_invocation:*'
+      aggregation: count(tag.cache_hit=='true') / count(tag.cache_hit) * 100
+  - id: deferred_gen_on_view
+    title: Deferred artifacts generated on first view
+    type: timeseries
+    query:
+      event: 'deferred_artifact_gen_on_view'
+      aggregation: count()
+      group_by: [tag.artifact_kind, time(1h)]
