@@ -26,6 +26,47 @@
  */
 
 import type { DerivedFrom } from '../../schemas/module-2/requirements-table-base';
+import type { OpenQuestionEvent } from '@/lib/chat/system-question-bridge.types';
+
+/**
+ * Emitter contract — runtime caller (Wave-A langgraph-wirer) supplies the
+ * bridge.surfaceOpenQuestion binding. Agent code calls `emit` whenever an
+ * NFR/constant decision evaluates below the confidence threshold OR an
+ * upstream FMEA-early row carries an ambiguous mitigation. Partial
+ * emissions are acceptable; missing rows surface in chat for the user.
+ */
+export type NfrOpenQuestionEmitter = (
+  ev: Omit<OpenQuestionEvent, 'source'>,
+) => Promise<unknown>;
+
+/** Confidence threshold below which the agent emits an OpenQuestion. */
+export const NFR_OPEN_QUESTION_CONFIDENCE_THRESHOLD = 0.9;
+
+/**
+ * Decision-point hook: agent code calls this where it would otherwise emit
+ * a placeholder or skip a low-confidence row. If `emit` is provided AND
+ * `final_confidence < threshold`, an OpenQuestion is surfaced and the
+ * caller continues with the partial matrix; otherwise the call is a no-op.
+ */
+export async function maybeSurfaceNfrOpenQuestion(args: {
+  emit?: NfrOpenQuestionEmitter;
+  project_id: number;
+  final_confidence: number;
+  question: string;
+  computed_options?: unknown[];
+  math_trace?: string;
+  threshold?: number;
+}): Promise<boolean> {
+  const t = args.threshold ?? NFR_OPEN_QUESTION_CONFIDENCE_THRESHOLD;
+  if (!args.emit || args.final_confidence >= t) return false;
+  await args.emit({
+    project_id: args.project_id,
+    question: args.question,
+    computed_options: args.computed_options,
+    math_trace: args.math_trace,
+  });
+  return true;
+}
 
 export interface NfrResynthInputs {
   fmeaEarlyPath: string;
