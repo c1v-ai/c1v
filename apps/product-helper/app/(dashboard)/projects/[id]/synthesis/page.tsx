@@ -28,6 +28,7 @@ import { getSignedUrl } from '@/lib/storage/supabase-storage';
 
 import { RecommendationViewer } from '@/components/synthesis/recommendation-viewer';
 import { SynthesisEmptyState } from '@/components/synthesis/empty-state';
+import { SynthesisPendingState } from '@/components/synthesis/pending-state';
 import type { ArchitectureRecommendation } from '@/components/synthesis/types';
 import type { DownloadDropdownArtifact } from '@/components/synthesis/download-dropdown';
 
@@ -78,11 +79,53 @@ async function buildDownloadArtifacts(
   return entries;
 }
 
-async function SynthesisContent({ projectId }: { projectId: number }) {
+async function SynthesisContent({
+  projectId,
+  justStarted,
+}: {
+  projectId: number;
+  justStarted: boolean;
+}) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
 
   const latest = await getLatestSynthesis(projectId);
+
+  // P7 — pending-mode UI. Shown when:
+  //   (a) user just clicked Run Deep Synthesis (?just_started=1), OR
+  //   (b) any project_artifacts row is currently `pending`.
+  // Polls /synthesize/status every 3s; flips to ready/failed when the
+  // langgraph nodes finish writing terminal rows.
+  const allArtifactsRaw = await getProjectArtifacts(projectId);
+  const dedupRows = new Map<string, (typeof allArtifactsRaw)[number]>();
+  for (const row of allArtifactsRaw) {
+    if (!dedupRows.has(row.artifactKind)) dedupRows.set(row.artifactKind, row);
+  }
+  const dedupArtifacts = Array.from(dedupRows.values());
+  const anyPending = dedupArtifacts.some(
+    (r) => r.synthesisStatus === 'pending',
+  );
+
+  if (justStarted || anyPending) {
+    const initialArtifacts = dedupArtifacts.map((r) => ({
+      kind: r.artifactKind,
+      status: r.synthesisStatus,
+      format: r.format,
+      signed_url: null,
+      sha256: r.sha256,
+      synthesized_at:
+        r.synthesizedAt instanceof Date
+          ? r.synthesizedAt.toISOString()
+          : (r.synthesizedAt as string | null),
+      failure_reason: r.failureReason,
+    }));
+    return (
+      <SynthesisPendingState
+        projectId={projectId}
+        initialArtifacts={initialArtifacts}
+      />
+    );
+  }
 
   if (!latest || latest.synthesisStatus !== 'ready' || !latest.storagePath) {
     return <SynthesisEmptyState projectId={projectId} />;
@@ -118,18 +161,28 @@ async function SynthesisContent({ projectId }: { projectId: number }) {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ just_started?: string }>;
 }
 
-export default async function SynthesisPage({ params }: PageProps) {
+export default async function SynthesisPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { id } = await params;
   const projectId = parseInt(id, 10);
   if (isNaN(projectId)) notFound();
+
+  const sp = (await searchParams) ?? {};
+  const justStarted = sp.just_started === '1';
 
   return (
     <section className="flex-1 overflow-y-auto p-4 pb-20 md:pb-8 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <Suspense fallback={<SectionSkeleton />}>
-          <SynthesisContent projectId={projectId} />
+          <SynthesisContent
+            projectId={projectId}
+            justStarted={justStarted}
+          />
         </Suspense>
       </div>
     </section>
