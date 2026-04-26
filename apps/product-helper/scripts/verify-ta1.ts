@@ -150,14 +150,18 @@ async function gateA8(sql: ReturnType<typeof postgres>): Promise<void> {
 // ─── EC-V21-A.12 — inputs_hash deterministic ───────────────────────────────
 function gateA12(): void {
   const parts = {
-    nfr_engine_contract_version: 'v1' as const,
-    intake_payload: { actors: ['user', 'admin'], scope: 'PRD-tool' },
-    upstream_shas: { nfr: sha256Of({ ok: 1 }), constants: sha256Of({ ok: 2 }) },
+    intake: {
+      nfr_engine_contract_version: 'v1' as const,
+      intake_payload: { actors: ['user', 'admin'], scope: 'PRD-tool' },
+    },
+    upstreamShas: { nfr: sha256Of({ ok: 1 }), constants: sha256Of({ ok: 2 }) },
   };
   const partsReordered = {
-    upstream_shas: { constants: sha256Of({ ok: 2 }), nfr: sha256Of({ ok: 1 }) },
-    intake_payload: { scope: 'PRD-tool', actors: ['user', 'admin'] },
-    nfr_engine_contract_version: 'v1' as const,
+    upstreamShas: { constants: sha256Of({ ok: 2 }), nfr: sha256Of({ ok: 1 }) },
+    intake: {
+      intake_payload: { scope: 'PRD-tool', actors: ['user', 'admin'] },
+      nfr_engine_contract_version: 'v1' as const,
+    },
   };
   const a = computeInputsHash(parts);
   const b = computeInputsHash(parts);

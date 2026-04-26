@@ -41,6 +41,9 @@ import {
   upsertArtifactStatus,
 } from '@/lib/synthesis/artifacts-bridge';
 import { kickoffSynthesisGraph } from '@/lib/synthesis/kickoff';
+import { db } from '@/lib/db/drizzle';
+import { projects } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const SYNTHESIS_CREDIT_COST = 1000; // D-V21.10
 const IDEMPOTENCY_WINDOW_MS = 5 * 60 * 1000; // 5 min
@@ -122,15 +125,29 @@ export const POST = withProjectAuth(async (_req, { user, team, projectId }) => {
     });
   }
 
-  // 5. Fire the Vercel-side LangGraph asynchronously (D-V21.24). We do NOT
+  // 5. Load project metadata for kickoff signature (TA1↔TA3 integration —
+  // kickoffSynthesisGraph requires {projectId, projectName, projectVision,
+  // teamId}; userId/synthesisId/inputsHash are not part of the contract).
+  const [proj] = await db
+    .select({ name: projects.name, vision: projects.vision })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .limit(1);
+  if (!proj) {
+    return NextResponse.json({ error: 'project_not_found' }, { status: 404 });
+  }
+
+  // 6. Fire the Vercel-side LangGraph asynchronously (D-V21.24). We do NOT
   // post to Cloud Run from here; the graph's GENERATE_* nodes do that.
+  void user.id;
+  void synthesisId;
+  void inputsHash;
   after(async () => {
     await kickoffSynthesisGraph({
       projectId,
+      projectName: proj.name,
+      projectVision: proj.vision,
       teamId: team.id,
-      userId: user.id,
-      synthesisId,
-      inputsHash,
     });
   });
 
