@@ -547,7 +547,7 @@ Notes: Optimized for each stack
 ## Methodology Stack (L1/L2/L3)
 
 - **L1 Deepened KBs** — `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/` — LLM instructions + schemas + xlsx templates. What agents retrieve from.
-- **L2 v2 artifacts** — `system-design/kb-upgrade-v2/module-{1..7}/` — JSON + xlsx + pptx + mmd OUTPUT of running L1 on c1v-itself (self-application).
+- **L2 v2 artifacts** — `plans/kb-upgrade-v2/module-{1..8}/` — JSON + xlsx + pptx + mmd OUTPUT of running L1 on c1v-itself (self-application).
 - **L3 v3 deltas** — `plans/v3_revised/` — Apr 20 foundation re-set; delta files only, never expanded to artifacts.
 - **Handoff contract:** every v2 JSON has `_schema` + `_upstream_refs` + `_output_path` fields — follow these to navigate module dependencies, don't re-derive.
 
