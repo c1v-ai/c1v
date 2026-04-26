@@ -28,6 +28,7 @@
  */
 
 import type { ChatAnthropic } from '@langchain/anthropic';
+import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import {
   formFunctionMapV1Schema,
   type FormFunctionMapV1,
@@ -67,6 +68,15 @@ export function deriveRedundancyRequiredFunctions(fmea: FmeaEarly): Map<string, 
 }
 
 export async function runFormFunctionAgent(
+  input: FormFunctionAgentInput,
+  opts: { llm?: ChatAnthropic; stub?: FormFunctionMapV1 } = {},
+): Promise<FormFunctionMapV1> {
+  return withAgentMetrics({ agent: 'form-function' }, () =>
+    runFormFunctionAgentInner(input, opts),
+  );
+}
+
+async function runFormFunctionAgentInner(
   input: FormFunctionAgentInput,
   opts: { llm?: ChatAnthropic; stub?: FormFunctionMapV1 } = {},
 ): Promise<FormFunctionMapV1> {

@@ -22,6 +22,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
+import { withAgentMetricsSync } from '@/lib/observability/synthesis-metrics';
 import {
   architectureRecommendationSchema,
   type ArchitectureRecommendation,
@@ -380,6 +381,17 @@ export interface SynthesisPayload {
  * Throws on schema violation; returns the parsed artifact on success.
  */
 export function assembleArchitectureRecommendation(
+  input: SynthesisAgentInput,
+  loaded: LoadedUpstream,
+  payload: SynthesisPayload,
+): ArchitectureRecommendation {
+  return withAgentMetricsSync(
+    { agent: 'synthesis', project_id: input.projectId },
+    () => assembleArchitectureRecommendationInner(input, loaded, payload),
+  );
+}
+
+function assembleArchitectureRecommendationInner(
   input: SynthesisAgentInput,
   loaded: LoadedUpstream,
   payload: SynthesisPayload,

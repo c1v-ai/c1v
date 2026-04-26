@@ -19,6 +19,7 @@
  * @module lib/langchain/agents/system-design/hoq-agent
  */
 
+import { withAgentMetricsSync } from '@/lib/observability/synthesis-metrics';
 import {
   hoqV1Schema,
   customerRequirementsArtifactSchema,
@@ -268,6 +269,24 @@ export function crossPhaseReferentialCheck(art: HoqV1): void {
  * agent envelopes them into hoq.v1 and runs schema + referential checks.
  */
 export function assembleHoqV1(args: {
+  output_path: string;
+  upstream_refs: HoqV1['_upstream_refs'];
+  winning_concept: string;
+  produced_at: string;
+  produced_by: string;
+  system_name: string;
+  metadata: HoqV1['metadata'];
+  customer_requirements: CustomerRequirementsArtifact;
+  engineering_characteristics: EngineeringCharacteristicsArtifact;
+  relationship_matrix: RelationshipMatrixArtifact;
+  roof_correlations: RoofCorrelationsArtifact;
+  target_values: TargetValuesArtifact;
+  competitive_benchmarks: CompetitiveBenchmarksArtifact;
+}): HoqV1 {
+  return withAgentMetricsSync({ agent: 'hoq' }, () => assembleHoqV1Inner(args));
+}
+
+function assembleHoqV1Inner(args: {
   output_path: string;
   upstream_refs: HoqV1['_upstream_refs'];
   winning_concept: string;

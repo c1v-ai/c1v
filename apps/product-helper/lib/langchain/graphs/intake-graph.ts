@@ -206,42 +206,81 @@ async function generateInterfaces(state: IntakeState): Promise<Partial<IntakeSta
 
 // ============================================================
 // v2.1 Wave A — 7 NEW node placeholders (langgraph-wirer)
+// v2.1 Wave B (TB1 observability) — wrapped in `withNodeMetrics` to emit
+// per-node start/end + cache_hit/miss events. Cache hit signal is read
+// off `state.kbStepData.__cache_hit` if a sibling cache layer set it
+// (TB1 cache-and-lazy-gen contract); absent ⇒ unknown.
 // ============================================================
 
-async function generateDataFlows(state: IntakeState): Promise<Partial<IntakeState>> {
+import { recordNodeStart, recordNodeEnd } from '@/lib/observability/synthesis-metrics';
+
+function withNodeMetrics(
+  nodeName: string,
+  fn: (state: IntakeState) => Promise<Partial<IntakeState>>,
+): (state: IntakeState) => Promise<Partial<IntakeState>> {
+  return async (state) => {
+    const project_id = state.projectId;
+    const cacheRaw = (state.kbStepData as Record<string, unknown> | undefined)?.__cache_hit;
+    const cache_hit = typeof cacheRaw === 'boolean' ? cacheRaw : undefined;
+    recordNodeStart({ node: nodeName, project_id, cache_hit });
+    const start = performance.now();
+    try {
+      const result = await fn(state);
+      recordNodeEnd({
+        node: nodeName,
+        project_id,
+        latency_ms: performance.now() - start,
+        success: true,
+        cache_hit,
+      });
+      return result;
+    } catch (err) {
+      recordNodeEnd({
+        node: nodeName,
+        project_id,
+        latency_ms: performance.now() - start,
+        success: false,
+        cache_hit,
+      });
+      throw err;
+    }
+  };
+}
+
+const generateDataFlows = withNodeMetrics('generate_data_flows', async (state) => {
   const { generateDataFlows: impl } = await import('./nodes/generate-data-flows');
   return impl(state);
-}
+});
 
-async function generateFormFunction(state: IntakeState): Promise<Partial<IntakeState>> {
+const generateFormFunction = withNodeMetrics('generate_form_function', async (state) => {
   const { generateFormFunction: impl } = await import('./nodes/generate-form-function');
   return impl(state);
-}
+});
 
-async function generateDecisionNetwork(state: IntakeState): Promise<Partial<IntakeState>> {
+const generateDecisionNetwork = withNodeMetrics('generate_decision_network', async (state) => {
   const { generateDecisionNetwork: impl } = await import('./nodes/generate-decision-network');
   return impl(state);
-}
+});
 
-async function generateN2(state: IntakeState): Promise<Partial<IntakeState>> {
+const generateN2 = withNodeMetrics('generate_n2', async (state) => {
   const { generateN2: impl } = await import('./nodes/generate-n2');
   return impl(state);
-}
+});
 
-async function generateFmeaEarly(state: IntakeState): Promise<Partial<IntakeState>> {
+const generateFmeaEarly = withNodeMetrics('generate_fmea_early', async (state) => {
   const { generateFmeaEarly: impl } = await import('./nodes/generate-fmea-early');
   return impl(state);
-}
+});
 
-async function generateFmeaResidual(state: IntakeState): Promise<Partial<IntakeState>> {
+const generateFmeaResidual = withNodeMetrics('generate_fmea_residual', async (state) => {
   const { generateFmeaResidual: impl } = await import('./nodes/generate-fmea-residual');
   return impl(state);
-}
+});
 
-async function generateSynthesis(state: IntakeState): Promise<Partial<IntakeState>> {
+const generateSynthesis = withNodeMetrics('generate_synthesis', async (state) => {
   const { generateSynthesis: impl } = await import('./nodes/generate-synthesis');
   return impl(state);
-}
+});
 
 // ============================================================
 // State Annotation Definition

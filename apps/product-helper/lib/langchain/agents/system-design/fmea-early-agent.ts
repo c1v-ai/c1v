@@ -12,6 +12,7 @@
  */
 
 import { ChatAnthropic } from '@langchain/anthropic';
+import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import { fmeaEarlySchema, type FmeaEarly } from '@/lib/langchain/schemas/module-8-risk/fmea-early';
 import type { FfbdV1 } from '@/lib/langchain/schemas/module-3/ffbd-v1';
 import type { N2Matrix } from '@/lib/langchain/schemas/module-7-interfaces/n2-matrix';
@@ -29,6 +30,13 @@ export interface FmeaEarlyAgentInput {
 }
 
 export async function runFmeaEarlyAgent(
+  input: FmeaEarlyAgentInput,
+  opts: { llm?: ChatAnthropic; stub?: FmeaEarly } = {},
+): Promise<FmeaEarly> {
+  return withAgentMetrics({ agent: 'fmea-early' }, () => runFmeaEarlyAgentInner(input, opts));
+}
+
+async function runFmeaEarlyAgentInner(
   input: FmeaEarlyAgentInput,
   opts: { llm?: ChatAnthropic; stub?: FmeaEarly } = {},
 ): Promise<FmeaEarly> {
