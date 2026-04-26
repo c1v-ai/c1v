@@ -38,6 +38,59 @@
  * path is NOT yet present at dispatch time (Wave A still in flight on the
  * shared branch); when it lands the call site can populate `entities` from
  * either source. This module is agnostic to source — it only sees the array.
+ *
+ * ### Mapping rules — quick-reference table
+ *
+ * | HTTP   | Path shape         | Owning entity? | Request shape           | Response shape       |
+ * |--------|--------------------|----------------|--------------------------|----------------------|
+ * | GET    | `/:resource`       | yes            | —                        | `entity[]` envelope  |
+ * | GET    | `/:resource/{id}`  | yes            | —                        | `entity`             |
+ * | POST   | `/:resource`       | yes            | `entity` (create-shape)  | `entity`             |
+ * | PATCH  | `/:resource/{id}`  | yes            | `Partial<entity>`        | `entity`             |
+ * | PUT    | `/:resource/{id}`  | yes            | `entity`                 | `entity`             |
+ * | DELETE | `/:resource/{id}`  | yes            | —                        | void (204 envelope)  |
+ * | any    | non-CRUD / action  | no match       | generic-object envelope  | generic-object       |
+ *
+ * Owning-entity discovery: `findOwningEntity()` matches the leading path
+ * segment against `EntitySchema.name` (kebab-case + plural heuristic).
+ * Falls through to the generic-object envelope when no entity matches —
+ * this is the intentional handoff point for non-CRUD verbs.
+ *
+ * ### Extension points — adding a new (method, resource) mapping
+ *
+ * The dispatcher is `expandOperation()` — a single switch over
+ * `op.method × hasPathParam × hasOwningEntity`. To add a new mapping:
+ *
+ * 1. **Pure-shape variant** (e.g. a new bulk-write verb on a known entity):
+ *    add a case in `expandOperation()` and, if needed, a new shape helper
+ *    next to `entityToCreateRequestSchema` / `entityToPatchRequestSchema`.
+ *    Keep helpers pure — input is `EntitySchema`, output is `JSONSchema`.
+ *    No side effects, no `Math.random`, no `Date.now()` (determinism is
+ *    part of the EC-V21-D.5 contract — same input must always yield the
+ *    same `APISpecification`).
+ *
+ * 2. **Action endpoint with known payload** (e.g. `POST /orders/{id}/cancel`
+ *    with a known cancel-reason shape): prefer a Stage-3 LLM refinement
+ *    step (deferred per R-V21.10) over hard-coding shapes here. Stage 2's
+ *    contract is "what we can derive from `EntitySchema` alone".
+ *
+ * 3. **New auth or error-code default**: edit `DEFAULT_AUTH`, `COMMON_ERRORS`,
+ *    or the `errorCodesFor()` switch. These are the only non-shape defaults
+ *    the engine emits, and they apply uniformly across all expanded ops.
+ *
+ * 4. **New entity-name → resource-segment heuristic**: the kebab-case +
+ *    plural rule in `entityToResourceSegment()` and the inverse matcher in
+ *    `findOwningEntity()` MUST stay paired. If you change one, change the
+ *    other and add a round-trip test in `__tests__/stage2-expansion.test.ts`
+ *    (any `name` must match itself after `entity → segment → entity`).
+ *
+ * After any change here, re-run the regression fixture:
+ * `pnpm jest __tests__/api-spec/api-spec-two-stage.fixture.test.ts` —
+ * project=33 must continue to expand to ≥25 endpoints with a fully valid
+ * `apiSpecificationSchema` parse.
+ *
+ * See also: `plans/v21-outputs/td1/two-stage-pattern.md` for the wider
+ * context on when/why to apply two-stage extraction.
  */
 
 import type {
