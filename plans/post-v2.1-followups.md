@@ -8,16 +8,24 @@
 
 
 
-## P2 — Deferred fs-side-effects refactors >200 LOC (R-v2.1.A Option C carryover)
+## P2 — ~~Deferred fs-side-effects refactors >200 LOC~~ — ✅ RESOLVED 2026-04-26
 
 - **Source:** R-v2.1.A Option C ruling 2026-04-25 19:50 EDT. Any agent with >200 LOC fs-side-effects refactor ships as a graph-node-adapter wrapper in v2.1; underlying refactor defers here.
-- **Inventory:** TBD — populated by `migrations-and-agent-audit` agent (TA1) when the audit lands. Each entry should list: agent file path, LOC delta estimate, adapter pattern shipped (commit SHA), refactor ticket scope.
-- **Resolution path:** v2.2 day-0 — pick up the inventory; refactor each agent in turn; remove the adapter wrappers.
+- **Resolution:** Audited 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 3. 12/12 system-design agents audited; only 1 fs call site found (`synthesis-agent.ts:loadUpstream` L224-243) and that path is **script-only** (invoked by `scripts/build-synthesis*.ts`, not the LangGraph node). Classification: 1 script-only / 0 shared-utility / 0 requires-refactor. **No agent requires the >200 LOC refactor escalation.** R-v2.1.A Option C wrapper sufficient for all 12 agents.
 
-## P3 — TD1 fixture-vs-live preflight drift (placeholder)
+## P3 — ~~TD1 fixture-vs-live preflight drift~~ — ✅ RESOLVED 2026-04-26
 
 - **Source:** Handoff Issue 18 — TD1.preflight-and-stage1-schema captures both `preflight-log-fixture.md` and `preflight-log-live.md`. If divergent, production = reality on branch decision.
-- **Status:** PLACEHOLDER until TD1 ships. If no drift observed, this row collapses to ✅ resolved with a one-line note. If drift observed, capture the divergence shape here for future regression-fixture maintenance.
+- **Resolution:** Verified 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4. Live preflight log line 75 explicitly states "None. Fixture replay (offline sizing) was consistent with the cutoff hypothesis; live replay confirms it definitively. No drift carried into v2.2 followups." Fixture's "cannot determine stop_reason" caveat was an honest scope-of-method note (offline replay can't measure live API metadata), not a divergence. The CUTOFF (max_tokens) branch decision holds.
+
+## P6 — Prompt-caching not propagating through `ChatAnthropic.bindTools()` (NEW 2026-04-26)
+
+- **Source:** Surfaced 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4 bonus finding; live preflight log [`v21-outputs/td1/preflight-log-live.md`](v21-outputs/td1/preflight-log-live.md) line 81.
+- **Symptom:** Despite `cacheControl: true` set in `apps/product-helper/lib/langchain/config.ts`, the live preflight call against project=33's api-spec agent measured `cache_creation=0` + `cache_read=0` — the cache breakpoints never fired.
+- **Hypothesis:** The `ChatAnthropic.bindTools()` path used by api-spec-agent (and every agent that uses bound-tool `input_schema`) is not propagating `cacheControl` settings to the underlying Anthropic SDK call. The non-tool agents may or may not be affected; needs verification.
+- **Impact:** Direct hit on the AV.01 $320/mo cost target — bound-tool agents (api-spec, decision-net, form-function, hoq, fmea-{early,residual}, interface-specs, n2, data-flows) miss 50–90% input-token reduction on cache hits. Wave B's −$300/mo cache lever is partially unrealized.
+- **Resolution path:** (a) verify hypothesis — instrument every agent's first call with cache-counter logging, classify by tool/no-tool path; (b) if confirmed, patch via direct Anthropic SDK call OR upgrade `@langchain/anthropic` to a version that propagates cache settings through `bindTools()`; (c) re-run cost-telemetry load test. Out of scope for Wave E itself but worth investigating in parallel — pure cost lever.
+- **Status:** OPEN; not blocking Wave E.
 
 ## P4 — ~~`.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` redirect stub~~ — OBSOLETE 2026-04-26
 
