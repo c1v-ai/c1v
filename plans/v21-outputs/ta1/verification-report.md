@@ -176,7 +176,7 @@ PASS __tests__/langchain/graphs/intake-graph.ta1-integration.test.ts
 
 1. **`projects` table RLS gap (carried from v2.0):** `projects` has RLS enabled but zero tenant policies — EXISTS gates from non-owner roles return 0 rows. The RLS smoke test for cross-tenant SELECT on `project_artifacts` is technically gated on a fix to the `projects` table (the test note literally says "gated on projects-RLS fix"). Filed at `plans/post-v2-followups.md`.
 
-2. **METHODOLOGY-CORRECTION.md path drift:** the canonical-resolution audit at `plans/v21-outputs/ta1/methodology-canonical.md` declares `plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` canonical, but on current disk the file lives only at `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`. CLAUDE.md was pointed at the on-disk path; physical relocation deferred. Recommend a follow-up that either (a) moves/copies the file to honor the audit, or (b) revises the audit to point at `system-design/`.
+2. **METHODOLOGY-CORRECTION.md path drift — RESOLVED 2026-04-26 (option B):** the original 2026-04-25 lock at `plans/v21-outputs/ta1/methodology-canonical.md` was built on hallucinated disk facts (claimed `plans/kb-upgrade-v2/` and `.claude/plans/kb-upgrade-v2/` each carried the file at 34126 bytes — neither does on disk). Lock revoked. Canonical home is now `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` (the only intact copy + co-located with the only complete 1-8 module tree). Audit doc updated; forward-looking refs rewritten in the same commit.
 
 3. **fmea_residual prose-vs-data drift (carried from T6):** flag count narrative in commit `aa55cf3` may not match the source-of-truth boolean array length. Tracked in `plans/post-v2-followups.md`.
 

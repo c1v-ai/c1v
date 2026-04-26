@@ -8,7 +8,7 @@
 > **Created:** 2026-04-25
 > **Companion docs:**
 > - Ideation: [`.claude/plans/v2-runtime-wiring-ideation.md`](../.claude/plans/v2-runtime-wiring-ideation.md) — full Dimension A–O analysis
-> - Methodology: [`.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md) — three-pass ordering
+> - Methodology: [`system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md) — three-pass ordering. (Path corrected 2026-04-26 — original lock at `plans/kb-upgrade-v2/` revoked; see `plans/v21-outputs/ta1/methodology-canonical.md` for rationale.)
 > - Crawley curator: [`.claude/plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md`](../.claude/plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md), [`MAPPING-crawley.md`](../.claude/plans/crawley-sys-arch-strat-prod-dev/MAPPING-crawley.md)
 > - v2 release notes: [`plans/v2-release-notes.md`](v2-release-notes.md)
 > - iter-3 origin: regression diagnostic, this conversation 2026-04-25 13:08 EDT
@@ -907,7 +907,7 @@ v2.1 SHIPPED when ALL of:
 - v2 handoff: [`plans/HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md`](HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md)
 - post-v2 backlog: [`plans/post-v2-followups.md`](post-v2-followups.md)
 - runtime ideation: [`.claude/plans/v2-runtime-wiring-ideation.md`](../.claude/plans/v2-runtime-wiring-ideation.md)
-- methodology canonical: [`.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md)
+- methodology canonical: [`system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md) (path corrected 2026-04-26 — see `plans/v21-outputs/ta1/methodology-canonical.md`)
 - Crawley curator pack: [`.claude/plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md`](../.claude/plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md), [`MAPPING-crawley.md`](../.claude/plans/crawley-sys-arch-strat-prod-dev/MAPPING-crawley.md)
 - **Wave E source plan: [`plans/kb-runtime-architecture.md`](kb-runtime-architecture.md)** — full §1-§8 component map, gap inventory G1-G13, day-by-day execution order, open questions
 - Wave E parent context: `.claude/plans/schema-drift-visualization.md` + `.claude/plans/schema-drift-visualization.critique.md` (NFR engine origin docs)

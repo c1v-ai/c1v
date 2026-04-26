@@ -22,7 +22,7 @@ The following follow-ups from the v2.1 master plan §Problem section (P1-P10) sh
 ## Deferred to v2.2
 
 - 📦 **P7** Crawley typed schemas (10) + matrix not delivered — preserved in [`c1v-MIT-Crawley-Cornell.v2.1.md`](c1v-MIT-Crawley-Cornell.v2.1.md) as `📦 DEFERRED TO v2.2` Wave C content. Forward-pointer: [`c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornell.v2.2.md).
-- 📦 **P9** Methodology drift between docs and on-disk module numbering — preserved as Wave C deliverable for v2.2. Source: [`.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md).
+- 📦 **P9** Methodology drift between docs and on-disk module numbering — preserved as Wave C deliverable for v2.2. Source: [`system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md). (Path corrected 2026-04-26 — original `.claude/plans/kb-upgrade-v2/` ref was stale; that copy was never on disk. See `plans/v21-outputs/ta1/methodology-canonical.md`.)
 
 ---
 
