@@ -14,8 +14,21 @@
  *     `extractedData.schema.{approvedAt, approvedBy, approvedSha}`. Re-
  *     extraction (a new schema digest) drops the approval automatically.
  *
+ * Merge rationale (P3 dedup): the two legacy sections rendered overlapping
+ * project-shape data (architecture diagram + table list). Combining them into
+ * one tabbed host eliminates duplicated chrome, lets the alternative-picker
+ * and the schema-approval-gate share the same context, and reduces the
+ * Implementation nav surface from two entries to one.
+ *
+ * Accessibility: the tab strip uses shadcn `Tabs` (Radix primitive) — full
+ * keyboard navigation (Arrow keys + Home/End) and ARIA roles are inherited.
+ * Both sub-panes render against `bg-card` semantic surfaces for dark-mode
+ * parity. Approval CTA is a single button with explicit text label (no
+ * icon-only).
+ *
  * @see EC-V21-A.6 in plans/c1v-MIT-Crawley-Cornell.v2.1.md
  * @see DBML transpiler at lib/dbml/sql-to-dbml.ts (locked: @dbml/core, MIT)
+ * @see components/synthesis/README.md for the sibling family
  */
 
 import { useState } from 'react';

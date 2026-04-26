@@ -132,10 +132,30 @@ function buildEnum(e: { name: string; values: string[] }): string {
 /**
  * Transpile a schema JSON object into DBML text.
  *
- * Returns the DBML source plus any per-row warnings. Caller may append the
- * warnings array to a UI panel; warnings are also embedded as inline DBML
- * comments at the top of the output so a downloaded `.dbml` file is
- * self-describing.
+ * @param schema - Internal schema shape (`tables` or `entities` arrays of
+ *   `SchemaTableInput`; optional top-level `enums`). Tolerates `null` /
+ *   `undefined` and returns an explanatory DBML comment.
+ * @returns `{ dbml, warnings }`. `dbml` is the DBML source ready to download
+ *   or render in a `<pre>`; `warnings` is the per-row diagnostic array. The
+ *   warnings are also embedded as inline `// WARN: …` comments at the top of
+ *   the output so a downloaded `.dbml` file is self-describing.
+ *
+ * Limitations (locked v2.1): no views, no stored procedures, no partitions,
+ * no functional / partial indexes. Unsupported constructs become DBML line
+ * comments carrying the source SQL inline. Pure-TS / offline — never calls
+ * an external API. Non-string FK references are flagged as warnings rather
+ * than silently dropped.
+ *
+ * @example
+ * const { dbml, warnings } = transpileSchemaToDbml({
+ *   tables: [{
+ *     name: 'projects',
+ *     columns: [
+ *       { name: 'id', type: 'uuid', primaryKey: true },
+ *       { name: 'name', type: 'text', nullable: false },
+ *     ],
+ *   }],
+ * });
  */
 export function transpileSchemaToDbml(schema: SchemaInput | null | undefined): TranspileResult {
   const warnings: string[] = [];
