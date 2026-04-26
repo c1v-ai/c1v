@@ -138,6 +138,30 @@ a8ab9f5 feat(ta3): supabase-storage signed-URL helper
 
 ---
 
+## tsc Re-Verification (post-tag, 2026-04-25)
+
+Bond surfaced an IDE-diagnostics report claiming 30+ TS errors across the three new test files (`synthesize-credits.test.ts:18,85,86,87,91,107,139,156`; `synthesize-status.test.ts:127-138,173,175,177`; `manifest.test.ts:44,61,90,93-106`). Re-ran the canonical compile to confirm:
+
+```
+$ cd apps/product-helper && npx tsc --noEmit
+$ echo "exit=$?"
+exit=0
+```
+
+**Zero TS errors. Workspace-wide.** Output is empty.
+
+Root cause of the IDE delta: the most recent TA3 commit `6f73976: test(ta3): @jest/globals import + indirect specifiers for [id] route imports` was specifically the fix for those errors. It added:
+
+- `import { describe, it, expect, jest, beforeEach } from '@jest/globals';` (line 5 of all 3 files) — resolves the `Cannot find name 'expect' / 'it' / 'beforeEach'` 2304/2582 errors.
+- Indirect `await import(ROUTE_POST) as typeof import('../../app/api/projects/[id]/synthesize/route')` specifiers — resolves the `Cannot find module '@/app/api/projects/[id]/...'` 2307 path-alias errors (Next.js dynamic-segment dirs trip TS path resolution; the relative + `typeof` cast avoids it).
+- Per-mock typed signatures via `(...args: unknown[])` — resolves the 2698 / 2345 `never` / spread inference cascade.
+
+The IDE diagnostics Bond saw were a stale TS-server snapshot from BEFORE commit `6f73976` landed. Per memory `feedback_tsc_over_ide_diagnostics.md`: "Run `npx tsc --noEmit` before applying a teammate's or IDE's claimed type error. Language server state lags."
+
+**TA3 contract surfaces are tsc-sound.** TB1's HARD-DEP semantic on `ta3-wave-a-complete` is intact.
+
+---
+
 ## Post-Deploy Re-Measure Plan (handed back to release engineering)
 
 Once the sidecar is deployed via `gcloud run services replace services/python-sidecar/cloud-run.yaml`, run:
