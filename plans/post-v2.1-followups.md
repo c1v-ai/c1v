@@ -18,7 +18,13 @@
 - **Source:** Handoff Issue 18 — TD1.preflight-and-stage1-schema captures both `preflight-log-fixture.md` and `preflight-log-live.md`. If divergent, production = reality on branch decision.
 - **Resolution:** Verified 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4. Live preflight log line 75 explicitly states "None. Fixture replay (offline sizing) was consistent with the cutoff hypothesis; live replay confirms it definitively. No drift carried into v2.2 followups." Fixture's "cannot determine stop_reason" caveat was an honest scope-of-method note (offline replay can't measure live API metadata), not a divergence. The CUTOFF (max_tokens) branch decision holds.
 
-## P7 — UI trigger missing: `[Run Deep Synthesis →]` CTAs don't actually POST (CRITICAL — v2.1 production bug, NEW 2026-04-26)
+## P7 — ~~UI trigger missing: `[Run Deep Synthesis →]` CTAs don't actually POST~~ — ✅ RESOLVED 2026-04-27
+
+- **Resolution:** Closed via v2.1.1 hotfix `synthesize-trigger` agent — producer commit `ab2e558` (merge of P7 worktree carrying 7 commits incl. wave-a/ta3-sidecar integration). Server action `runSynthesisAction` at `app/(dashboard)/projects/[id]/synthesis/actions.ts` POSTs to `/api/projects/[id]/synthesize`. `<RunSynthesisButton>` rendered exactly once on the synthesis-page empty state via `<form action={runSynthesisAction}>`. Sub-page CTAs stay `<Link>` per D-V211.02 (anti-regression JSDoc on `empty-section-state.tsx`). Pending-mode UI + 3s status polling shipped in `components/synthesis/pending-state.tsx`. 9/9 jest tests green. Tag `v2.1.1-hotfix-complete` @ `102fce3`. Verifier report: `plans/v211-outputs/th1/verification-report.md` §EC-V21.1.1.P7. User-visible replay verified on project=119 dev-mode click-through 2026-04-26 (POST 202 → pending UI → 4 nodes ready, 7 stuck-pending per P10).
+
+---
+
+**Original problem record (preserved for posterity):**
 
 - **Source:** Surfaced 2026-04-26 via project=33 inspection at localhost:3000. User reports empty states everywhere (Synthesis / Decision Network / Data Flows / FMEA / etc.) on a project that should have synthesis content.
 - **Symptom:** Every empty state ships a `[Run Deep Synthesis →]` CTA. Clicking it from any system-design page navigates to `/projects/<id>/synthesis` — which renders ANOTHER empty state (5 instances of the same CTA). User loops; synthesis never triggers.
@@ -38,7 +44,13 @@
 - **Code-walk evidence (David's investigation 2026-04-26):** `grep -rn "fetch.*synthesize\|method.*POST.*synthesize" components/ app/` returns ZERO hits anywhere in app/components — only `/settings`, `/sign-out`, `/delete` carry form actions. [`empty-section-state.tsx:51`](../apps/product-helper/components/projects/sections/empty-section-state.tsx#L51) is the smoking gun: `const href = ctaHref ?? \`/projects/${projectId}/synthesis\`` — a `<Link>`, not a form.
 - **Why all System Architecture viewers show empty (project=33 specific):** the `[POST_INTAKE] Generation complete: 6/6 succeeded` line in the dev console is the LEGACY intake-graph generators writing to `extractedData` blob (user_stories, problem-statement, etc. — pre-v2.1 surface). The v2.1 M3-M8 synthesis-stage artifacts (`decision_network`, `ffbd`, `qfd`, `fmea_*`, `form_function`, `interfaces`) live in `project_artifacts` and only populate after `/synthesize` is POSTed — which never happens.
 
-## P8 — `@dbml/core` default-import is broken (NEW 2026-04-26)
+## P8 — ~~`@dbml/core` default-import is broken~~ — ✅ RESOLVED 2026-04-27
+
+- **Resolution:** Closed via v2.1.1 hotfix `dbml-import-fix` agent — producer commit `5102729`. Two-line change: flipped `import dbmlCore from '@dbml/core'` (with `// @ts-ignore` + cast) → `import { importer as dbmlImporter } from '@dbml/core'`; updated call site to use the named import directly. `// @ts-ignore` removed; cast removed; dead variable dropped. Round-trip smoke test at `apps/product-helper/lib/dbml/__tests__/sql-to-dbml.test.ts` (4/4 green) prevents regression. Dev-mode console verified clean: zero `Attempted import error: '@dbml/core' does not contain a default export` warnings. Evidence: `plans/v211-outputs/th1/dbml-fix-evidence.md`. Tag `v2.1.1-hotfix-complete` @ `102fce3`. Verifier report §EC-V21.1.1.P8.
+
+---
+
+**Original problem record (preserved for posterity):**
 
 - **Source:** Surfaced 2026-04-26 in David's project=33 console review. Browser webpack squawk: `Attempted import error: '@dbml/core' does not contain a default export`.
 - **Diagnosis:** [`apps/product-helper/lib/dbml/sql-to-dbml.ts:24`](../apps/product-helper/lib/dbml/sql-to-dbml.ts#L24) does `// @ts-ignore` + `import dbmlCore from '@dbml/core'` then casts to `(dbmlCore as { importer: ... }).importer`. **`@dbml/core@7.1.1` ships named exports only** (`{ importer, exporter, Parser, ModelExporter, ... }`). No default export. Verified via `node -e "const m = require('@dbml/core'); console.log(typeof m.default, typeof m.importer)"` → `undefined object`.
@@ -59,7 +71,13 @@
 - **Test:** add a smoke test that exercises `transpileSchemaToDbml({ tables: [...] })` against a 2-table fixture and asserts the DBML output parses round-trip.
 - **Status:** OPEN; CO-BLOCKER with P7 (both ship in same v2.1.1 hotfix branch). Independent fix paths — Bug 2 doesn't need Bug 1 to land first.
 
-## P9 — Verifier process gap: integration-bridges had no owner (NEW 2026-04-26)
+## P9 — ~~Verifier process gap: integration-bridges had no owner~~ — ✅ RESOLVED 2026-04-27
+
+- **Resolution:** Closed via v2.1.1 hotfix `e2e-clickthrough` agent — producer commit `eca4ab3`. Playwright spec at `apps/product-helper/tests/e2e/synthesis-clickthrough.spec.ts` (379 LOC) drives the full click-through against the REAL backend route (no route mock — that was the original failure mode). Fixtures at `tests/e2e/fixtures/synthesis-fixture-project.ts` + `synthesis-mocks.ts`. CI workflow at `.github/workflows/v2.1.1-e2e.yml`. **P10-aware test contract** per D-V211.06: asserts the 4 pre-v2.1 nodes (`generate_ffbd` / `generate_decision_matrix` / `generate_interfaces` / `generate_qfd`) flip to `ready`; explicitly captures the 7 NEW v2.1 nodes' stuck-pending state as expected per P10. Evidence file `plans/v211-outputs/th1/e2e-evidence.md` carries the literal substrings `4 ready` / `7 stuck-pending` / `P10` for verifier grep. **v2.2 process change shipped in spawn-prompts:** every team in v2.2 spawn-prompts must explicitly own AT LEAST ONE bridge to ANOTHER team's deliverables (cross-team-bridges subsection). Tag `v2.1.1-hotfix-complete` @ `102fce3`. Verifier report §EC-V21.1.1.P9.
+
+---
+
+**Original problem record (preserved for posterity):**
 
 - **Source:** Surfaced 2026-04-26 as the root-cause analysis behind P7. TA2 (UI ownership) verifier and TA3 (API ownership) verifier each tested their half in isolation; neither owned the click-through bridge between them.
 - **Pattern (v2.1):**

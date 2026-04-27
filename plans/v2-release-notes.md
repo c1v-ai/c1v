@@ -218,3 +218,83 @@ v2.2 spec stub: [`plans/c1v-MIT-Crawley-Cornell.v2.2.md`](c1v-MIT-Crawley-Cornel
 - [`plans/v21-outputs/tb1/verification-report.md`](v21-outputs/tb1/verification-report.md) — 6/6 EC green; load test 10×5
 - [`plans/v21-outputs/tb1/cost-telemetry-runbook.md`](v21-outputs/tb1/cost-telemetry-runbook.md) — operator runbook
 
+
+---
+
+# v2.1.1 Hotfix — Release Notes (Appended 2026-04-27)
+
+**Date:** 2026-04-27
+**Final tag:** `v2.1.1-hotfix-complete` @ `102fce3`
+**Master plan:** [`c1v-MIT-Crawley-Cornell.v2.1.1.md`](c1v-MIT-Crawley-Cornell.v2.1.1.md) (closeout-flavored, written post-verification)
+**Spawn prompts:** [`team-spawn-prompts-v2.1.1.md`](team-spawn-prompts-v2.1.1.md)
+**Followups:** [`post-v2.1-followups.md`](post-v2.1-followups.md) §P7 + §P8 + §P9 → ✅ RESOLVED
+**Branch:** `wave-b/v2.1.1-hotfix` (HEAD `0fa1f38`)
+
+## Why a hotfix shipped
+
+v2.1 cleared its ship-gate (`tb1-wave-b-complete` @ `e56d37f`) on 2026-04-26 — but project=33 inspection that same evening surfaced two production bugs and one process bug that the v2.1 verifiers had not caught:
+
+- **P7 (CRITICAL):** Backend `POST /api/projects/[id]/synthesize` route ✅ existed; LangGraph nodes ✅ existed; viewers ✅ read from `project_artifacts`. **No UI button anywhere POSTed to the route.** All `[Run Deep Synthesis →]` CTAs were `<Link>` navigations. v2.1 was functionally unshipped despite tag-state.
+- **P8 (LATENT):** `@dbml/core@7.1.1` ships named exports only; `lib/dbml/sql-to-dbml.ts:24` did default-import. Today: webpack warning. The moment any project reached schema-approval the page would crash.
+- **P9 (PROCESS):** TA2 (UI ownership) verifier and TA3 (API ownership) verifier each tested their half in isolation; neither owned the click-through bridge. Same shape as v2's `projects` table RLS gap.
+
+**Without v2.1.1 landing, v2.2 would have been unmeasurable** — Wave E's EC-V21-E.13 ("≥60% LLM call rate drop on M2") is meaningless if zero LLM calls fire because no user can trigger synthesis.
+
+## What shipped — TH1 (5 agents, 4 dispatch waves)
+
+| Wave | Agent | Subagent type | Producer SHA | Deliverable |
+|---|---|---|---|---|
+| 1 | `synthesize-trigger` | langchain-engineer | `ab2e558` | P7 closure: `runSynthesisAction` server action + `<RunSynthesisButton>` (single canonical surface) + `SynthesisPendingState` polling + `?just_started=1` page branch + 9/9 jest |
+| 1 | `dbml-import-fix` | langchain-engineer | `5102729` | P8 closure: named-import flip; `// @ts-ignore` removed; round-trip smoke test (4/4) |
+| 2 | `e2e-clickthrough` | qa-engineer | `eca4ab3` | P9 mitigation: 379-LOC Playwright spec + 2 fixtures + `.github/workflows/v2.1.1-e2e.yml` + P10-aware evidence file |
+| 3 | `qa-th1-verifier` | qa-engineer | `723b99e` | All 5 ECs PASS; verifier script `apps/product-helper/scripts/verify-th1.ts`; tag created |
+| 4 | `docs-th1` | (deferred) | — | Followups SHA-flips + this release-notes entry written by coordinator instead |
+
+## Per-EC commit SHAs
+
+- **EC-V21.1.1.P7** UI synthesize-trigger wired through server action → POST 202 → pending UI → status polling. Producer `ab2e558`. 5/5 sub-asserts.
+- **EC-V21.1.1.P8** `@dbml/core` named-import; smoke test green; dev-mode console clean. Producer `5102729`. 4/4 sub-asserts.
+- **EC-V21.1.1.P9** Playwright spec + fixtures + CI workflow exist; e2e-evidence.md greps for `4 ready` / `7 stuck-pending` / `P10` all green. Producer `eca4ab3`. 5/5 sub-asserts.
+- **EC-V21.1.1.D8** Dispatch rule #8: every TH1 Agent prompt body cites `post-v2.1-followups.md` in `required_reading[]`. 5/5 Agent blocks PASS.
+- **EC-V21.1.1.replay** Project=119 dev-mode click-through user-visible gate (substituted for project=33 per D-V211.04). PASS.
+
+**Closeout commits:**
+- `102fce3` dedupe P10 (peer Claude's canonical kept; e2e-agent's parallel filing dropped)
+- `0fa1f38` closeout master plan + spawn-prompts dead-link fix
+- `723b99e` `verify-th1.ts` + `verification-report.md`
+
+## Locked decisions (D-V211.01..06)
+
+- D-V211.01 — Scope tight (P7+P8+P9 only); P10 + P11 carry to v2.1.2 / v2.2
+- D-V211.02 — Single canonical trigger surface on synthesis page; sub-page CTAs stay `<Link>`
+- D-V211.03 — Server action MUST go through `/api/projects/[id]/synthesize` (no `kickoffSynthesisGraph` bypass)
+- D-V211.04 — Project=119 substitutes for project=33 as user-visible replay gate
+- D-V211.05 — Playwright spec is CI-only (local execution requires Supabase/dev-server fixtures the worktree can't have)
+- D-V211.06 — P10-aware test contract: assert 4-of-11 ready; capture 7-of-11 stuck-pending as expected per P10
+
+## What this hotfix deliberately does NOT do
+
+- Does NOT fix P10 (7 NEW v2.1 LangGraph nodes are no-ops on live runtime projects). Carry to v2.1.2 / v2.2 Wave-A completion.
+- Does NOT fix P11 (schema-extraction-agent retry-flake). Functionally fine; cost-only.
+- Does NOT touch FROZEN viewers or extend allowance gating beyond TB1's `checkSynthesisAllowance`.
+- Does NOT execute the Playwright spec locally (intentionally CI-only per D-V211.05).
+- Does NOT dispatch Wave 4 (`docs-th1`); closeout content lives in the master plan + this release-notes entry.
+
+## Side-effect preserved
+
+`wave-c/tc1-m345-schemas` @ `080329e` carries 5 of peer Claude Jessica's TC1 schemas (m3 decomposition-plane / m5 phases 3-5 / m4 decision-network-foundations) that landed on the hotfix checkout via shared-working-tree collision during Wave 1. Pushed to origin so Jessica can resume from there without rework.
+
+## v2.1.1 verification reports
+
+- [`plans/v211-outputs/th1/verification-report.md`](v211-outputs/th1/verification-report.md) — 5/5 ECs green; 13/13 jest; 0 hotfix-touched-file tsc errors
+- [`plans/v211-outputs/th1/e2e-evidence.md`](v211-outputs/th1/e2e-evidence.md) — Playwright spec evidence + 4-vs-11 split documented per P10
+- [`plans/v211-outputs/th1/dbml-fix-evidence.md`](v211-outputs/th1/dbml-fix-evidence.md) — before/after dev-server stdout
+
+## Carry-forward to v2.2 / v2.1.2
+
+- **P10 (CRITICAL):** 7 NEW v2.1 LangGraph nodes are no-ops for live runtime projects. User-visible synthesis still 4-of-11 ready. Recommended: v2.1.2 fast-follow with stub-population nodes (~1-2 weeks) OR absorb into v2.2 Wave-E greenfield generator path (~3-4 weeks).
+- **P11 (LOWER-SEVERITY):** schema-extraction-agent strict-parse flake on first attempt; retry succeeds. Functionally fine; cost-only.
+- **P5:** Stranded partial `kb-upgrade-v2/` trees cleanup.
+- **P6:** Prompt-caching not propagating through `bindTools()`; cost lever investigation.
+
+**v2.2 day-0 UNBLOCKED.** Wave C (Crawley typed schemas + eval harness + methodology page) and Wave E (KB runtime architecture rewrite) can dispatch against a working synthesis click-through.
