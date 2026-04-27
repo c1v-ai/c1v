@@ -1,0 +1,9 @@
+{
+  "_schema": "reference-project.v1",
+  "project_id": "ref-001",
+  "vision": "Marketplace for B2B SaaS procurement",
+  "industry": "b2b-saas",
+  "scale": "medium",
+  "anonymized": true,
+  "generated_at": "2026-04-27T22:07:02.700Z"
+}
