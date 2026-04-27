@@ -1,6 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase3FormFunctionConceptSchema } from '../phase-3-form-function-concept';
+import {
+  phase3FormFunctionConceptSchema,
+  type Phase3FormFunctionConcept,
+} from '../phase-3-form-function-concept';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 const blockKinds = ['pp', 'po', 'pf', 'op', 'oo', 'of', 'fp', 'fo', 'ff'] as const;
 
@@ -110,5 +114,18 @@ describe('phase3FormFunctionConceptSchema (Crawley Ch 6)', () => {
     bad.full_dsm_block_derivations[0].block_kind = 'pp';
     bad.full_dsm_block_derivations[1].block_kind = 'pp';
     expect(() => phase3FormFunctionConceptSchema.parse(bad)).toThrow();
+  });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(
+      phase3FormFunctionConceptSchema,
+      'Phase3FormFunctionConcept',
+    ) as { description?: string };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: Phase3FormFunctionConcept = phase3FormFunctionConceptSchema.parse(fixture());
+    expect(parsed._schema).toBe('module-5.phase-3-form-function-concept.v1');
   });
 });
