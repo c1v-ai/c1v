@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { CircleIcon, Home, LogOut, MessageSquare, FolderOpen, Zap } from 'lucide-react';
+import { aboutNavEntries } from '@/components/about/about-nav';
 import { ModeToggle } from '@/components/theme/mode-toggle';
 import {
   DropdownMenu,
@@ -87,6 +88,18 @@ function UserMenu() {
             <span>Chat</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {aboutNavEntries.map((entry) => {
+          const Icon = entry.icon;
+          return (
+            <DropdownMenuItem key={entry.href} className="cursor-pointer">
+              <Link href={entry.href} className="flex w-full items-center">
+                <Icon className="mr-2 h-4 w-4" />
+                <span>{entry.label}</span>
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
         <DropdownMenuSeparator />
         <form action={handleSignOut} className="w-full">
           <button type="submit" className="flex w-full">
