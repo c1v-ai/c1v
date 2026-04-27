@@ -1,6 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase4SolutionNeutralConceptSchema } from '../phase-4-solution-neutral-concept';
+import {
+  phase4SolutionNeutralConceptSchema,
+  type Phase4SolutionNeutralConcept,
+} from '../phase-4-solution-neutral-concept';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 function fixture(): unknown {
   return {
