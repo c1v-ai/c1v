@@ -5,6 +5,7 @@ import {
   type TradespaceParetoSensitivity,
 } from '../tradespace-pareto-sensitivity';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 function fixture(): unknown {
   return {
@@ -140,5 +141,18 @@ describe('tradespaceParetoSensitivitySchema', () => {
         additional_architecture_ids: [],
       }),
     ).toThrow();
+  });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(
+      tradespaceParetoSensitivitySchema,
+      'TradespaceParetoSensitivity',
+    ) as { description?: string };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: TradespaceParetoSensitivity = tradespaceParetoSensitivitySchema.parse(fixture());
+    expect(parsed._schema).toBe('module-4.tradespace-pareto-sensitivity.v1');
   });
 });
