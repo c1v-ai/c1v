@@ -9,9 +9,11 @@
 
 ## TL;DR
 
-5 of 10 Crawley schemas are committed on `wave-c/tc1-m345-schemas` (Jessica's saved work). Branch's merge-base with main is `a3bc645` — pre-v2.1.1. Rebase the branch onto main (zero-conflict, disjoint surface), re-anchor TC1 tags, then resume `crawley-schemas` for the remaining 5 schemas + matrix keystone. Re-dispatch the other 3 deliverable agents (`crawley-migrations`, `eval-harness`, `methodology-page`) in parallel — none have HARD-DEP on the schemas commit graph.
+**8 of 11 Crawley schemas are already on `wave-c/tc1-m345-schemas`** (`git ls-tree` audit, 2026-04-27 17:46 EDT — corrected from earlier `git log ^main` audit which missed three commits). The matrix keystone `_matrix.ts` is already shipped — EC-V21-C.2 is materially de-risked. Branch HEAD does NOT have `v2.1.1-hotfix-complete` in ancestry. Rebase **onto `wave-b/v2.1.1-hotfix` branch HEAD** (zero-conflict, disjoint surface), re-anchor TC1 tags, then resume `crawley-schemas` for the **3 remaining schemas + 11-schema round-trip test backfill + registry + matrix-site refactor**. Re-dispatch the other 3 deliverable agents (`crawley-migrations`, `eval-harness`, `methodology-page`) in parallel — none have HARD-DEP on the schemas commit graph.
 
-**Diagnostic flag:** No round-trip test commits found alongside the 5 shipped schemas. REQUIREMENTS-crawley §7 makes them non-negotiable. The "4 uncommitted files" the peer mentioned are the strongest candidate for being those tests OR the remaining 5 schemas. Verify before rebase.
+**Rebase target rationale:** Local `main` is stale (`a3bc645`, pre-v2.1.1). `origin/main @ db7b12e` does NOT contain `v2.1.1-hotfix-complete @ 102fce3`. The hotfix lives only on `wave-b/v2.1.1-hotfix` and has 4 commits past the tag (rosetta + closeout + dead-link fix + this handoff). Rebasing onto the **branch HEAD** brings those forward commits into Wave-C ancestry too, and when `wave-b/v2.1.1-hotfix` later merges to main, Wave-C will fast-forward cleanly. **DO NOT** bundle a `wave-b/v2.1.1-hotfix → main` merge into this rebase — that's a separate destructive op needing explicit sign-off.
+
+**Diagnostic flag:** No round-trip test commits found for any of the 8 shipped schemas. REQUIREMENTS-crawley §7 makes them non-negotiable. Backfill (8) + new (3) = 11 round-trip + x-ui-surface test files needed in the `crawley-schemas` resume.
 
 ---
 
@@ -25,17 +27,27 @@
 | `tc1-preflight-complete` reachable from main | NO |
 | `tc1-c0-complete` SHA | `3e2abdf refactor(schemas): rewrite module-5-form-function -> module-5 importers + jsdoc + fixture (EC-V21-C.0)` |
 
-**5 schema commits on `wave-c/tc1-m345-schemas` ahead of main:**
+**8 schema commits reachable from `wave-c/tc1-m345-schemas` HEAD** (per `git ls-tree`, file-presence audit):
+
+Direct-ancestor 5 commits ahead of `main`:
 1. `080329e` m4 decision-network-foundations (Crawley Ch 14)
 2. `e2180c2` m3 decomposition-plane supplement (Crawley Ch 13)
 3. `e7511ce` m5 phase-5-concept-expansion (Crawley Ch 8)
 4. `aa4e6f2` m5 phase-4-solution-neutral-concept (Crawley Ch 7)
 5. `44fd62d` m5 phase-3-form-function-concept (Crawley Ch 6)
 
-**Plus 1 namespace-resolver commit (rebased target for `tc1-preflight-complete`):**
-- `3e2abdf` refactor(schemas): rewrite module-5-form-function -> module-5 importers + jsdoc + fixture (EC-V21-C.0)
+Cross-path 3 commits via `wave-b/v2.1.1-hotfix` ancestry (initially missed by `^main` filter):
+6. `a868930` module-5 _matrix.ts — `mathDerivationMatrixSchema` (Option Y) — **EC-V21-C.2 keystone**
+7. `2906454` m5 phase-1-form-taxonomy
+8. `56d0322` m5 phase-2-function-taxonomy
 
-**Round-trip test gap:** `git log --oneline wave-c/tc1-m345-schemas ^main -- '*.test.ts' '*__tests__*'` returned ZERO Wave-C test commits. REQUIREMENTS-crawley §7 requires per-schema round-trip + x-ui-surface tests. Either the peer's "4 uncommitted files" cover this OR `crawley-schemas` resume must add them as a non-negotiable deliverable before tagging green.
+**Plus namespace-resolver commits (already in branch ancestry):**
+- `3e2abdf` refactor(schemas): rewrite module-5-form-function -> module-5 importers + jsdoc + fixture (EC-V21-C.0)
+- `6be88b5` refactor(schemas): git mv module-5-form-function/ -> module-5/ (EC-V21-C.0)
+
+**Remaining 3 schemas to author:** `module-4/tradespace-pareto-sensitivity.ts`, `module-4/optimization-patterns.ts`, `module-2/requirements-crawley-extension.ts`.
+
+**Round-trip test gap (verified):** zero `*.test.ts` siblings for any of the 8 shipped schemas. Backfill (8) + new (3) = **11 test files** owed by `crawley-schemas` resume per REQUIREMENTS-crawley §7.
 
 ---
 
@@ -67,13 +79,15 @@ Hard-link snapshots in `~/c1v-backups/` cover tier-2 automatically. Both are ins
 
 ---
 
-## Step 1 — Rebase Wave-C onto main
+## Step 1 — Rebase Wave-C onto `wave-b/v2.1.1-hotfix` branch HEAD
 
 **Checkout + rebase:**
 ```bash
 git checkout wave-c/tc1-m345-schemas
-git rebase main
+git rebase wave-b/v2.1.1-hotfix
 ```
+
+**NOT** `git rebase main` — local `main` is stale (`a3bc645`) and `origin/main @ db7b12e` does not yet contain `v2.1.1-hotfix-complete`. The hotfix lives only on `wave-b/v2.1.1-hotfix` (4 commits past the tag: rosetta + closeout + dead-link fix + this handoff). Rebasing onto the branch HEAD pulls those forward commits into Wave-C ancestry too.
 
 **Expected outcome:** zero conflicts. v2.1.1 touched `app/(dashboard)/projects/[id]/synthesis/`, `components/synthesis/`, `lib/dbml/`, `playwright/`, `.github/workflows/`. TC1 touches `lib/langchain/schemas/module-{2,3,4,5}/`. Disjoint surface.
 
@@ -144,11 +158,13 @@ rm -rf plans/v22-outputs/tc1/_pre-rebase-snapshot
 
 **Canonical 10-schema list per `team-spawn-prompts-v2.2.md` §TC1 `crawley-schemas` deliverables + REQUIREMENTS-crawley §5:**
 
+**Audit method:** `git ls-tree -r wave-c/tc1-m345-schemas -- 'apps/product-helper/lib/langchain/schemas/module-{2,3,4,5}/'` — file-presence at HEAD, NOT commit-graph diff via `git log ^main`. See §"Audit method correction" below.
+
 | # | Schema path | Status | Owner |
 |---|---|---|---|
-| 1 | `module-5/_matrix.ts` (`mathDerivationMatrixSchema` Option Y, **EC-V21-C.2 keystone**) | ❌ **NOT SHIPPED — highest priority** | crawley-schemas resume |
-| 2 | `module-5/phase-1-form-taxonomy.ts` | ❌ NOT SHIPPED | crawley-schemas resume |
-| 3 | `module-5/phase-2-function-taxonomy.ts` | ❌ NOT SHIPPED | crawley-schemas resume |
+| 1 | `module-5/_matrix.ts` (`mathDerivationMatrixSchema` Option Y, **EC-V21-C.2 keystone**) | ✅ shipped @ `a868930` | — |
+| 2 | `module-5/phase-1-form-taxonomy.ts` | ✅ shipped @ `2906454` | — |
+| 3 | `module-5/phase-2-function-taxonomy.ts` | ✅ shipped @ `56d0322` | — |
 | 4 | `module-5/phase-3-form-function-concept.ts` | ✅ shipped @ `44fd62d` (Wave-C branch) | — |
 | 5 | `module-5/phase-4-solution-neutral-concept.ts` | ✅ shipped @ `aa4e6f2` | — |
 | 6 | `module-5/phase-5-concept-expansion.ts` | ✅ shipped @ `e7511ce` | — |
@@ -158,16 +174,15 @@ rm -rf plans/v22-outputs/tc1/_pre-rebase-snapshot
 | 10 | `module-4/optimization-patterns.ts` | ❌ NOT SHIPPED | crawley-schemas resume |
 | 11 | `module-2/requirements-crawley-extension.ts` | ❌ NOT SHIPPED | crawley-schemas resume |
 
-**Plus per-schema round-trip + x-ui-surface tests** (REQUIREMENTS-crawley §7) — verify each shipped schema has its `__tests__/*.test.ts` sibling:
+**Plus per-schema round-trip + x-ui-surface tests** (REQUIREMENTS-crawley §7) — verify each of the 8 shipped schemas has its `__tests__/*.test.ts` sibling:
 ```bash
-for s in 5/phase-3-form-function-concept 5/phase-4-solution-neutral-concept 5/phase-5-concept-expansion 3/decomposition-plane 4/decision-network-foundations; do
-  test_file="apps/product-helper/lib/langchain/schemas/module-${s}/../__tests__/$(basename ${s}).test.ts"
-  alt="apps/product-helper/lib/langchain/schemas/module-${s%/*}/__tests__/$(basename ${s}).test.ts"
-  if [ -f "$test_file" ] || [ -f "$alt" ]; then echo "OK $s"; else echo "MISSING $s"; fi
+for s in 5/_matrix 5/phase-1-form-taxonomy 5/phase-2-function-taxonomy 5/phase-3-form-function-concept 5/phase-4-solution-neutral-concept 5/phase-5-concept-expansion 3/decomposition-plane 4/decision-network-foundations; do
+  test_file="apps/product-helper/lib/langchain/schemas/module-${s%/*}/__tests__/$(basename ${s}).test.ts"
+  if [ -f "$test_file" ]; then echo "OK $s"; else echo "MISSING $s"; fi
 done
 ```
 
-If MISSING for any of the 5 shipped — that's the test gap; `crawley-schemas` resume MUST add them before tagging green.
+If MISSING for any of the 8 shipped — that's the test gap; `crawley-schemas` resume MUST add them (8 backfill + 3 new = 11 test files) before tagging green.
 
 ---
 
@@ -175,30 +190,37 @@ If MISSING for any of the 5 shipped — that's the test gap; `crawley-schemas` r
 
 Canonical prompt source: `.claude/plans/team-spawn-prompts-v2.2.md` §TC1 → `Agent({ name: "crawley-schemas", ...})`.
 
-**Scope adjustment for resume** (do NOT re-author the 5 shipped schemas):
+**Scope adjustment for resume** (do NOT re-author the 8 shipped schemas):
 
 ```
-Goal (resume): Ship the 5 REMAINING Crawley schemas + the mathDerivationMatrixSchema keystone (D-V21.13). 5 schemas already shipped on this branch (commits 080329e, e2180c2, e7511ce, aa4e6f2, 44fd62d). Verify each shipped schema has its round-trip + x-ui-surface test sibling per REQUIREMENTS-crawley §7; backfill missing tests as part of this resume.
+Goal (resume): Ship the 3 REMAINING Crawley schemas + per-schema round-trip + x-ui-surface tests for ALL 11 schemas (D-V21.13). 8 schemas already shipped on this branch — see commit SHAs in §"Current state" of HANDOFF-2026-04-27. Matrix keystone (mathDerivationMatrixSchema, EC-V21-C.2) is already shipped @ a868930.
 
 Required deliverables (NEW commits only):
-  1. apps/product-helper/lib/langchain/schemas/module-5/_matrix.ts — mathDerivationMatrixSchema (Option Y, EC-V21-C.2 keystone — 10 matrix sites + 1 scalar chain consume it)
-  2. apps/product-helper/lib/langchain/schemas/module-5/phase-1-form-taxonomy.ts
-  3. apps/product-helper/lib/langchain/schemas/module-5/phase-2-function-taxonomy.ts
-  4. apps/product-helper/lib/langchain/schemas/module-4/tradespace-pareto-sensitivity.ts
-  5. apps/product-helper/lib/langchain/schemas/module-4/optimization-patterns.ts
-  6. apps/product-helper/lib/langchain/schemas/module-2/requirements-crawley-extension.ts
-  7. Round-trip tests for ALL 10 schemas (5 backfill + 5 new) per REQUIREMENTS-crawley §7
-  8. apps/product-helper/lib/langchain/schemas/index.ts — register all 10 schemas + matrix; assert no duplicate keys
-  9. Refactor 10 matrix sites + 1 scalar chain to consume mathDerivationMatrixSchema (EC-V21-C.2)
-  10. plans/v22-outputs/tc1/schemas-shipped.md — markdown table mapping each schema to REQUIREMENTS-crawley §X source + consumer files + test coverage count
+  1. apps/product-helper/lib/langchain/schemas/module-4/tradespace-pareto-sensitivity.ts
+  2. apps/product-helper/lib/langchain/schemas/module-4/optimization-patterns.ts
+  3. apps/product-helper/lib/langchain/schemas/module-2/requirements-crawley-extension.ts
+  4. Round-trip + x-ui-surface tests for ALL 11 schemas (8 backfill + 3 new) per REQUIREMENTS-crawley §7. Each test asserts: (a) parse a valid fixture, (b) reject an invalid fixture per critical refine, (c) round-trip identity (parse(stringify(parsed)) deep-equal parsed).
+  5. apps/product-helper/lib/langchain/schemas/index.ts — register all 11 schemas + matrix; assert no duplicate keys via existing registry test (or new __tests__/schemas/registry-no-dupes.test.ts)
+  6. Refactor 10 matrix sites + 1 scalar chain to consume mathDerivationMatrixSchema (EC-V21-C.2 — keystone is shipped, but consumers may not type-check against it yet; grep agent layer for matrix shapes that should now adopt the new schema)
+  7. plans/v22-outputs/tc1/schemas-shipped.md — markdown table mapping each schema to REQUIREMENTS-crawley §X source + consumer files + test coverage count
+
+Upstream context (already shipped — do NOT re-author):
+  - module-5/_matrix.ts @ a868930 (matrix keystone)
+  - module-5/phase-1-form-taxonomy.ts @ 2906454
+  - module-5/phase-2-function-taxonomy.ts @ 56d0322
+  - module-5/phase-3-form-function-concept.ts @ 44fd62d
+  - module-5/phase-4-solution-neutral-concept.ts @ aa4e6f2
+  - module-5/phase-5-concept-expansion.ts @ e7511ce
+  - module-3/decomposition-plane.ts @ e2180c2
+  - module-4/decision-network-foundations.ts @ 080329e
 
 Guardrails (unchanged from canonical):
   - Do NOT modify v2.1 module-2 _shared.ts (REQUIREMENTS-crawley curator decision: 0 modifications)
   - All schemas Zod-shaped — match v2.1 submodule-2-3-nfrs-constants.ts pattern
   - Round-trip tests non-negotiable (REQUIREMENTS-crawley §7)
-  - If 10-schema row breaks v2.1 shipped agent emissions → FAIL commit, surface to coordinator (Wave A contract pin must not break)
+  - If 11-schema row breaks v2.1 shipped agent emissions → FAIL commit, surface to coordinator (Wave A contract pin must not break)
   - Per-file atomic commits (memory: feedback_commit_per_file_immediately.md)
-  - Branch: wave-c/tc1-m345-schemas (already rebased onto main; do NOT branch elsewhere)
+  - Branch: wave-c/tc1-m345-schemas (already rebased onto wave-b/v2.1.1-hotfix; do NOT branch elsewhere)
 ```
 
 **Dispatch:** resume the existing `crawley-schemas` agent with this scoped prompt (preserves token budget vs fresh start).
@@ -286,6 +308,18 @@ Tier-2 hard-link snapshots in `~/c1v-backups/plans-<timestamp>/` cover plans/ bu
 - Does NOT touch `crawley-schemas-2` (already shut down per peer's recap).
 - Does NOT modify `qa-c-verifier` or `docs-c` canonical prompts — they're gated downstream and read tags by name, not SHA.
 - Does NOT pre-resolve the round-trip test gap — that's a `crawley-schemas` resume deliverable, surfaced here so it doesn't get missed.
+
+---
+
+## Audit method correction (lesson — 2026-04-27 17:46 EDT)
+
+**Wrong method (used in initial draft of this handoff):** `git log --oneline wave-c/tc1-m345-schemas ^main -- 'apps/product-helper/lib/langchain/schemas/**'` — infers shipped state from commit-graph diff against main.
+
+**Why it failed:** the ^main filter excludes commits reachable via paths other than the direct main→branch ancestry. In this case, three commits (`a868930`, `2906454`, `56d0322`) reached `wave-c/tc1-m345-schemas` HEAD via the `wave-b/v2.1.1-hotfix` ancestry path, which the ^main filter dropped. The commits ARE in the branch's reachable history (verified via `git merge-base --is-ancestor`) but did not appear in the `^main` commit list. Result: 3 schemas wrongly marked "NOT SHIPPED" — including the EC-V21-C.2 matrix keystone.
+
+**Right method:** `git ls-tree -r <branch> -- '<path>'` — file presence at HEAD, language-of-the-tree authoritative regardless of which ancestral path delivered the file. Use this for "what's currently shipped" audits. Use `git log ^main` only for "what new commits would land on a merge to main" questions, and even then know that branch-merge ancestry can carry commits past the ^main filter.
+
+**Pin for future handoffs:** when asking "is X shipped?" the answer is `git ls-tree`, not `git log`. Memory entry: `feedback_audit_file_presence_not_commit_diff.md`.
 
 ---
 
