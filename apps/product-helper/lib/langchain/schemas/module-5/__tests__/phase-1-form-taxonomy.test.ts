@@ -1,6 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase1FormTaxonomySchema } from '../phase-1-form-taxonomy';
+import {
+  phase1FormTaxonomySchema,
+  type Phase1FormTaxonomy,
+} from '../phase-1-form-taxonomy';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 function fixture(): unknown {
   return {
@@ -66,5 +70,17 @@ describe('phase1FormTaxonomySchema (Crawley Ch 4)', () => {
     const bad = fixture() as { form_entities: Array<{ name: string }> };
     bad.form_entities[1].name = 'lowercase api';
     expect(() => phase1FormTaxonomySchema.parse(bad)).toThrow();
+  });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(phase1FormTaxonomySchema, 'Phase1FormTaxonomy') as {
+      description?: string;
+    };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: Phase1FormTaxonomy = phase1FormTaxonomySchema.parse(fixture());
+    expect(parsed._schema).toBe('module-5.phase-1-form-taxonomy.v1');
   });
 });
