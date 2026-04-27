@@ -117,6 +117,47 @@ export type {
   SynthesisStatus,
   ExpectedArtifactKind,
 } from './project-artifacts';
+
+// Wave C — Crawley artifact tables (REQUIREMENTS-crawley §6, EC-V21-C.3)
+export {
+  m5Phase1FormTaxonomy,
+  m5Phase2FunctionTaxonomy,
+  m5Phase3FormFunctionConcept,
+  m5Phase4SolutionNeutralConcept,
+  m5Phase5ConceptExpansion,
+  m3DecompositionPlane,
+  m4DecisionNetworkFoundations,
+  m4TradespaceParetoSensitivity,
+  m4OptimizationPatterns,
+  m2RequirementsCrawleyExtension,
+  CRAWLEY_TABLES,
+  CRAWLEY_PHASE_STATUSES,
+  DECOMPOSITION_PLANES,
+} from './crawley';
+export type {
+  CrawleyPhaseStatus,
+  DecompositionPlane,
+  M5Phase1FormTaxonomyRow,
+  NewM5Phase1FormTaxonomyRow,
+  M5Phase2FunctionTaxonomyRow,
+  NewM5Phase2FunctionTaxonomyRow,
+  M5Phase3FormFunctionConceptRow,
+  NewM5Phase3FormFunctionConceptRow,
+  M5Phase4SolutionNeutralConceptRow,
+  NewM5Phase4SolutionNeutralConceptRow,
+  M5Phase5ConceptExpansionRow,
+  NewM5Phase5ConceptExpansionRow,
+  M3DecompositionPlaneRow,
+  NewM3DecompositionPlaneRow,
+  M4DecisionNetworkFoundationsRow,
+  NewM4DecisionNetworkFoundationsRow,
+  M4TradespaceParetoSensitivityRow,
+  NewM4TradespaceParetoSensitivityRow,
+  M4OptimizationPatternsRow,
+  NewM4OptimizationPatternsRow,
+  M2RequirementsCrawleyExtensionRow,
+  NewM2RequirementsCrawleyExtensionRow,
+} from './crawley';
 export type {
   TracebackCitation,
   NewTracebackCitation,
