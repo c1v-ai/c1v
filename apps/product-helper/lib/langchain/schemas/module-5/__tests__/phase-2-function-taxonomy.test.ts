@@ -1,6 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase2FunctionTaxonomySchema } from '../phase-2-function-taxonomy';
+import {
+  phase2FunctionTaxonomySchema,
+  type Phase2FunctionTaxonomy,
+} from '../phase-2-function-taxonomy';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 function fixture(): unknown {
   return {
@@ -71,5 +75,18 @@ describe('phase2FunctionTaxonomySchema (Crawley Ch 5)', () => {
     };
     bad.po_array[1].cells.PRD = 'none';
     expect(() => phase2FunctionTaxonomySchema.parse(bad)).toThrow();
+  });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(
+      phase2FunctionTaxonomySchema,
+      'Phase2FunctionTaxonomy',
+    ) as { description?: string };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: Phase2FunctionTaxonomy = phase2FunctionTaxonomySchema.parse(fixture());
+    expect(parsed._schema).toBe('module-5.phase-2-function-taxonomy.v1');
   });
 });
