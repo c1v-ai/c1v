@@ -1,11 +1,11 @@
 # Team Spawn Prompts — v2.1.1 Hotfix (c1v MIT-Crawley-Cornell)
 
 > **Purpose:** Copy-paste-ready `TeamCreate` + `Agent` invocations for the v2.1.1 hotfix track. Closes P7 + P8 (production bugs) + P9 mitigation (verifier process gap) before v2.2 day-0 starts.
-> **Master plan:** [`plans/c1v-MIT-Crawley-Cornell.v2.1.md`](c1v-MIT-Crawley-Cornell.v2.1.md) — v2.1 SHIPPED 2026-04-26 but discovered functionally unshipped via P7. v2.1.1 closes the gap.
-> **Followups source:** [`plans/post-v2.1-followups.md`](post-v2.1-followups.md) — P7 (UI synthesize-trigger missing), P8 (`@dbml/core` default-import broken), P9 (verifier process gap).
+> **Master plan (closeout-flavored):** [`c1v-MIT-Crawley-Cornell.v2.1.1.md`](c1v-MIT-Crawley-Cornell.v2.1.1.md) — written post-verification 2026-04-27 with shipped commit SHAs + actual EC checkmarks. Predecessor: [`c1v-MIT-Crawley-Cornell.v2.1.md`](c1v-MIT-Crawley-Cornell.v2.1.md) (v2.1 SHIPPED 2026-04-26 but discovered functionally unshipped via P7).
+> **Followups source:** [`plans/post-v2.1-followups.md`](post-v2.1-followups.md) — P7 (UI synthesize-trigger missing), P8 (`@dbml/core` default-import broken), P9 (verifier process gap), P10 (Wave-A LangGraph completeness gap), P11 (schema-agent retry-flake).
 > **Created:** 2026-04-26
 > **Author:** Bond
-> **Status:** 📝 DRAFT — not yet dispatched. **BLOCKS v2.2 day-0** until shipped.
+> **Status:** ✅ SHIPPED 2026-04-27 — `v2.1.1-hotfix-complete` @ `102fce3`. v2.2 day-0 unblocked.
 > **Branch:** `wave-b/v2.1.1-hotfix` (new feature branch off `wave-b/tb1-docs` head; do NOT branch from main — the v2.1.1 docs are committed on the docs branch).
 
 ---
