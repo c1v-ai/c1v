@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "number",
+      "const": 5
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "function_id": {
+            "type": "string",
+            "pattern": "^F\\.\\d+(\\.\\d+)*$"
+          },
+          "operand": {
+            "type": "string",
+            "description": "The entity being acted upon (e.g., \"Draft Spec\", \"Metric Stream\")."
+          },
+          "process": {
+            "type": "string",
+            "description": "Verb-phrase for the action (e.g., \"generate\", \"trace\")."
+          },
+          "kb_ref": {
+            "type": "string",
+            "description": "Crawley KB chunk id supporting this operand/process pair."
+          }
+        },
+        "required": [
+          "function_id",
+          "operand",
+          "process"
+        ],
+        "additionalProperties": false,
+        "description": "One operand/process tuple anchored to a function."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "phase",
+    "entries"
+  ],
+  "additionalProperties": false,
+  "description": "Phase 5 — operand/process catalog (Crawley framing).",
+  "title": "Phase5OperandProcessCatalog",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

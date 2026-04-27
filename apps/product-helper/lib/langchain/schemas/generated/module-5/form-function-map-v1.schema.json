@@ -1,0 +1,500 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-5.form-function-map.v1"
+    },
+    "_output_path": {
+      "type": "string"
+    },
+    "_upstream_refs": {
+      "type": "object",
+      "properties": {
+        "ffbd": {
+          "type": "string"
+        },
+        "fmea_early": {
+          "type": "string"
+        },
+        "nfrs": {
+          "type": "string"
+        },
+        "constants": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ffbd",
+        "fmea_early",
+        "nfrs"
+      ],
+      "additionalProperties": false
+    },
+    "produced_at": {
+      "type": "string"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "system_name": {
+      "type": "string"
+    },
+    "phase_1_form_inventory": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "number",
+          "const": 1
+        },
+        "forms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^FR\\.\\d{2,}$",
+                "description": "FR.NN — stable form id."
+              },
+              "name": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "service",
+                  "library",
+                  "adapter",
+                  "store",
+                  "ui",
+                  "job",
+                  "external"
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "realizes_functions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "description": "F.NN ids this form realizes (validated referentially at top-level)."
+              },
+              "redundancy_source_fm": {
+                "type": "string",
+                "pattern": "^FM\\.\\d{2,}$",
+                "description": "FMEA id that requires this form as redundancy; absent on primary forms."
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "kind",
+              "description",
+              "realizes_functions"
+            ],
+            "additionalProperties": false,
+            "description": "A single candidate form element."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "phase",
+        "forms"
+      ],
+      "additionalProperties": false,
+      "description": "Phase 1 — form inventory (raw catalog)."
+    },
+    "phase_2_function_inventory": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "number",
+          "const": 2
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^F\\.\\d+(\\.\\d+)*$",
+                "description": "F.NN — must resolve in ffbd.v1."
+              },
+              "name": {
+                "type": "string"
+              },
+              "uncertainty": {
+                "type": "string",
+                "enum": [
+                  "green",
+                  "yellow",
+                  "red"
+                ],
+                "description": "Mirror of ffbd.v1 function uncertainty."
+              },
+              "source_uc": {
+                "type": "string",
+                "description": "Use-case ref from ffbd.v1 (if any)."
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "uncertainty"
+            ],
+            "additionalProperties": false,
+            "description": "Function lifted from ffbd.v1 for M5 scoping."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "phase",
+        "functions"
+      ],
+      "additionalProperties": false,
+      "description": "Phase 2 — function inventory (derived from ffbd.v1)."
+    },
+    "phase_3_concept_mapping_matrix": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "number",
+          "const": 3
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function_id": {
+                "type": "string",
+                "pattern": "^F\\.\\d+(\\.\\d+)*$"
+              },
+              "form_id": {
+                "type": "string",
+                "pattern": "^FR\\.\\d{2,}$"
+              },
+              "relation": {
+                "type": "string",
+                "enum": [
+                  "primary",
+                  "secondary",
+                  "fallback"
+                ],
+                "description": "primary=single fulfilling form, secondary=assisting, fallback=redundancy."
+              }
+            },
+            "required": [
+              "function_id",
+              "form_id",
+              "relation"
+            ],
+            "additionalProperties": false,
+            "description": "One bipartite-graph edge in the φ mapping."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "phase",
+        "cells"
+      ],
+      "additionalProperties": false,
+      "description": "Phase 3 — concept mapping matrix (topology only)."
+    },
+    "phase_4_concept_quality_scoring": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "number",
+          "const": 4
+        },
+        "scored_cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function_id": {
+                "type": "string",
+                "pattern": "^F\\.\\d+(\\.\\d+)*$"
+              },
+              "form_id": {
+                "type": "string",
+                "pattern": "^FR\\.\\d{2,}$"
+              },
+              "concept_quality": {
+                "type": "object",
+                "properties": {
+                  "specificity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "s ∈ [0,1] — how tightly this form realizes this function."
+                  },
+                  "coupling": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "k ∈ [0,1] — how much this form drags other forms with it."
+                  },
+                  "Q": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Q = s · (1 - k)."
+                  },
+                  "math_derivation_v2": {
+                    "type": "object",
+                    "properties": {
+                      "formula": {
+                        "type": "string",
+                        "const": "Q = specificity * (1 - coupling)"
+                      },
+                      "citations": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "source": {
+                              "type": "string",
+                              "enum": [
+                                "Stevens1974",
+                                "Bass2021"
+                              ]
+                            },
+                            "locator": {
+                              "type": "string",
+                              "description": "Chapter/section/page pointer within the cited work."
+                            },
+                            "formula_ref": {
+                              "type": "string",
+                              "description": "math-sources.md anchor, e.g. 'F11'."
+                            }
+                          },
+                          "required": [
+                            "source",
+                            "locator",
+                            "formula_ref"
+                          ],
+                          "additionalProperties": false,
+                          "description": "Citation for an architectural-quality primitive (specificity or coupling)."
+                        },
+                        "minItems": 2,
+                        "description": "≥1 Stevens1974 + ≥1 Bass2021; NOT Crawley."
+                      },
+                      "engine": {
+                        "type": "string",
+                        "const": "NFREngineInterpreter",
+                        "description": "Math routes through kb-runtime G1 NFREngineInterpreter."
+                      }
+                    },
+                    "required": [
+                      "formula",
+                      "citations",
+                      "engine"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "specificity",
+                  "coupling",
+                  "Q",
+                  "math_derivation_v2"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "function_id",
+              "form_id",
+              "concept_quality"
+            ],
+            "additionalProperties": false,
+            "description": "Phase-3 cell enriched with concept_quality triplet."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "phase",
+        "scored_cells"
+      ],
+      "additionalProperties": false,
+      "description": "Phase 4 — concept quality scoring (Stevens/Bass, NOT Crawley)."
+    },
+    "phase_5_operand_process_catalog": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "number",
+          "const": 5
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function_id": {
+                "type": "string",
+                "pattern": "^F\\.\\d+(\\.\\d+)*$"
+              },
+              "operand": {
+                "type": "string",
+                "description": "The entity being acted upon (e.g., \"Draft Spec\", \"Metric Stream\")."
+              },
+              "process": {
+                "type": "string",
+                "description": "Verb-phrase for the action (e.g., \"generate\", \"trace\")."
+              },
+              "kb_ref": {
+                "type": "string",
+                "description": "Crawley KB chunk id supporting this operand/process pair."
+              }
+            },
+            "required": [
+              "function_id",
+              "operand",
+              "process"
+            ],
+            "additionalProperties": false,
+            "description": "One operand/process tuple anchored to a function."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "phase",
+        "entries"
+      ],
+      "additionalProperties": false,
+      "description": "Phase 5 — operand/process catalog (Crawley framing)."
+    },
+    "phase_6_concept_alternatives": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "number",
+          "const": 6
+        },
+        "decompositions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function_id": {
+                "type": "string",
+                "pattern": "^F\\.\\d+(\\.\\d+)*$"
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "form_id": {
+                      "type": "string",
+                      "pattern": "^FR\\.\\d{2,}$"
+                    },
+                    "dominance_rationale": {
+                      "type": "string",
+                      "minLength": 10,
+                      "description": "Why this form is a contender (≥10 chars)."
+                    }
+                  },
+                  "required": [
+                    "form_id",
+                    "dominance_rationale"
+                  ],
+                  "additionalProperties": false,
+                  "description": "One alternative form with dominance rationale."
+                },
+                "minItems": 2
+              }
+            },
+            "required": [
+              "function_id",
+              "alternatives"
+            ],
+            "additionalProperties": false,
+            "description": "Decomposition of one function into ≥2 alternative forms."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "phase",
+        "decompositions"
+      ],
+      "additionalProperties": false,
+      "description": "Phase 6 — concept alternatives (≥2 per decomposition)."
+    },
+    "decision_audit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "description": "Stable id local to this artifact."
+          },
+          "phase": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7
+          },
+          "subject": {
+            "type": "string",
+            "description": "What the decision is about (e.g., \"FR.03 adoption for F.2\")."
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "kb_chunk_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "kb-runtime chunk ids citing Stevens/Bass; empty allowed for non-math rows."
+          }
+        },
+        "required": [
+          "decision_id",
+          "phase",
+          "subject",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "Decision-audit row."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_upstream_refs",
+    "produced_at",
+    "produced_by",
+    "system_name",
+    "phase_1_form_inventory",
+    "phase_2_function_inventory",
+    "phase_3_concept_mapping_matrix",
+    "phase_4_concept_quality_scoring",
+    "phase_5_operand_process_catalog",
+    "phase_6_concept_alternatives"
+  ],
+  "additionalProperties": false,
+  "title": "FormFunctionMapV1",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -43,6 +43,7 @@ import {
   phase12HandoffSchema,
   phase12FinalReviewSchema,
 } from './submodule-2-handoff';
+import { requirementsCrawleyExtensionSchema } from './requirements-crawley-extension';
 
 // Shared primitives + phase schemas (re-exported via submodule barrels)
 export * from './_shared';
@@ -50,6 +51,7 @@ export * from './submodule-2-1-intake';
 export * from './submodule-2-2-functional-reqs';
 export * from './submodule-2-3-nfrs-constants';
 export * from './submodule-2-handoff';
+export * from './requirements-crawley-extension';
 
 /**
  * Canonical registry consumed by `generate-all.ts` + the preload bundle.
@@ -61,7 +63,7 @@ export * from './submodule-2-handoff';
 export interface Module2PhaseEntry {
   slug: string;
   name: string;
-  phaseNumber: number;
+  phaseNumber: number | string;
   zodSchema: z.ZodType;
 }
 
@@ -80,4 +82,6 @@ export const MODULE_2_PHASE_SCHEMAS: readonly Module2PhaseEntry[] = [
   { slug: 'phase-11-multi-uc-expansion', name: 'Phase11MultiUcExpansion', phaseNumber: 11, zodSchema: phase11Schema },
   { slug: 'phase-12-ffbd-handoff', name: 'Phase12FfbdHandoff', phaseNumber: 12, zodSchema: phase12HandoffSchema },
   { slug: 'phase-12-final-review', name: 'Phase12FinalReview', phaseNumber: 12, zodSchema: phase12FinalReviewSchema },
+  // Crawley pack (TC1 — REQUIREMENTS-crawley §1 row 10)
+  { slug: 'requirements-crawley-extension', name: 'RequirementsCrawleyExtension', phaseNumber: 'crawley-extension', zodSchema: requirementsCrawleyExtensionSchema },
 ] as const;

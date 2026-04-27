@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "number",
+      "const": 3
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "function_id": {
+            "type": "string",
+            "pattern": "^F\\.\\d+(\\.\\d+)*$"
+          },
+          "form_id": {
+            "type": "string",
+            "pattern": "^FR\\.\\d{2,}$"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "secondary",
+              "fallback"
+            ],
+            "description": "primary=single fulfilling form, secondary=assisting, fallback=redundancy."
+          }
+        },
+        "required": [
+          "function_id",
+          "form_id",
+          "relation"
+        ],
+        "additionalProperties": false,
+        "description": "One bipartite-graph edge in the φ mapping."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "phase",
+    "cells"
+  ],
+  "additionalProperties": false,
+  "description": "Phase 3 — concept mapping matrix (topology only).",
+  "title": "Phase3ConceptMappingMatrix",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

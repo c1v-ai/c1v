@@ -61,12 +61,20 @@ import { phase17bSchema } from './phase-17b-sensitivity-analysis';
 import { phase19Schema } from './phase-19-empirical-prior-binding';
 import { phases11to13VectorScoresSchema } from './phases-11-13-vector-scores';
 
+// Crawley pack (TC1 — REQUIREMENTS-crawley §1 rows 7-9)
+import { decisionNetworkFoundationsSchema } from './decision-network-foundations';
+import { tradespaceParetoSensitivitySchema } from './tradespace-pareto-sensitivity';
+import { optimizationPatternsSchema } from './optimization-patterns';
+
 export * from './phase-14-decision-nodes';
 export * from './phase-15-decision-dependencies';
 export * from './phase-16-pareto-frontier';
 export * from './phase-17b-sensitivity-analysis';
 export * from './phase-19-empirical-prior-binding';
 export * from './phases-11-13-vector-scores';
+export * from './decision-network-foundations';
+export * from './tradespace-pareto-sensitivity';
+export * from './optimization-patterns';
 
 // M4-specific envelope + metadata (widened phase_number)
 export * from './_shared';
@@ -174,7 +182,7 @@ export {
 export interface Module4PhaseEntry {
   slug: string;
   name: string;
-  phaseNumber: number;
+  phaseNumber: number | string;
   zodSchema: z.ZodType;
 }
 
@@ -299,5 +307,24 @@ export const MODULE_4_PHASE_SCHEMAS: readonly Module4PhaseEntry[] = [
     name: 'Phases11To13VectorScores',
     phaseNumber: 13,
     zodSchema: phases11to13VectorScoresSchema,
+  },
+  // Crawley pack (TC1 — REQUIREMENTS-crawley §1 rows 7-9)
+  {
+    slug: 'decision-network-foundations',
+    name: 'DecisionNetworkFoundations',
+    phaseNumber: '1-crawley',
+    zodSchema: decisionNetworkFoundationsSchema,
+  },
+  {
+    slug: 'tradespace-pareto-sensitivity',
+    name: 'TradespaceParetoSensitivity',
+    phaseNumber: '2-crawley',
+    zodSchema: tradespaceParetoSensitivitySchema,
+  },
+  {
+    slug: 'optimization-patterns',
+    name: 'OptimizationPatterns',
+    phaseNumber: '3-crawley',
+    zodSchema: optimizationPatternsSchema,
   },
 ] as const;

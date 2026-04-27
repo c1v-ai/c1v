@@ -27,6 +27,9 @@ import { phase0aSchema } from './submodule-3-1-hierarchy';
 import { phase6Schema } from './submodule-3-2-flows-branching';
 import { phase11Schema } from './submodule-3-3-handoff';
 import { ffbdV1Schema } from './ffbd-v1';
+import { decompositionPlaneArtifactSchema } from './decomposition-plane';
+
+export * from './decomposition-plane';
 
 export {
   ffbdV1Schema,
@@ -121,5 +124,12 @@ export const MODULE_3_PHASE_SCHEMAS: readonly Module3PhaseEntry[] = [
     name: 'FfbdV1',
     phaseNumber: 'v1',
     zodSchema: ffbdV1Schema,
+  },
+  // Crawley pack (TC1 — REQUIREMENTS-crawley §1 row 6)
+  {
+    slug: 'decomposition-plane',
+    name: 'DecompositionPlaneArtifact',
+    phaseNumber: 'crawley-supplement',
+    zodSchema: decompositionPlaneArtifactSchema,
   },
 ] as const;

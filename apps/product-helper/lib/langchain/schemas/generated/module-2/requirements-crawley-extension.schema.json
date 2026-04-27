@@ -1,0 +1,568 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-2.requirements-crawley-extension.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "beneficiaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "beneficiary_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "value_proposition": {
+            "type": "string"
+          },
+          "is_charitable": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "beneficiary_id",
+          "label",
+          "value_proposition"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Crawley Extension > Beneficiaries — direct or charitable beneficiary."
+      },
+      "minItems": 1
+    },
+    "stakeholders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stakeholder_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "beneficiary",
+              "charitable_beneficiary",
+              "problem_stakeholder",
+              "opponent"
+            ],
+            "description": "x-ui-surface=section:Crawley Extension > Stakeholders — Crawley Box 11.1 four-category cross-enum."
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "beneficiary_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stakeholder_id",
+          "label",
+          "category",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Crawley Extension > Stakeholders — one stakeholder w/ category cross-enum."
+      },
+      "minItems": 1
+    },
+    "needs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "need_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "stakeholder_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "kano": {
+            "type": "string",
+            "enum": [
+              "must_have",
+              "performance",
+              "delighter"
+            ],
+            "description": "x-ui-surface=section:Crawley Extension > Kano — Crawley §11.3 Kano categories."
+          },
+          "sn_triad": {
+            "type": "object",
+            "properties": {
+              "operand": {
+                "type": "string"
+              },
+              "attribute": {
+                "type": "string"
+              },
+              "process": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "operand",
+              "attribute",
+              "process"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Crawley Extension > SN Triad — Crawley §11.4 (operand, attribute, process)."
+          },
+          "expressed": {
+            "type": "boolean"
+          },
+          "latent": {
+            "type": "boolean"
+          },
+          "raw_quote": {
+            "type": "string"
+          },
+          "interpreted": {
+            "type": "boolean"
+          },
+          "prioritized": {
+            "type": "boolean",
+            "default": false
+          },
+          "dimensions_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          }
+        },
+        "required": [
+          "need_id",
+          "label",
+          "stakeholder_ids",
+          "kano",
+          "sn_triad",
+          "expressed",
+          "latent",
+          "interpreted",
+          "dimensions_count"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Crawley Extension > Needs — 6-dimension + Kano + SN-triad need record."
+      },
+      "minItems": 1
+    },
+    "value_flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "flow_id": {
+            "type": "string"
+          },
+          "from_stakeholder_id": {
+            "type": "string"
+          },
+          "to_stakeholder_id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "mass",
+              "energy",
+              "information",
+              "value",
+              "control",
+              "service"
+            ],
+            "description": "x-ui-surface=section:Crawley Extension > Value Flow — Crawley Ch 11 six flow kinds."
+          },
+          "description": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "flow_id",
+          "from_stakeholder_id",
+          "to_stakeholder_id",
+          "kind",
+          "description",
+          "weight"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Crawley Extension > Value Flows — directed flow between stakeholders."
+      },
+      "default": []
+    },
+    "value_loops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "loop_id": {
+            "type": "string"
+          },
+          "flow_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2
+          },
+          "cameron_metric": {
+            "type": "number"
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loop_id",
+          "flow_ids",
+          "cameron_metric",
+          "closed",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Crawley Extension > Value Loops — Cameron multiplicative-weight metric."
+      },
+      "default": []
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "goal_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "addresses_need",
+                    "achievable_with_budget",
+                    "measurable",
+                    "tradable_under_constraint",
+                    "agreed_among_stakeholders"
+                  ],
+                  "description": "x-ui-surface=section:Crawley Extension > Goal Criteria — Crawley Box 11.4 five required keys."
+                },
+                "satisfied": {
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "satisfied",
+                "evidence"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Crawley Extension > Goal Criteria — one of five required boolean checks."
+            },
+            "minItems": 5,
+            "maxItems": 5
+          },
+          "tradable": {
+            "type": "boolean"
+          },
+          "overspecification_check": {
+            "type": "boolean"
+          },
+          "inconsistent_with": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "required": [
+          "goal_id",
+          "label",
+          "statement",
+          "criteria",
+          "tradable",
+          "overspecification_check"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Crawley Extension > Goals — Crawley Box 11.4 5-criteria goal."
+      },
+      "minItems": 1
+    },
+    "problem_statement": {
+      "type": "object",
+      "properties": {
+        "statement": {
+          "type": "string",
+          "minLength": 20
+        },
+        "f16_numeric_grounding": {
+          "type": "boolean"
+        },
+        "numeric_anchors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "statement",
+        "f16_numeric_grounding",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Crawley Extension > Problem Statement — Crawley F-16 numeric-grounding check."
+    },
+    "crawley_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "beneficiaries",
+    "stakeholders",
+    "needs",
+    "goals",
+    "problem_statement"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M2 Requirements Crawley Extension per Crawley Ch 11.",
+  "title": "RequirementsCrawleyExtension",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

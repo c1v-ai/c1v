@@ -1,0 +1,79 @@
+{
+  "type": "object",
+  "properties": {
+    "formula": {
+      "type": "string",
+      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": {},
+      "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+    },
+    "kb_source": {
+      "type": "string",
+      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+    },
+    "kb_section": {
+      "type": "string",
+      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+    },
+    "result": {
+      "type": [
+        "number",
+        "string"
+      ],
+      "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+    },
+    "result_kind": {
+      "type": "string",
+      "const": "matrix"
+    },
+    "result_matrix": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": [
+            "number",
+            "string"
+          ]
+        }
+      }
+    },
+    "result_shape": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "result_is_square": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "formula",
+    "kb_source",
+    "result_kind",
+    "result_matrix",
+    "result_shape",
+    "result_is_square"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation).",
+  "title": "MathDerivationMatrix",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,745 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-4.decision-network-foundations.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string"
+          },
+          "short_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variable_type": {
+            "type": "string",
+            "enum": [
+              "categorical",
+              "discrete",
+              "continuous"
+            ],
+            "description": "x-ui-surface=section:Decision Network > Decisions — Crawley Box 14.1 variable type. Categorical default."
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "alternative_id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "source_concept_id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "alternative_id",
+                "label",
+                "description"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 2
+          },
+          "simon_phase": {
+            "type": "string",
+            "enum": [
+              "intelligence",
+              "design",
+              "choice",
+              "review"
+            ],
+            "description": "x-ui-surface=section:Decision Network > Simon Phase — Crawley §14.3 four-phase process."
+          },
+          "programmed": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "decision_id",
+          "short_id",
+          "name",
+          "variable_type",
+          "alternatives",
+          "simon_phase"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Decision Network > Decisions — one architectural decision (Apollo 9 convention)."
+      },
+      "minItems": 1
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "logical"
+              },
+              "constraint_id": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "forbidden_combination": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "kind",
+              "constraint_id",
+              "scope",
+              "forbidden_combination"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "reasonableness"
+              },
+              "constraint_id": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "penalty": {
+                "type": "number"
+              },
+              "rationale": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "constraint_id",
+              "scope",
+              "penalty",
+              "rationale"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "metric_coupling"
+              },
+              "constraint_id": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "coupled_metric": {
+                "type": "string"
+              },
+              "equation_ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "constraint_id",
+              "scope",
+              "coupled_metric",
+              "equation_ref"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "default": []
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metric_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "computation_kind": {
+            "type": "string",
+            "enum": [
+              "additive",
+              "multiplicative",
+              "lookup",
+              "equation"
+            ],
+            "description": "x-ui-surface=section:Decision Network > Metrics — Crawley Table 14.2 computation kinds."
+          },
+          "equation_ref": {
+            "type": "object",
+            "properties": {
+              "formula": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                "default": {},
+                "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+              },
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+              },
+              "kb_section": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+              },
+              "result": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+              }
+            },
+            "required": [
+              "formula",
+              "kb_source"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation)."
+          },
+          "lookup_table_ref": {
+            "type": "string"
+          },
+          "higher_is_better": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "metric_id",
+          "name",
+          "unit",
+          "computation_kind",
+          "higher_is_better"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Decision Network > Metrics — one architecture-level metric."
+      },
+      "minItems": 1
+    },
+    "decision_dsm": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cells": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "connection_kind": {
+                  "type": "string",
+                  "enum": [
+                    "logical",
+                    "reasonableness",
+                    "metric_coupling",
+                    "none"
+                  ]
+                },
+                "constraint_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                }
+              },
+              "required": [
+                "connection_kind"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "partitioned_blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "block_id": {
+                "type": "string"
+              },
+              "decisions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "decide_simultaneously": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "block_id",
+              "decisions",
+              "decide_simultaneously"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "rows",
+        "cells"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Decision Network > DSM — Crawley Tables 14.3–14.5 decision-decision coupling matrix."
+    },
+    "decision_network": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "node_id": {
+                "type": "string"
+              },
+              "node_kind": {
+                "type": "string",
+                "enum": [
+                  "decision",
+                  "chance",
+                  "leaf"
+                ],
+                "description": "x-ui-surface=section:Decision Network > Node Kind — Crawley §14.5 node types."
+              },
+              "decision_id": {
+                "type": "string"
+              },
+              "probability_dist": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "architecture_selection": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "node_id",
+              "node_kind"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "edge_id": {
+                "type": "string"
+              },
+              "from_node": {
+                "type": "string"
+              },
+              "to_node": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "edge_id",
+              "from_node",
+              "to_node"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "topology_kind": {
+          "type": "string",
+          "enum": [
+            "tree",
+            "dag",
+            "general_graph"
+          ],
+          "description": "x-ui-surface=section:Decision Network > Topology — Crawley line 6889 \"arbitrary topologies\"."
+        }
+      },
+      "required": [
+        "nodes",
+        "topology_kind"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Decision Network > Topology — the decision network data shape (NOT an engine)."
+    },
+    "dss_task_coverage": {
+      "type": "object",
+      "properties": {
+        "representing": {
+          "type": "object",
+          "properties": {
+            "covered": {
+              "type": "boolean"
+            },
+            "artifact_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "required": [
+            "covered"
+          ],
+          "additionalProperties": false
+        },
+        "structuring": {
+          "type": "object",
+          "properties": {
+            "covered": {
+              "type": "boolean"
+            },
+            "artifact_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "required": [
+            "covered"
+          ],
+          "additionalProperties": false
+        },
+        "simulating": {
+          "type": "object",
+          "properties": {
+            "covered": {
+              "type": "boolean"
+            },
+            "artifact_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "required": [
+            "covered"
+          ],
+          "additionalProperties": false
+        },
+        "viewing": {
+          "type": "object",
+          "properties": {
+            "covered": {
+              "type": "boolean"
+            },
+            "artifact_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "required": [
+            "covered"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "representing",
+        "structuring",
+        "simulating",
+        "viewing"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Decision Network > DSS Coverage — Crawley §14.4 task completeness."
+    },
+    "crawley_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "decisions",
+    "metrics",
+    "decision_dsm",
+    "decision_network",
+    "dss_task_coverage"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M4 Phase 1: decision network foundations per Crawley Ch 14.",
+  "title": "DecisionNetworkFoundations",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

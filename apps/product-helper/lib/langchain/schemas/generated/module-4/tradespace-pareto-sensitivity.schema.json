@@ -1,0 +1,686 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-4.tradespace-pareto-sensitivity.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "architectures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "architecture_id": {
+            "type": "string"
+          },
+          "decision_selections": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "metric_values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "feasible": {
+            "type": "boolean"
+          },
+          "pareto_rank": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dominance": {
+            "type": "string",
+            "enum": [
+              "dominated",
+              "non_dominated",
+              "weakly_dominated"
+            ],
+            "description": "x-ui-surface=section:Tradespace > Pareto — Crawley §15.2 Pareto dominance kinds."
+          }
+        },
+        "required": [
+          "architecture_id",
+          "decision_selections",
+          "metric_values",
+          "feasible",
+          "pareto_rank",
+          "dominance"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Tradespace > Architecture — one evaluated point in tradespace."
+      },
+      "minItems": 1
+    },
+    "pareto_analysis": {
+      "type": "object",
+      "properties": {
+        "visible_metric_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "non_dominated_architecture_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "dominated_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "feasible_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "visible_metric_ids",
+        "dominated_count",
+        "feasible_count"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Tradespace > Pareto — Pareto analysis result (≥ 2 visible metrics)."
+    },
+    "fuzzy_pareto": {
+      "type": "object",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "rank_cutoff",
+            "euclidean_threshold"
+          ],
+          "description": "x-ui-surface=section:Tradespace > Fuzzy Pareto — Crawley §15.4 fuzzy strategy choice."
+        },
+        "rank_cutoff": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "euclidean_threshold": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "additional_architecture_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "strategy"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Tradespace > Fuzzy Pareto — robustness via rank cutoff OR distance."
+    },
+    "frontier_mining": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string"
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "driver",
+              "passenger",
+              "fellow_traveler",
+              "opposed"
+            ],
+            "description": "x-ui-surface=section:Tradespace > Frontier Mining — Crawley Table 15.2 four-class."
+          },
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id",
+          "classification",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Tradespace > Frontier Mining — per-decision classification."
+      },
+      "default": []
+    },
+    "tradespace_structure": {
+      "type": "object",
+      "properties": {
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cluster_id": {
+                "type": "string"
+              },
+              "architecture_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "centroid_metric_values": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "cluster_id",
+              "architecture_ids",
+              "centroid_metric_values"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "strata": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stratum_id": {
+                "type": "string"
+              },
+              "dimension": {
+                "type": "string"
+              },
+              "architecture_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "stratum_id",
+              "dimension",
+              "architecture_ids"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "holes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hole_id": {
+                "type": "string"
+              },
+              "metric_region": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "rationale": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "hole_id",
+              "metric_region",
+              "rationale"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Tradespace > Structure — Crawley Fig 15.5 clusters/strata/holes."
+    },
+    "sensitivity_analysis": {
+      "type": "object",
+      "properties": {
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "scenario_id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "sampling": {
+                "type": "string",
+                "enum": [
+                  "full_factorial",
+                  "fractional_factorial",
+                  "lhs",
+                  "monte_carlo"
+                ],
+                "description": "x-ui-surface=section:Tradespace > Sampling — Crawley §15.3 DOE sampling strategies."
+              },
+              "sample_count": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "scenario_id",
+              "label",
+              "sampling",
+              "sample_count",
+              "description"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Tradespace > Sensitivity Scenarios — Crawley Box 15.2 scenario record."
+          },
+          "minItems": 3
+        },
+        "per_decision_sensitivity": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "decision_id": {
+                "type": "string"
+              },
+              "metric_id": {
+                "type": "string"
+              },
+              "main_effect": {
+                "type": "number"
+              },
+              "region": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "moderate",
+                  "high"
+                ],
+                "description": "x-ui-surface=section:Tradespace > Sensitivity — Crawley Box 15.3 sensitivity regions."
+              },
+              "derivation": {
+                "type": "object",
+                "properties": {
+                  "formula": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "number",
+                        "string"
+                      ]
+                    },
+                    "default": {},
+                    "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+                  },
+                  "kb_source": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+                  },
+                  "kb_section": {
+                    "type": "string",
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+                  },
+                  "result": {
+                    "type": [
+                      "number",
+                      "string"
+                    ],
+                    "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+                  }
+                },
+                "required": [
+                  "formula",
+                  "kb_source"
+                ],
+                "additionalProperties": false,
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation)."
+              }
+            },
+            "required": [
+              "decision_id",
+              "metric_id",
+              "main_effect",
+              "region",
+              "derivation"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Tradespace > Sensitivity — per-(decision, metric) main effect."
+          },
+          "minItems": 1
+        },
+        "robustness_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "scenarios",
+        "per_decision_sensitivity",
+        "robustness_score"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Tradespace > Sensitivity — Crawley §15.5 sensitivity analysis."
+    },
+    "decision_organization": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string"
+          },
+          "impact_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "sensitivity_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "quadrant": {
+            "type": "string",
+            "enum": [
+              "q1_high_impact_high_sensitivity",
+              "q2_high_impact_low_sensitivity",
+              "q3_low_impact_high_sensitivity",
+              "q4_low_impact_low_sensitivity"
+            ],
+            "description": "x-ui-surface=section:Tradespace > Decision Organization — Crawley Fig 15.6 four-quadrant."
+          }
+        },
+        "required": [
+          "decision_id",
+          "impact_score",
+          "sensitivity_score",
+          "quadrant"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Tradespace > Decision Organization — quadrant assignment per decision."
+      },
+      "default": []
+    },
+    "refactor_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "suggestion_id": {
+            "type": "string"
+          },
+          "target_decision_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "expected_impact": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "suggestion_id",
+          "target_decision_ids",
+          "rationale",
+          "expected_impact"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Tradespace > Refactor — Crawley line 7521 refactor suggestion."
+      },
+      "default": []
+    },
+    "crawley_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "architectures",
+    "pareto_analysis",
+    "tradespace_structure",
+    "sensitivity_analysis"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M4 Phase 2: tradespace + Pareto + sensitivity per Crawley Ch 15.",
+  "title": "TradespaceParetoSensitivity",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
