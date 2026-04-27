@@ -102,4 +102,17 @@ describe('phase4SolutionNeutralConceptSchema (Crawley Ch 7)', () => {
     bad.concept_of_operations.good_or_service = 'service';
     expect(() => phase4SolutionNeutralConceptSchema.parse(bad)).toThrow();
   });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(
+      phase4SolutionNeutralConceptSchema,
+      'Phase4SolutionNeutralConcept',
+    ) as { description?: string };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: Phase4SolutionNeutralConcept = phase4SolutionNeutralConceptSchema.parse(fixture());
+    expect(parsed._schema).toBe('module-5.phase-4-solution-neutral-concept.v1');
+  });
 });

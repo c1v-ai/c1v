@@ -1,6 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase5ConceptExpansionSchema } from '../phase-5-concept-expansion';
+import {
+  phase5ConceptExpansionSchema,
+  type Phase5ConceptExpansion,
+} from '../phase-5-concept-expansion';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 function fixture(): unknown {
   const synthesis_question_coverage = Array.from({ length: 20 }, (_, i) => ({
@@ -86,5 +90,18 @@ describe('phase5ConceptExpansionSchema (Crawley Ch 8)', () => {
     };
     bad.synthesis_question_coverage[5].awaiting_input = true;
     expect(() => phase5ConceptExpansionSchema.parse(bad)).toThrow();
+  });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(
+      phase5ConceptExpansionSchema,
+      'Phase5ConceptExpansion',
+    ) as { description?: string };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: Phase5ConceptExpansion = phase5ConceptExpansionSchema.parse(fixture());
+    expect(parsed._schema).toBe('module-5.phase-5-concept-expansion.v1');
   });
 });
