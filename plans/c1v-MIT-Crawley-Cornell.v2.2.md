@@ -157,6 +157,8 @@ v2.2 ships when:
 - Post-v2.1 follow-ups: [`post-v2.1-followups.md`](post-v2.1-followups.md)
 - KB runtime architecture source: [`kb-runtime-architecture.md`](kb-runtime-architecture.md)
 - Crawley requirements: [`crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md`](crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md)
+- **Methodology Rosetta (Cornell ↔ Three-Pass ↔ Crawley ↔ disk modules):** [`methodology-rosetta.md`](methodology-rosetta.md)
+- Methodology canonical (three-pass argument): [`../system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md`](../system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md)
 - v2 shipped: [`v21-outputs/release/v2.1-shipped.md`](v21-outputs/release/v2.1-shipped.md)
 - Wave-4 v2 backlog (separate track): [`post-v2-followups.md`](post-v2-followups.md)
 - Release notes: [`v2-release-notes.md`](v2-release-notes.md)
