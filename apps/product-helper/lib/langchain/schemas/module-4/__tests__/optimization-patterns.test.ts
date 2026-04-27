@@ -3,8 +3,10 @@ import {
   optimizationPatternsSchema,
   subProblemSchema,
   valueFunctionSchema,
+  type OptimizationPatterns,
 } from '../optimization-patterns';
 import { envelope, roundTrip } from '../../__tests__/crawley-fixtures';
+import { zodToStrictJsonSchema } from '../../zod-to-json';
 
 function fixture(): unknown {
   return {
@@ -115,5 +117,18 @@ describe('optimizationPatternsSchema', () => {
     };
     bad.composition.sub_problem_ids = ['SP.01', 'SP.99'];
     expect(() => optimizationPatternsSchema.parse(bad)).toThrow();
+  });
+
+  it('describe() metadata uses x-ui-surface= prefix', () => {
+    const json = zodToStrictJsonSchema(
+      optimizationPatternsSchema,
+      'OptimizationPatterns',
+    ) as { description?: string };
+    expect(json.description).toMatch(/^x-ui-surface=/);
+  });
+
+  it('type narrowing works through the inferred type', () => {
+    const parsed: OptimizationPatterns = optimizationPatternsSchema.parse(fixture());
+    expect(parsed._schema).toBe('module-4.optimization-patterns.v1');
   });
 });
