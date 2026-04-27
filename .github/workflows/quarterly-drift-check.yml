@@ -1,0 +1,75 @@
+name: quarterly-drift-check
+
+# EC-V21-C.6: schema-drift detector for v2 system-design agents.
+# Runs on Jan 1 / Apr 1 / Jul 1 / Oct 1 at 00:00 UTC.
+
+on:
+  schedule:
+    - cron: '0 0 1 */3 *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/product-helper
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: install
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: run drift check
+        id: drift
+        env:
+          POSTGRES_URL: stub
+          AUTH_SECRET: stubstubstubstubstubstubstubstubstub
+          ANTHROPIC_API_KEY: sk-ant-stub
+          STRIPE_SECRET_KEY: sk_test_stub
+          STRIPE_WEBHOOK_SECRET: whsec_stub
+          OPENROUTER_API_KEY: stub
+          BASE_URL: http://localhost:3000
+        run: |
+          set +e
+          pnpm tsx scripts/quarterly-drift-check.ts --out=drift-report.md
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: apps/product-helper/drift-report.md
+
+      - name: open issue on drift
+        if: steps.drift.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('apps/product-helper/drift-report.md', 'utf8');
+            const today = new Date().toISOString().slice(0, 10);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[drift-check] schema drift detected ${today}`,
+              body: `@team-c1v drift detected by quarterly schema-drift check.\n\n${body}`,
+              labels: ['drift-check', 'wave-c'],
+            });
