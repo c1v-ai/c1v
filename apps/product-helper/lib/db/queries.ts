@@ -14,6 +14,35 @@ import { resolvePlanTier, PLAN_LIMITS } from '@/lib/constants';
 // re-export once this module is the source of truth.
 export type { ProjectArtifactRow, SynthesisStatus } from './schema/project-artifacts';
 
+// Wave C — Crawley artifact query helpers (REQUIREMENTS-crawley §6).
+// Re-exported here so callers have a single canonical entry point.
+export {
+  getCrawleyM5FormTaxonomy,
+  upsertCrawleyM5FormTaxonomy,
+  getCrawleyM5FunctionTaxonomy,
+  upsertCrawleyM5FunctionTaxonomy,
+  getCrawleyM5FormFunctionConcept,
+  upsertCrawleyM5FormFunctionConcept,
+  getCrawleyM5SolutionNeutralConcept,
+  upsertCrawleyM5SolutionNeutralConcept,
+  getCrawleyM5ConceptExpansion,
+  upsertCrawleyM5ConceptExpansion,
+  getCrawleyM3DecompositionPlane,
+  upsertCrawleyM3DecompositionPlane,
+  getCrawleyM4DecisionNetwork,
+  upsertCrawleyM4DecisionNetwork,
+  getCrawleyM4Tradespace,
+  upsertCrawleyM4Tradespace,
+  getCrawleyM4Optimization,
+  upsertCrawleyM4Optimization,
+  getCrawleyM2RequirementsExtension,
+  upsertCrawleyM2RequirementsExtension,
+} from './crawley-queries';
+export type {
+  CrawleyUpsertPayload,
+  CrawleyM3UpsertPayload,
+} from './crawley-queries';
+
 export async function getUser() {
   const sessionCookie = (await cookies()).get('session');
   if (!sessionCookie || !sessionCookie.value) {
