@@ -2,9 +2,12 @@
  * Module 2 — Requirements Crawley Extension (Crawley Ch 11).
  *
  * @module lib/langchain/schemas/module-2/requirements-crawley-extension
+ * @source REQUIREMENTS-crawley §3 (M2 supplements; curator decision: NEW table, not column-extension)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/2-requirements/05-crawley/crawley-ch11-needs-to-goals.md
  * @since 2026-04-27
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Extends v2.1's NFR/constants table with Crawley needs-to-goals discipline
  * fields: stakeholder cross-enum, Kano category, value flows + value loops
@@ -190,6 +193,20 @@ export const problemStatementSchema = z
   );
 export type ProblemStatement = z.infer<typeof problemStatementSchema>;
 
+/**
+ * M2 Requirements Crawley extension envelope (Crawley Ch 11). Top-level shape:
+ * - `_schema`: literal `module-2.requirements-crawley-extension.v1`.
+ * - `beneficiaries`: ≥ 1 Crawley Box 11.1 four-category beneficiaries.
+ * - `stakeholders`: ≥ 1 stakeholders cross-enumed against the four categories.
+ * - `needs`: ≥ 1 needs (Kano-classified — must_have | performance | delighter).
+ * - `value_flows`: Crawley Ch 11 value flows (mass / energy / information / value / control / service).
+ * - `value_loops`: Cameron multiplicative-weight value loops.
+ * - `goals`: ≥ 1 goals; each carries 5 criteria (Crawley Box 11.4 — must ALL be true on `_phase_status='complete'`, enforced via superRefine).
+ * - `problem_statement`: F-16 numeric-grounding check (≥ 1 quantified bound).
+ * - `crawley_refs`: source-of-truth provenance.
+ *
+ * NOTE: ZERO modifications to `module-2/_shared.ts` — all Crawley-discipline enums are phase-local per REQUIREMENTS-crawley §1 curator rule.
+ */
 export const requirementsCrawleyExtensionSchema = phaseEnvelopeSchema
   .extend({
     _schema: z.literal('module-2.requirements-crawley-extension.v1'),

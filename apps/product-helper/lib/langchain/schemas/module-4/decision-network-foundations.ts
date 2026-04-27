@@ -2,9 +2,12 @@
  * Module 4 — Decision Network Foundations (Crawley Ch 14).
  *
  * @module lib/langchain/schemas/module-4/decision-network-foundations
+ * @source REQUIREMENTS-crawley §3 (M4 supplements)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/4-decision-net-crawley-on-cornell/01-phase-docs/crawley/01-Decision-Network-Foundations.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). `decision-net-agent.ts` currently emits the v2 `decision_network.v1` shape; this Crawley-discipline supplement layers in DSS task coverage + 3-way constraint discriminated union. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Crawley DSS foundations: decisions (categorical default per Box 14.1),
  * 3-way constraint discriminated union (§14.5), metrics with computation kinds,

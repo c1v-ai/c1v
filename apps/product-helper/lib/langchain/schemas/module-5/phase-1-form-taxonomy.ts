@@ -2,9 +2,12 @@
  * Module 5 Phase 1 — Form Taxonomy (Crawley Ch 4).
  *
  * @module lib/langchain/schemas/module-5/phase-1-form-taxonomy
+ * @source REQUIREMENTS-crawley §2 (M5 phase artifacts)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/5-form-function/01-phase-docs/01-Phase-1-Form-Taxonomy.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). `form-function-agent.ts` currently emits the c1v-scoped `phase-1-form-inventory.v1` shape. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * NEW Crawley schema. Coexists with phase-1-form-inventory.ts (the c1v-scoped
  * Concept-stage shape). Crawley taxonomy carries OPM entities, formal

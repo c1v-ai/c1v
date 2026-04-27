@@ -2,9 +2,12 @@
  * Module 4 — Optimization Patterns (Crawley Ch 16).
  *
  * @module lib/langchain/schemas/module-4/optimization-patterns
+ * @source REQUIREMENTS-crawley §3 (M4 supplements)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/4-decision-net-crawley-on-cornell/01-phase-docs/crawley/03-Optimization-Patterns.md
  * @since 2026-04-27
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Six optimization Patterns (DOWN_SELECTING, ASSIGNING, etc.), per-Pattern
  * sub-problems, NEOSS-style composition operator for multi-subproblem cases,
@@ -196,6 +199,16 @@ export const architectTaskAssignmentSchema = z
   );
 export type ArchitectTaskAssignment = z.infer<typeof architectTaskAssignmentSchema>;
 
+/**
+ * M4 Phase-3 envelope (Crawley Ch 16). Top-level shape:
+ * - `_schema`: literal `module-4.optimization-patterns.v1`.
+ * - `architect_task_assignments`: Crawley Table 16.1 architect-task assignment rows.
+ * - `sub_problems`: ≥ 1 per-Pattern sub-problems (one of six Patterns: DOWN_SELECTING, ASSIGNING, PARTITIONING, PERMUTING, CONNECTING, STANDARDS_DEFINITION).
+ * - `composition`: NEOSS-style operator; required when `sub_problems.length > 1` (enforced via superRefine).
+ * - `value_function` / `constraint_hardness` / `solver`: solver-config triad.
+ * - `non_dominated_architecture_ids`: refs into Phase-2 architectures.
+ * - `crawley_refs`: source-of-truth provenance.
+ */
 export const optimizationPatternsSchema = phaseEnvelopeSchema
   .extend({
     _schema: z.literal('module-4.optimization-patterns.v1'),

@@ -97,10 +97,24 @@ export function hashInput(input: EvalExample['input']): string {
     .slice(0, 16);
 }
 
+/**
+ * True iff `LANGCHAIN_API_KEY` is set. When false, `recordResult` becomes a
+ * no-op and the harness is fully offline — safe for local + CI runs.
+ */
 export function hasLangSmith(): boolean {
   return Boolean(process.env.LANGCHAIN_API_KEY);
 }
 
+/**
+ * Read the JSONL graded-example dataset for a v2 agent. Returns `[]` when the
+ * file is missing (so a not-yet-curated agent doesn't blow up the harness).
+ *
+ * @example
+ *   const examples = await getDataset('decision-net');
+ *   // → 30 EvalExample rows from `lib/eval/datasets/decision-net.jsonl`
+ *
+ * @throws when a JSONL line is unparseable (with line number).
+ */
 export async function getDataset(agent: AgentName): Promise<EvalExample[]> {
   const path = join(DATASETS_DIR, `${agent}.jsonl`);
   if (!existsSync(path)) return [];
@@ -131,6 +145,18 @@ export interface AgentRunner {
   (input: EvalExample['input']): Promise<Record<string, unknown>>;
 }
 
+/**
+ * Execute `runner` against every dataset row for `agent`, score outputs via
+ * shape-equality + `_schema` literal matching, and return one `EvalResult`
+ * per example. Does NOT post to LangSmith — call `recordResult` per row to
+ * publish (which itself is a no-op when `LANGCHAIN_API_KEY` is unset).
+ *
+ * @example
+ *   const results = await runEval('decision-net', async (input) => callAgent(input));
+ *   const summary = summarizeResults(results); // → { total, passed, by_grade }
+ *
+ * Project: `c1v-v2-eval` (LangSmith). 30 examples per agent × 10 agents = 300 graded.
+ */
 export async function runEval(
   agent: AgentName,
   runner: AgentRunner,
@@ -209,6 +235,16 @@ function describeGrade(
   return 'partial: shape matches but content drifts';
 }
 
+/**
+ * Post a single eval row to the LangSmith `c1v-v2-eval` project. When
+ * `LANGCHAIN_API_KEY` is absent, returns `{posted: false, reason}` without
+ * hitting the network — safe for offline / fixture-replay runs.
+ *
+ * Endpoint: `https://api.smith.langchain.com/runs`. Auth: `x-api-key` header.
+ *
+ * @returns `{posted: true}` on 2xx, `{posted: false, reason}` on missing key,
+ *          non-2xx response, or thrown network error.
+ */
 export async function recordResult(
   agent: AgentName,
   example: EvalExample,

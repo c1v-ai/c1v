@@ -298,3 +298,59 @@ v2.1 cleared its ship-gate (`tb1-wave-b-complete` @ `e56d37f`) on 2026-04-26 —
 - **P6:** Prompt-caching not propagating through `bindTools()`; cost lever investigation.
 
 **v2.2 day-0 UNBLOCKED.** Wave C (Crawley typed schemas + eval harness + methodology page) and Wave E (KB runtime architecture rewrite) can dispatch against a working synthesis click-through.
+
+---
+
+## Wave C — Crawley schema closeout (v2.2 Wave 1, 2026-04-27)
+
+**Tag:** `tc1-wave-c-complete` @ `f5992639`
+**Branch:** `wave-c/tc1-m345-schemas`
+**Verifier:** 8/8 ECs PASS (7 ECs + smoke). Evidence: `plans/v22-outputs/tc1/verification-report.md`.
+**Hard-dep:** `tc1-preflight-complete` @ `3e2abdf` (namespace-resolver preflight, EC-V21-C.0).
+
+### What shipped — TC1 (5 agents, 1 verifier)
+
+| EC | Agent | Subagent type | Producer SHA | Deliverable |
+|---|---|---|---|---|
+| C.0 | `namespace-resolver` | langchain-engineer | `3e2abdf` | Preflight: namespace map for new Crawley schemas; folder/file pre-existence audit. |
+| C.1 + C.2 | `crawley-schemas` | langchain-engineer | (multiple, see `schemas-shipped.md`) | 11 Zod schemas: 10 phase artifacts + 1 matrix keystone (`mathDerivationMatrixSchema` at `module-5/_matrix.ts`, M5-local Option Y). 12 test suites (~80+ tests, all green). |
+| C.3 | `crawley-migrations` | database-engineer | (see `migrations-mapping.md`) | 10 Drizzle migrations with RLS + indexes per schema (jsonb-typed columns, `jsonb_typeof = 'object'` constraints). |
+| C.4 + C.6 | `eval-harness` | langchain-engineer | (see `eval-harness-summary.md`) | LangSmith project `c1v-v2-eval`; 300 graded examples (30/agent × 10 v2 agents); harness at `apps/product-helper/lib/eval/v2-eval-harness.ts` (graceful fallback when `LANGCHAIN_API_KEY` unset); quarterly drift-check job (cron `0 0 1 */3 *`) at `apps/product-helper/scripts/quarterly-drift-check.ts` + `.github/workflows/quarterly-drift-check.yml`. |
+| C.5 | `methodology-page` | ui-ux-engineer | (see `methodology-page-summary.md`) | `/about/methodology` static page renders canonical `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` (server component + thin viewer). |
+| ship | `qa-c-verifier` | qa-engineer | `f5992639` | 8/8 ECs PASS (7 ECs + EC-smoke). Verification report at `plans/v22-outputs/tc1/verification-report.md`. Tag `tc1-wave-c-complete`. |
+| docs | `docs-c` | documentation-engineer | (this commit) | JSDoc top-up on 11 Crawley schemas + `lib/eval/v2-eval-harness.ts` exports; runbook at `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/_dev-runbooks/crawley-schema-runbook.md`; `apps/product-helper/CLAUDE.md` proposed-diff at `plans/v22-outputs/tc1/claude-md-diff.md` (awaiting authorization); this release-notes append. |
+
+### Per-EC commit SHAs
+
+- **EC-V21-C.0** namespace-resolver preflight green @ `3e2abdf`. Pre-existence audit recorded for all 11 target schema paths + matrix keystone path.
+- **EC-V21-C.1** 11 Zod schemas authored, registered in `lib/langchain/schemas/index.ts` (`CRAWLEY_SCHEMAS` 10-row + `CRAWLEY_MATRIX_KEYSTONE` 1-row separate sentinel). Round-trip + x-ui-surface tests green.
+- **EC-V21-C.2** Schema-layer matrix-site refactor complete: 10 matrix sites consumed at schema-author level (1 PO + 9 DSM block) + 1 scalar projection chain. Agent-emitter sites NOT refactored (deferred; see below).
+- **EC-V21-C.3** 10 Drizzle migrations applied with RLS + indexes; postgres-js jsonb gotcha documented (bind JS object, do NOT `JSON.stringify(...)::jsonb`).
+- **EC-V21-C.4** 300 graded examples × 18/8/4 grade distribution × 10 v2 agents floor met.
+- **EC-V21-C.5** `/about/methodology` route lives in `(dashboard)` group, renders canonical methodology MD verbatim (no content fork).
+- **EC-V21-C.6** Quarterly drift-check workflow opens issue tagged `@team-c1v` on non-zero exit.
+
+### Key shipped artifacts
+
+- `plans/v22-outputs/tc1/schemas-shipped.md` — 11-row schema map (10 phase artifacts + matrix keystone).
+- `plans/v22-outputs/tc1/migrations-mapping.md` — 10 migrations with RLS + index summary.
+- `plans/v22-outputs/tc1/eval-harness-summary.md` — 300 graded examples + drift workflow.
+- `plans/v22-outputs/tc1/methodology-page-summary.md` — `/about/methodology` shipped.
+- `plans/v22-outputs/tc1/namespace-resolution.md` — preflight namespace audit.
+- `plans/v22-outputs/tc1/verification-report.md` — qa-c-verifier full evidence.
+- `plans/v22-outputs/tc1/claude-md-diff.md` — proposed `apps/product-helper/CLAUDE.md` diff (awaiting David's authorization before apply).
+- `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/_dev-runbooks/crawley-schema-runbook.md` — operator runbook for adding/extending Crawley schemas.
+
+### Deferred items
+
+- **Agent-emitter matrix-site refactor → v2.2 (Wave D agent rewrite).** The 10 matrix sites + 1 scalar projection chain are gated at the schema-author level only. Agent emitters (`form-function-agent.ts`, `synthesis-agent.ts`, etc.) currently emit pre-Crawley shapes that do NOT yet populate `po_array_derivation` or `full_dsm_block_derivations`. Migrating agent emitters to populate these new matrix-derivation fields is a separate concern (Wave D / agent-rewrite). Rationale: REQUIREMENTS-crawley §5 locality rule is preserved; the schema gate is closed and rejects future emissions that omit/mis-type these fields. The schema gate IS the matrix-site refactor for Wave C.
+- **Schema barrel shadowing fix → optional cleanup.** Legacy `lib/langchain/schemas.ts` (singular file) shadows the new `lib/langchain/schemas/index.ts` (directory barrel) for `'../schemas'` imports under bundler resolution. Workaround: import via the explicit subpath `'@/lib/langchain/schemas/index'`. Documented in the runbook §7.
+- **M3 + M2 supplements as NEW tables (curator decision; NOT a deferred bug).** `decomposition-plane.ts` (M3) and `requirements-crawley-extension.ts` (M2) ship as standalone NEW supplement schemas, not column-extensions of v2.1 shapes. Rationale: column-extension would prematurely couple Crawley fields with future M2/M3 table-extraction work. Captured in `schemas-shipped.md`.
+
+### Apply-after-authorization
+
+`apps/product-helper/CLAUDE.md` does NOT change in this commit. The proposed diff is at `plans/v22-outputs/tc1/claude-md-diff.md` — David's go-ahead is required before applying (per CLAUDE.md file-safety rule + project memory `feedback_no_scope_doubt.md`). When applied, the change is a single new H3 subsection under the existing `## Architecture` H2: `### Crawley Typed Schemas (Wave C, v2.2)`. No other section headers.
+
+### v2.2 standalone release notes
+
+This entry appends to the v2 cumulative log. The standalone `plans/v22-release-notes.md` will be authored by TE1's `docs-e-and-closeout` agent after Wave E ships.

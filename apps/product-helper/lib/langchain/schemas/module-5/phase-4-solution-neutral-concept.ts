@@ -2,9 +2,12 @@
  * Module 5 Phase 4 — Solution-Neutral Concept (Crawley Ch 7).
  *
  * @module lib/langchain/schemas/module-5/phase-4-solution-neutral-concept
+ * @source REQUIREMENTS-crawley §2 (M5 phase artifacts)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/5-form-function/01-phase-docs/04-Phase-4-Solution-Neutral-Concept.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * 7-field solution-neutral function + concept triads + morphological matrix
  * (≥ 2 integrated_concepts) + concept of operations + optional intent hierarchy.

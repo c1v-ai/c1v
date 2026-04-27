@@ -2,9 +2,12 @@
  * Module 5 Phase 2 — Function Taxonomy (Crawley Ch 5).
  *
  * @module lib/langchain/schemas/module-5/phase-2-function-taxonomy
+ * @source REQUIREMENTS-crawley §2 (M5 phase artifacts) + §5 (matrix locality — `po_array_derivation`)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/5-form-function/01-phase-docs/02-Phase-2-Function-Taxonomy.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`. Hosts 1 × `mathDerivationMatrixSchema` site (`po_array_derivation`).
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Consumes Phase-1 form_entities + interfaces. Emits primary external function,
  * internal functions, functional interactions, PO array (matrix derivation via

@@ -2,9 +2,12 @@
  * Module 5 Phase 5 — Concept Expansion (Crawley Ch 8).
  *
  * @module lib/langchain/schemas/module-5/phase-5-concept-expansion
+ * @source REQUIREMENTS-crawley §2 (M5 phase artifacts)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/5-form-function/01-phase-docs/05-Phase-5-Concept-Expansion.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Level-1 + Level-2 expansions, Thebeau-style clustering analysis output, and
  * modularization-review state machine (phase-local; does not modify shared

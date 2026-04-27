@@ -2,9 +2,12 @@
  * Module 3 — Decomposition Plane Supplement (Crawley Ch 13).
  *
  * @module lib/langchain/schemas/module-3/decomposition-plane
+ * @source REQUIREMENTS-crawley §3 (M3 supplements; curator decision: NEW supplement, not column-extension)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/2-requirements/05-crawley/crawley-ch13-decomposition-heuristics.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * SUPPLEMENT shape (REQUIREMENTS-crawley §3) — does NOT extend phaseEnvelopeSchema.
  * Lighter envelope: { _schema, _phase_status, ...phase-local }. Promote to a

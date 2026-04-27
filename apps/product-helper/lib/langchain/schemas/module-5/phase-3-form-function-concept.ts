@@ -2,9 +2,12 @@
  * Module 5 Phase 3 — Form-Function Concept (Crawley Ch 6).
  *
  * @module lib/langchain/schemas/module-5/phase-3-form-function-concept
+ * @source REQUIREMENTS-crawley §2 (M5 phase artifacts) + §5 (matrix locality — 9 × `full_dsm_block_derivations` + 1 × scalar `dsm_projection_chain_derivation`)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/5-form-function/01-phase-docs/03-Phase-3-Form-Function-Concept.md
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`. Hosts 9 × `mathDerivationMatrixSchema` sites + 1 scalar projection chain.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Architecture triad bridging Phase-1 form ↔ Phase-2 function. Emits 9-block
  * full DSM with 9 mathDerivationMatrixSchema records + 1 scalar projection

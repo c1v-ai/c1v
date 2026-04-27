@@ -2,9 +2,12 @@
  * Module 5 — Matrix-valued math derivation primitive.
  *
  * @module lib/langchain/schemas/module-5/_matrix
+ * @source REQUIREMENTS-crawley §5 (matrix-valued derivations + locality rule)
  * @kbSource plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md §5
  * @since 2026-04-26
  * @evidenceTier curated
+ * @consumers `module-5/phase-2-function-taxonomy.ts` (`po_array_derivation`, 1 site) + `module-5/phase-3-form-function-concept.ts` (`full_dsm_block_derivations`, 9 sites). Sentinel keystone — exported separately as `CRAWLEY_MATRIX_KEYSTONE` (NOT in the `CRAWLEY_SCHEMAS` phase-artifact registry).
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression. Promotion to `_shared.ts` triggered when a 3rd non-M5 site emerges (locality rule, REQUIREMENTS-crawley §5).
  *
  * Sibling type to scalar `mathDerivationSchema`. Locality rule (REQUIREMENTS §5):
  * stays M5-local until a 3rd non-M5 site emerges. Consumers: M5 phase-2

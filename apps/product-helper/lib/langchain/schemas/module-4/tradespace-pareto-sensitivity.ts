@@ -2,9 +2,12 @@
  * Module 4 — Tradespace, Pareto Frontier, Sensitivity (Crawley Ch 15).
  *
  * @module lib/langchain/schemas/module-4/tradespace-pareto-sensitivity
+ * @source REQUIREMENTS-crawley §3 (M4 supplements)
  * @kbSource apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/4-decision-net-crawley-on-cornell/01-phase-docs/crawley/02-Tradespace-Pareto-Sensitivity.md
  * @since 2026-04-27
  * @evidenceTier curated
+ * @consumers TBD — agent-emitter wiring deferred to v2.2 (Wave D agent rewrite). Schema gate is closed and rejects emissions that omit/mis-type fields. Registered in `lib/langchain/schemas/index.ts` `CRAWLEY_SCHEMAS`.
+ * @driftPolicy quarterly (Jan 1 / Apr 1 / Jul 1 / Oct 1 @ 00:00 UTC) via `apps/product-helper/scripts/quarterly-drift-check.ts`; LangSmith project `c1v-v2-eval`. See `.github/workflows/quarterly-drift-check.yml` for the cron expression.
  *
  * Consumes M4 phase-1 decisions + metrics + constraints + decision_dsm. Emits
  * evaluated architectures, Pareto analysis (with optional fuzzy variant),
@@ -227,6 +230,19 @@ export const refactorSuggestionSchema = z
   );
 export type RefactorSuggestion = z.infer<typeof refactorSuggestionSchema>;
 
+/**
+ * M4 Phase-2 envelope (Crawley Ch 15). Top-level shape:
+ * - `_schema`: literal `module-4.tradespace-pareto-sensitivity.v1`.
+ * - `architectures`: ≥ 1 evaluated architectures (utility + metric values).
+ * - `pareto_analysis`: dominance partition + visible_metric_ids (≥ 2 enforced via superRefine).
+ * - `fuzzy_pareto`: optional fuzzy variant; required when `sensitivity_analysis.robustness_score < 0.8`.
+ * - `frontier_mining`: Crawley Table 15.2 4-class entries.
+ * - `tradespace_structure`: clusters / strata / holes.
+ * - `sensitivity_analysis`: scenarios (≥ 3 enforced) + robustness_score.
+ * - `decision_organization`: 4-quadrant ordering (Q1 must precede Q4 in array order).
+ * - `refactor_suggestions`: optional Crawley line-7521 refactor proposals.
+ * - `crawley_refs`: source-of-truth provenance.
+ */
 export const tradespaceParetoSensitivitySchema = phaseEnvelopeSchema
   .extend({
     _schema: z.literal('module-4.tradespace-pareto-sensitivity.v1'),
