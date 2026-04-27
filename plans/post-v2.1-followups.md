@@ -74,6 +74,27 @@
 - **v2.2 process change:** every team in v2.2 spawn-prompts must explicitly own AT LEAST ONE bridge to ANOTHER team. TC1↔TE1 bridges: typed schemas + LangSmith dataset → both owned by `eval-harness` (TC1) on the producer side and `engine-stories` / `engine-prod-swap` (TE1) on the consumer side. Add a §"Cross-team bridges" subsection to v2.2 spawn-prompts before dispatch.
 - **Status:** OPEN process learning; mitigation lands in v2.1.1 hotfix branch (Playwright EC-V21-A.1+) AND in v2.2 spawn-prompts pre-dispatch (cross-team bridges subsection).
 
+## P10 — 7 NEW v2.1 LangGraph nodes are no-ops for live runtime projects (NEW 2026-04-26)
+
+- **Source:** Surfaced during P9-mitigation e2e authoring on 2026-04-26 by inspecting project=119 post-click-through. Every one of the 7 NEW v2.1 nodes (`generate_data_flows`, `generate_form_function`, `generate_decision_network`, `generate_n2`, `generate_fmea_early`, `generate_fmea_residual`, `generate_synthesis`) gates on `state.extractedData['<kind>']` already existing as a "stub". For self-application fixtures the stubs come from the build scripts; for live runtime projects **no upstream populates them**, so all 7 nodes hit the `if (!stub)` branch and persist `pending` forever.
+- **Code evidence:** `apps/product-helper/lib/langchain/graphs/nodes/generate-data-flows.ts:29-33`:
+  ```ts
+  const stub = ed?.['dataFlows'];
+  if (!stub) {
+    console.warn('[GENERATE_data_flows] no upstream stub; persisting pending row');
+    await persistArtifact({ ..., status: 'pending' });
+    return {};
+  }
+  ```
+  Same pattern in 6 sibling node files (`generate-form-function.ts`, `generate-decision-network.ts`, `generate-n2.ts`, `generate-fmea-early.ts`, `generate-fmea-residual.ts`, `generate-synthesis.ts`).
+- **Impact:** For any live-runtime project, the synthesis flow leaves 7 `project_artifacts` rows in `synthesis_status='pending'` indefinitely. The synthesis page never flips to RecommendationViewer — it stays in pending-mode UI forever. EC-V21-A.1 was satisfied because the verifier wrote fixture rows directly into the table, bypassing the live no-stub path.
+- **Mitigation contract for v2.1.1 e2e:** the P9-mitigation Playwright spec (`tests/e2e/synthesis-clickthrough.spec.ts`) is **P10-aware** — it asserts the trigger wire is alive (POST → 202 → pending UI → status route reachable) and explicitly captures the 7 stuck-pending rows as EXPECTED state, not as a failure. The evidence file at `plans/v211-outputs/th1/e2e-evidence.md` documents this with the literal substrings `4 ready` (pre-v2.1 nodes proof-of-life) and `7 stuck-pending` (P10-blocked nodes).
+- **Resolution path (out of scope for v2.1.1):**
+  1. Either (a) populate upstream stubs from intake state — requires a new pre-synthesis bridge node (`extract-stubs-from-intake`) that walks `extractedData` and emits the 7 stubs from M0–M2 data, OR (b) drop the no-stub gate and let each agent run from minimal seed input.
+  2. Wire the LLM mocks in `tests/e2e/fixtures/synthesis-mocks.ts` once stubs flow — the e2e currently disables mocks because the no-stub branch short-circuits before any LLM call.
+- **Owner:** v2.1.2 / v2.2 Wave-A completion — `langgraph-wirer` agent.
+- **Status:** OPEN; v2.1.1 hotfix knowingly ships with P10 unresolved. P9-mitigation e2e is P10-aware, so the click-through wire IS verified end-to-end despite the stuck rows.
+
 ## P6 — Prompt-caching not propagating through `ChatAnthropic.bindTools()` (NEW 2026-04-26)
 
 - **Source:** Surfaced 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4 bonus finding; live preflight log [`v21-outputs/td1/preflight-log-live.md`](v21-outputs/td1/preflight-log-live.md) line 81.
