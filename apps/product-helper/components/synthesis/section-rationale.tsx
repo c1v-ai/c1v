@@ -1,21 +1,29 @@
 /**
  * SectionRationale — derivation chain (D-01..D-NN). One paragraph per
  * decision with chosen option, rationale, and the linked DN node + NFRs.
+ *
+ * EC-V21-E.11: each decision row carries a `<WhyThisValueButton />` that
+ * opens the provenance side-panel (matched rule + math trace + KB
+ * references + override history + override CTA).
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 import type { DecisionEntry, DerivationChainEntry } from './types';
+import { WhyThisValueButton } from './why-this-value-button';
 
 interface SectionRationaleProps {
   decisions: DecisionEntry[];
   derivationChain: DerivationChainEntry[];
+  /** Project id required by the provenance-button's API routes. */
+  projectId: number;
 }
 
 export function SectionRationale({
   decisions,
   derivationChain,
+  projectId,
 }: SectionRationaleProps) {
   const chainByDecision = new Map(
     derivationChain.map((c) => [c.decision_id, c]),
@@ -39,8 +47,16 @@ export function SectionRationale({
                   <Badge variant="outline">{chain.decision_network_node}</Badge>
                 )}
               </header>
-              <p className="text-sm text-foreground">
+              <p className="flex flex-wrap items-center gap-1.5 text-sm text-foreground">
                 <span className="font-medium">Chosen:</span> {d.chosen_option}
+                <WhyThisValueButton
+                  projectId={projectId}
+                  decisionId={d.id}
+                  targetField={`architecture_recommendation/decisions[${d.id}].chosen_option`}
+                  storyId={d.id}
+                  engineVersion="v1"
+                  ariaLabel={`Why this decision? (${d.id})`}
+                />
               </p>
               <p className="text-sm text-muted-foreground">{d.rationale}</p>
               {chain?.nfrs_driving_choice && chain.nfrs_driving_choice.length > 0 && (
