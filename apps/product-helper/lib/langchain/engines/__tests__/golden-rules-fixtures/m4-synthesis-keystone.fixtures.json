@@ -1,0 +1,58 @@
+[
+  {
+    "name": "serverless + ai + low scale → AV.01",
+    "decision_id": "synthesis_recommended_alternative_id",
+    "rule_id": "synth_av01_serverless_ai_low",
+    "input": { "deployment_target": "serverless", "ai_workload": "agent", "scale_tier": "low" },
+    "expected_output": { "value": "AV.01", "matched": true }
+  },
+  {
+    "name": "container + extreme scale → AV.02",
+    "decision_id": "synthesis_recommended_alternative_id",
+    "rule_id": "synth_av02_container_ai_high",
+    "input": { "deployment_target": "container", "ai_workload": "rag", "scale_tier": "extreme" },
+    "expected_output": { "value": "AV.02", "matched": true }
+  },
+  {
+    "name": "serverless no ai → AV.03",
+    "decision_id": "synthesis_recommended_alternative_id",
+    "rule_id": "synth_av03_serverless_no_ai",
+    "input": { "deployment_target": "serverless", "ai_workload": "none", "scale_tier": "low" },
+    "expected_output": { "value": "AV.03", "matched": true }
+  },
+  {
+    "name": "low scale + no ai → $50/mo",
+    "decision_id": "synthesis_estimated_monthly_cost_usd",
+    "rule_id": "synth_cost_low_no_ai",
+    "input": { "scale_tier": "low", "ai_workload": "none" },
+    "expected_output": { "value": 50, "units": "USD/month", "matched": true }
+  },
+  {
+    "name": "medium + ai → $320/mo",
+    "decision_id": "synthesis_estimated_monthly_cost_usd",
+    "rule_id": "synth_cost_medium_ai",
+    "input": { "scale_tier": "medium", "ai_workload": "agent" },
+    "expected_output": { "value": 320, "units": "USD/month", "matched": true }
+  },
+  {
+    "name": "extreme + ai → $2400/mo",
+    "decision_id": "synthesis_estimated_monthly_cost_usd",
+    "rule_id": "synth_cost_high_ai",
+    "input": { "scale_tier": "extreme", "ai_workload": "agent" },
+    "expected_output": { "value": 2400, "units": "USD/month", "matched": true }
+  },
+  {
+    "name": "serverless + sync + ai → 2600ms",
+    "decision_id": "synthesis_p95_latency_ms",
+    "rule_id": "synth_lat_serverless_sync_ai",
+    "input": { "deployment_target": "serverless", "flow_class": "user_facing_sync", "ai_workload": "agent" },
+    "expected_output": { "value": 2600, "units": "ms", "matched": true }
+  },
+  {
+    "name": "high scale + pii → 99.95%",
+    "decision_id": "synthesis_availability_target",
+    "rule_id": "synth_avail_high_pii",
+    "input": { "scale_tier": "high", "data_sensitivity": "pii" },
+    "expected_output": { "value": "99.95%", "matched": true }
+  }
+]

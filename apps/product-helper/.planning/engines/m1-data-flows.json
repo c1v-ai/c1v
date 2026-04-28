@@ -1,0 +1,119 @@
+{
+  "story_id": "m1-data-flows",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "df_user_auth_flow",
+      "target_field": "data_flows[user_auth].classification",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "auth_pii_path",
+            "if": { "user_type_in": ["consumer_app", "enterprise_app"], "data_sensitivity_in": ["pii", "phi", "pci"] },
+            "value": "DF.AUTH.SENSITIVE",
+            "base_confidence": 0.95
+          },
+          {
+            "rule_id": "auth_internal",
+            "if": { "user_type": "internal_tool" },
+            "value": "DF.AUTH.INTERNAL",
+            "base_confidence": 0.90
+          },
+          {
+            "default": {
+              "rule_id": "auth_default",
+              "value": "DF.AUTH.STANDARD",
+              "base_confidence": 0.75
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "any_input_is_estimate", "delta": -0.10 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90,
+      "fallback": { "action": "surface_to_user", "question_id": "Q.M1.DF.AUTH" }
+    },
+    {
+      "decision_id": "df_payment_flow",
+      "target_field": "data_flows[payment].classification",
+      "inputs": [
+        { "name": "monetization", "source": "module-0/intake-discriminators" },
+        { "name": "regulatory_refs", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "payment_pci",
+            "if": { "monetization_in": ["subscription", "transactional"], "regulatory_refs_contains": "PCI-DSS" },
+            "value": "DF.PAY.PCI_SCOPE",
+            "base_confidence": 0.97
+          },
+          {
+            "rule_id": "payment_no_pci",
+            "if": { "monetization_in": ["subscription", "transactional"] },
+            "value": "DF.PAY.STRIPE_DELEGATED",
+            "base_confidence": 0.90
+          },
+          {
+            "default": {
+              "rule_id": "payment_none",
+              "value": "DF.PAY.NONE",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "df_telemetry_flow",
+      "target_field": "data_flows[telemetry].classification",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "telemetry_high_scale",
+            "if": { "scale_tier_in": ["high", "extreme"] },
+            "value": "DF.TELEMETRY.SAMPLED",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "telemetry_serverless",
+            "if": { "deployment_target": "serverless" },
+            "value": "DF.TELEMETRY.OTEL",
+            "base_confidence": 0.88
+          },
+          {
+            "default": {
+              "rule_id": "telemetry_default",
+              "value": "DF.TELEMETRY.SENTRY",
+              "base_confidence": 0.80
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "upstream_explicit", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

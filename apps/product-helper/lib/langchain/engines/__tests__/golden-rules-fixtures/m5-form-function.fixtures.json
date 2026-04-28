@@ -1,0 +1,58 @@
+[
+  {
+    "name": "relational + extreme scale → Postgres + replicas",
+    "decision_id": "ff_persistence_layer",
+    "rule_id": "persistence_relational_high",
+    "input": { "data_shape": "relational", "scale_tier": "extreme" },
+    "expected_output": { "value": "Postgres + read-replicas + pgbouncer", "matched": true }
+  },
+  {
+    "name": "relational + low scale → Supabase Postgres",
+    "decision_id": "ff_persistence_layer",
+    "rule_id": "persistence_relational_default",
+    "input": { "data_shape": "relational", "scale_tier": "low" },
+    "expected_output": { "value": "Postgres (Supabase)", "matched": true }
+  },
+  {
+    "name": "document → jsonb single-store",
+    "decision_id": "ff_persistence_layer",
+    "rule_id": "persistence_document",
+    "input": { "data_shape": "document", "scale_tier": "medium" },
+    "expected_output": { "value": "Postgres jsonb (Supabase) — single-store discipline", "matched": true }
+  },
+  {
+    "name": "serverless + sync → Vercel Edge",
+    "decision_id": "ff_compute_runtime",
+    "rule_id": "compute_serverless_sync",
+    "input": { "deployment_target": "serverless", "flow_class": "user_facing_sync" },
+    "expected_output": { "value": "Vercel Edge Functions", "matched": true }
+  },
+  {
+    "name": "serverless + async → Vercel + Inngest",
+    "decision_id": "ff_compute_runtime",
+    "rule_id": "compute_serverless_async",
+    "input": { "deployment_target": "serverless", "flow_class": "background_async" },
+    "expected_output": { "value": "Vercel Functions + Inngest", "matched": true }
+  },
+  {
+    "name": "container → Cloud Run",
+    "decision_id": "ff_compute_runtime",
+    "rule_id": "compute_container",
+    "input": { "deployment_target": "container", "flow_class": "user_facing_sync" },
+    "expected_output": { "value": "Cloud Run (gen2)", "matched": true }
+  },
+  {
+    "name": "agent + pii → BAA-backed Anthropic",
+    "decision_id": "ff_llm_provider",
+    "rule_id": "llm_anthropic_pii",
+    "input": { "ai_workload": "agent", "data_sensitivity": "pii" },
+    "expected_output": { "value": "Anthropic Claude Sonnet 4.5 (BAA-backed)", "matched": true }
+  },
+  {
+    "name": "rag + non-pii → Anthropic standard",
+    "decision_id": "ff_llm_provider",
+    "rule_id": "llm_anthropic_default",
+    "input": { "ai_workload": "rag", "data_sensitivity": "internal" },
+    "expected_output": { "value": "Anthropic Claude Sonnet 4.5", "matched": true }
+  }
+]

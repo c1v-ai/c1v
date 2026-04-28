@@ -1,0 +1,123 @@
+{
+  "story_id": "m8-fmea-early",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "fmea_early_auth_failure",
+      "target_field": "fmea_early[FM-AUTH-001].rpn",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "fmea_auth_critical",
+            "if": { "data_sensitivity_in": ["pii", "phi", "pci"] },
+            "value": 432,
+            "units": "rpn",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "fmea_auth_consumer",
+            "if": { "user_type_in": ["consumer_app", "enterprise_app"] },
+            "value": 280,
+            "units": "rpn",
+            "base_confidence": 0.88
+          },
+          {
+            "default": {
+              "rule_id": "fmea_auth_default",
+              "value": 180,
+              "units": "rpn",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "fmea_early_data_loss",
+      "target_field": "fmea_early[FM-DATA-001].rpn",
+      "inputs": [
+        { "name": "data_shape", "source": "module-1/data-flows" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "fmea_data_loss_high_scale",
+            "if": { "scale_tier_in": ["high", "extreme"] },
+            "value": 360,
+            "units": "rpn",
+            "base_confidence": 0.91
+          },
+          {
+            "rule_id": "fmea_data_loss_relational",
+            "if": { "data_shape": "relational" },
+            "value": 240,
+            "units": "rpn",
+            "base_confidence": 0.86
+          },
+          {
+            "default": {
+              "rule_id": "fmea_data_loss_default",
+              "value": 200,
+              "units": "rpn",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "fmea_early_llm_drift",
+      "target_field": "fmea_early[FM-LLM-001].rpn",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "fmea_llm_agent_drift",
+            "if": { "ai_workload": "agent" },
+            "value": 320,
+            "units": "rpn",
+            "base_confidence": 0.89
+          },
+          {
+            "rule_id": "fmea_llm_rag_drift",
+            "if": { "ai_workload_in": ["rag", "extraction"] },
+            "value": 240,
+            "units": "rpn",
+            "base_confidence": 0.85
+          },
+          {
+            "default": {
+              "rule_id": "fmea_llm_none",
+              "value": 0,
+              "units": "rpn",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

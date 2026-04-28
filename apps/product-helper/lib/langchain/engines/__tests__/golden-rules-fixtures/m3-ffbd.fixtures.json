@@ -1,0 +1,58 @@
+[
+  {
+    "name": "consumer_app → EXTERNAL_USER",
+    "decision_id": "ffbd_function_authenticate",
+    "rule_id": "ffbd_auth_external",
+    "input": { "user_type": "consumer_app" },
+    "expected_output": { "value": "FN.AUTH.EXTERNAL_USER", "matched": true }
+  },
+  {
+    "name": "enterprise_app → EXTERNAL_USER",
+    "decision_id": "ffbd_function_authenticate",
+    "rule_id": "ffbd_auth_external",
+    "input": { "user_type": "enterprise_app" },
+    "expected_output": { "value": "FN.AUTH.EXTERNAL_USER", "matched": true }
+  },
+  {
+    "name": "internal_tool → INTERNAL_USER",
+    "decision_id": "ffbd_function_authenticate",
+    "rule_id": "ffbd_auth_internal",
+    "input": { "user_type": "internal_tool" },
+    "expected_output": { "value": "FN.AUTH.INTERNAL_USER", "matched": true }
+  },
+  {
+    "name": "relational → PERSIST.RELATIONAL",
+    "decision_id": "ffbd_function_persist_data",
+    "rule_id": "ffbd_persist_relational",
+    "input": { "data_shape": "relational" },
+    "expected_output": { "value": "FN.PERSIST.RELATIONAL", "matched": true }
+  },
+  {
+    "name": "document → PERSIST.DOCUMENT",
+    "decision_id": "ffbd_function_persist_data",
+    "rule_id": "ffbd_persist_document",
+    "input": { "data_shape": "document" },
+    "expected_output": { "value": "FN.PERSIST.DOCUMENT", "matched": true }
+  },
+  {
+    "name": "agent → AI.AGENT",
+    "decision_id": "ffbd_function_run_ai",
+    "rule_id": "ffbd_ai_agent",
+    "input": { "ai_workload": "agent" },
+    "expected_output": { "value": "FN.AI.AGENT", "matched": true }
+  },
+  {
+    "name": "rag → AI.RAG",
+    "decision_id": "ffbd_function_run_ai",
+    "rule_id": "ffbd_ai_rag",
+    "input": { "ai_workload": "rag" },
+    "expected_output": { "value": "FN.AI.RAG", "matched": true }
+  },
+  {
+    "name": "extraction → AI.EXTRACTION",
+    "decision_id": "ffbd_function_run_ai",
+    "rule_id": "ffbd_ai_extraction",
+    "input": { "ai_workload": "extraction" },
+    "expected_output": { "value": "FN.AI.EXTRACTION", "matched": true }
+  }
+]
