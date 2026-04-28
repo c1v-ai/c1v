@@ -1,0 +1,139 @@
+{
+  "story_id": "m6-qfd",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "qfd_pc_latency_priority",
+      "target_field": "hoq.customer_priorities[PC.LATENCY]",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "flow_class", "source": "module-1/data-flows" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "qfd_lat_consumer_sync_high",
+            "if": { "user_type": "consumer_app", "flow_class": "user_facing_sync" },
+            "value": 5,
+            "units": "priority_1to5",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "qfd_lat_enterprise_sync",
+            "if": { "user_type": "enterprise_app", "flow_class": "user_facing_sync" },
+            "value": 4,
+            "units": "priority_1to5",
+            "base_confidence": 0.91
+          },
+          {
+            "rule_id": "qfd_lat_async",
+            "if": { "flow_class": "background_async" },
+            "value": 2,
+            "units": "priority_1to5",
+            "base_confidence": 0.88
+          },
+          {
+            "default": {
+              "rule_id": "qfd_lat_default",
+              "value": 3,
+              "units": "priority_1to5",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "qfd_pc_security_priority",
+      "target_field": "hoq.customer_priorities[PC.SECURITY]",
+      "inputs": [
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" },
+        { "name": "regulatory_refs", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "qfd_sec_regulated",
+            "if": { "regulatory_refs_contains": "HIPAA" },
+            "value": 5,
+            "units": "priority_1to5",
+            "base_confidence": 0.95
+          },
+          {
+            "rule_id": "qfd_sec_pci",
+            "if": { "regulatory_refs_contains": "PCI-DSS" },
+            "value": 5,
+            "units": "priority_1to5",
+            "base_confidence": 0.95
+          },
+          {
+            "rule_id": "qfd_sec_pii",
+            "if": { "data_sensitivity_in": ["pii", "phi"] },
+            "value": 4,
+            "units": "priority_1to5",
+            "base_confidence": 0.92
+          },
+          {
+            "default": {
+              "rule_id": "qfd_sec_default",
+              "value": 3,
+              "units": "priority_1to5",
+              "base_confidence": 0.85
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "qfd_pc_cost_priority",
+      "target_field": "hoq.customer_priorities[PC.COST]",
+      "inputs": [
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" },
+        { "name": "user_type", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "qfd_cost_low_scale",
+            "if": { "scale_tier_in": ["low", "medium"] },
+            "value": 4,
+            "units": "priority_1to5",
+            "base_confidence": 0.90
+          },
+          {
+            "rule_id": "qfd_cost_enterprise_high",
+            "if": { "user_type": "enterprise_app", "scale_tier_in": ["high", "extreme"] },
+            "value": 2,
+            "units": "priority_1to5",
+            "base_confidence": 0.87
+          },
+          {
+            "default": {
+              "rule_id": "qfd_cost_default",
+              "value": 3,
+              "units": "priority_1to5",
+              "base_confidence": 0.80
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.85
+    }
+  ]
+}
