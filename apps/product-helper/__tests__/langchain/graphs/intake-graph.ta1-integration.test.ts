@@ -165,3 +165,71 @@ describe('TA1 integration — Wave A ↔ Wave E contract pin', () => {
     expect(nfrEngineContractV1Schema.safeParse(bad).success).toBe(false);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// Implementation-independence proof — both `nfrImpl: 'llm'` and `'engine'`
+// produce envelopes that parse against `nfrEngineContractV1Schema`.
+//
+// Per team context "NFR node swap mechanism — LOCKED": the DI factory
+// `createGenerateNfrNode({ nfrImpl })` is the swap surface. qa-e-verifier
+// consumes these two `describe` blocks as the closeout-gate proof.
+// ─────────────────────────────────────────────────────────────────────────
+
+import { createGenerateNfrNode } from '../../../lib/langchain/graphs/nodes/generate-nfr';
+import { createGenerateConstantsNode } from '../../../lib/langchain/graphs/nodes/generate-constants';
+
+describe('GENERATE_nfr — impl: llm-only', () => {
+  it('returns a Wave-A↔E v1 envelope', async () => {
+    const node = createGenerateNfrNode({ nfrImpl: 'llm' });
+    const out = await node(fixtureState());
+    expect(nfrEngineContractV1Schema.safeParse(out.nfrEnvelope).success).toBe(true);
+  });
+
+  it('uses the injected llm agent when supplied', async () => {
+    const calls: number[] = [];
+    const node = createGenerateNfrNode({
+      nfrImpl: 'llm',
+      llmAgent: {
+        async generate(state) {
+          calls.push(state.projectId);
+          return { nfrs: [{ id: 'NFR.01', target: 300 }], constants: [] };
+        },
+      },
+    });
+    const out = await node(fixtureState());
+    expect(calls).toEqual([99]);
+    expect(out.nfrEnvelope.status).toBe('ok');
+    expect(nfrEngineContractV1Schema.safeParse(out.nfrEnvelope).success).toBe(true);
+  });
+});
+
+describe('GENERATE_nfr — impl: engine-first', () => {
+  it('returns a Wave-A↔E v1 envelope without invoking any LLM agent', async () => {
+    const node = createGenerateNfrNode({ nfrImpl: 'engine' });
+    const out = await node(fixtureState());
+    expect(nfrEngineContractV1Schema.safeParse(out.nfrEnvelope).success).toBe(true);
+  });
+
+  it('inputs_hash is deterministic across runs with identical inputs', async () => {
+    const node = createGenerateNfrNode({ nfrImpl: 'engine' });
+    const out1 = await node(fixtureState());
+    const out2 = await node(fixtureState());
+    expect(out1.nfrEnvelope.inputs_hash).toBe(out2.nfrEnvelope.inputs_hash);
+  });
+});
+
+describe('GENERATE_constants — impl: llm-only', () => {
+  it('returns a Wave-A↔E v1 envelope', async () => {
+    const node = createGenerateConstantsNode({ nfrImpl: 'llm' });
+    const out = await node(fixtureState());
+    expect(nfrEngineContractV1Schema.safeParse(out.constantsEnvelope).success).toBe(true);
+  });
+});
+
+describe('GENERATE_constants — impl: engine-first', () => {
+  it('returns a Wave-A↔E v1 envelope without invoking any LLM agent', async () => {
+    const node = createGenerateConstantsNode({ nfrImpl: 'engine' });
+    const out = await node(fixtureState());
+    expect(nfrEngineContractV1Schema.safeParse(out.constantsEnvelope).success).toBe(true);
+  });
+});
