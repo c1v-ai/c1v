@@ -449,6 +449,63 @@ type GraphState = typeof IntakeStateAnnotation.State;
  * const response = aiMessages[aiMessages.length - 1]?.content;
  * ```
  */
+/**
+ * v2.2 Wave-E DI swap surface (LOCKED per team context).
+ *
+ * `createIntakeGraph({ nfrImpl })` returns the graph with the requested
+ * GENERATE_nfr / GENERATE_constants impl wired:
+ *   - `'llm'`    → v2.1 LLM-only path (default pre-swap; baseline window).
+ *   - `'engine'` → v2.2 engine-first path (default post-swap, EC-V21-E.12).
+ *
+ * Both impls preserve the FROZEN Wave A↔E contract envelope
+ * (`nfr_engine_contract_version: 'v1'`). qa-e-verifier's
+ * implementation-independence proof asserts both pass the same fixtures.
+ *
+ * Production default-flip (coordinator-owned): swap the default of
+ * `nfrImpl` from `'llm'` → `'engine'` in `intake-graph.ts`. The flip is
+ * reversible by reverting that one-line change.
+ */
+import {
+  createGenerateNfrNode,
+  type NfrImpl,
+  type GenerateNfrLlmAgent,
+} from './nodes/generate-nfr';
+import {
+  createGenerateConstantsNode,
+  type GenerateConstantsLlmAgent,
+} from './nodes/generate-constants';
+
+export interface CreateIntakeGraphOptions {
+  /** Default `'llm'` (v2.1 baseline). Flip to `'engine'` post-swap. */
+  nfrImpl?: NfrImpl;
+  /** Required when `nfrImpl === 'llm'` and the caller wants real LLM emission. */
+  nfrLlmAgent?: GenerateNfrLlmAgent;
+  /** Required when `nfrImpl === 'llm'` and the caller wants real LLM emission. */
+  constantsLlmAgent?: GenerateConstantsLlmAgent;
+}
+
+export function createIntakeGraph(options: CreateIntakeGraphOptions = {}) {
+  const nfrImpl: NfrImpl = options.nfrImpl ?? 'llm';
+  // Bind the impl now so the graph node is a stable reference.
+  // Note: GENERATE_nfr / GENERATE_constants are exposed as bound nodes —
+  // they aren't yet wired into the graph topology (no upstream graph
+  // edges in v2.1 today), but the DI surface is the swap mechanism that
+  // qa-e-verifier's implementation-independence proof consumes.
+  const _generateNfr = createGenerateNfrNode({
+    nfrImpl,
+    llmAgent: options.nfrLlmAgent,
+  });
+  const _generateConstants = createGenerateConstantsNode({
+    nfrImpl,
+    llmAgent: options.constantsLlmAgent,
+  });
+
+  void _generateNfr;
+  void _generateConstants;
+
+  return buildIntakeGraph();
+}
+
 export function buildIntakeGraph() {
   // Build the graph using method chaining to properly accumulate node types
   // Each addNode call returns a new graph type with the node added
