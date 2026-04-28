@@ -1,0 +1,566 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-5.phase-2-function-taxonomy.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "primary_external_function": {
+      "type": "object",
+      "properties": {
+        "operand": {
+          "type": "string",
+          "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — value-related operand (Table 5.2)."
+        },
+        "value_related_attribute": {
+          "type": "string",
+          "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — Table 5.2 col 2."
+        },
+        "value_related_state": {
+          "type": "string",
+          "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — state value."
+        },
+        "process": {
+          "type": "string",
+          "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — verb phrase (Table 5.2 col 3)."
+        },
+        "instrument_form_ref": {
+          "type": "string",
+          "description": "x-ui-surface=internal:cross-phase-ref — object_id of a Phase-1 form_entity at Level 0 or 1."
+        },
+        "boundary_interface_ref": {
+          "type": "string",
+          "description": "x-ui-surface=internal:cross-phase-ref — interface_id of a Phase-1 interface record (Box 5.5)."
+        },
+        "replacement_test_answer": {
+          "type": "string",
+          "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — answer to line 2146 replacement test."
+        }
+      },
+      "required": [
+        "operand",
+        "value_related_attribute",
+        "value_related_state",
+        "process",
+        "instrument_form_ref",
+        "boundary_interface_ref",
+        "replacement_test_answer"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — the one benefit-delivering function (Box 5.5)."
+    },
+    "secondary_external_functions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "operand": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — value-related operand (Table 5.2)."
+          },
+          "value_related_attribute": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — Table 5.2 col 2."
+          },
+          "value_related_state": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — state value."
+          },
+          "process": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — verb phrase (Table 5.2 col 3)."
+          },
+          "instrument_form_ref": {
+            "type": "string",
+            "description": "x-ui-surface=internal:cross-phase-ref — object_id of a Phase-1 form_entity at Level 0 or 1."
+          },
+          "boundary_interface_ref": {
+            "type": "string",
+            "description": "x-ui-surface=internal:cross-phase-ref — interface_id of a Phase-1 interface record (Box 5.5)."
+          },
+          "replacement_test_answer": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — answer to line 2146 replacement test."
+          }
+        },
+        "required": [
+          "operand",
+          "value_related_attribute",
+          "value_related_state",
+          "process",
+          "instrument_form_ref",
+          "boundary_interface_ref",
+          "replacement_test_answer"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Function Taxonomy > Primary External Function — the one benefit-delivering function (Box 5.5)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Function Taxonomy > Secondary Functions — additive external functions (Q 5d)."
+    },
+    "internal_functions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "function_id": {
+            "type": "string"
+          },
+          "process": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Internal Functions — verb (Box 5.3)."
+          },
+          "operand": {
+            "type": "string",
+            "description": "x-ui-surface=section:Function Taxonomy > Internal Functions — operand (Box 5.2)."
+          },
+          "instrument_form_ref": {
+            "type": "string",
+            "description": "x-ui-surface=internal:cross-phase-ref — Phase-1 form_entity object_id."
+          },
+          "blueprint_ref": {
+            "type": "string",
+            "enum": [
+              "transporting_mass",
+              "transferring_information",
+              "engaging_employee",
+              "making_decision",
+              "assembling_parts",
+              "none"
+            ],
+            "default": "none",
+            "description": "x-ui-surface=section:Function Taxonomy > Internal Functions — Box 5.6 Standard Blueprint reference."
+          }
+        },
+        "required": [
+          "function_id",
+          "process",
+          "operand",
+          "instrument_form_ref"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Function Taxonomy > Internal Functions — one (process, operand, form) tuple."
+      },
+      "minItems": 1,
+      "description": "x-ui-surface=section:Function Taxonomy > Internal Functions — first-level internal tuples."
+    },
+    "functional_interactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "interaction_id": {
+            "type": "string"
+          },
+          "from_process_id": {
+            "type": "string"
+          },
+          "to_process_id": {
+            "type": "string"
+          },
+          "shared_operand": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "create",
+              "destroy",
+              "affect",
+              "instrument"
+            ],
+            "description": "x-ui-surface=section:Function Taxonomy > Interactions — Crawley Ch 5 OPM arrow convention."
+          },
+          "interaction_kind": {
+            "type": "string",
+            "enum": [
+              "data",
+              "control"
+            ],
+            "description": "x-ui-surface=section:Function Taxonomy > Software Duality — required for software-containing systems."
+          }
+        },
+        "required": [
+          "interaction_id",
+          "from_process_id",
+          "to_process_id",
+          "shared_operand",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Function Taxonomy > Functional Interactions — shared/exchanged operand between two processes."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Function Taxonomy > Functional Interactions — shared operands between processes."
+    },
+    "po_array": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "process_id": {
+            "type": "string"
+          },
+          "cells": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "c",
+                "c'",
+                "a",
+                "d",
+                "d'",
+                "I",
+                "none"
+              ],
+              "description": "x-ui-surface=section:Function Taxonomy > PO Array — Crawley Box 5.7 cell notation."
+            },
+            "description": "x-ui-surface=internal:po-array — key = operand_id, value = cell notation."
+          }
+        },
+        "required": [
+          "process_id",
+          "cells"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Function Taxonomy > PO Array — one row of the Box 5.7 PO array."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Function Taxonomy > PO Array — Box 5.7 derived representation."
+    },
+    "po_array_derivation": {
+      "type": "object",
+      "properties": {
+        "formula": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "default": {},
+          "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+        },
+        "kb_source": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+        },
+        "kb_section": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+        },
+        "result": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+        },
+        "result_kind": {
+          "type": "string",
+          "const": "matrix"
+        },
+        "result_matrix": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": [
+                "number",
+                "string"
+              ]
+            }
+          }
+        },
+        "result_shape": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "result_is_square": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "formula",
+        "kb_source",
+        "result_kind",
+        "result_matrix",
+        "result_shape",
+        "result_is_square"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=internal:math-derivation-resolver — PO array matrix derivation; Option Y (M5-local)."
+    },
+    "value_pathway": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "process_id": {
+            "type": "string"
+          },
+          "operand_id": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "create",
+              "destroy",
+              "affect",
+              "instrument"
+            ],
+            "description": "x-ui-surface=section:Function Taxonomy > Interactions — Crawley Ch 5 OPM arrow convention."
+          }
+        },
+        "required": [
+          "step_index",
+          "process_id",
+          "operand_id",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Function Taxonomy > Value Pathway — one step from input to value-related output."
+      },
+      "minItems": 1,
+      "description": "x-ui-surface=section:Function Taxonomy > Value Pathway — ordered steps from input to primary operand."
+    },
+    "crawley_glossary_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": [],
+      "description": "x-ui-surface=internal:provenance — cross-references into GLOSSARY-crawley."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "primary_external_function",
+    "internal_functions",
+    "po_array_derivation",
+    "value_pathway"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M5 Phase 2: function taxonomy per Crawley Ch 5.",
+  "title": "Phase2FunctionTaxonomy",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

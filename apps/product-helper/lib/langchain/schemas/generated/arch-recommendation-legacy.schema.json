@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "arch-recommendation-legacy.schema.json",
+  "title": "Architecture Recommendation Legacy (gen-arch-recommendation.py adapter)",
+  "description": "Permissive shape consumed by scripts/artifact-generators/gen-arch-recommendation.py. The strict, audit-grade shape lives in apps/product-helper/lib/langchain/schemas/synthesis/ (architectureRecommendationSchema, generated as synthesis/architecture-recommendation.schema.json). This adapter exists only to drive the html/pdf/json-enriched generator without coupling it to the strict envelope (T6 Wave 4).",
+  "type": "object",
+  "required": ["projectName", "summary", "winningAlternative"],
+  "additionalProperties": true,
+  "properties": {
+    "projectName": { "type": "string" },
+    "summary": { "type": "string" },
+    "winningAlternative": { "type": "string" },
+    "rationale": { "type": "string" },
+    "moduleReferences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "module": { "type": "string" },
+          "artifact": { "type": "string" }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "tradeoffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "dimension": { "type": "string" },
+          "accepted": { "type": "string" }
+        }
+      }
+    }
+  }
+}

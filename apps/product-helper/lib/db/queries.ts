@@ -1,9 +1,47 @@
 import { desc, and, eq, isNull, sql } from 'drizzle-orm';
 import { db } from './drizzle';
 import { activityLogs, teamMembers, teams, users } from './schema';
+import {
+  projectArtifacts,
+  type ProjectArtifactRow,
+  type SynthesisStatus,
+} from './schema/project-artifacts';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 import { resolvePlanTier, PLAN_LIMITS } from '@/lib/constants';
+
+// Re-export the row types so the TA3 artifacts-bridge collapses to a static
+// re-export once this module is the source of truth.
+export type { ProjectArtifactRow, SynthesisStatus } from './schema/project-artifacts';
+
+// Wave C — Crawley artifact query helpers (REQUIREMENTS-crawley §6).
+// Re-exported here so callers have a single canonical entry point.
+export {
+  getCrawleyM5FormTaxonomy,
+  upsertCrawleyM5FormTaxonomy,
+  getCrawleyM5FunctionTaxonomy,
+  upsertCrawleyM5FunctionTaxonomy,
+  getCrawleyM5FormFunctionConcept,
+  upsertCrawleyM5FormFunctionConcept,
+  getCrawleyM5SolutionNeutralConcept,
+  upsertCrawleyM5SolutionNeutralConcept,
+  getCrawleyM5ConceptExpansion,
+  upsertCrawleyM5ConceptExpansion,
+  getCrawleyM3DecompositionPlane,
+  upsertCrawleyM3DecompositionPlane,
+  getCrawleyM4DecisionNetwork,
+  upsertCrawleyM4DecisionNetwork,
+  getCrawleyM4Tradespace,
+  upsertCrawleyM4Tradespace,
+  getCrawleyM4Optimization,
+  upsertCrawleyM4Optimization,
+  getCrawleyM2RequirementsExtension,
+  upsertCrawleyM2RequirementsExtension,
+} from './crawley-queries';
+export type {
+  CrawleyUpsertPayload,
+  CrawleyM3UpsertPayload,
+} from './crawley-queries';
 
 export async function getUser() {
   const sessionCookie = (await cookies()).get('session');
@@ -182,4 +220,136 @@ export async function getTeamCredits(teamId: number) {
     where: eq(teams.id, teamId),
     columns: { creditsUsed: true, creditLimit: true, subscriptionStatus: true },
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// project_artifacts queries (TA1 v2.1 Wave A — D-V21.04)
+//
+// All queries respect existing RLS context (`app.current_role` and
+// `app.current_team_id`). Service role (sidecar writers) bypasses tenant
+// gates via the `project_artifacts_service_all` policy; tenant callers
+// see only rows whose parent project.team_id matches `app.current_team_id`.
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * All artifacts (any kind, any status) for a project, newest first.
+ * Used by the synthesis viewer + manifest endpoint.
+ */
+export async function getProjectArtifacts(
+  projectId: number,
+): Promise<ProjectArtifactRow[]> {
+  return db
+    .select()
+    .from(projectArtifacts)
+    .where(eq(projectArtifacts.projectId, projectId))
+    .orderBy(desc(projectArtifacts.createdAt));
+}
+
+/**
+ * Latest `recommendation_json` row (the synthesis keystone). Returns
+ * null if synthesis has never run for this project. The synthesis page
+ * uses this to branch between empty-state and populated-state.
+ */
+export async function getLatestSynthesis(
+  projectId: number,
+): Promise<ProjectArtifactRow | null> {
+  const rows = await db
+    .select()
+    .from(projectArtifacts)
+    .where(
+      and(
+        eq(projectArtifacts.projectId, projectId),
+        eq(projectArtifacts.artifactKind, 'recommendation_json'),
+      ),
+    )
+    .orderBy(desc(projectArtifacts.createdAt))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Latest row of a given artifact_kind for a project. Returns null when
+ * no row of that kind exists (e.g. PDF still pending generation).
+ */
+export async function getArtifactByKind(
+  projectId: number,
+  kind: string,
+): Promise<ProjectArtifactRow | null> {
+  const rows = await db
+    .select()
+    .from(projectArtifacts)
+    .where(
+      and(
+        eq(projectArtifacts.projectId, projectId),
+        eq(projectArtifacts.artifactKind, kind),
+      ),
+    )
+    .orderBy(desc(projectArtifacts.createdAt))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Object-shaped upsert called by the TA3 sidecar (matches the
+ * `UpsertArtifactStatusInput` contract in `lib/synthesis/artifacts-bridge.ts`).
+ *
+ * Semantics:
+ *   - If a row already exists for `(projectId, kind)` AND that row is the
+ *     newest of its kind, the row is updated in place (single-row UPDATE).
+ *     This is the common case during a synthesis run — kickoff inserts a
+ *     `pending` row and subsequent emit/failure events mutate it to
+ *     `ready`/`failed`.
+ *   - If no row exists, a new row is inserted (the kickoff path).
+ *
+ * `inputsHash` may be a placeholder until langgraph-wirer ships the real
+ * content-addressed hash; the column accepts any hex string per the
+ * migration's CHECK constraint.
+ */
+export async function upsertArtifactStatus(input: {
+  projectId: number;
+  kind: string;
+  status: SynthesisStatus;
+  storagePath?: string | null;
+  format?: string | null;
+  sha256?: string | null;
+  inputsHash?: string | null;
+  synthesizedAt?: Date | null;
+  failureReason?: string | null;
+}): Promise<ProjectArtifactRow> {
+  const existing = await getArtifactByKind(input.projectId, input.kind);
+
+  if (existing) {
+    const updates: Partial<typeof projectArtifacts.$inferInsert> = {
+      synthesisStatus: input.status,
+    };
+    if (input.storagePath !== undefined) updates.storagePath = input.storagePath;
+    if (input.format !== undefined) updates.format = input.format;
+    if (input.sha256 !== undefined) updates.sha256 = input.sha256;
+    if (input.inputsHash !== undefined) updates.inputsHash = input.inputsHash;
+    if (input.synthesizedAt !== undefined) updates.synthesizedAt = input.synthesizedAt;
+    if (input.failureReason !== undefined) updates.failureReason = input.failureReason;
+
+    const [row] = await db
+      .update(projectArtifacts)
+      .set(updates)
+      .where(eq(projectArtifacts.id, existing.id))
+      .returning();
+    return row;
+  }
+
+  const [row] = await db
+    .insert(projectArtifacts)
+    .values({
+      projectId: input.projectId,
+      artifactKind: input.kind,
+      synthesisStatus: input.status,
+      storagePath: input.storagePath ?? null,
+      format: input.format ?? null,
+      sha256: input.sha256 ?? null,
+      inputsHash: input.inputsHash ?? null,
+      synthesizedAt: input.synthesizedAt ?? null,
+      failureReason: input.failureReason ?? null,
+    })
+    .returning();
+  return row;
 }

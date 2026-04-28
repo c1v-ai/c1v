@@ -36,6 +36,12 @@ const envSchema = z.object({
     .min(1, 'BASE_URL is required')
     .url('BASE_URL must be a valid URL'),
 
+  // OpenRouter - required for G11 model routing. Every production LLM call
+  // goes through openrouter-client.ts; see plans/kb-runtime-architecture.md §2.4.
+  OPENROUTER_API_KEY: z.string().min(1, 'OPENROUTER_API_KEY is required'),
+  OPENROUTER_BASE_URL: z.string().url().optional(),
+  CHEAP_MODE: z.enum(['true', 'false']).optional(),
+
   // Email - optional in development, required in production
   RESEND_API_KEY: z.string().optional(),
 

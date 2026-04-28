@@ -1,0 +1,1061 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "_upstream_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 11,
+      "description": "x-ui-surface=internal:provenance — paths to upstream artifacts (T6 envelope: ≥11 per spec — all M1..M8 inputs)."
+    },
+    "top_level_architecture": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000,
+          "description": "x-ui-surface=section:Recommendation > Summary — prose summary (≤500 words) of the recommended architecture."
+        },
+        "cited_priors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "entry_slug": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "x-ui-surface=internal:math-resolver — Atlas entry slug (e.g., \"anthropic\")."
+              },
+              "prior_path": {
+                "type": "string",
+                "pattern": "^(cost_curves|latency_priors|availability_priors|throughput_priors|utility_weight_hints)(\\.[a-z0-9_]+)?$",
+                "description": "x-ui-surface=internal:math-resolver — dotted path into the entry frontmatter (e.g., \"cost_curves.api_usd_per_1m_tokens_sonnet_input\")."
+              },
+              "expected_kind": {
+                "type": "string",
+                "enum": [
+                  "scalar",
+                  "vector",
+                  "graph",
+                  "matrix",
+                  "piecewise"
+                ],
+                "description": "x-ui-surface=internal:math-resolver — expected result_shape.kind; resolver fails closed if mismatch."
+              }
+            },
+            "required": [
+              "entry_slug",
+              "prior_path"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=internal:math-resolver — typed pointer from a mathDerivation into KB-8 priors."
+          },
+          "default": [],
+          "description": "x-ui-surface=section:Recommendation > Summary — §6.3 atlas priors cited in the summary prose."
+        }
+      },
+      "required": [
+        "summary"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Recommendation > Summary — prose + citations."
+    },
+    "mermaid_diagrams": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "x-ui-surface=section:Recommendation > Diagrams > Context — Mermaid source for the system-context diagram (actors + boundary)."
+        },
+        "use_case": {
+          "type": "string",
+          "minLength": 1,
+          "description": "x-ui-surface=section:Recommendation > Diagrams > Use Case — Mermaid source for the use-case diagram."
+        },
+        "class": {
+          "type": "string",
+          "minLength": 1,
+          "description": "x-ui-surface=section:Recommendation > Diagrams > Class — Mermaid source for the class/data-entity diagram."
+        },
+        "sequence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "x-ui-surface=section:Recommendation > Diagrams > Sequence — Mermaid source for the primary-flow sequence diagram."
+        },
+        "decision_network": {
+          "type": "string",
+          "minLength": 1,
+          "description": "x-ui-surface=section:Recommendation > Diagrams > Decision Network — Mermaid source for the Crawley decision-network graph."
+        }
+      },
+      "required": [
+        "context",
+        "use_case",
+        "class",
+        "sequence",
+        "decision_network"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Recommendation > Diagrams — five canonical Mermaid sources."
+    },
+    "pareto_frontier": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Pareto — alternative id (e.g., \"A1\")."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Pareto — alternative name (e.g., \"Serverless + managed Postgres\")."
+          },
+          "summary": {
+            "type": "string",
+            "description": "x-ui-surface=section:Recommendation > Pareto — one-sentence description of the architecture shape."
+          },
+          "cost": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — computed point value (or sentinel string like \"NEEDS_PRIOR\")."
+              },
+              "units": {
+                "type": "string",
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — units (e.g., \"USD/month\", \"ms p95\", \"% uptime\")."
+              },
+              "derivation": {
+                "type": "string",
+                "minLength": 1,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — plain-English or LaTeX formula used (e.g., \"cost = fixed + var * DAU\")."
+              },
+              "prior_ref": {
+                "type": "object",
+                "properties": {
+                  "entry_slug": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "x-ui-surface=internal:math-resolver — Atlas entry slug (e.g., \"anthropic\")."
+                  },
+                  "prior_path": {
+                    "type": "string",
+                    "pattern": "^(cost_curves|latency_priors|availability_priors|throughput_priors|utility_weight_hints)(\\.[a-z0-9_]+)?$",
+                    "description": "x-ui-surface=internal:math-resolver — dotted path into the entry frontmatter (e.g., \"cost_curves.api_usd_per_1m_tokens_sonnet_input\")."
+                  },
+                  "expected_kind": {
+                    "type": "string",
+                    "enum": [
+                      "scalar",
+                      "vector",
+                      "graph",
+                      "matrix",
+                      "piecewise"
+                    ],
+                    "description": "x-ui-surface=internal:math-resolver — expected result_shape.kind; resolver fails closed if mismatch."
+                  }
+                },
+                "required": [
+                  "entry_slug",
+                  "prior_path"
+                ],
+                "additionalProperties": false,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — atlas prior that sourced the inputs (omitted when sentinel fires)."
+              },
+              "sentinel": {
+                "type": "boolean",
+                "default": false,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — true iff no §6.3-compliant prior existed; value is a best-effort range, not a grounded number."
+              }
+            },
+            "required": [
+              "value",
+              "units",
+              "derivation"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Recommendation > Pareto > Cost — cost axis for this alternative."
+          },
+          "latency": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — computed point value (or sentinel string like \"NEEDS_PRIOR\")."
+              },
+              "units": {
+                "type": "string",
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — units (e.g., \"USD/month\", \"ms p95\", \"% uptime\")."
+              },
+              "derivation": {
+                "type": "string",
+                "minLength": 1,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — plain-English or LaTeX formula used (e.g., \"cost = fixed + var * DAU\")."
+              },
+              "prior_ref": {
+                "type": "object",
+                "properties": {
+                  "entry_slug": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "x-ui-surface=internal:math-resolver — Atlas entry slug (e.g., \"anthropic\")."
+                  },
+                  "prior_path": {
+                    "type": "string",
+                    "pattern": "^(cost_curves|latency_priors|availability_priors|throughput_priors|utility_weight_hints)(\\.[a-z0-9_]+)?$",
+                    "description": "x-ui-surface=internal:math-resolver — dotted path into the entry frontmatter (e.g., \"cost_curves.api_usd_per_1m_tokens_sonnet_input\")."
+                  },
+                  "expected_kind": {
+                    "type": "string",
+                    "enum": [
+                      "scalar",
+                      "vector",
+                      "graph",
+                      "matrix",
+                      "piecewise"
+                    ],
+                    "description": "x-ui-surface=internal:math-resolver — expected result_shape.kind; resolver fails closed if mismatch."
+                  }
+                },
+                "required": [
+                  "entry_slug",
+                  "prior_path"
+                ],
+                "additionalProperties": false,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — atlas prior that sourced the inputs (omitted when sentinel fires)."
+              },
+              "sentinel": {
+                "type": "boolean",
+                "default": false,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — true iff no §6.3-compliant prior existed; value is a best-effort range, not a grounded number."
+              }
+            },
+            "required": [
+              "value",
+              "units",
+              "derivation"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Recommendation > Pareto > Latency — latency axis for this alternative."
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — computed point value (or sentinel string like \"NEEDS_PRIOR\")."
+              },
+              "units": {
+                "type": "string",
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — units (e.g., \"USD/month\", \"ms p95\", \"% uptime\")."
+              },
+              "derivation": {
+                "type": "string",
+                "minLength": 1,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — plain-English or LaTeX formula used (e.g., \"cost = fixed + var * DAU\")."
+              },
+              "prior_ref": {
+                "type": "object",
+                "properties": {
+                  "entry_slug": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "x-ui-surface=internal:math-resolver — Atlas entry slug (e.g., \"anthropic\")."
+                  },
+                  "prior_path": {
+                    "type": "string",
+                    "pattern": "^(cost_curves|latency_priors|availability_priors|throughput_priors|utility_weight_hints)(\\.[a-z0-9_]+)?$",
+                    "description": "x-ui-surface=internal:math-resolver — dotted path into the entry frontmatter (e.g., \"cost_curves.api_usd_per_1m_tokens_sonnet_input\")."
+                  },
+                  "expected_kind": {
+                    "type": "string",
+                    "enum": [
+                      "scalar",
+                      "vector",
+                      "graph",
+                      "matrix",
+                      "piecewise"
+                    ],
+                    "description": "x-ui-surface=internal:math-resolver — expected result_shape.kind; resolver fails closed if mismatch."
+                  }
+                },
+                "required": [
+                  "entry_slug",
+                  "prior_path"
+                ],
+                "additionalProperties": false,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — atlas prior that sourced the inputs (omitted when sentinel fires)."
+              },
+              "sentinel": {
+                "type": "boolean",
+                "default": false,
+                "description": "x-ui-surface=section:Recommendation > Pareto > Axis — true iff no §6.3-compliant prior existed; value is a best-effort range, not a grounded number."
+              }
+            },
+            "required": [
+              "value",
+              "units",
+              "derivation"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Recommendation > Pareto > Availability — availability axis for this alternative."
+          },
+          "dominates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Recommendation > Pareto — ids of alternatives this one strictly dominates."
+          },
+          "is_recommended": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=section:Recommendation > Pareto — true iff this alternative is the synthesizer-chosen frontier point."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "summary",
+          "cost",
+          "latency",
+          "availability"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Recommendation > Pareto — one Pareto-frontier alternative (cost × latency × availability)."
+      },
+      "description": "x-ui-surface=section:Recommendation > Pareto — architecture alternatives on the cost × latency × availability frontier (>=3 required)."
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Decision — decision id (e.g., \"D-01\"). Stable across runs."
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Decision > Claim — one-sentence claim this decision resolves (e.g., \"Persist user sessions\")."
+          },
+          "chosen_option": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Decision > Chosen Option — selected option (e.g., \"Redis with 30-day TTL\")."
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Recommendation > Decision > Alternatives — alternative option considered."
+                },
+                "reason_rejected": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Recommendation > Decision > Alternatives — one-line reason this option was not chosen."
+                }
+              },
+              "required": [
+                "name",
+                "reason_rejected"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Recommendation > Decision > Alternatives — alternative considered and rejected."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Recommendation > Decision > Alternatives — alternatives considered."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Decision > Rationale — prose reason for the choice, grounded in priors + NFR math."
+          },
+          "nfr_engine_trace_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "x-ui-surface=internal:decision-audit-link — UUID of the decision_audit row written via audit-writer for this decision."
+          },
+          "kb_chunk_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "default": [],
+            "description": "x-ui-surface=internal:rag-provenance — UUIDs of kb_chunks rows retrieved for this decision."
+          },
+          "prior_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "cost_curve",
+                    "latency_prior",
+                    "availability_prior",
+                    "throughput_prior",
+                    "utility_weight_hints"
+                  ],
+                  "description": "x-ui-surface=section:Recommendation > Decision > Priors — which atlas prior primitive this refers to."
+                },
+                "prior_ref": {
+                  "type": "object",
+                  "properties": {
+                    "entry_slug": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$",
+                      "description": "x-ui-surface=internal:math-resolver — Atlas entry slug (e.g., \"anthropic\")."
+                    },
+                    "prior_path": {
+                      "type": "string",
+                      "pattern": "^(cost_curves|latency_priors|availability_priors|throughput_priors|utility_weight_hints)(\\.[a-z0-9_]+)?$",
+                      "description": "x-ui-surface=internal:math-resolver — dotted path into the entry frontmatter (e.g., \"cost_curves.api_usd_per_1m_tokens_sonnet_input\")."
+                    },
+                    "expected_kind": {
+                      "type": "string",
+                      "enum": [
+                        "scalar",
+                        "vector",
+                        "graph",
+                        "matrix",
+                        "piecewise"
+                      ],
+                      "description": "x-ui-surface=internal:math-resolver — expected result_shape.kind; resolver fails closed if mismatch."
+                    }
+                  },
+                  "required": [
+                    "entry_slug",
+                    "prior_path"
+                  ],
+                  "additionalProperties": false,
+                  "description": "x-ui-surface=section:Recommendation > Decision > Priors — atlas pointer (company + prior id)."
+                },
+                "note": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Recommendation > Decision > Priors — reviewer-facing note on how this prior was used."
+                }
+              },
+              "required": [
+                "kind",
+                "prior_ref"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Recommendation > Decision > Priors — atlas prior consumed by a decision."
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Recommendation > Decision > Priors — atlas priors consumed (empty allowed only if sentinel fires)."
+          },
+          "needs_prior_sentinel": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=section:Recommendation > Decision > Gaps — true iff no §6.3-compliant prior was available for ≥1 required primitive (Q4 policy)."
+          },
+          "missing_prior_kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cost_curve",
+                "latency_prior",
+                "availability_prior",
+                "throughput_prior",
+                "utility_weight_hints"
+              ]
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Recommendation > Decision > Gaps — primitives for which no compliant prior existed; non-empty iff needs_prior_sentinel=true."
+          },
+          "final_confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "x-ui-surface=section:Recommendation > Decision — NFR interpreter final confidence (0..1)."
+          }
+        },
+        "required": [
+          "id",
+          "claim",
+          "chosen_option",
+          "rationale",
+          "nfr_engine_trace_id",
+          "final_confidence"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Recommendation > Decision — single decision node with full provenance."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Recommendation > Decisions — decision nodes with full provenance (nfr trace, kb chunks, priors)."
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F\\d+$",
+            "description": "x-ui-surface=section:Recommendation > Risks — F-numbered id sourced from M7 FMEA."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Risks — short title."
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "description": "x-ui-surface=section:Recommendation > Risks — severity classification."
+          },
+          "mitigation": {
+            "type": "string",
+            "description": "x-ui-surface=section:Recommendation > Risks — planned mitigation."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "severity",
+          "mitigation"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Recommendation > Risks — single risk (F-numbered from M7)."
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Recommendation > Risks — F-numbered risks sourced from M7 FMEA."
+    },
+    "derivation_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Derivation — D-NN id of the decision this chain links (matches decisions[].id)."
+          },
+          "decision_network_node": {
+            "type": "string",
+            "pattern": "^DN\\.\\d+(-[A-Z])?$",
+            "description": "x-ui-surface=section:Recommendation > Derivation — M4 decision_network.v1.json node id (e.g., DN.01-A = node.alternative)."
+          },
+          "nfrs_driving_choice": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^NFR\\.\\d{2}$"
+            },
+            "minItems": 1,
+            "description": "x-ui-surface=section:Recommendation > Derivation — NFR.NN ids from M2 nfrs.v2.json that drove this choice."
+          },
+          "kb_chunk_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "default": [],
+            "description": "x-ui-surface=internal:rag-provenance — kb_chunks ids (uuid or path#fragment) retrieved via RAG to ground this decision."
+          },
+          "empirical_priors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "atlas_entry_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "x-ui-surface=section:Recommendation > Derivation > Priors — KB-8 atlas entry id (e.g., \"company-atlas/anthropic#latency-prior\")."
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "cost_curve",
+                    "latency_prior",
+                    "availability_prior",
+                    "throughput_prior",
+                    "utility_weight_hints"
+                  ],
+                  "description": "x-ui-surface=section:Recommendation > Derivation > Priors — which prior primitive this cites."
+                },
+                "quote": {
+                  "type": "string",
+                  "description": "x-ui-surface=section:Recommendation > Derivation > Priors — short quote / summary of the prior used."
+                }
+              },
+              "required": [
+                "atlas_entry_id",
+                "kind"
+              ],
+              "additionalProperties": false
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Recommendation > Derivation > Priors — KB-8 atlas empirical priors cited (per T6 guardrail)."
+          },
+          "fmea_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^FM\\.\\d{2}(\\.M\\d+)?$"
+            },
+            "default": [],
+            "description": "x-ui-surface=section:Recommendation > Derivation > FMEA — FM.NN failure-mode refs from M8 fmea_early or fmea_residual."
+          }
+        },
+        "required": [
+          "decision_id",
+          "decision_network_node",
+          "nfrs_driving_choice"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Recommendation > Derivation — single derivation_chain entry per top-level decision (T6 portfolio guardrail)."
+      },
+      "minItems": 1,
+      "description": "x-ui-surface=section:Recommendation > Derivation — one entry per top-level decision (T6 guardrail #1)."
+    },
+    "tail_latency_budgets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "chain_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=section:Recommendation > Tail Latency — chain id from interface_specs.v1.json (e.g., AUTHORING_SPEC_EMIT)."
+          },
+          "user_facing_p95_ms": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=section:Recommendation > Tail Latency — user-facing NFR p95 budget in ms."
+          },
+          "sum_per_if_p95_ms": {
+            "type": "number",
+            "minimum": 0,
+            "description": "x-ui-surface=section:Recommendation > Tail Latency — sum of per-IF p95 latencies along the chain (computed)."
+          },
+          "budget_ok": {
+            "type": "boolean",
+            "description": "x-ui-surface=section:Recommendation > Tail Latency — true iff sum_per_if_p95_ms ≤ user_facing_p95_ms."
+          },
+          "derivation_source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "x-ui-surface=internal:provenance — upstream artifact path (interface_specs.v1.json#chain_budgets[chain_id])."
+          }
+        },
+        "required": [
+          "chain_id",
+          "user_facing_p95_ms",
+          "sum_per_if_p95_ms",
+          "budget_ok",
+          "derivation_source"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Recommendation > Tail Latency — chain-level p95 reconciliation per T6 guardrail."
+      },
+      "minItems": 1,
+      "description": "x-ui-surface=section:Recommendation > Tail Latency — chain-level p95 budgets reconciled against interface_specs.v1 (T6 guardrail #3)."
+    },
+    "residual_risk": {
+      "type": "object",
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "description": "x-ui-surface=section:Recommendation > Residual Risk — high_rpn_flag_threshold from fmea_residual."
+        },
+        "flag_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Recommendation > Residual Risk — number of high-RPN flags surfaced."
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^FM\\.\\d{2}$",
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — FM.NN id from fmea_residual."
+              },
+              "predecessor_ref": {
+                "type": "string",
+                "minLength": 1,
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — predecessor FM id from fmea_early (preserved verbatim)."
+              },
+              "failure_mode": {
+                "type": "string",
+                "minLength": 1,
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — failure-mode description."
+              },
+              "rpn": {
+                "type": "number",
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — raw RPN (severity × likelihood × detectability)."
+              },
+              "weighted_rpn": {
+                "type": "number",
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — weighted RPN (mitigation-status weighted)."
+              },
+              "criticality_category": {
+                "type": "string",
+                "minLength": 1,
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — LOW | MEDIUM LOW | MEDIUM | MEDIUM HIGH | HIGH."
+              },
+              "open_residual_risk": {
+                "type": "string",
+                "default": "",
+                "description": "x-ui-surface=section:Recommendation > Residual Risk — open residual risk text (may be empty when mitigation has fully landed)."
+              }
+            },
+            "required": [
+              "id",
+              "predecessor_ref",
+              "failure_mode",
+              "rpn",
+              "weighted_rpn",
+              "criticality_category"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Recommendation > Residual Risk — verbatim flag from fmea_residual.v1.json (T6 guardrail)."
+          },
+          "description": "x-ui-surface=section:Recommendation > Residual Risk — verbatim flags[] from fmea_residual.v1.json."
+        }
+      },
+      "required": [
+        "threshold",
+        "flag_count",
+        "flags"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Recommendation > Residual Risk — verbatim from fmea_residual.v1.json (T6 guardrail #4)."
+    },
+    "hoq": {
+      "type": "object",
+      "properties": {
+        "pc_count": {
+          "type": "integer",
+          "description": "x-ui-surface=section:Recommendation > HoQ — # customer requirements."
+        },
+        "ec_count": {
+          "type": "integer",
+          "description": "x-ui-surface=section:Recommendation > HoQ — # engineering characteristics."
+        },
+        "matrix_nonzero": {
+          "type": "integer",
+          "description": "x-ui-surface=section:Recommendation > HoQ — # nonzero relationship cells."
+        },
+        "matrix_total": {
+          "type": "integer",
+          "description": "x-ui-surface=section:Recommendation > HoQ — # total relationship cells."
+        },
+        "matrix_sparsity_pct": {
+          "type": "number",
+          "description": "x-ui-surface=section:Recommendation > HoQ — sparsity % (nonzero/total)."
+        },
+        "roof_pairs_nonzero": {
+          "type": "integer",
+          "description": "x-ui-surface=section:Recommendation > HoQ — # nonzero roof correlations."
+        },
+        "flagged_ecs": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "default": [],
+          "description": "x-ui-surface=section:Recommendation > HoQ — EC ids with no PC lever (flagged_ec_no_pc)."
+        },
+        "target_values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ec_id": {
+                "type": "integer",
+                "description": "x-ui-surface=section:Recommendation > HoQ > Targets — engineering characteristic id."
+              },
+              "target": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Recommendation > HoQ > Targets — target value (number or label)."
+              },
+              "unit": {
+                "type": "string",
+                "description": "x-ui-surface=section:Recommendation > HoQ > Targets — unit string."
+              },
+              "constant_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "x-ui-surface=section:Recommendation > HoQ > Targets — constant id (M2 constants.v2.json) or null."
+              }
+            },
+            "required": [
+              "ec_id",
+              "target",
+              "unit",
+              "constant_ref"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Recommendation > HoQ > Targets — single target-values row."
+          },
+          "description": "x-ui-surface=section:Recommendation > HoQ > Targets — target-values table snapshot."
+        }
+      },
+      "required": [
+        "pc_count",
+        "ec_count",
+        "matrix_nonzero",
+        "matrix_total",
+        "matrix_sparsity_pct",
+        "roof_pairs_nonzero",
+        "target_values"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Recommendation > HoQ — embedded HoQ summary (T6 guardrail #5)."
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "x-ui-surface=section:Recommendation > Next Steps — ordered follow-on actions."
+    },
+    "inputs_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "x-ui-surface=internal:synthesis-repro — SHA-256 of canonicalized M2..M7 inputs + atlas slug list (reproducibility key)."
+    },
+    "model_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "x-ui-surface=internal:synthesis-repro — LLM model id used for prose/diagram synthesis (deterministic-rule-tree if pure)."
+    },
+    "synthesized_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "x-ui-surface=internal:synthesis-repro — ISO-8601 timestamp of synthesis."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "_upstream_refs",
+    "top_level_architecture",
+    "mermaid_diagrams",
+    "pareto_frontier",
+    "derivation_chain",
+    "tail_latency_budgets",
+    "residual_risk",
+    "hoq",
+    "inputs_hash",
+    "model_version",
+    "synthesized_at"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page:/projects/[id]/recommendation — capstone architecture_recommendation.v1 artifact.",
+  "title": "ArchitectureRecommendation",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

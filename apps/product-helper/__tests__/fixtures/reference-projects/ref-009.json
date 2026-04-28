@@ -1,0 +1,9 @@
+{
+  "_schema": "reference-project.v1",
+  "project_id": "ref-009",
+  "vision": "Autonomous warehouse robotics fleet manager",
+  "industry": "robotics",
+  "scale": "large",
+  "anonymized": true,
+  "generated_at": "2026-04-27T22:07:02.702Z"
+}

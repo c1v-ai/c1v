@@ -12,8 +12,11 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/$1',
   },
   transform: {
+    // tsconfig.test.json overrides `jsx: preserve` (needed by Next/Turbopack
+    // at app runtime) with `jsx: react-jsx` so ts-jest emits usable JS for
+    // .test.tsx files. Does not touch the app build — only in-process Jest.
     '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
+      tsconfig: 'tsconfig.test.json',
     }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

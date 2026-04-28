@@ -1,0 +1,178 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-1.phase-2-5-data-flows.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "Canonical emit path (v2 tree): system-design/kb-upgrade-v2/module-1-defining-scope/data_flows.v1.json"
+    },
+    "_upstream_refs": {
+      "type": "object",
+      "properties": {
+        "scope_tree": {
+          "type": "string"
+        },
+        "context_diagram": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope_tree",
+        "context_diagram"
+      ],
+      "additionalProperties": false,
+      "description": "Upstream artifact paths this data_flows build was derived from."
+    },
+    "produced_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp of emission."
+    },
+    "produced_by": {
+      "type": "string",
+      "description": "Emitting agent id."
+    },
+    "system_name": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^DE\\.\\d{2,}$",
+            "description": "Stable identifier DE.NN (zero-padded, min 2 digits)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Short human-readable name for the flow."
+          },
+          "description": {
+            "type": "string",
+            "description": "One-line description of what moves across this edge."
+          },
+          "source": {
+            "type": "string",
+            "description": "Producer — scope_tree node id OR context_diagram external actor name OR literal \"external\"."
+          },
+          "sink": {
+            "type": "string",
+            "description": "Consumer — scope_tree node id OR context_diagram external actor name OR literal \"external\"."
+          },
+          "payload_shape": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Canonical payload type name (e.g., \"OneSentenceIdea\", \"DraftSpec\")."
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Logical type hint: string | number | json | binary | ref<...>."
+                    },
+                    "optional": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "Ordered field list for the payload; downstream schema-gen reads this."
+              },
+              "format_hint": {
+                "type": "string",
+                "description": "Optional wire format hint (json, protobuf, sse, event-stream, etc.)."
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "description": "Shape of the payload carried by this data flow."
+          },
+          "criticality": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "encryption_at_rest_required": {
+            "type": "boolean"
+          },
+          "encryption_in_transit_required": {
+            "type": "boolean"
+          },
+          "pii_class": {
+            "type": "string",
+            "enum": [
+              "none",
+              "indirect",
+              "direct",
+              "sensitive"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "source",
+          "sink",
+          "payload_shape",
+          "criticality",
+          "encryption_at_rest_required",
+          "encryption_in_transit_required",
+          "pii_class"
+        ],
+        "additionalProperties": false,
+        "description": "Single DE.NN data-flow entry."
+      },
+      "minItems": 1,
+      "description": "DE.NN list, ordered."
+    },
+    "coverage_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Reviewer-facing notes on coverage/gaps."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_upstream_refs",
+    "produced_at",
+    "produced_by",
+    "system_name",
+    "entries"
+  ],
+  "additionalProperties": false,
+  "description": "Module 1 Phase 2.5 artifact: canonical data-flow enumeration bridging M1 scope to M3/M7 downstream consumers.",
+  "title": "Phase25DataFlows",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,288 @@
+{
+  "_schema": "m2_delta.v1",
+  "_module": "Module 2 Delta — new requirements + constant promotions",
+  "_produced_date": "2026-04-20",
+  "_supersedes": "nothing (additive patch)",
+  "_upstream_refs": [
+    "system-design/kb-upgrade-v2/module-4-decision-matrix/v2_revised/pc_ec_revision.json",
+    "system-design/kb-upgrade-v2/module-6-qfd/v2_revised/c1v_QFD_v2.json",
+    "system-design/kb-upgrade-v2/module-8-risk/open_questions_resolved.json",
+    "system-design/kb-upgrade-v2/module-8-risk/fmea_table.json"
+  ],
+  "_affects": [
+    "system-design/module-2-requirements/requirements_table.json (append to requirements_table[])",
+    "system-design/module-2-requirements/constants_table.json (append to constants_table[])",
+    "system-design/module-2-requirements/ffbd-handoff.json (handoff re-export trivial)"
+  ],
+  "new_requirements": [
+    {
+      "id": "R.100",
+      "category": "non-functional",
+      "driver": "PC.7 (M4 v2)",
+      "statement": "The system shall detect silent correctness failures (uncited claims, stale citations, false-positive gate passes) within MTTD ≤ 120 seconds.",
+      "measurable_via": "Audit-event → alert latency in production observability.",
+      "relates_to_m7": [
+        "F.13",
+        "F.15",
+        "F.18"
+      ],
+      "owner_constant": "MTTD_CORRECTNESS_MAX_S"
+    },
+    {
+      "id": "R.101",
+      "category": "non-functional",
+      "driver": "PC.7 (M4 v2)",
+      "statement": "The system shall detect telemetry-pipeline failures (dropped metrics, backpressure breach) within MTTD ≤ 300 seconds.",
+      "measurable_via": "Collector dropped-event counter vs expected.",
+      "relates_to_m7": [
+        "F.25",
+        "F.27",
+        "F.28"
+      ],
+      "owner_constant": "MTTD_TELEMETRY_MAX_S"
+    },
+    {
+      "id": "R.102",
+      "category": "functional",
+      "driver": "EC17a (M4 v2 split)",
+      "statement": "The Probe SDK shall enforce read-only capability at the syscall/driver layer regardless of credential scope, such that any write attempt fails closed.",
+      "measurable_via": "Release-build SBOM diff; grep of bundled output for write primitives.",
+      "relates_to_m7": [
+        "F.23-c1",
+        "F.23-c2"
+      ],
+      "owner_constant": "PROBE_SDK_CAPABILITY_MODE"
+    },
+    {
+      "id": "R.103",
+      "category": "non-functional",
+      "driver": "EC17b (M4 v2 split)",
+      "statement": "Credentials issued to the Probe SDK shall be rotated at least every CREDENTIAL_ROTATION_DAYS without service interruption to live sessions (grace window).",
+      "measurable_via": "Doppler rotation audit log + zero-downtime test.",
+      "relates_to_m7": [
+        "F.32"
+      ],
+      "owner_constant": "CREDENTIAL_ROTATION_DAYS, CREDENTIAL_GRACE_WINDOW_MIN"
+    },
+    {
+      "id": "R.104",
+      "category": "non-functional",
+      "driver": "EC19 (M4 v2 new)",
+      "statement": "The LLM Provider Layer shall maintain at least SS4_PROVIDER_FALLBACK_DEPTH distinct providers such that the service remains available when up to (depth - 1) providers simultaneously fail.",
+      "measurable_via": "Chaos test: force 2 provider outages; user-visible error rate ≤ 0.1%.",
+      "relates_to_m7": [
+        "F.7",
+        "F.8"
+      ],
+      "owner_constant": "SS4_PROVIDER_FALLBACK_DEPTH"
+    },
+    {
+      "id": "R.105",
+      "category": "functional",
+      "driver": "M7 F.19 corrective",
+      "statement": "Audit log writes shall follow a split policy: compliance-critical events (auth, CLI emit, spec emit, credential rotation) are synchronous-durable; telemetry events (probe metrics, cache hits, UI events) are asynchronous best-effort.",
+      "measurable_via": "Write path audit; compliance-event success rate = 100%, telemetry-event success rate ≥ 99%.",
+      "relates_to_m7": [
+        "F.19-c1",
+        "F.19-c2",
+        "F.34"
+      ],
+      "owner_constant": "AUDIT_WRITE_POLICY"
+    },
+    {
+      "id": "R.106",
+      "category": "non-functional",
+      "driver": "M7 F.25 corrective",
+      "statement": "The Metrics Collector shall checkpoint its in-flight aggregation state to durable storage at least every METRIC_CHECKPOINT_INTERVAL_MIN such that on crash-restart no more than that interval of metrics is lost.",
+      "measurable_via": "Chaos test: kill collector mid-window; lost-data window ≤ METRIC_CHECKPOINT_INTERVAL_MIN.",
+      "relates_to_m7": [
+        "F.25"
+      ],
+      "owner_constant": "METRIC_CHECKPOINT_INTERVAL_MIN"
+    },
+    {
+      "id": "R.107",
+      "category": "functional",
+      "driver": "M7 F.26 corrective",
+      "statement": "The Collector shall apply a tiered flush-fallback batch threshold: FLUSH_FALLBACK_BATCH_MIN is reduced for low-traffic tenants so batches do not starve beyond the aggregation window.",
+      "measurable_via": "Age-of-oldest-pending-metric gauge; p99 ≤ AGGREGATION_WINDOW_MIN + 10.",
+      "relates_to_m7": [
+        "F.26"
+      ],
+      "owner_constant": "FLUSH_FALLBACK_BATCH_MIN_LOW_TRAFFIC, FLUSH_FALLBACK_BATCH_MIN_DEFAULT"
+    },
+    {
+      "id": "R.108",
+      "category": "functional",
+      "driver": "M7 F.15 corrective",
+      "statement": "The Traceback Store shall apply a tiered TTL: the top-50 most-cited sources expire every TRACEBACK_CACHE_TTL_HOURS_HOT; all other entries use TRACEBACK_CACHE_TTL_HOURS_DEFAULT.",
+      "measurable_via": "Per-source TTL audit; top-50 refresh frequency matches hot TTL.",
+      "relates_to_m7": [
+        "F.15-c1",
+        "F.15-c2"
+      ],
+      "owner_constant": "TRACEBACK_CACHE_TTL_HOURS_HOT, TRACEBACK_CACHE_TTL_HOURS_DEFAULT"
+    },
+    {
+      "id": "R.109",
+      "category": "functional",
+      "driver": "M7 F.13-c1 corrective",
+      "statement": "The citation-check gate shall fail closed on timeout, rejecting the spec emission rather than passing through with an 'unknown' result.",
+      "measurable_via": "Unit test: gate receives timeout → spec rejection event emitted.",
+      "relates_to_m7": [
+        "F.13-c1"
+      ],
+      "owner_constant": "CITATION_CHECK_LATENCY_MAX_S"
+    },
+    {
+      "id": "R.110",
+      "category": "functional",
+      "driver": "M7 F.3-c2 corrective",
+      "statement": "Session dispatch to the Agent Orchestrator shall use two-phase commit: IF-03 dispatch blocks on IF-09 mode-lock acknowledgement with a 2-second timeout; on timeout, dispatch is rejected and retried.",
+      "measurable_via": "Race test: mode mutation mid-dispatch produces retry, not corrupted state.",
+      "relates_to_m7": [
+        "F.3-c1",
+        "F.3-c2"
+      ],
+      "owner_constant": "MODE_LOCK_ACK_TIMEOUT_S"
+    },
+    {
+      "id": "R.111",
+      "category": "functional",
+      "driver": "M7 F.22 corrective",
+      "statement": "The Probe SDK shall self-govern: it measures local overhead and auto-throttles probe frequency if overhead > MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT × 0.75, and activates a kill-switch at MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT regardless of IF-18 backpressure state.",
+      "measurable_via": "Overhead benchmark with synthetic load; SDK throttles and kill-switch fires at correct thresholds.",
+      "relates_to_m7": [
+        "F.22-c1",
+        "F.22-c2"
+      ],
+      "owner_constant": "PROBE_SELF_GOVERNOR_ENABLED, MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT"
+    }
+  ],
+  "promoted_constants": [
+    {
+      "constant": "SS4_PROVIDER_FALLBACK_DEPTH",
+      "value": 3,
+      "units": "count",
+      "source": "M7 promoted from 2",
+      "owner_requirement": "R.104"
+    },
+    {
+      "constant": "METRIC_CHECKPOINT_INTERVAL_MIN",
+      "value": 10,
+      "units": "min",
+      "source": "M7 new",
+      "owner_requirement": "R.106"
+    },
+    {
+      "constant": "FLUSH_FALLBACK_BATCH_MIN_LOW_TRAFFIC",
+      "value": 3,
+      "units": "events",
+      "source": "M7 tiered",
+      "owner_requirement": "R.107"
+    },
+    {
+      "constant": "FLUSH_FALLBACK_BATCH_MIN_DEFAULT",
+      "value": 10,
+      "units": "events",
+      "source": "M7 tiered",
+      "owner_requirement": "R.107"
+    },
+    {
+      "constant": "TRACEBACK_CACHE_TTL_HOURS_HOT",
+      "value": 6,
+      "units": "hours",
+      "source": "M7 tiered",
+      "owner_requirement": "R.108"
+    },
+    {
+      "constant": "TRACEBACK_CACHE_TTL_HOURS_DEFAULT",
+      "value": 24,
+      "units": "hours",
+      "source": "M7 tiered",
+      "owner_requirement": "R.108"
+    },
+    {
+      "constant": "CITATION_CHECK_LATENCY_MAX_S",
+      "value": 5,
+      "units": "sec",
+      "source": "M7 revised from 3, hard-reject",
+      "owner_requirement": "R.109"
+    },
+    {
+      "constant": "AUDIT_WRITE_POLICY",
+      "value": "split_sync_durable_compliance_async_telemetry",
+      "units": "enum",
+      "source": "M7 new",
+      "owner_requirement": "R.105"
+    },
+    {
+      "constant": "MTTD_CORRECTNESS_MAX_S",
+      "value": 120,
+      "units": "sec",
+      "source": "M4 v2 PC.7",
+      "owner_requirement": "R.100"
+    },
+    {
+      "constant": "MTTD_TELEMETRY_MAX_S",
+      "value": 300,
+      "units": "sec",
+      "source": "M4 v2 PC.7",
+      "owner_requirement": "R.101"
+    },
+    {
+      "constant": "PROBE_SDK_CAPABILITY_MODE",
+      "value": "readonly",
+      "units": "enum",
+      "source": "M4 v2 EC17a split",
+      "owner_requirement": "R.102"
+    },
+    {
+      "constant": "CREDENTIAL_ROTATION_DAYS",
+      "value": 90,
+      "units": "days",
+      "source": "M4 v2 EC17b split + existing ENCRYPTED_CREDENTIAL_EXPIRY_DAYS reconciliation",
+      "owner_requirement": "R.103"
+    },
+    {
+      "constant": "CREDENTIAL_GRACE_WINDOW_MIN",
+      "value": 15,
+      "units": "min",
+      "source": "M7 F.32 corrective",
+      "owner_requirement": "R.103"
+    },
+    {
+      "constant": "MODE_LOCK_ACK_TIMEOUT_S",
+      "value": 2,
+      "units": "sec",
+      "source": "M7 F.3-c2 corrective",
+      "owner_requirement": "R.110"
+    }
+  ],
+  "reconciliation_with_existing_m2_constants": [
+    {
+      "existing_constant": "ENCRYPTED_CREDENTIAL_EXPIRY_DAYS = 90",
+      "reconciles_to": "CREDENTIAL_ROTATION_DAYS = 90",
+      "action": "Rename existing constant to CREDENTIAL_ROTATION_DAYS for consistency with M4 v2 EC17b naming; keep value unchanged."
+    },
+    {
+      "existing_constant": "TRACEBACK_LATENCY_SEC = 5",
+      "reconciles_to": "CITATION_CHECK_LATENCY_MAX_S = 5",
+      "action": "Rename existing constant to CITATION_CHECK_LATENCY_MAX_S to align with M7 vocabulary; add 'hard-reject on exceed' semantics via R.109."
+    }
+  ],
+  "owner_requirement_backfill": {
+    "_note": "The 28 existing M2 constants currently have no owner_requirement field (all '-'). The M2 delta fills these for the 14 new/renamed constants; the remaining 28 should be backfilled as a bookkeeping task — 3-4 hrs of work, non-blocking.",
+    "estimated_hrs": 4,
+    "non_blocking": true
+  },
+  "summary": {
+    "new_requirements_count": 12,
+    "promoted_constants_count": 14,
+    "renamed_constants_count": 2,
+    "new_total_m2_requirements": 111,
+    "new_total_m2_constants": 40,
+    "diff_footprint_lines_approx": 420,
+    "blocking_for_v1": "Yes — 5 constants (SS4_PROVIDER_FALLBACK_DEPTH, METRIC_CHECKPOINT_INTERVAL_MIN, CITATION_CHECK_LATENCY_MAX_S, AUDIT_WRITE_POLICY, MTTD_CORRECTNESS_MAX_S) are load-bearing for v1 test acceptance per the agent_swarm_execution_plan acceptance criteria."
+  }
+}

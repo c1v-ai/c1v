@@ -1,0 +1,197 @@
+{
+  "_README": "Reproduces `Interface-matrix-sample-basic.xlsx` (Chassis/Motor Drive/Power robot example). Use as a worked reference for the JSON format.",
+
+  "project": {
+    "id": "interface-matrix-basic",
+    "name": "Interface Matrix — Basic Sample (Robot)",
+    "version": "1.0",
+    "date": "2012-08-01",
+    "starting_row_number": 5
+  },
+
+  "subsystems": [
+    { "id": "chassis", "name": "Chassis Design" },
+    { "id": "motor",   "name": "Motor Drive" },
+    { "id": "power",   "name": "Power" }
+  ],
+
+  "tabs": {
+
+    "chassis": [
+      {
+        "group": "Total Volume Max",
+        "value": 144, "units": "in3", "estimate": true,
+        "provided_to": ["motor", "power"],
+        "last_updated": "2012-06-25", "last_updated_by": "Jin",
+        "champion": "Nero", "est_due": "2012-07-15", "actual_due": "2012-08-01"
+      },
+      {
+        "name": "Total Volume Allocated to Motors",
+        "value": 10, "units": "in3", "estimate": true,
+        "provided_to": ["motor"],
+        "last_updated": "2012-06-26", "last_updated_by": "Jin",
+        "champion": "Nero", "est_due": "2012-07-15", "actual_due": "2012-08-01"
+      },
+      {
+        "name": "Total Volume Allocated to Power subsystem",
+        "value": 12, "units": "in3", "estimate": true,
+        "provided_to": ["power"],
+        "last_updated": "2012-06-26", "last_updated_by": "Jin",
+        "champion": "Nero", "est_due": "2012-07-15", "actual_due": "2012-08-01"
+      },
+      {
+        "group": "TotalComponent Weight Max",
+        "value": 2.5, "units": "kg", "estimate": true,
+        "provided_to": ["motor", "power"],
+        "last_updated": "2012-06-28", "last_updated_by": "Hilary",
+        "champion": "Octavier", "est_due": "2012-07-15", "actual_due": "2012-08-01"
+      },
+      {
+        "name": "Total Weight Allocated to Motors",
+        "value": 2, "units": "kg", "estimate": true,
+        "provided_to": ["motor"],
+        "last_updated": "2012-06-29", "last_updated_by": "Hilary",
+        "champion": "Octavier", "est_due": "2012-07-15", "actual_due": "2012-08-01"
+      },
+      {
+        "name": "Total Weight Allocated to Power subsystem",
+        "value": 0.5, "units": "kg", "estimate": true,
+        "provided_to": ["power"],
+        "last_updated": "2012-06-29", "last_updated_by": "Hilary",
+        "champion": "Octavier", "est_due": "2012-07-15", "actual_due": "2012-08-01"
+      },
+      {
+        "group": "Total Cost Allowed",
+        "value": 1500, "units": "$",
+        "last_updated": "2012-06-15", "last_updated_by": "Xing",
+        "champion": "Lesslie", "est_due": "2012-06-15", "actual_due": "2012-07-15"
+      },
+      {
+        "name": "Chassis Design Cost",
+        "value": 150, "units": "$",
+        "last_updated": "2012-07-13", "last_updated_by": "Xing",
+        "champion": "Lesslie", "actual_due": "2012-07-15"
+      }
+    ],
+
+    "motor": [
+      { "group": "Power Information" },
+      {
+        "name": "Motor Voltage", "value": 24, "units": "V",
+        "provided_to": ["power"],
+        "last_updated": "2012-07-11", "last_updated_by": "Yashoda",
+        "champion": "Jose", "actual_due": "2012-07-12"
+      },
+      {
+        "name": "Motor Current", "value": 1.7, "units": "A",
+        "provided_to": ["power"],
+        "last_updated": "2012-07-11", "last_updated_by": "Yashoda",
+        "champion": "Jose", "actual_due": "2012-07-12"
+      },
+      {
+        "name": "Motor power rating", "value": 30, "units": "W",
+        "provided_to": ["power"],
+        "last_updated": "2012-07-11", "last_updated_by": "Yashoda",
+        "champion": "Jose", "actual_due": "2012-07-12"
+      },
+      {
+        "group": "Maximum Duration Usage", "value": 24, "units": "min.", "estimate": true,
+        "provided_to": ["power"],
+        "last_updated": "2012-06-28", "last_updated_by": "Allison",
+        "champion": "Yulia", "est_due": "2012-06-30", "actual_due": "2012-07-15"
+      },
+      {
+        "group": "Motor Cost", "value": 216, "units": "$",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-19", "last_updated_by": "Kelsey",
+        "champion": "Marc", "est_due": "2012-07-05", "actual_due": "2012-07-18"
+      },
+      { "group": "Motor Dimensions" },
+      {
+        "name": "Motor Length", "value": 62.5, "units": "mm",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-11", "last_updated_by": "Horitz",
+        "champion": "Nick", "est_due": "2012-07-05", "actual_due": "2012-07-11"
+      },
+      {
+        "name": "Motor Dia.", "value": 50, "units": "mm",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-11", "last_updated_by": "Horitz",
+        "champion": "Nick", "est_due": "2012-07-05", "actual_due": "2012-07-11"
+      },
+      { "group": "Motor Weight" },
+      {
+        "name": "Motors Weight", "value": 521, "units": "g",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-11", "last_updated_by": "Horitz",
+        "champion": "Nick", "est_due": "2012-07-05", "actual_due": "2012-07-11"
+      },
+      {
+        "name": "Actual Weight used by Motor drive subsystem",
+        "value": "=E14*4/1000", "units": "kg",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-11", "last_updated_by": "Horitz",
+        "champion": "Nick", "actual_due": "2012-07-11"
+      },
+      {
+        "group": "Motor Installation Guide",
+        "value": "MotorGuide  (Sec 1.2)", "units": ".docx",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-29", "last_updated_by": "Justin",
+        "champion": "Justine", "actual_due": "2012-08-15"
+      }
+    ],
+
+    "power": [
+      {
+        "group": "Voltages Supplied", "value": "5, 12, 24", "units": "V",
+        "provided_to": ["motor"],
+        "last_updated": "2012-07-12", "last_updated_by": "Archie",
+        "champion": "Fritz", "est_due": "2012-07-01", "actual_due": "2012-07-12"
+      },
+      {
+        "group": "Max Current Draw", "value": "less than 6 ", "units": "A", "estimate": true,
+        "provided_to": ["motor"],
+        "last_updated": "2012-07-12", "last_updated_by": "Archie",
+        "champion": "Fritz", "est_due": "2012-07-01", "actual_due": "2012-07-12"
+      },
+      {
+        "group": "Max Voltage Supplied", "value": 24, "units": "V",
+        "provided_to": ["motor"],
+        "last_updated": "2012-07-12", "last_updated_by": "Archie",
+        "champion": "Fritz", "est_due": "2012-07-01", "actual_due": "2012-07-12"
+      },
+      {
+        "group": "Power Board Cost", "value": " incl. components & shipping: 230", "units": "$",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-22", "last_updated_by": "Susan",
+        "champion": "Heidi", "est_due": "2012-07-15", "actual_due": "2012-07-20"
+      },
+      {
+        "group": "Power Board Connection Instructions",
+        "value": "PowerBoardInstructions (Sec 2.1)", "units": ".docx",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-22", "last_updated_by": "Rebecca",
+        "champion": "Ahmed", "actual_due": "2012-08-15"
+      },
+      {
+        "group": "Power Board Dimensions", "value": "12 x 2.5 x 1", "units": "in.",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-16", "last_updated_by": "Susan",
+        "champion": "Heidi", "actual_due": "2012-08-15"
+      },
+      {
+        "group": "Actual Volume used by Power subsystem", "value": 12.5, "units": "in3",
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-20", "last_updated_by": "Susan",
+        "champion": "Heidi", "actual_due": "2012-07-20"
+      },
+      {
+        "group": "Actual Weight used by Power subsystem", "value": 0.21, "units": "kg", "estimate": true,
+        "provided_to": ["chassis"],
+        "last_updated": "2012-07-20", "last_updated_by": "Susan",
+        "champion": "Heidi", "actual_due": "2012-07-20"
+      }
+    ]
+  }
+}

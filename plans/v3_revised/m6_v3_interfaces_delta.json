@@ -1,0 +1,71 @@
+{
+  "_schema": "m6_v3_interfaces_delta.v1",
+  "_produced_date": "2026-04-20",
+  "_scope": "New interfaces added for SS15-SS20 + handoff contract. v2 had 32 internal + 10 external. v3 adds 20 new internal interfaces, bringing total to 52 internal + 13 external.",
+  "_upstream_refs": ["system-design/module-7-interfaces/interface_matrix.json"],
+
+  "new_internal_interfaces": [
+    {"id": "IF-33", "flow": "SS16 → SS15", "description": "Signal-keyed template lookup",                  "criticality": "critical", "protocol": "direct Postgres + Redis",  "payload_schema": "SignalKeys"},
+    {"id": "IF-34", "flow": "SS15 → SS16", "description": "DiagramTemplate[] returned",                     "criticality": "critical", "protocol": "typed response",          "payload_schema": "DiagramTemplate[]"},
+    {"id": "IF-35", "flow": "SS15 → SS1",  "description": "Pre-rendered skeleton HTML + SVG via edge CDN",  "criticality": "critical", "protocol": "HTTP/2 streaming",         "payload_schema": "HTML + binary URIs"},
+    {"id": "IF-36", "flow": "SS6 → SS15",  "description": "Template slot write (specialization output)",    "criticality": "high",     "protocol": "direct Drizzle",           "payload_schema": "DiagramTemplate delta"},
+    {"id": "IF-37", "flow": "SS3 → SS19",  "description": "Dispatch cascade reasoning with template + state","criticality": "critical", "protocol": "LangGraph subgraph call",  "payload_schema": "DiagramTemplate + SpecializationState"},
+    {"id": "IF-38", "flow": "SS19 → SS3",  "description": "Cascade re-rank result + next question/answer",  "criticality": "critical", "protocol": "typed response",          "payload_schema": "CascadeStep"},
+    {"id": "IF-39", "flow": "SS19 → SS7",  "description": "RAG reason — query traceback for resolution",    "criticality": "high",     "protocol": "direct Drizzle pgvector",  "payload_schema": "CitationQuery"},
+    {"id": "IF-40", "flow": "SS7 → SS19",  "description": "Citation result w/ source_version",              "criticality": "high",     "protocol": "typed response",          "payload_schema": "Citation[]"},
+    {"id": "IF-41", "flow": "SS3 → SS20",  "description": "Agent output routed — text vs heavy",            "criticality": "critical", "protocol": "typed queue write",        "payload_schema": "ArtifactPayload"},
+    {"id": "IF-42", "flow": "SS20 → SS1",  "description": "Stream text to UI (wave 1)",                     "criticality": "critical", "protocol": "SSE via AI SDK",          "payload_schema": "StreamChunk"},
+    {"id": "IF-43", "flow": "SS20 → BullMQ","description": "Heavy artifact back-queue job enqueue",          "criticality": "high",     "protocol": "Redis list push",         "payload_schema": "HeavyArtifactJob"},
+    {"id": "IF-44", "flow": "BullMQ → SS1", "description": "Heavy artifact delivery async (wave 2)",         "criticality": "high",     "protocol": "webhook + signed URL",    "payload_schema": "ArtifactDelivery"},
+    {"id": "IF-45", "flow": "SS17 → SS7",  "description": "Propose prompt/template change (shadow)",         "criticality": "med",      "protocol": "LangSmith eval run",      "payload_schema": "ProposedChange"},
+    {"id": "IF-46", "flow": "SS17 → SS14", "description": "Audit log of every proposed change (for PC.7)",   "criticality": "high",     "protocol": "sync-durable write",      "payload_schema": "ChangeAuditEntry"},
+    {"id": "IF-47", "flow": "SS18 → SS11", "description": "Experiment exposure + outcome metric",            "criticality": "med",      "protocol": "OTLP",                    "payload_schema": "ExperimentEvent"},
+    {"id": "IF-48", "flow": "SS18 → SS1",  "description": "Variant selection injected into skeleton",        "criticality": "med",      "protocol": "Edge Config read",        "payload_schema": "VariantAssignment"},
+    {"id": "IF-49", "flow": "SS2 → SS15",  "description": "Session memory → template personalization hint",  "criticality": "high",     "protocol": "typed read",              "payload_schema": "SessionSummary"},
+    {"id": "IF-50", "flow": "SS3 ↔ SS3",   "description": "Parallel agent handoff (fan-out ↔ join)",         "criticality": "critical", "protocol": "in-process typed channel", "payload_schema": "DiagramTemplate + SpecializationState"},
+    {"id": "IF-51", "flow": "SS20 → SS3",  "description": "Consistency join-gate result",                    "criticality": "critical", "protocol": "typed response",          "payload_schema": "JoinGateVerdict"},
+    {"id": "IF-52", "flow": "SS17 → SS18", "description": "Auto-improve outcomes feed into experiment catalog","criticality": "med",    "protocol": "typed queue",             "payload_schema": "ImprovementCandidate"}
+  ],
+
+  "new_external_interfaces": [
+    {"id": "IF-EXT-11", "flow": "SS15 ↔ Vercel Edge Config", "description": "Edge-cached template key manifest",    "criticality": "critical"},
+    {"id": "IF-EXT-12", "flow": "SS17 ↔ LangSmith",          "description": "Eval + trace storage",                 "criticality": "high"},
+    {"id": "IF-EXT-13", "flow": "SS18 ↔ Statsig",            "description": "A/B experiment assignment + outcomes", "criticality": "high"}
+  ],
+
+  "handoff_contract_v3_enforced": {
+    "contract_name": "DiagramTemplate + SpecializationState",
+    "applies_to_interfaces": ["IF-37", "IF-38", "IF-50"],
+    "schema_source": "apps/product-helper/lib/diagrams/schema.ts (to be created in agent swarm W1)",
+    "validation": "Zod at ingress + egress of every listed interface",
+    "size_budget": "≤ 20 KB per handoff payload (EC29)",
+    "why": "Free-text interfaces are the single biggest contributor to parallel-agent inconsistency (M7 F.49). Tight schema enforces compile-time safety between concurrent agents."
+  },
+
+  "n2_chart_impact": {
+    "before": "14 SS × 14 SS = 196 cells; 32 internal connections active",
+    "after": "20 SS × 20 SS = 400 cells; 52 internal connections active",
+    "density_before_pct": 16.3,
+    "density_after_pct": 13.0,
+    "interpretation": "More subsystems but density DROPS — most new interfaces are direct point-to-point, not many-to-many mesh. Indicates good cohesion."
+  },
+
+  "critical_path_interfaces_v3": [
+    "IF-33/IF-34: onboarding signal → template lookup (EC28 ≤ 10ms)",
+    "IF-35: edge skeleton delivery (EC2 ≤ 200ms p99.99)",
+    "IF-37/IF-38: cascade reasoning dispatch + return (EC23 ≤ 250ms re-rank)",
+    "IF-50: parallel agent handoff (payload-size-bounded for EC6 ≥ 7 concurrency)",
+    "IF-51: consistency join-gate (prevents F.46 divergence)",
+    "IF-42: UI streaming (EC16 chunk cadence ≤ 50ms)"
+  ],
+
+  "summary": {
+    "new_internal_interfaces": 20,
+    "new_external_interfaces": 3,
+    "total_v3_internal": 52,
+    "total_v3_external": 13,
+    "critical_criticality_count": 8,
+    "high_criticality_count": 9,
+    "med_criticality_count": 3
+  }
+}

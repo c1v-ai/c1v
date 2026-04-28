@@ -1,0 +1,12 @@
+# Artifact generator Python deps (pinned per v2 §15.7 extender guardrail)
+# Install:  pip install -r scripts/artifact-generators/requirements.txt
+jsonschema==4.23.0
+openpyxl==3.1.5
+python-pptx==1.0.2
+matplotlib==3.9.2
+seaborn==0.13.2
+networkx==3.3
+graphviz==0.20.3
+# PDF rendering for gen-arch-recommendation. Pinned to 62.x — 63+ has breaking
+# API changes.
+weasyprint==62.3

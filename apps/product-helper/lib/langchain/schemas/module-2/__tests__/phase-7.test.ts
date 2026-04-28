@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase7Schema, phase7RowSchema } from '../phase-7-rules-audit';
+import { phase7Schema, phase7RowSchema } from '..';
 
 function envelope() {
   return {

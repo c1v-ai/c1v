@@ -1,0 +1,333 @@
+/**
+ * surface-gap — multi-turn gap-fill adapter for the NFR engine.
+ *
+ * Per plans/kb-runtime-architecture.md §3.2: when
+ * `NFREngineInterpreter.evaluate()` emits `needs_user_input: true`,
+ * the pipeline must not return to Response. Instead it surfaces a question
+ * (plus top-3 computed options and the math trace) into the project's
+ * chat thread, waits for the user's answer, then re-enters Context
+ * construction.
+ *
+ * Design constraints driving this module:
+ *   1. The chat stack uses the Vercel AI SDK's `useChat` hook with the
+ *      `Message` type from `ai`. There is no persisted `messages` table
+ *      to poll.
+ *   2. "Do not fork message schemas" — `Message.content` stays a string.
+ *      Gap payloads therefore travel as a typed HTML-comment marker
+ *      embedded in content, exactly like the `<!--status:...-->`
+ *      convention the bubble renderer already strips.
+ *   3. `surfaceGap()` returns a Promise, resolved by whichever component
+ *      receives the user's reply (typically the `/api/chat` route).
+ *
+ * Pub/sub plumbing:
+ *   - `surfaceGap(input)` registers a Deferred in the process-local
+ *     registry keyed by decisionKey, returns both the Promise AND the
+ *     assistant content string to inject into the next assistant message.
+ *     The caller appends that message to the chat stream.
+ *   - `resolveGap(key, answer)` settles the Promise.
+ *   - `rejectGap(key, reason)` cancels on timeout / thread close.
+ *   - `parseGapAnswer(rawUserContent, pendingOptions)` parses a user reply
+ *     into a `UserAnswer`. Pure.
+ *
+ * This module owns NO react/ui code. Chat renderer strips the marker;
+ * a sibling component renders the option buttons + math trace from the
+ * decoded payload.
+ *
+ * @module lib/langchain/engines/surface-gap
+ */
+
+import type { ComputedOption } from './nfr-engine-interpreter';
+
+// ──────────────────────────────────────────────────────────────────────────
+// Types
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface SurfaceGapDecision {
+  decision_id: string;
+  target_field: string;
+  /** Phrased as a user-facing question — the agent should build this. */
+  question: string;
+}
+
+export interface SurfaceGapInput {
+  decision: SurfaceGapDecision;
+  /** Top-3 options produced by the engine; at most 3, may be fewer. */
+  computedOptions: ComputedOption[];
+  /** Human-readable engine math_trace string. */
+  mathTrace: string;
+  projectId: string | number;
+  threadId: string;
+}
+
+export interface UserAnswer {
+  value: number | string;
+  source: 'computed_option' | 'free_text';
+  /** Index into computedOptions (0-based) if `source` is 'computed_option'. */
+  selectedOptionIndex?: number;
+  /** Verbatim user content as posted to the chat thread. */
+  rawResponse: string;
+}
+
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: Error) => void;
+}
+
+interface PendingGap {
+  key: string;
+  input: SurfaceGapInput;
+  deferred: Deferred<UserAnswer>;
+  createdAt: number;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Content marker — on-the-wire shape embedded in assistant messages.
+// Matches the existing `<!--status:...-->` convention.
+// ──────────────────────────────────────────────────────────────────────────
+
+const MARKER_OPEN = '<!--c1v-gap:';
+const MARKER_CLOSE = '-->';
+
+export interface GapMarkerPayload {
+  decisionId: string;
+  targetField: string;
+  question: string;
+  computedOptions: ComputedOption[];
+  mathTrace: string;
+}
+
+export function encodeGapMarker(payload: GapMarkerPayload): string {
+  // Base64 of JSON — keeps the marker single-line and HTML-safe.
+  const json = JSON.stringify(payload);
+  const b64 =
+    typeof btoa === 'function'
+      ? btoa(json)
+      : Buffer.from(json, 'utf8').toString('base64');
+  return `${MARKER_OPEN}${b64}${MARKER_CLOSE}`;
+}
+
+export function decodeGapMarker(content: string): GapMarkerPayload | null {
+  const start = content.indexOf(MARKER_OPEN);
+  if (start === -1) return null;
+  const end = content.indexOf(MARKER_CLOSE, start + MARKER_OPEN.length);
+  if (end === -1) return null;
+  const b64 = content.slice(start + MARKER_OPEN.length, end);
+  try {
+    const json =
+      typeof atob === 'function'
+        ? atob(b64)
+        : Buffer.from(b64, 'base64').toString('utf8');
+    const parsed = JSON.parse(json) as unknown;
+    if (!isGapPayload(parsed)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function stripGapMarker(content: string): string {
+  const re = new RegExp(
+    `${escapeRegExp(MARKER_OPEN)}[\\s\\S]*?${escapeRegExp(MARKER_CLOSE)}`,
+    'g',
+  );
+  return content.replace(re, '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Registry — module-local map of pending gaps.
+// ──────────────────────────────────────────────────────────────────────────
+
+const pending = new Map<string, PendingGap>();
+
+export function decisionKey(args: {
+  projectId: string | number;
+  decisionId: string;
+  threadId: string;
+}): string {
+  return `${args.projectId}::${args.threadId}::${args.decisionId}`;
+}
+
+export function hasPendingGap(key: string): boolean {
+  return pending.has(key);
+}
+
+export function listPendingGaps(): Array<{
+  key: string;
+  decisionId: string;
+  createdAt: number;
+}> {
+  return Array.from(pending.values()).map((g) => ({
+    key: g.key,
+    decisionId: g.input.decision.decision_id,
+    createdAt: g.createdAt,
+  }));
+}
+
+export interface SurfaceGapHandle {
+  answer: Promise<UserAnswer>;
+  key: string;
+  assistantContent: string;
+}
+
+export function surfaceGap(input: SurfaceGapInput): SurfaceGapHandle {
+  const key = decisionKey({
+    projectId: input.projectId,
+    decisionId: input.decision.decision_id,
+    threadId: input.threadId,
+  });
+
+  // Idempotency: repeated call for the same key adopts the existing
+  // promise — prevents runaway agents from registering N gaps.
+  const existing = pending.get(key);
+  if (existing) {
+    return {
+      key,
+      answer: existing.deferred.promise,
+      assistantContent: buildAssistantContent(input),
+    };
+  }
+
+  const deferred = makeDeferred<UserAnswer>();
+  pending.set(key, {
+    key,
+    input,
+    deferred,
+    createdAt: Date.now(),
+  });
+
+  return {
+    key,
+    answer: deferred.promise,
+    assistantContent: buildAssistantContent(input),
+  };
+}
+
+export function resolveGap(key: string, answer: UserAnswer): boolean {
+  const gap = pending.get(key);
+  if (!gap) return false;
+  pending.delete(key);
+  gap.deferred.resolve(answer);
+  return true;
+}
+
+export function rejectGap(key: string, reason: Error): boolean {
+  const gap = pending.get(key);
+  if (!gap) return false;
+  pending.delete(key);
+  gap.deferred.reject(reason);
+  return true;
+}
+
+/**
+ * Parse a user chat reply into a UserAnswer.
+ *
+ * Option-selection protocol:
+ *   - `/option N` (1-based) selects that option.
+ *   - Bare `1` / `2` / `3` also selects, but only when options exist (so
+ *     free-text "1ms" doesn't accidentally resolve to an option).
+ *   - Anything else is free text; pure numbers are coerced to `number`.
+ */
+export function parseGapAnswer(
+  rawUserContent: string,
+  pendingOptions: ComputedOption[],
+): UserAnswer {
+  const trimmed = rawUserContent.trim();
+
+  const slashMatch = /^\/option\s+(\d+)$/i.exec(trimmed);
+  const bareIndex =
+    pendingOptions.length > 0 && /^[1-3]$/.test(trimmed)
+      ? Number(trimmed)
+      : null;
+
+  const selectedOneBased = slashMatch ? Number(slashMatch[1]) : bareIndex;
+  if (selectedOneBased !== null) {
+    const zeroBased = selectedOneBased - 1;
+    const picked = pendingOptions[zeroBased];
+    if (picked) {
+      return {
+        value: picked.value,
+        source: 'computed_option',
+        selectedOptionIndex: zeroBased,
+        rawResponse: rawUserContent,
+      };
+    }
+  }
+
+  return {
+    value: coerceFreeText(trimmed),
+    source: 'free_text',
+    rawResponse: rawUserContent,
+  };
+}
+
+/** @internal test-only — resets the pending-gap registry. */
+export function __resetPendingGapsForTests(): void {
+  pending.clear();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Helpers
+// ──────────────────────────────────────────────────────────────────────────
+
+function makeDeferred<T>(): Deferred<T> {
+  let resolve!: (v: T) => void;
+  let reject!: (e?: Error) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+function buildAssistantContent(input: SurfaceGapInput): string {
+  const marker = encodeGapMarker({
+    decisionId: input.decision.decision_id,
+    targetField: input.decision.target_field,
+    question: input.decision.question,
+    computedOptions: input.computedOptions,
+    mathTrace: input.mathTrace,
+  });
+
+  const optionLines = input.computedOptions
+    .map((opt, i) => {
+      const units = opt.units ? ` ${opt.units}` : '';
+      return `${i + 1}. **${opt.value}${units}** — ${opt.rationale} _(confidence ${opt.confidence.toFixed(2)})_`;
+    })
+    .join('\n');
+
+  const body = [
+    input.decision.question,
+    '',
+    optionLines || '_No computed options available._',
+    '',
+    '_Reply with `/option 1`, `/option 2`, or `/option 3` to pick — or send your own value._',
+  ].join('\n');
+
+  // Marker trails the body so markdown renders cleanly even if the
+  // component's strip step fails.
+  return `${body}\n\n${marker}`;
+}
+
+function isGapPayload(v: unknown): v is GapMarkerPayload {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as Record<string, unknown>;
+  return (
+    typeof o.decisionId === 'string' &&
+    typeof o.targetField === 'string' &&
+    typeof o.question === 'string' &&
+    Array.isArray(o.computedOptions) &&
+    typeof o.mathTrace === 'string'
+  );
+}
+
+function coerceFreeText(s: string): number | string {
+  // Pure number → typed number. Anything else stays a string; caller's
+  // engine validates against the target_field schema.
+  if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
+  return s;
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

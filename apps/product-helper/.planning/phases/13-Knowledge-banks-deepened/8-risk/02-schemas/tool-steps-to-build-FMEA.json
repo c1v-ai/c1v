@@ -1,0 +1,323 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FMEA Build Steps — Authoritative Course Checklist",
+  "version": "1.0.0",
+  "source": {
+    "pdf": "tool-steps-to-build-FMEA copy.pdf",
+    "markdown_mirror": "tool-steps-to-build-FMEA.md",
+    "course": "Cornell CESYS527 — Identifying and Evaluating Risk"
+  },
+  "description": "Machine-readable, LLM-consumable transcription of the course-provided FMEA build checklist. This is the authoritative step list. The numbered phase files (02-Phase-0 through 09-Phase-7) expand each step with software-specific knowledge, instructions, and STOP GAPs. If this JSON and a phase file disagree on mechanics, this JSON wins and the phase file must be updated.",
+  "usage_contract": {
+    "order": "Execute steps strictly in order. Do not skip required steps.",
+    "stop_gap_policy": "After each step in this JSON, the corresponding KB phase file defines a STOP GAP. The LLM MUST pause and obtain user confirmation before proceeding.",
+    "column_accumulation": "Each step ADDS columns to the master FMEA table. Never drop columns from earlier steps.",
+    "canonical_sample": "FMEA-sample.json — the IR Sensor Encoder worked example from CESYS527. Use it to calibrate output quality and format."
+  },
+  "final_column_order": [
+    "failure_mode_id",
+    "subsystem",
+    "failure_mode",
+    "failure_effects",
+    "possible_cause",
+    "severity",
+    "likelihood",
+    "rpn",
+    "risk_criticality",
+    "corrective_action",
+    "adjusted_severity",
+    "adjusted_likelihood",
+    "adjusted_rpn",
+    "adjusted_criticality",
+    "corrective_action_effort",
+    "detectability",
+    "troubleshooting"
+  ],
+  "phase_to_step_map": {
+    "Phase 0": ["BEFORE"],
+    "Phase 1": ["STEP_1"],
+    "Phase 2": ["STEP_2"],
+    "Phase 3": ["STEP_3"],
+    "Phase 4A": ["STEP_4"],
+    "Phase 4B": ["STEP_5"],
+    "Phase 4C": ["STEP_6"],
+    "Phase 4D": ["STEP_7"],
+    "Phase 5": ["STEP_8", "STEP_9"],
+    "Phase 6": ["STEP_10", "STEP_11", "STEP_12", "STEP_13"],
+    "Phase 7": ["STEP_14"]
+  },
+  "steps": [
+    {
+      "id": "BEFORE",
+      "number": 0,
+      "label": "Before You Begin",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 0",
+      "kb_phase_file": "02-Phase-0-Prerequisites.md",
+      "columns_added": [],
+      "instruction": "Make sure your system's design is advanced enough that you can easily describe how all of the subsystems work together in order to achieve the desired main functionality and handle all of the main use cases required by the challenge definition.",
+      "completion_criteria": "You have an advanced enough design of your system to start an analysis of its parts.",
+      "key_concepts": ["system maturity", "subsystem decomposition", "use case coverage"]
+    },
+    {
+      "id": "STEP_1",
+      "number": 1,
+      "label": "Identify Failure Modes",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 1",
+      "kb_phase_file": "03-Phase-1-Failure-Modes.md",
+      "columns_added": ["subsystem", "failure_mode"],
+      "instruction": "Choose one part of your system (subsystem or component) to start with. Write this part under the 'Subsystem' column. List under 'Failure Mode' all potential failures — anything that doesn't happen the way it's supposed to. Think about losses of functionality, not what specific components fail. Focus on listing important potential losses of functionality or potentially poor performance results, not on the causes that lead to these failures.",
+      "completion_criteria": "You have listed as many important losses or degradations of functionality as you can think of under the 'Failure Mode' column of the FMEA.",
+      "key_concepts": [
+        "failure mode = loss of functionality, NOT cause, NOT effect, NOT component",
+        "phrase patterns: 'Unable to [function]', 'Failure to [verb]', 'Degraded [function]', 'Excessive [output]', 'No [output] provided', 'Incorrect [output]'"
+      ]
+    },
+    {
+      "id": "STEP_2",
+      "number": 2,
+      "label": "List Failure Effects",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 2",
+      "kb_phase_file": "04-Phase-2-Failure-Effects.md",
+      "columns_added": ["failure_effects"],
+      "instruction": "For each functional failure mode identified, list all the effects it would have on the system under the 'Failure Effects' column. Effects such as performance loss, additional budget cost, scheduling delays, equipment/parts damage, human harm, etc., are all worth listing.",
+      "completion_criteria": "A list of all of the possible effects have been established for each identified failure mode.",
+      "key_concepts": [
+        "effect types: performance loss, cost/budget, schedule, equipment damage, human harm, cascading, requirement violation",
+        "multiple effects per failure mode are expected",
+        "trace cascading effects from local → system → mission/project level"
+      ]
+    },
+    {
+      "id": "STEP_3",
+      "number": 3,
+      "label": "Enumerate Possible Causes (MMMME)",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 3",
+      "kb_phase_file": "05-Phase-3-Possible-Causes.md",
+      "columns_added": ["possible_cause"],
+      "instruction": "For each effect, create a list of causes under the 'Possible Cause' column. Use the MMMME acronym (Man, Machine, Method, Material, Environment) as a brainstorming framework. Not all categories will apply to every failure mode — that is normal. Effects can optionally be broken into different rows, but each cause MUST be on its own row. This is crucial for later steps.",
+      "completion_criteria": "At least one possible cause has been listed for each identified effect. Multiple possible causes can be listed per effect. Several effects may share the same possible cause.",
+      "key_concepts": [
+        "MMMME: Man (human error), Machine (infrastructure), Method (process), Material (dependencies), Environment (operating conditions)",
+        "STRICT rule: one cause per row",
+        "be specific — 'component failure' is too vague",
+        "brainstorming causes may reveal missed failure modes or effects — go back and add them"
+      ]
+    },
+    {
+      "id": "STEP_4",
+      "number": 4,
+      "label": "Build Severity Rating Scale and Assign",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 4A",
+      "kb_phase_file": "06-Phase-4-Rating-Systems-and-RPN.md",
+      "columns_added": ["severity"],
+      "instruction": "In the Rating Systems tab, create a table with an initial rating scale (1-3 up to 1-10) for severity. Under each severity rating, list conditions that define how severe the impact must be to earn that rating. In the FMEA Template tab, assign a severity rating to each effect/cause row.",
+      "assignment_rule": "Assign the WORST (highest) severity rating that has at least ONE of its conditions met by the effect/cause.",
+      "completion_criteria": "Your severity rating system is complete and you have assigned severity ratings to each effect/cause.",
+      "key_concepts": [
+        "conditions must be non-overlapping and all-inclusive",
+        "condition categories: cost, time to fix, performance loss, equipment harm, human harm",
+        "human harm typically earns the highest rating"
+      ]
+    },
+    {
+      "id": "STEP_5",
+      "number": 5,
+      "label": "Build Likelihood Rating Scale and Assign",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 4B",
+      "kb_phase_file": "06-Phase-4-Rating-Systems-and-RPN.md",
+      "columns_added": ["likelihood"],
+      "instruction": "Similar to severity, create a likelihood rating scale (1-3 up to 1-10) with measurable conditions. In the FMEA Template tab, assign a likelihood rating to each effect/cause.",
+      "completion_criteria": "Your likelihood rating system is complete, and you have assigned a likelihood rating to each effect/cause.",
+      "key_concepts": [
+        "conditions based on probability, frequency, or % of operational cycles",
+        "use component datasheets / prior version data / prototype testing when available",
+        "if data is unknown, assign a conservative (higher) estimate",
+        "prototype-stage thresholds differ from production-stage"
+      ]
+    },
+    {
+      "id": "STEP_6",
+      "number": 6,
+      "label": "Build RPN Definition Table and Criticality Categories",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 4C",
+      "kb_phase_file": "06-Phase-4-Rating-Systems-and-RPN.md",
+      "columns_added": [],
+      "instruction": "Create a matrix combining severity and likelihood. Assign each cell its own RPN. Establish criticality levels. The sample template uses five categories: High Risk, Medium High Risk, Medium Risk, Medium Low Risk, Low Risk (also called Corrective Action Priority categories). Assign each category a color — typically green (low) → yellow → orange → red (high). Color each cell to produce a gradient.",
+      "completion_criteria": "You have created a color-coded RPN Definition table and established Risk Criticality categories.",
+      "key_concepts": [
+        "RPN = Severity × Likelihood",
+        "3-5 criticality categories is typical",
+        "colors: green = low risk, red = high risk"
+      ]
+    },
+    {
+      "id": "STEP_7",
+      "number": 7,
+      "label": "Calculate RPNs and Assign Risk Criticality",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 4D",
+      "kb_phase_file": "06-Phase-4-Rating-Systems-and-RPN.md",
+      "columns_added": ["rpn", "risk_criticality"],
+      "instruction": "In the FMEA Template tab, calculate RPN for each effect/cause by multiplying severity × likelihood. Add to the RPN column. Look up the Risk Criticality category from the Criticality Ranges and populate the 'Risk Criticality' column.",
+      "completion_criteria": "You have assigned an RPN value and Risk Criticality to each effect/cause.",
+      "key_concepts": [
+        "different causes for the same failure mode may have DIFFERENT severity and likelihood — assign independently",
+        "flag uncertain rows explicitly"
+      ]
+    },
+    {
+      "id": "STEP_8",
+      "number": 8,
+      "label": "Write Corrective Actions",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 5",
+      "kb_phase_file": "07-Phase-5-Corrective-Actions.md",
+      "columns_added": ["corrective_action"],
+      "instruction": "Under the 'Corrective Action' column, list potential corrective action(s) for each possible cause. Short phrases are acceptable. Reference external docs when more text is needed (e.g., 'See Timeline's IR Sensor Risk Plan B'). Deal with highest-risk items first and give them more attention.",
+      "completion_criteria": "Corrective actions have been created for at least all HIGH and almost all MEDIUM HIGH risk items.",
+      "key_concepts": [
+        "action types: architecture/design change, operational/process change, project plan change, fallback plan, severity reducer",
+        "prefer actions that reduce likelihood over actions that only reduce severity",
+        "after writing, revisit ORIGINAL severity if the impact estimate was wrong — distinct from adjusted severity (Step 10)"
+      ]
+    },
+    {
+      "id": "STEP_9",
+      "number": 9,
+      "label": "Assign Unique Failure Mode Identifiers (F.#)",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 5",
+      "kb_phase_file": "07-Phase-5-Corrective-Actions.md",
+      "columns_added": ["failure_mode_id"],
+      "instruction": "In column A (leftmost), add a unique identifier for each identified failure mode using the convention F.[number] (F.1, F.2, ...). All cause rows sharing the same failure mode text share the same F.# identifier. This enables traceability between corrective actions and failure modes.",
+      "completion_criteria": "You have assigned a unique identifier code to each failure mode.",
+      "key_concepts": [
+        "F.# groups by (Subsystem, Failure Mode) pair",
+        "all cause rows for the same failure mode share the same F.#",
+        "numbering is typically global across subsystems (see FMEA-sample.json)"
+      ]
+    },
+    {
+      "id": "STEP_10",
+      "number": 10,
+      "label": "Add Adjusted Rating Columns",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 6",
+      "kb_phase_file": "08-Phase-6-Adjusted-Ratings-and-Stoplights.md",
+      "columns_added": ["adjusted_severity", "adjusted_likelihood", "adjusted_rpn", "adjusted_criticality"],
+      "instruction": "Create new columns for adjusted Severity, adjusted Likelihood, adjusted RPN, and adjusted Criticality. These represent what those factors would be AFTER applying corrective actions. Use the same severity scale (Step 4) and likelihood scale (Step 5) and criticality ranges (Step 6).",
+      "completion_criteria": "Adjusted severity, adjusted likelihood, adjusted RPN, and adjusted criticality have been assigned to all effect/causes that have corrective actions associated with them.",
+      "key_concepts": [
+        "in software systems, corrective actions typically reduce LIKELIHOOD (retries, redundancy, validation) while SEVERITY often stays the same",
+        "for rows with no corrective action, adjusted values equal original values",
+        "this is NOT the same as revisiting original severity in Step 8 — that modifies original; this populates a new column"
+      ]
+    },
+    {
+      "id": "STEP_11",
+      "number": 11,
+      "label": "Estimate Corrective Action Effort",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 6",
+      "kb_phase_file": "08-Phase-6-Adjusted-Ratings-and-Stoplights.md",
+      "columns_added": ["corrective_action_effort"],
+      "instruction": "For each corrective action, estimate the additional effort and resources required to implement it. Best to have developed a timeline or an objective means of quantifying effort before this step.",
+      "completion_criteria": "Effort and resources required have been added for all of the corrective actions. Separate columns may be added for effort and resources.",
+      "key_concepts": [
+        "units: hours, days, weeks, budget %, headcount",
+        "can reference external plans (e.g., '15 hrs. See Timeline's IR Sensor Risk Plan B')"
+      ]
+    },
+    {
+      "id": "STEP_12",
+      "number": 12,
+      "label": "Build Before/After Stoplight Charts",
+      "required": true,
+      "optional": false,
+      "kb_phase": "Phase 6",
+      "kb_phase_file": "08-Phase-6-Adjusted-Ratings-and-Stoplights.md",
+      "columns_added": [],
+      "instruction": "Create TWO stoplight charts. Copy the structure of the criticality matrix. In each cell, place the COUNT of cause-rows at that (Severity, Likelihood) intersection. Chart 1 uses original Severity/Likelihood (BEFORE corrective actions). Chart 2 uses adjusted Severity/Likelihood (AFTER corrective actions).",
+      "completion_criteria": "You have two stoplight charts: one showing risk BEFORE corrective actions, one showing risk AFTER corrective actions.",
+      "key_concepts": [
+        "total count in before chart must equal total count in after chart",
+        "risks should migrate from upper-right (high) toward lower-left (low)",
+        "for rows with no corrective action, use original values in the after chart"
+      ]
+    },
+    {
+      "id": "STEP_13",
+      "number": 13,
+      "label": "Iterate (Optional)",
+      "required": false,
+      "optional": true,
+      "kb_phase": "Phase 6",
+      "kb_phase_file": "08-Phase-6-Adjusted-Ratings-and-Stoplights.md",
+      "columns_added": [],
+      "instruction": "Repeat steps 9 through 12 until you are satisfied with the values in your stoplight charts and you have significantly minimized the risk in your system. This iteration can happen at any point of the design process.",
+      "completion_criteria": "You are satisfied with the amount of risk shown in your last stoplight chart.",
+      "key_concepts": [
+        "each iteration produces a new after-chart; archive prior iterations for comparison",
+        "see FMEA-sample.json for a two-round iteration example"
+      ]
+    },
+    {
+      "id": "STEP_14",
+      "number": 14,
+      "label": "Add Troubleshooting Actions (Optional, Advanced FMEA)",
+      "required": false,
+      "optional": true,
+      "kb_phase": "Phase 7",
+      "kb_phase_file": "09-Phase-7-Detectability-Optional.md",
+      "columns_added": ["detectability", "troubleshooting"],
+      "instruction": "Add a Troubleshooting Actions column. Usually completed toward the end of the design implementation phase. For the possible causes that remain (after corrective actions), list the troubleshooting actions that should take place — diagnostic steps, resolution actions, and escalation procedures.",
+      "completion_criteria": "Troubleshooting actions have been listed for all of the remaining causes.",
+      "key_concepts": [
+        "detectability (optional): scale where higher = HARDER to detect (inverted from severity/likelihood)",
+        "three-factor RPN = Severity × Likelihood × Detectability (recalibrate criticality ranges)",
+        "alternative: include detectability as standalone column without multiplying into RPN",
+        "troubleshooting includes: diagnostic steps, resolution actions, escalation procedures"
+      ]
+    }
+  ],
+  "final_output_checklist": [
+    "System design is advanced enough to analyze subsystems",
+    "All important failure modes listed per subsystem",
+    "All possible effects listed per failure mode",
+    "All possible causes listed per effect (each cause on its own row)",
+    "Severity rating system defined with non-overlapping conditions",
+    "Likelihood rating system defined with non-overlapping conditions",
+    "Severity assigned to every cause row",
+    "Likelihood assigned to every cause row",
+    "RPN Definition matrix created with color-coded criticality ranges",
+    "RPN calculated for every cause row (= Severity × Likelihood)",
+    "Risk Criticality category assigned to every cause row",
+    "Corrective actions written for all HIGH and MEDIUM-HIGH risk items",
+    "Unique failure mode identifiers assigned (F.1, F.2, ...)",
+    "Adjusted Severity, Likelihood, RPN, and Criticality columns completed",
+    "Corrective Action Effort estimated for each action",
+    "Before-corrective-actions stoplight chart created",
+    "After-corrective-actions stoplight chart created",
+    "(Optional) Detectability ratings added",
+    "(Optional) Troubleshooting column added for remaining failure causes"
+  ]
+}

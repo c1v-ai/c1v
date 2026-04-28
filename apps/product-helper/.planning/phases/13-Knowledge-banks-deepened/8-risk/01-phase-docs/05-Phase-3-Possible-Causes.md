@@ -1,0 +1,85 @@
+# Phase 3: Possible Causes Enumeration
+
+## Knowledge
+
+For each failure mode (and its effects), brainstorm all possible causes. A cause is the specific reason WHY the failure mode would occur. This is where we shift from functional thinking to detail/component-oriented thinking.
+
+### MMMME Brainstorming Framework
+
+Use this acronym to systematically cover cause categories:
+
+| Category | Traditional | Software Equivalent | Example Questions |
+|----------|------------|---------------------|-------------------|
+| **Man** (Human) | Operator mistakes, assembly errors | Developer error, misconfiguration, incorrect deployment, missing code review | Could a developer introduce a bug? Could someone misconfigure an environment variable? Could a DBA run a migration incorrectly? See [Deployment & CI/CD KB](deployment-release-cicd-kb.md) |
+| **Machine** (Infrastructure) | Component or equipment failure | Server crash, cloud provider outage, database hardware failure, network switch failure, disk full | Could an AWS region go down? Could a server run out of memory? Could a disk fill up? See [Resiliency Patterns KB](resilliency-patterns-kb.md) |
+| **Method** (Process) | Procedure is incorrect or not followed | Missing tests, no rollback plan, inadequate code review, skipped load testing, no runbook for incident response | Could the deployment procedure miss a step? Could testing be insufficient? See [Deployment & CI/CD KB](deployment-release-cicd-kb.md) |
+| **Material** (Dependencies) | Materials inadequate for task | Third-party API breaks (Stripe, SendGrid), library vulnerability (CVE), outdated SDK version, stale cached data, corrupted database migration | Could a vendor change their API without notice? Could a library have a security hole? See [API Design KB](api-design-sys-design-kb.md) and [Caching KB](caching-system-design-kb.md) |
+| **Environment** (Operating conditions) | Temperature, vibration, moisture | Traffic spike (Black Friday), network partition, DNS failure, concurrent deployments by multiple teams, clock skew across services, cloud region capacity limits | Could a traffic surge overwhelm the system? Could a network partition split services? See [Load Balancing KB](load-balancing-kb.md) and [CDN & Networking KB](cdn-networking-kb.md) |
+
+### Critical formatting rule:
+**Each cause MUST be placed on its own row in the FMEA.** This is essential because later phases assign individual severity, likelihood, and RPN scores to each cause. Multiple causes for the same failure mode/effect result in multiple rows sharing the same Subsystem, Failure Mode, and Failure Effects values.
+
+### Key guidance:
+- Multiple causes can map to the same failure mode/effect
+- Several effects may share the same cause
+- Not all MMMME categories will apply to every failure mode -- that is normal
+- Brainstorming causes may reveal additional failure modes or effects you missed. If so, go back and add them.
+- Be as specific as possible. "Component failure" is too vague; "sensor detector or emitter is partially blocked or damaged" is specific and actionable.
+
+### Example (E-Commerce Platform — causes from all MMMME categories):
+
+| Failure Mode | Failure Effects | Possible Cause | MMMME |
+|---|---|---|---|
+| Failed to process payment | Order stuck, customer uncertain, refund required | Stripe API timeout — no retry logic implemented. See [Resiliency Patterns KB](resilliency-patterns-kb.md) | Material (dependency) |
+| Failed to process payment | (same) | Developer deploys breaking change to Payment Service (missing API key rotation) | Man (human error) |
+| Failed to process payment | (same) | Network partition between Payment Service and Stripe during cloud incident | Environment |
+| Platform unresponsive during traffic spike | Complete revenue loss, SLA violation | Auto-scaling threshold too high — cannot absorb surge. See [Load Balancing KB](load-balancing-kb.md) | Method (process) |
+| Platform unresponsive during traffic spike | (same) | Database connection pool exhausted under load. See [Data Model KB](data-model-kb.md) | Machine (infra) |
+| Platform unresponsive during traffic spike | (same) | No load testing performed before peak season | Method (process) |
+| CDN serves stale content | Wrong prices, out-of-stock items shown | Cache invalidation not triggered after price update. See [Caching KB](caching-system-design-kb.md) | Method (process) |
+| CDN serves stale content | (same) | CDN provider (CloudFront) propagation delay during regional rollout | Material (dependency) |
+| Deployment introduces regression | Feature breaks, rollback required | Test coverage below 85% — untested code path deployed. See [Deployment & CI/CD KB](deployment-release-cicd-kb.md) | Method (process) |
+| Deployment introduces regression | (same) | Two teams deploy conflicting changes simultaneously | Man (human error) |
+
+Notice: Each cause is its own row. The Failure Mode and Effects repeat. Causes span all five MMMME categories — a thorough FMEA for a software system will find that **Method** (process gaps) and **Material** (dependency failures) are often the largest categories, unlike hardware systems where **Machine** and **Environment** dominate.
+
+## Input Required
+
+- Confirmed failure modes and effects table from Phase 2
+
+## Instructions for the LLM
+
+1. For each failure mode, systematically walk through all five MMMME categories.
+2. For each applicable category, list specific, actionable causes.
+3. Place each cause on its own row, repeating the Subsystem, Failure Mode, and Failure Effects columns.
+4. After completing all failure modes, review: did any new failure modes or effects become apparent? If yes, add them.
+
+## Output Format
+
+Extend the table -- now with one row per cause:
+
+```markdown
+| Subsystem | Failure Mode | Failure Effects | Possible Cause |
+|-----------|-------------|----------------|---------------|
+| [Sub 1] | [FM 1a] | [Effects] | [Cause 1] |
+| [Sub 1] | [FM 1a] | [Effects] | [Cause 2] |
+| [Sub 1] | [FM 1a] | [Effects] | [Cause 3] |
+| [Sub 1] | [FM 1b] | [Effects] | [Cause 1] |
+| ... | ... | ... | ... |
+```
+
+---
+
+## STOP GAP -- Checkpoint 3
+
+**Present the updated table to the user and ask:**
+
+> "Here are the possible causes for each failure mode. Please review:
+> 1. Have I covered all MMMME categories (Man, Machine, Method, Material, Environment) where applicable?
+> 2. Are any causes too vague or should they be made more specific?
+> 3. Did this brainstorming reveal any new failure modes or effects that should be added?
+> 4. Is each cause on its own row?
+>
+> Confirm this is complete before I proceed to Phase 4 (Rating Systems and RPN Calculation)."
+
+**Do NOT proceed until the user confirms.**

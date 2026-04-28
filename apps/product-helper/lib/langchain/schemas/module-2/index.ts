@@ -10,50 +10,48 @@
  * The `MODULE_2_PHASE_SCHEMAS` registry is the canonical source list;
  * adding a phase is a 2-line edit here plus one new phase file.
  *
+ * **Layout (post `plans/reorg-mapping.md` §2 reorg):** phase schemas are
+ * grouped under 3 submodule files + 1 handoff file:
+ *   - `submodule-2-1-intake.ts`          — phases 0,1,2,3,4,5,10,11
+ *   - `submodule-2-2-functional-reqs.ts` — phase 6 + requirements-table-base
+ *   - `submodule-2-3-nfrs-constants.ts`  — phases 7,8,9
+ *   - `submodule-2-handoff.ts`           — phase-12-ffbd-handoff + phase-12-final-review
+ *
+ * Registry slugs are preserved verbatim — only the TS source path moved.
+ *
  * @module lib/langchain/schemas/module-2
  */
 
 import type { z } from 'zod';
-import { phase0Schema } from './phase-0-ingest';
-import { phase1Schema } from './phase-1-use-case-priority';
-import { phase2Schema } from './phase-2-thinking-functionally';
-import { phase3Schema } from './phase-3-ucbd-setup';
-import { phase4Schema } from './phase-4-start-end-conditions';
-import { phase5Schema } from './phase-5-ucbd-step-flow';
-import { phase6Schema } from './phase-6-requirements-table';
-import { phase7Schema } from './phase-7-rules-audit';
-import { phase8Schema } from './phase-8-constants-table';
-import { phase9Schema } from './phase-9-delve-and-fix';
-import { phase10Schema } from './phase-10-sysml-activity';
-import { phase11Schema } from './phase-11-multi-uc-expansion';
-import { phase12HandoffSchema } from './phase-12-ffbd-handoff';
-import { phase12FinalReviewSchema } from './phase-12-final-review';
-
-// Shared primitives
-export * from './_shared';
-export * from './requirements-table-base';
-
-// Phase exports (schemas + types)
-export { phase0Schema, type Phase0Artifact } from './phase-0-ingest';
-export { phase1Schema, type Phase1Artifact } from './phase-1-use-case-priority';
-export { phase2Schema, type Phase2Artifact } from './phase-2-thinking-functionally';
-export { phase3Schema, type Phase3Artifact } from './phase-3-ucbd-setup';
-export { phase4Schema, type Phase4Artifact } from './phase-4-start-end-conditions';
-export { phase5Schema, type Phase5Artifact } from './phase-5-ucbd-step-flow';
-export { phase6Schema, type Phase6Artifact } from './phase-6-requirements-table';
-export { phase7Schema, type Phase7Artifact } from './phase-7-rules-audit';
-export { phase8Schema, type Phase8Artifact } from './phase-8-constants-table';
-export { phase9Schema, type Phase9Artifact } from './phase-9-delve-and-fix';
-export { phase10Schema, type Phase10Artifact } from './phase-10-sysml-activity';
-export { phase11Schema, type Phase11Artifact } from './phase-11-multi-uc-expansion';
-export {
+import {
+  phase0Schema,
+  phase1Schema,
+  phase2Schema,
+  phase3Schema,
+  phase4Schema,
+  phase5Schema,
+  phase10Schema,
+  phase11Schema,
+} from './submodule-2-1-intake';
+import { phase6Schema } from './submodule-2-2-functional-reqs';
+import {
+  phase7Schema,
+  phase8Schema,
+  phase9Schema,
+} from './submodule-2-3-nfrs-constants';
+import {
   phase12HandoffSchema,
-  type Phase12HandoffArtifact,
-} from './phase-12-ffbd-handoff';
-export {
   phase12FinalReviewSchema,
-  type Phase12FinalReviewArtifact,
-} from './phase-12-final-review';
+} from './submodule-2-handoff';
+import { requirementsCrawleyExtensionSchema } from './requirements-crawley-extension';
+
+// Shared primitives + phase schemas (re-exported via submodule barrels)
+export * from './_shared';
+export * from './submodule-2-1-intake';
+export * from './submodule-2-2-functional-reqs';
+export * from './submodule-2-3-nfrs-constants';
+export * from './submodule-2-handoff';
+export * from './requirements-crawley-extension';
 
 /**
  * Canonical registry consumed by `generate-all.ts` + the preload bundle.
@@ -65,7 +63,7 @@ export {
 export interface Module2PhaseEntry {
   slug: string;
   name: string;
-  phaseNumber: number;
+  phaseNumber: number | string;
   zodSchema: z.ZodType;
 }
 
@@ -84,4 +82,6 @@ export const MODULE_2_PHASE_SCHEMAS: readonly Module2PhaseEntry[] = [
   { slug: 'phase-11-multi-uc-expansion', name: 'Phase11MultiUcExpansion', phaseNumber: 11, zodSchema: phase11Schema },
   { slug: 'phase-12-ffbd-handoff', name: 'Phase12FfbdHandoff', phaseNumber: 12, zodSchema: phase12HandoffSchema },
   { slug: 'phase-12-final-review', name: 'Phase12FinalReview', phaseNumber: 12, zodSchema: phase12FinalReviewSchema },
+  // Crawley pack (TC1 — REQUIREMENTS-crawley §1 row 10)
+  { slug: 'requirements-crawley-extension', name: 'RequirementsCrawleyExtension', phaseNumber: 'crawley-extension', zodSchema: requirementsCrawleyExtensionSchema },
 ] as const;

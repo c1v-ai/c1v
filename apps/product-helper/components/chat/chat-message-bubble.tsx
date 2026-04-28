@@ -5,6 +5,11 @@ import type { Message } from 'ai';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from './markdown-renderer';
 import { DiagramPopup } from './diagram-popup';
+import { DecisionQuestionCard } from './decision-question-card';
+import {
+  decodeGapMarker,
+  stripGapMarker,
+} from '@/lib/langchain/engines/surface-gap';
 import { User, Bot } from 'lucide-react';
 import type { ArtifactPhase } from '@/lib/langchain/graphs/types';
 
@@ -19,6 +24,19 @@ export interface ChatMessageBubbleProps {
   sources?: any[];
   isLoading?: boolean;
   currentPhase?: ArtifactPhase;
+  /**
+   * Called when the user clicks an option in a G7 decision-question card.
+   * Receives the slash-command string (e.g. `/option 2`); parent forwards
+   * to the chat stream's `append()`. Optional — when omitted the card's
+   * option buttons no-op.
+   */
+  onGapOptionSelect?: (command: string) => void;
+  /**
+   * When false, the decision-question card's buttons are disabled (e.g.
+   * the parent detected that this gap was already answered in a later
+   * message). Default true.
+   */
+  gapEnabled?: boolean;
 }
 
 export function ChatMessageBubble({
@@ -27,13 +45,21 @@ export function ChatMessageBubble({
   sources,
   isLoading = false,
   currentPhase,
+  onGapOptionSelect,
+  gapEnabled = true,
 }: ChatMessageBubbleProps) {
   const [activeDiagram, setActiveDiagram] = useState<string | null>(null);
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
-  // Strip stream status markers injected by LangGraph handler
-  const displayContent = message.content.replace(/<!--status:.*?-->\n?/g, '');
+  // G7: decode gap marker (if any) before rendering.
+  const gapPayload = isAssistant ? decodeGapMarker(message.content) : null;
+
+  // Strip stream status markers injected by LangGraph handler + the G7
+  // gap marker so the option card is the sole affordance.
+  const displayContent = gapPayload
+    ? stripGapMarker(message.content).replace(/<!--status:.*?-->\n?/g, '')
+    : message.content.replace(/<!--status:.*?-->\n?/g, '');
 
   return (
     <>
@@ -77,6 +103,16 @@ export function ChatMessageBubble({
             />
           )}
         </div>
+
+        {/* G7: decision-question card (rendered when message carries a
+            <!--c1v-gap:...--> marker) */}
+        {gapPayload && (
+          <DecisionQuestionCard
+            payload={gapPayload}
+            onSelect={onGapOptionSelect}
+            enabled={gapEnabled}
+          />
+        )}
 
         {/* Loading Indicator */}
         {isLoading && isAssistant && (

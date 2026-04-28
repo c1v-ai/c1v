@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase9Schema } from '../phase-9-delve-and-fix';
+import { phase9Schema } from '..';
 
 function envelope() {
   return {

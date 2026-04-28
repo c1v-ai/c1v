@@ -1,0 +1,110 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "project_entry.v1",
+      "description": "x-ui-surface=internal | Stable schema identifier."
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "x-ui-surface=internal | Primary key; matches `projects.id` (stringified) in the app DB."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "x-ui-surface=internal | Creating user; matches `users.id`. Used for RLS on `project_entry_states`."
+    },
+    "entry_pattern": {
+      "type": "string",
+      "enum": [
+        "new",
+        "existing",
+        "exploring"
+      ],
+      "description": "x-ui-surface=section:onboarding.entry-cards | Which of the 3 cards the user picked."
+    },
+    "pipeline_start_submodule": {
+      "type": "string",
+      "enum": [
+        "M1.1",
+        "M3.1"
+      ],
+      "description": "x-ui-surface=internal | Orchestrator hint: where to start the pipeline. Enforced against entry_pattern by the refine below."
+    },
+    "existing_project_signals": {
+      "type": "object",
+      "properties": {
+        "github_repo_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "x-ui-surface=page:/projects/new | Public GitHub repo URL. When present, triggers repo-scan auto-infer of D0/D3/D7/D9/D10/D12."
+        },
+        "market_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "x-ui-surface=page:/projects/new | Live product / marketing site URL. Feeds industry + business-model inference."
+        },
+        "architecture_doc_upload_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "x-ui-surface=page:/projects/new | Signed-URL pointer to user-uploaded architecture doc (PDF/MD). Optional prose input to M3 reverse-derivation."
+        },
+        "pain_points": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cost-exploding",
+              "latency-spiking",
+              "reliability-failing",
+              "cannot-scale",
+              "compliance-gap",
+              "tech-debt",
+              "security-incident",
+              "other"
+            ]
+          },
+          "maxItems": 8,
+          "description": "x-ui-surface=page:/projects/new | Pain-point checkbox selection. Maps to M4 sensitivity-lens weights."
+        },
+        "pain_points_other": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "x-ui-surface=page:/projects/new | Free-text pain-point (only meaningful when `pain_points` contains `other`)."
+        },
+        "current_dau_estimate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "x-ui-surface=internal | Rough DAU band the user supplied on the Existing card. Feeds D4 as empirical (not aspirational)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=internal | Brownfield signals — required iff entry_pattern=existing; forbidden otherwise."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "x-ui-surface=internal | ISO-8601 creation timestamp."
+    }
+  },
+  "required": [
+    "_schema",
+    "project_id",
+    "user_id",
+    "entry_pattern",
+    "pipeline_start_submodule",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "title": "ProjectEntry",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

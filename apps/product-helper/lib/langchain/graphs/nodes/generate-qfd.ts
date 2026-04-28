@@ -1,9 +1,12 @@
 /**
  * Generate QFD Node
  *
- * Purpose: Generate QFD House of Quality (Step 5) from conversation history,
- * customer needs (actor goals + pain points), and performance criteria from
- * the decision matrix.
+ * v2.1 Wave A RE-WIRE (langgraph-wirer / handoff Issue 21): node now invokes
+ * `hoq-agent` to emit `hoq.v1` whenever a stub is present at
+ * `state.extractedData.hoq`, persisting to `project_artifacts(kind='hoq_v1')`.
+ * The legacy `extractQFD` path is preserved for back-compat with the FROZEN
+ * `components/system-design/qfd-viewer.tsx` (`extractedData.qfd` data path);
+ * both paths run on every turn.
  *
  * Team: AI/Agent Engineering (Agent 3.1: LangChain Integration Engineer)
  *
@@ -16,7 +19,9 @@ import {
   calculateCompleteness,
 } from '../types';
 import { extractQFD } from '../../agents/qfd-agent';
+import { validateHoqArtifact } from '../../agents/system-design/hoq-agent';
 import { formatMessagesAsText } from '../utils';
+import { persistArtifact } from './_persist-artifact';
 
 // ============================================================
 // Main Node Function
@@ -111,7 +116,39 @@ export async function generateQFD(
 
     console.log(`[GENERATE_QFD] QFD extraction succeeded`);
 
-    // Merge QFD result into extractedData
+    // v2.1 Wave A RE-WIRE — additionally invoke hoq-agent (M6 HoQ.v1) if a
+    // stub is provided on state. Persists to project_artifacts(kind='hoq_v1').
+    let hoqResult: unknown = (state.extractedData as Record<string, unknown> | undefined)?.['hoq'];
+    const hoqStub = hoqResult;
+    if (hoqStub) {
+      try {
+        hoqResult = validateHoqArtifact(hoqStub);
+        await persistArtifact({
+          projectId: state.projectId,
+          kind: 'hoq_v1',
+          status: 'ready',
+          result: hoqResult,
+        });
+        console.log('[GENERATE_QFD] hoq-agent re-wire emit OK');
+      } catch (e) {
+        const reason = e instanceof Error ? e.message : 'unknown';
+        console.warn('[GENERATE_QFD] hoq-agent re-wire emit FAILED (non-fatal for legacy QFD):', reason);
+        await persistArtifact({
+          projectId: state.projectId,
+          kind: 'hoq_v1',
+          status: 'failed',
+          failureReason: reason,
+        });
+        hoqResult = (state.extractedData as Record<string, unknown> | undefined)?.['hoq'];
+      }
+    } else {
+      // No hoq stub on state — pending row keeps the manifest sane.
+      await persistArtifact({ projectId: state.projectId, kind: 'hoq_v1', status: 'pending' });
+    }
+
+    // Legacy QFD result lands in extractedData (FROZEN qfd-viewer.tsx data path).
+    // hoq.v1 (synthesis artifact) persists to project_artifacts above —
+    // do NOT add to extractedData per Bond architectural correction.
     const updatedExtractedData = {
       ...state.extractedData,
       qfd: result,

@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-04-27T22:10:27.692Z",
+  "total": 300,
+  "per_agent": [
+    {
+      "agent": "decision-net",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "form-function",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "hoq",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "fmea-early",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "fmea-residual",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "interface-specs",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "n2",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "data-flows",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "nfr-resynth",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    },
+    {
+      "agent": "architecture-recommendation",
+      "count": 30,
+      "by_grade": {
+        "correct": 18,
+        "partial": 8,
+        "wrong": 4
+      }
+    }
+  ]
+}

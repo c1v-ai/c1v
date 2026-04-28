@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase11Schema, ucOverlapCellSchema } from '../phase-11-multi-uc-expansion';
+import { phase11Schema, ucOverlapCellSchema } from '..';
 
 function envelope() {
   return {

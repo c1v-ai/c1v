@@ -1,0 +1,81 @@
+%% UC03 — Review Generated Spec
+%% Generated for c1v Module 2 (2026-04-20)
+%% Source: system-design/module-2-requirements/ucbd/UC03-review-generated-spec.ucbd.json
+flowchart TB
+  start(( )) --> A1
+
+  subgraph "Product Manager"
+    A1[PM navigates to review queue]
+    A5[PM selects a spec]
+    A9[PM reads spec + drafts comments]
+    A10[PM submits each review comment]
+    A12[PM selects action]
+  end
+
+  subgraph "The System"
+    A2[Authenticate PM session]
+    A3[Enumerate draft specs for PM]
+    A4[Render review queue sorted]
+    A6[Verify review permission]
+    A7[Load spec bundle at commit hash]
+    A8[Render spec bundle reviewable]
+    A11[Persist review comment]
+    D1{Action?}
+    A13[Validate revisions include comment]
+    A14[Transition spec state]
+    A15[Audit state transition]
+    A17[Notify Founder of decision]
+    A18[Gate CLI emission on approval]
+    A20[Notify Engineering of approved spec]
+  end
+
+  subgraph "Founder"
+    A16[Receive review decision + comments]
+  end
+
+  subgraph "Engineering Teams"
+    A19[Receive approval notification]
+  end
+
+  A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7 --> A8 --> A9 --> A10 --> A11 --> A12 --> D1
+  D1 -->|Approve| A14
+  D1 -->|Reject| A14
+  D1 -->|Request revisions| A13 --> A14
+  A14 --> A15 --> A17 --> A16
+  A15 --> A18
+  A18 --> A20 --> A19
+  A19 --> finish(((End)))
+  A16 --> finish
+
+  R01[/"&lt;&lt;requirement&gt;&gt; UC03.R01<br/>authenticate PM before exposing review queue"/]
+  R02[/"&lt;&lt;requirement&gt;&gt; UC03.R02<br/>enumerate draft specs assigned to PM"/]
+  R03[/"&lt;&lt;requirement&gt;&gt; UC03.R03<br/>render queue within REVIEW_QUEUE_LOAD_BUDGET_MS"/]
+  R04[/"&lt;&lt;requirement&gt;&gt; UC03.R04<br/>verify PM holds review permission"/]
+  R05[/"&lt;&lt;requirement&gt;&gt; UC03.R05<br/>load spec bundle at commit hash"/]
+  R06[/"&lt;&lt;requirement&gt;&gt; UC03.R06<br/>render spec within SPEC_RENDER_BUDGET_MS"/]
+  R07[/"&lt;&lt;requirement&gt;&gt; UC03.R07<br/>persist review comment with identity + anchor"/]
+  R08[/"&lt;&lt;requirement&gt;&gt; UC03.R08<br/>validate request_revisions includes a comment"/]
+  R09[/"&lt;&lt;requirement&gt;&gt; UC03.R09<br/>transition spec state within STATE_TRANSITION_BUDGET_MS"/]
+  R10[/"&lt;&lt;requirement&gt;&gt; UC03.R10<br/>audit state transition with reviewer + states"/]
+  R11[/"&lt;&lt;requirement&gt;&gt; UC03.R11<br/>notify Founder of decision + comments"/]
+  R12[/"&lt;&lt;requirement&gt;&gt; UC03.R12<br/>enable CLI pipeline on approve; block otherwise"/]
+  R13[/"&lt;&lt;requirement&gt;&gt; UC03.R13<br/>notify Engineering of approved status"/]
+
+  A2 -.-> R01
+  A3 -.-> R02
+  A4 -.-> R03
+  A6 -.-> R04
+  A7 -.-> R05
+  A8 -.-> R06
+  A11 -.-> R07
+  A13 -.-> R08
+  A14 -.-> R09
+  A15 -.-> R10
+  A17 -.-> R11
+  A18 -.-> R12
+  A20 -.-> R13
+
+  NS[/"Initial: draft spec exists; PM authenticated (CC.R01); PM holds review permission (CC.R03)"/]
+  NE[/"Ending: spec state ∈ {approved, rejected, revisions_requested}; audit recorded; Founder notified; CLI gate set"/]
+  start -.-> NS
+  finish -.-> NE

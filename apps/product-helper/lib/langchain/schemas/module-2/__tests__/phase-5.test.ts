@@ -1,7 +1,11 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase5Schema, ucbdPhase5Schema, ucbdStepSchema } from '../phase-5-ucbd-step-flow';
-import { ucbdPhase4Schema } from '../phase-4-start-end-conditions';
-import { ucbdHeaderSchema } from '../phase-3-ucbd-setup';
+import {
+  phase5Schema,
+  ucbdPhase5Schema,
+  ucbdStepSchema,
+  ucbdPhase4Schema,
+  ucbdHeaderSchema,
+} from '..';
 
 function baseUcbd() {
   return {

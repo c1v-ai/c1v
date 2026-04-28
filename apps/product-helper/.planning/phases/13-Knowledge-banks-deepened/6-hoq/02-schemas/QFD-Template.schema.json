@@ -1,0 +1,190 @@
+{
+  "source_file": "QFD-Template.xlsx",
+  "sheet": "QFD Template",
+  "purpose": "House of Quality (QFD) — maps Performance Criteria (PCs, the voice of the customer) to Engineering Characteristics (ECs, the language of the designer) via a relationship matrix, with roof (EC-EC interactions), back porch (competitive scoring), and basement (measurement units, targets, imputed importance, difficulty, cost).",
+  "companion_docs": [
+    "00_QFD-OVERVIEW-AND-TERMINOLOGY.md",
+    "01_FRONT-PORCH--PERFORMANCE-CRITERIA.md",
+    "02_BACK-PORCH--SCORING-AND-COMPETITORS.md",
+    "03_SECOND-FLOOR--ENGINEERING-CHARACTERISTICS.md",
+    "04_MAIN-FLOOR--RELATIONSHIP-MATRIX.md",
+    "05_ROOF--EC-INTERRELATIONSHIPS.md",
+    "06_BASEMENT-PART1--IMPUTED-IMPORTANCE.md",
+    "07_BASEMENT-PART2--COMPETITOR-EC-VALUES.md",
+    "08_BASEMENT-PART3--DIFFICULTY-COST-REEVALUATION.md",
+    "09_DESIGN-TARGETS.md",
+    "10_FINAL-REVIEW-AND-WRITTEN-ANSWERS.md",
+    "TEMPLATE_CELL-MAP.md"
+  ],
+  "bounds": {
+    "max_performance_criteria": 12,
+    "max_engineering_characteristics": 26,
+    "pc_row_range": "33:44",
+    "ec_column_range": "E:AD"
+  },
+  "merged_ranges": [
+    "B2:C2", "B4:C4", "B19:C19",
+    "AE29:AH29", "AE30:AL30", "AE31:AI31", "AJ31:AN31",
+    "C45:D45", "C46:D46", "C47:D47", "C48:D48", "C49:D49",
+    "C50:D50", "C51:D51", "C52:D52", "C53:D53", "C54:D54"
+  ],
+  "legend": {
+    "purpose": "Visual key printed at rows 10-15. These are display symbols — internal cell values must be the numeric mapping below for formulas to work.",
+    "symbol_to_value": {"++": 2, "+": 1, "": 0, "x": -1, "xx": -2},
+    "display_in_template": {
+      "A11:B11": "+ +   Strong Positive",
+      "A12:B12": "+     Positive",
+      "B13":    "      Neutral, Not Applicable",
+      "A14:B14": "x     Negative",
+      "A15:B15": "x x   Strong Negative"
+    }
+  },
+  "metadata": {
+    "project_title":  {"cell": "B2", "merged_range": "B2:C2", "type": "string", "label_cell": "B1"},
+    "developed_by":   {"cell": "B4", "merged_range": "B4:C4", "type": "string", "label_cell": "B3"},
+    "last_updated":   {"cell": "B6",                          "type": "date",   "label_cell": "B5"}
+  },
+  "second_floor": {
+    "purpose": "Engineering Characteristics — the measurable design variables. Up to 26.",
+    "ec_id_column": {"column": "D", "row_range": "3:28", "type": "formula", "note": "Pre-populated auto-increment (D3=1, D4=D3+1, …). Do not overwrite."},
+    "ec_id_header": "E29:AD29 hold EC numbers 1..26 via formula (E29=1, F29=E29+1, …). Do not overwrite.",
+    "ec_name_cells": {
+      "pattern": "EC_n name goes in the diagonal cell. Per cell-map convention: row = n+2, column index = n+4 (col E for n=1, AD for n=26).",
+      "user_fill": true,
+      "note": "Template is blank here; consult the QFD Sample sheet for the exact diagonal visual convention before writing."
+    },
+    "ec_direction_of_change": {
+      "row": "32 (or the row below the last EC header name)",
+      "cells_per_ec": "One cell in column E..AD at the direction-of-change row.",
+      "type": "string",
+      "allowed_values": ["↑ (larger is better)", "↓ (smaller is better)", "target (hit specific value)"]
+    }
+  },
+  "front_porch": {
+    "purpose": "Performance Criteria — what the customer cares about. Up to 12.",
+    "header_row": 32,
+    "data_range": "A33:D44",
+    "columns": [
+      {"name": "pc_id",              "cell_col": "A", "header": "ID",
+       "type": "formula", "user_fill": false,
+       "note": "Auto-increment (A33=1, A34=A33+1, …). Do not overwrite."},
+      {"name": "full_attribute",     "cell_col": "B", "header": "Full Attribute/Goal/Add'l Info",
+       "type": "string",  "user_fill": true,
+       "note": "The full customer-language statement of the performance criterion."},
+      {"name": "short_name",         "cell_col": "C", "header": "Short Name",
+       "type": "string",  "user_fill": true,
+       "note": "Terse label used in diagrams / narrative."},
+      {"name": "relative_importance","cell_col": "D", "header": "Relative Importance",
+       "type": "number_0_1", "user_fill": true,
+       "constraint": "All D33:D44 weights must sum to 1.00 (±0.01). D32 has SUM formula — verify it shows 1.00."}
+    ],
+    "direction_of_change_column": {
+      "cell_col": "C", "header_cell": "C31", "header": "Direction of Change ↑ ↓",
+      "note": "PC-level direction of change. Some templates place it here at row 31; in this template C33:C44 also serves as the short-name column. Confirm by visual inspection before writing."
+    }
+  },
+  "main_floor": {
+    "purpose": "Relationship Matrix — for each (PC row, EC column) pair, the strength/sign of the relationship.",
+    "data_range": "E33:AD44",
+    "value_type": "number",
+    "value_enum": [-2, -1, 0, 1, 2],
+    "blank_policy": "0 or empty = no relationship. Empty cells are treated as 0 by the imputed-importance SUMPRODUCT.",
+    "asymmetric_values": {
+      "allowed": true,
+      "format": "string like '-1/+1' — used when the EC's direction of change flips the sign of the relationship (e.g., smaller is better at low end, larger is better at high end).",
+      "warning": "String values break the SUMPRODUCT in basement row 50. Either switch to signed numeric when possible, or compute imputed importance manually."
+    },
+    "user_fill": true
+  },
+  "roof": {
+    "purpose": "EC × EC interrelationships — captures how pairs of engineering characteristics affect each other.",
+    "cell_formula": "For EC_i × EC_j where i < j: row = j + 2, column index = i + 4. Example: EC1 ↔ EC2 at E4. EC7 ↔ EC26 at K28.",
+    "triangle": "lower",
+    "critical_rule": "Write values in the LOWER triangle only (below-left of the diagonal). NOT the upper triangle.",
+    "value_type": "number or asymmetric_string",
+    "value_enum": [-2, -1, 0, 1, 2],
+    "user_fill": true
+  },
+  "back_porch": {
+    "purpose": "Competitive scoring — how each option (your design at low/high/target + competitors B, C) scores against each Performance Criterion.",
+    "header_row": 32,
+    "unweighted": {
+      "data_range": "AE33:AI44",
+      "columns": [
+        {"name": "option_a_low",    "cell_col": "AE", "header": "A(low)",    "type": "number_0_5", "user_fill": true},
+        {"name": "option_a_high",   "cell_col": "AF", "header": "A(high)",   "type": "number_0_5", "user_fill": true},
+        {"name": "option_a_target", "cell_col": "AG", "header": "A(target)", "type": "number_0_5", "user_fill": true,
+         "note": "In the template only AE, AF, AH, AI are pre-seeded with 0; AG (target) is not. Write values here for your target design."},
+        {"name": "option_b",        "cell_col": "AH", "header": "B",         "type": "number_0_5", "user_fill": true},
+        {"name": "option_c",        "cell_col": "AI", "header": "C",         "type": "number_0_5", "user_fill": true}
+      ],
+      "value_scale": "1–5 customer perception (1=poor, 5=excellent). Some templates use 0–5 with 0 meaning 'not applicable'."
+    },
+    "weighted": {
+      "data_range": "AJ33:AN44",
+      "formula_pattern": "=AE{row}*$D{row} .. =AI{row}*$D{row}",
+      "user_fill": false,
+      "note": "Pre-populated formulas: each weighted cell = unweighted × PC importance weight. Do not overwrite. AL (weighted A-target) is also not in the seeded formulas — inspect before assuming."
+    }
+  },
+  "basement": {
+    "purpose": "Per-EC operational data and derived metrics. One cell per EC (E..AD).",
+    "rows": {
+      "measurement_units":        {"row": 45, "label_cell": "C45", "label": "Measurement Units",
+        "user_fill": true, "type": "string",
+        "note": "Units for each EC (e.g., 'ms', '$', 'N/A', 'Table U1'). Qualitative ECs reference a lookup table."},
+      "competitor_b_values":      {"row": 46, "label_cell": "C46", "label": "Competitor Name B",
+        "user_fill": true, "type": "any",
+        "name_cell": {"cell": "C46", "merged_range": "C46:D46", "note": "Rename to the actual competitor."}},
+      "competitor_c_values":      {"row": 47, "label_cell": "C47", "label": "Competitor Name C",
+        "user_fill": true, "type": "any",
+        "name_cell": {"cell": "C47", "merged_range": "C47:D47"}},
+      "external_thresholds":      {"row": 48, "label_cell": "C48", "label": "(External) Requirement Thresholds",
+        "user_fill": true, "type": "string",
+        "note": "Hard min/max constraints per EC (e.g., '≤100 ms', '≥99.9%'). Options violating these are rejected regardless of score."},
+      "targets":                  {"row": 49, "label_cell": "C49", "label": "Targets",
+        "user_fill": true, "type": "any",
+        "note": "Your design target value per EC — the deliverable of the QFD exercise."},
+      "imputed_importance":       {"row": 50, "label_cell": "C50", "label": "Imputed Importance",
+        "user_fill": false, "type": "formula",
+        "formula_pattern": "=SUMPRODUCT(ABS({col}33:{col}44), $D33:$D44)"},
+      "positive_imputed":         {"row": 51, "label_cell": "C51", "label": "Positive Imputed Importance",
+        "user_fill": false, "type": "formula"},
+      "negative_imputed":         {"row": 52, "label_cell": "C52", "label": "Negative Imputed Importance",
+        "user_fill": false, "type": "formula"},
+      "technical_difficulty":     {"row": 53, "label_cell": "C53", "label": "Technical Difficulty (1 Low, 5 High)",
+        "user_fill": true, "type": "number_1_5",
+        "note": "Engineering team estimate after seeing imputed importance ranks. Phase 08 re-evaluation."},
+      "estimated_cost":           {"row": 54, "label_cell": "C54", "label": "Estimated Cost (1 Low, 5 High)",
+        "user_fill": true, "type": "number_1_5"}
+    }
+  },
+  "formula_cells_dnd": [
+    "A33:A44", "D3:D28", "D32", "E29:AD29",
+    "AJ33:AN44",
+    "E50:AD52"
+  ],
+  "write_protocol": {
+    "preferred": "applescript",
+    "rationale": "TEMPLATE_CELL-MAP.md warns that openpyxl destroys merged cells, borders, and roof formatting when saving. AppleScript (macOS) preserves all template formatting.",
+    "openpyxl": {
+      "read_only": true,
+      "use": "Safe for inspection and validation (load_workbook + iter_rows). Never save() back to the template."
+    },
+    "applescript_sketch": "See TEMPLATE_CELL-MAP.md §'AppleScript Automation (macOS)' for the safe-write protocol (backup → quit Excel → open → write cells → save)."
+  },
+  "validation_rules": [
+    "Sum of front_porch.relative_importance (D33:D44) must equal 1.00 ± 0.01.",
+    "Every PC row filled must have full_attribute + short_name + relative_importance.",
+    "Every EC column filled must have a name (diagonal cell) + direction_of_change + measurement_unit + target.",
+    "Roof values live ONLY in the lower triangle (row ≥ column_index - 1).",
+    "Relationship matrix values are numeric in [-2, -1, 0, 1, 2] OR asymmetric strings — asymmetric breaks row-50 SUMPRODUCT.",
+    "Back porch unweighted scores are in the scale used in the course (typically 1–5).",
+    "Competitor B/C names in C46 and C47 replace the generic 'Competitor Name B/C' labels."
+  ],
+  "known_issues": [
+    "Cell-map §'Second Floor' lists EC diagonal positions as (row n+2, col n+5); EC columns as (col n+4). The n+5 vs n+4 offset should be confirmed against the QFD Sample sheet before programmatic diagonal writes.",
+    "Row 32 shows C32='Short Name' while C31='Direction of Change ↑ ↓'. The Direction-of-Change column placement differs across QFD variants; confirm the intended cell before writing.",
+    "AG (A-target) back-porch column has no pre-seeded formula in AL (its weighted counterpart). Verify AL formula exists, or write it manually."
+  ]
+}

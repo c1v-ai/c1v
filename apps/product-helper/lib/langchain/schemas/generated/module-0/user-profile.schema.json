@@ -1,0 +1,125 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "user_profile.v1",
+      "description": "x-ui-surface=internal | Stable schema identifier."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "x-ui-surface=internal | Primary key; matches `users.id` in the app DB. Used as RLS scope for `user_signals`."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "company"
+      ],
+      "description": "x-ui-surface=internal | `individual` iff email domain ∈ CONSUMER_EMAIL_DOMAINS; else `company`."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "maxLength": 320,
+      "description": "x-ui-surface=internal | Signup email (lowercased)."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "x-ui-surface=internal | Display name from signup form."
+    },
+    "signup_geo": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 8,
+      "description": "x-ui-surface=internal | ISO-3166-1 alpha-2 (or alpha-3) region code from IP geolocation at signup. Feeds D9 geo inference."
+    },
+    "company_signals": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253,
+          "description": "x-ui-surface=internal | Email domain extracted from signup address. Used as the cache key in `user_signals` and as the primary input to Clearbit/LinkedIn enrichment."
+        },
+        "company_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "x-ui-surface=internal | Canonical company name from enrichment provider."
+        },
+        "industry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "x-ui-surface=internal | Industry label — feeds D6 Tier-2 inference. Expected taxonomy overlaps Module-0 D6 enum but may contain provider-specific free-text."
+        },
+        "employee_count_band": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "x-ui-surface=internal | Headcount band (e.g. \"1-10\", \"11-50\"). Feeds D1 team_size Tier-2 inference."
+        },
+        "funding_stage": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "x-ui-surface=internal | Funding stage (Bootstrap/Seed/SeriesA/…). Feeds D8 budget Tier-2 inference."
+        },
+        "website_tech_stack": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "maxItems": 50,
+          "description": "x-ui-surface=internal | Detected frontend/backend tech fingerprint (Wappalyzer-style). Used by scope_tree prior weighting."
+        },
+        "compliance_badges": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "maxItems": 20,
+          "description": "x-ui-surface=internal | Public compliance signals (SOC2/HIPAA/PCI/GDPR/FedRAMP). Feeds D10 SLA tier + D12 data-sensitivity defaults."
+        },
+        "scraped_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "x-ui-surface=internal | ISO-8601 timestamp the enrichment row was produced. Used with the 30-day TTL on `user_signals` to decide rescrape."
+        },
+        "scrape_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "x-ui-surface=internal | Aggregate enrichment confidence in [0,1]. Downstream Tier-2 inference multiplies its own confidence by this."
+        }
+      },
+      "additionalProperties": false,
+      "description": "x-ui-surface=internal | Present only when `type=company` AND the background scrape has landed. Absence is not an error."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "x-ui-surface=internal | ISO-8601 signup timestamp."
+    }
+  },
+  "required": [
+    "_schema",
+    "user_id",
+    "type",
+    "email",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "title": "UserProfile",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

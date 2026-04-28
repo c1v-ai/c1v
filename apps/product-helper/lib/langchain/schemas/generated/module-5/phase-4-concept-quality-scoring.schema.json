@@ -1,0 +1,123 @@
+{
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "number",
+      "const": 4
+    },
+    "scored_cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "function_id": {
+            "type": "string",
+            "pattern": "^F\\.\\d+(\\.\\d+)*$"
+          },
+          "form_id": {
+            "type": "string",
+            "pattern": "^FR\\.\\d{2,}$"
+          },
+          "concept_quality": {
+            "type": "object",
+            "properties": {
+              "specificity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "s ∈ [0,1] — how tightly this form realizes this function."
+              },
+              "coupling": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "k ∈ [0,1] — how much this form drags other forms with it."
+              },
+              "Q": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Q = s · (1 - k)."
+              },
+              "math_derivation_v2": {
+                "type": "object",
+                "properties": {
+                  "formula": {
+                    "type": "string",
+                    "const": "Q = specificity * (1 - coupling)"
+                  },
+                  "citations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "Stevens1974",
+                            "Bass2021"
+                          ]
+                        },
+                        "locator": {
+                          "type": "string",
+                          "description": "Chapter/section/page pointer within the cited work."
+                        },
+                        "formula_ref": {
+                          "type": "string",
+                          "description": "math-sources.md anchor, e.g. 'F11'."
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "locator",
+                        "formula_ref"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Citation for an architectural-quality primitive (specificity or coupling)."
+                    },
+                    "minItems": 2,
+                    "description": "≥1 Stevens1974 + ≥1 Bass2021; NOT Crawley."
+                  },
+                  "engine": {
+                    "type": "string",
+                    "const": "NFREngineInterpreter",
+                    "description": "Math routes through kb-runtime G1 NFREngineInterpreter."
+                  }
+                },
+                "required": [
+                  "formula",
+                  "citations",
+                  "engine"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "specificity",
+              "coupling",
+              "Q",
+              "math_derivation_v2"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "function_id",
+          "form_id",
+          "concept_quality"
+        ],
+        "additionalProperties": false,
+        "description": "Phase-3 cell enriched with concept_quality triplet."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "phase",
+    "scored_cells"
+  ],
+  "additionalProperties": false,
+  "description": "Phase 4 — concept quality scoring (Stevens/Bass, NOT Crawley).",
+  "title": "Phase4ConceptQualityScoring",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

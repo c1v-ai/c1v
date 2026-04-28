@@ -1,0 +1,861 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-5.phase-3-form-function-concept.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "form_function_maps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "map_id": {
+            "type": "string"
+          },
+          "process_id": {
+            "type": "string",
+            "description": "x-ui-surface=internal:cross-phase-ref — Phase-2 internal_function.function_id."
+          },
+          "instrument_form_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "x-ui-surface=internal:cross-phase-ref — Phase-1 form_entity.object_id list."
+          },
+          "operand_id": {
+            "type": "string"
+          },
+          "mapping_cardinality": {
+            "type": "string",
+            "enum": [
+              "no_instrument",
+              "operand_as_instrument",
+              "one_to_one_same_operand",
+              "one_to_one_multiple_operands",
+              "one_to_many",
+              "many_to_many"
+            ],
+            "description": "x-ui-surface=section:Form-Function Concept > Mapping — Crawley Figure 6.5 a–f six form-to-process mapping patterns."
+          },
+          "figure_6_5_pattern_quote": {
+            "type": "string",
+            "description": "x-ui-surface=section:Form-Function Concept > Mapping — short Crawley quote showing why this pattern applies."
+          },
+          "structure_exception": {
+            "type": "string",
+            "enum": [
+              "gravity",
+              "electromagnetic",
+              "ballistic",
+              "software_sequence",
+              "software_address",
+              "software_location",
+              "none"
+            ],
+            "description": "x-ui-surface=section:Form-Function Concept > Structure Exceptions — Crawley §6.2 non-connection interactions allowed.",
+            "default": "none"
+          }
+        },
+        "required": [
+          "map_id",
+          "process_id",
+          "instrument_form_ids",
+          "operand_id",
+          "mapping_cardinality",
+          "figure_6_5_pattern_quote"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Form-Function Concept > Mapping — one form-to-process allocation (Q 6a)."
+      },
+      "minItems": 1
+    },
+    "architecture_layers": {
+      "type": "object",
+      "properties": {
+        "value_operands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value_processes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value_instruments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supporting_processes": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=section:Form-Function Concept > Layers — ordered supporting-process layers."
+        },
+        "supporting_instruments": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=section:Form-Function Concept > Layers — ordered supporting-instrument layers paralleling supporting_processes."
+        }
+      },
+      "required": [
+        "value_operands",
+        "value_processes",
+        "value_instruments",
+        "supporting_processes",
+        "supporting_instruments"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Form-Function Concept > Layers — Crawley §6.3 layered architecture."
+    },
+    "non_idealities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "moving",
+              "containing",
+              "storing",
+              "monitoring",
+              "error_correction",
+              "data_movement",
+              "other"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "added_operand_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "added_process_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "added_form_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "required": [
+          "kind",
+          "description"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Form-Function Concept > Non-Idealities — Q 6b additions along the realistic value path."
+      },
+      "default": []
+    },
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "interface_id": {
+            "type": "string",
+            "description": "x-ui-surface=internal:cross-phase-ref — Phase-1 interface.interface_id."
+          },
+          "passing_operand_id": {
+            "type": "string"
+          },
+          "passing_process_id": {
+            "type": "string"
+          },
+          "self_instrument_id": {
+            "type": "string"
+          },
+          "context_instrument_id": {
+            "type": "string"
+          },
+          "interface_kind": {
+            "type": "string",
+            "enum": [
+              "androgynous",
+              "compatible"
+            ],
+            "description": "x-ui-surface=section:Form-Function Concept > Interfaces — Crawley §6.3."
+          }
+        },
+        "required": [
+          "interface_id",
+          "passing_operand_id",
+          "passing_process_id",
+          "self_instrument_id",
+          "context_instrument_id",
+          "interface_kind"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Form-Function Concept > Interfaces — Q 6d interface with full form + function spec."
+      },
+      "default": []
+    },
+    "operational_behavior": {
+      "type": "object",
+      "properties": {
+        "operator": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "active",
+                "supervisory",
+                "absent_but_essential"
+              ]
+            },
+            "role_description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "role_description"
+          ],
+          "additionalProperties": false,
+          "description": "x-ui-surface=section:Form-Function Concept > Operations — Q 6e operator."
+        },
+        "sequence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "x-ui-surface=section:Form-Function Concept > Operations — Q 6e process execution order."
+        },
+        "parallel_threads": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "default": [],
+          "description": "x-ui-surface=section:Form-Function Concept > Operations — Q 6f parallel threads."
+        },
+        "clock_time_critical": {
+          "type": "boolean",
+          "description": "x-ui-surface=section:Form-Function Concept > Operations — Q 6g clock time importance."
+        },
+        "timing_constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "operator",
+        "sequence",
+        "clock_time_critical"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Form-Function Concept > Operations — Crawley §6.4."
+    },
+    "full_dsm": {
+      "type": "object",
+      "properties": {
+        "pp": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "po": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "pf": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "op": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "oo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "of": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "fp": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "fo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        },
+        "ff": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": "x-ui-surface=internal:dsm-block — row_id → col_id → cell notation."
+        }
+      },
+      "required": [
+        "pp",
+        "po",
+        "pf",
+        "op",
+        "oo",
+        "of",
+        "fp",
+        "fo",
+        "ff"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Form-Function Concept > DSM — Crawley Table 6.3 full 9-block DSM."
+    },
+    "full_dsm_block_derivations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "block_kind": {
+            "type": "string",
+            "enum": [
+              "pp",
+              "po",
+              "pf",
+              "op",
+              "oo",
+              "of",
+              "fp",
+              "fo",
+              "ff"
+            ],
+            "description": "x-ui-surface=section:Form-Function Concept > DSM — Crawley Table 6.3 nine block kinds."
+          },
+          "derivation": {
+            "type": "object",
+            "properties": {
+              "formula": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                "default": {},
+                "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+              },
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+              },
+              "kb_section": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+              },
+              "result": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+              },
+              "result_kind": {
+                "type": "string",
+                "const": "matrix"
+              },
+              "result_matrix": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  }
+                }
+              },
+              "result_shape": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "result_is_square": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "formula",
+              "kb_source",
+              "result_kind",
+              "result_matrix",
+              "result_shape",
+              "result_is_square"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation)."
+          }
+        },
+        "required": [
+          "block_kind",
+          "derivation"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 9,
+      "maxItems": 9,
+      "description": "x-ui-surface=section:Form-Function Concept > DSM — 9 matrix derivations (one per Table 6.3 block kind)."
+    },
+    "dsm_projection_chain_derivation": {
+      "type": "object",
+      "properties": {
+        "formula": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "default": {},
+          "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+        },
+        "kb_source": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+        },
+        "kb_section": {
+          "type": "string",
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+        },
+        "result": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+        }
+      },
+      "required": [
+        "formula",
+        "kb_source"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=internal:math-derivation-resolver — SCALAR chain-descriptor referencing the 9 block derivations."
+    },
+    "operand_interactions": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "const": "matter"
+              },
+              "sub_category": {
+                "type": "string",
+                "enum": [
+                  "mechanical",
+                  "biochemical"
+                ]
+              },
+              "interaction": {
+                "type": "string",
+                "enum": [
+                  "mass_exchange",
+                  "force_momentum",
+                  "chemical",
+                  "biological"
+                ]
+              }
+            },
+            "required": [
+              "category",
+              "sub_category",
+              "interaction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "const": "energy"
+              },
+              "sub_category": {
+                "type": "string",
+                "const": "none"
+              },
+              "interaction": {
+                "type": "string",
+                "enum": [
+                  "work",
+                  "thermal"
+                ]
+              }
+            },
+            "required": [
+              "category",
+              "sub_category",
+              "interaction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "const": "information"
+              },
+              "sub_category": {
+                "type": "string",
+                "enum": [
+                  "signal",
+                  "thought"
+                ]
+              },
+              "interaction": {
+                "type": "string",
+                "enum": [
+                  "data",
+                  "commands",
+                  "cognitive",
+                  "affective"
+                ]
+              }
+            },
+            "required": [
+              "category",
+              "sub_category",
+              "interaction"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "default": []
+    },
+    "form_count_ratio": {
+      "type": "number",
+      "minimum": 0
+    },
+    "crawley_glossary_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "form_function_maps",
+    "architecture_layers",
+    "operational_behavior",
+    "full_dsm",
+    "full_dsm_block_derivations",
+    "dsm_projection_chain_derivation",
+    "form_count_ratio"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M5 Phase 3: form-function concept triad per Crawley Ch 6.",
+  "title": "Phase3FormFunctionConcept",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

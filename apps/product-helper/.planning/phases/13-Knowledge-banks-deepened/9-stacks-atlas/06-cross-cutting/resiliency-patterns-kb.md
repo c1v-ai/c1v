@@ -1,0 +1,1 @@
+../../_shared/resiliency-patterns-kb.md

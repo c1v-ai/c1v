@@ -1,6 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase4Schema, ucbdPhase4Schema } from '../phase-4-start-end-conditions';
-import { ucbdHeaderSchema } from '../phase-3-ucbd-setup';
+import { phase4Schema, ucbdPhase4Schema, ucbdHeaderSchema } from '..';
 
 function phase3Ucbd() {
   return {

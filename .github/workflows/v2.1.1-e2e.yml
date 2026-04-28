@@ -1,0 +1,133 @@
+name: v2.1.1 E2E - Synthesis Click-Through (P9 Mitigation)
+
+# Closes the v2.1 verifier process gap surfaced by P7. Runs the
+# synthesis-clickthrough.spec.ts Playwright spec against a fresh
+# local Supabase + dev server. P10-aware - the spec asserts the
+# click-through wire is alive (POST -> 202 -> pending UI), not that
+# synthesis completes (the 7 NEW v2.1 nodes stay pending per P10).
+#
+# Note: this workflow uses NO untrusted GitHub event inputs in run: blocks.
+# All run: commands are fully static or use already-checked-out files.
+
+on:
+  pull_request:
+    branches: [main, develop, 'wave-b/**']
+    paths:
+      - 'apps/product-helper/tests/e2e/synthesis-clickthrough.spec.ts'
+      - 'apps/product-helper/tests/e2e/fixtures/synthesis-*'
+      - 'apps/product-helper/app/(dashboard)/projects/[id]/synthesis/**'
+      - 'apps/product-helper/components/synthesis/**'
+      - 'apps/product-helper/lib/synthesis/**'
+      - 'apps/product-helper/app/api/projects/[id]/synthesize/**'
+      - 'apps/product-helper/lib/langchain/graphs/nodes/_persist-artifact.ts'
+      - 'apps/product-helper/lib/langchain/graphs/nodes/generate-*'
+      - '.github/workflows/v2.1.1-e2e.yml'
+  push:
+    branches: [main, 'wave-b/v2.1.1-hotfix', 'wave-b/v2.1.1-hotfix-e2e']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synthesis-clickthrough:
+    name: Synthesis Click-Through (P9 mitigation, P10-aware)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 54322:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_URL: postgresql://postgres:postgres@localhost:54322/postgres
+      AUTH_SECRET: stubstubstubstubstubstubstubstubstub
+      ANTHROPIC_API_KEY: sk-ant-stub
+      STRIPE_SECRET_KEY: sk_test_stub
+      STRIPE_WEBHOOK_SECRET: whsec_stub
+      OPENROUTER_API_KEY: stub
+      BASE_URL: http://localhost:3000
+      E2E_TEST_EMAIL: e2e@test.local
+      E2E_TEST_PASSWORD: TestPassword123!
+      SYNTHESIS_FREE_TIER_GATE: disabled
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply Drizzle migrations
+        working-directory: apps/product-helper
+        run: |
+          if [ -f scripts/migrate.ts ]; then
+            pnpm tsx scripts/migrate.ts
+          else
+            echo "Migration runner missing - applying SQL files directly"
+            for f in lib/db/migrations/*.sql; do
+              echo "Applying $f"
+              PGPASSWORD=postgres psql -h localhost -p 54322 -U postgres -d postgres -f "$f" || true
+            done
+          fi
+
+      - name: Note about test user provisioning
+        run: echo "auth.setup.ts will provision the test user on first run."
+
+      - name: Install Playwright browsers
+        working-directory: apps/product-helper
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run synthesis click-through spec
+        working-directory: apps/product-helper
+        env:
+          CI: 'true'
+        run: pnpm exec playwright test tests/e2e/synthesis-clickthrough.spec.ts --project=chromium --reporter=html,github
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-synthesis-clickthrough
+          path: apps/product-helper/playwright-report/
+          retention-days: 14
+
+      - name: Upload test traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-synthesis-clickthrough
+          path: apps/product-helper/test-results/
+          retention-days: 14
+
+      - name: Verify evidence file contains required substrings
+        run: |
+          set -e
+          F=plans/v211-outputs/th1/e2e-evidence.md
+          test -f "$F" || (echo "Evidence file missing: $F" && exit 1)
+          grep -q "4 ready" "$F" || (echo "FAIL: '4 ready' not in $F" && exit 1)
+          grep -q "7 stuck-pending" "$F" || (echo "FAIL: '7 stuck-pending' not in $F" && exit 1)
+          grep -q "P10" "$F" || (echo "FAIL: 'P10' not in $F" && exit 1)
+          echo "Evidence file passes verifier-grep contract."

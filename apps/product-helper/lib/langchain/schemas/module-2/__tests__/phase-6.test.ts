@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase6Schema } from '../phase-6-requirements-table';
+import { phase6Schema } from '..';
 
 function envelope() {
   return {

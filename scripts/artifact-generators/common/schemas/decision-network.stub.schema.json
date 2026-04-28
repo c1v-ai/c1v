@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "decision-network.stub.schema.json",
+  "title": "DecisionNetwork (permissive stub — T10 extender)",
+  "description": "Permissive Wave-1 stub for decision_network.v1.json until downstream T4b lands the canonical schema. Accepts any object; generator logs a WARN.",
+  "type": "object",
+  "additionalProperties": true
+}

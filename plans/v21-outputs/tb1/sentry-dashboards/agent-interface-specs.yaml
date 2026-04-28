@@ -1,0 +1,24 @@
+# Sentry Dashboard: agent=interface-specs (TB1 / EC-V21-B.5)
+title: c1v Agent — interface-specs
+panels:
+  - id: latency_p50_p95_p99
+    title: Latency p50/p95/p99
+    type: timeseries
+    query:
+      event: 'agent_invocation:interface-specs'
+      aggregations: [p50(extra.latency_ms), p95(extra.latency_ms), p99(extra.latency_ms)]
+      group_by: time(5m)
+  - id: daily_cost
+    title: Daily cost (USD)
+    type: timeseries
+    query:
+      event: 'agent_invocation:interface-specs'
+      aggregation: sum(extra.cost_usd)
+      group_by: time(1d)
+  - id: failure_rate
+    title: Failure rate (%)
+    type: timeseries
+    query:
+      event: 'agent_invocation:interface-specs'
+      aggregation: count(tag.success=='false') / count() * 100
+      group_by: time(15m)

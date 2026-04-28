@@ -1,0 +1,185 @@
+{
+  "type": "object",
+  "properties": {
+    "anchor": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "x-ui-surface=internal:math-resolver — snake_case identifier unique within the entry (e.g., \"api_usd_per_1m_tokens_sonnet_input\")."
+    },
+    "description": {
+      "type": "string",
+      "description": "x-ui-surface=section:Math Priors — one-line human description of what this prior represents."
+    },
+    "citation": {
+      "type": "object",
+      "properties": {
+        "kb_source": {
+          "type": "string",
+          "description": "x-ui-surface=section:Entry > Sources — slug of the Atlas entry that owns this citation (e.g., \"anthropic\", \"shopify\")."
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https\\:\\/\\/",
+          "description": "x-ui-surface=section:Entry > Sources — canonical source URL. HTTPS only; must resolve under the ingest domain allowlist (enforced at fetch time)."
+        },
+        "source_tier": {
+          "type": "string",
+          "enum": [
+            "A_sec_filing",
+            "B_official_blog",
+            "C_press_analyst",
+            "D_stackshare",
+            "E_conference",
+            "F_github",
+            "G_model_card",
+            "H_social_flagged"
+          ],
+          "description": "x-ui-surface=section:Entry > Sources — tier per SOURCES.md taxonomy."
+        },
+        "publish_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+          "description": "x-ui-surface=section:Entry > Sources — publication date of the cited source (not fetch date). Drives staleness gate."
+        },
+        "retrieved_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?$",
+          "description": "x-ui-surface=internal:provenance-hash — ISO-8601 timestamp of the fetch that produced sha256."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "x-ui-surface=internal:provenance-hash — SHA-256 (hex) of the fetched source body. Re-compute on refetch; mismatch flags the entry for review."
+        },
+        "bytes_integrity": {
+          "type": "string",
+          "enum": [
+            "clean",
+            "captcha_wall_content_via_webfetch",
+            "paywall_content_via_webfetch",
+            "cdn_geoblock_content_via_webfetch"
+          ],
+          "default": "clean",
+          "description": "x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead."
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "x-ui-surface=internal:provenance-hash — SHA-256 of extracted MD body. Stable across captcha/paywall variants. REQUIRED when `bytes_integrity` ≠ `clean`; when `bytes_integrity` = `clean`, optional."
+        },
+        "is_ic": {
+          "type": "boolean",
+          "description": "x-ui-surface=section:Entry > Sources — TRUE iff the speaker/author is an individual contributor (not exec, VP, marketing, or vendor partner). REQUIRED true for E_conference to qualify as a prior source per plan §6.3 (\"E is B-equivalent only when speaker is IC\"). Default undefined; refinement treats undefined as false for tier E."
+        },
+        "anchor": {
+          "type": "string",
+          "description": "x-ui-surface=section:Entry > Sources — optional heading/section anchor within the source (e.g., \"§6.1 Availability\")."
+        },
+        "corroborated_by": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https\\:\\/\\/"
+              },
+              "source_tier": {
+                "type": "string",
+                "enum": [
+                  "A_sec_filing",
+                  "B_official_blog",
+                  "C_press_analyst",
+                  "D_stackshare",
+                  "E_conference",
+                  "F_github",
+                  "G_model_card",
+                  "H_social_flagged"
+                ]
+              }
+            },
+            "required": [
+              "source_url",
+              "source_tier"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "x-ui-surface=section:Entry > Sources — secondary citations. For NON-PRIOR quant claims only (e.g., revenue on AI-private where dual-C is permitted per plan §6.3). Does NOT rescue tier C/D for math priors — priors still require B/E/G per `citationIsPriorAcceptable`."
+        }
+      },
+      "required": [
+        "kb_source",
+        "source_url",
+        "source_tier",
+        "publish_date",
+        "retrieved_at",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Entry > Sources — provenance record. Every numeric prior carries one."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "x-ui-surface=section:Math Priors — [0,1] — reviewer-assigned confidence in this prior."
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "partial",
+        "inferred"
+      ],
+      "description": "x-ui-surface=section:Math Priors — verification state (AI-private entries commonly \"partial\")."
+    },
+    "result_kind": {
+      "type": "string",
+      "const": "scalar"
+    },
+    "value": {
+      "type": "number",
+      "minimum": 0,
+      "description": "x-ui-surface=section:Math Priors > Latency — latency value (non-negative)."
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "ns",
+        "us",
+        "ms",
+        "s"
+      ],
+      "description": "x-ui-surface=section:Math Priors > Latency — time unit."
+    },
+    "percentile": {
+      "type": "string",
+      "enum": [
+        "p50",
+        "p90",
+        "p95",
+        "p99",
+        "mean"
+      ],
+      "description": "x-ui-surface=section:Math Priors > Latency — latency percentile."
+    }
+  },
+  "required": [
+    "anchor",
+    "description",
+    "citation",
+    "confidence",
+    "verification_status",
+    "result_kind",
+    "value",
+    "units",
+    "percentile"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=section:Math Priors > Latency — scalar latency budget (p50/p95/p99).",
+  "title": "LatencyPrior",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

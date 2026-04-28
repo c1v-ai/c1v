@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "system_scope_summary.v1",
+  "title": "System Scope Summary (Module 1 → Module 2 Handoff)",
+  "description": "Final handoff payload from Module 1 (Defining Scope) to Module 2 (Developing System Requirements). Field shape MUST stay compatible with Module 2's expected input at `2 - Developing System Requirements/2-dev-sys-reqs-for-kb-llm-software/03-Phase-0-Ingest-Module-1-Scope.md` (system_context_summary.v1). Module 2 ingests this file and references it from every downstream JSON artifact's metadata.",
+  "type": "object",
+  "required": [
+    "_schema",
+    "system_name",
+    "system_description",
+    "project_metadata",
+    "boundary",
+    "use_cases",
+    "scope_tree_functions",
+    "module_1_artifacts_referenced"
+  ],
+  "properties": {
+    "_schema": { "const": "system_scope_summary.v1" },
+    "_compatible_with": {
+      "const": "system_context_summary.v1",
+      "description": "Module 2 ingests this same shape under the name system_context_summary.v1."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "Recommended: <project>/module-1-defining-scope/system_scope_summary.json"
+    },
+    "system_name": {
+      "type": "string",
+      "description": "Final name agreed in P4 Step 8. While P0-P3 are running this MUST stay literally 'The System'. Naming earlier violates fail-closed Rule R1."
+    },
+    "system_description": {
+      "type": "string",
+      "description": "One-sentence description sourced from P0 intake + P3 scope tree analysis. Describes the need being met, not the solution chosen."
+    },
+    "project_metadata": {
+      "type": "object",
+      "required": ["project_name", "confidentiality"],
+      "properties": {
+        "project_name": { "type": "string" },
+        "target_release": { "type": "string", "description": "e.g. v1.0, FY26-Q2" },
+        "confidentiality": { "enum": ["Public", "Internal", "Confidential", "Restricted"] },
+        "document_id_prefix": { "type": "string" },
+        "author": { "type": "string" },
+        "approvers": { "type": "string", "description": "Semicolon-delimited list of approvers" },
+        "stakeholders": { "type": "string", "description": "Semicolon-delimited list of all stakeholders (primary + secondary)" },
+        "parent_okr": { "type": "string" },
+        "regulatory_refs": { "type": "string", "description": "e.g. SOC2 Type II; HIPAA; GDPR" }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["the_system", "external_actors"],
+      "properties": {
+        "the_system": {
+          "type": "string",
+          "description": "Single string label of the central box (e.g. 'The System' or final name from P4)."
+        },
+        "external_actors": {
+          "type": "array",
+          "minItems": 8,
+          "description": "8-20 external entities per eCornell rule. Anything fewer means Step 6 iteration break was likely skipped.",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "interactions"],
+            "properties": {
+              "name": { "type": "string", "description": "UPPER CASE per formatting rule" },
+              "type": {
+                "enum": ["human", "external system", "environment", "regulatory", "data source", "downstream consumer"]
+              },
+              "role": { "type": "string", "description": "Why this entity matters to The System." },
+              "interactions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["direction", "label"],
+                  "properties": {
+                    "direction": { "enum": ["actor_to_system", "system_to_actor", "bidirectional"] },
+                    "label": {
+                      "type": "string",
+                      "description": "Lowercase verb-phrase per eCornell formatting rule. Multiple actions on one line separated by commas."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "stakeholders": {
+      "type": "array",
+      "description": "Optional structured stakeholder list (also captured semicolon-delimited in project_metadata.stakeholders for Module 2 compatibility).",
+      "items": {
+        "type": "object",
+        "required": ["name", "primary_or_secondary"],
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "primary_or_secondary": { "enum": ["primary", "secondary"] },
+          "is_client": { "type": "boolean" }
+        }
+      }
+    },
+    "use_cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "primary_actor", "source"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^UC[0-9]{2,3}$" },
+          "name": { "type": "string", "description": "Verb-object phrase" },
+          "primary_actor": { "type": "string" },
+          "secondary_actors": { "type": "array", "items": { "type": "string" } },
+          "initial_conditions": { "type": "string" },
+          "ending_conditions": { "type": "string" },
+          "source": { "enum": ["context_diagram_derived", "stakeholder_request", "internal", "delving"] },
+          "initial_priority_hint": { "enum": ["high", "medium", "low"] },
+          "extends": { "type": "array", "items": { "type": "string" }, "description": "Use case IDs this one extends (per UseCaseDiagram-visual-instructions)" },
+          "includes": { "type": "array", "items": { "type": "string" }, "description": "Use case IDs this one includes" }
+        }
+      }
+    },
+    "use_case_diagram_path": {
+      "type": "string",
+      "description": "Path to the .mmd Mermaid file produced in P2."
+    },
+    "scope_tree_functions": {
+      "type": "array",
+      "description": "Top-level deliverable nodes from the scope tree — feed Module 2 as candidate abstract function names.",
+      "items": { "type": "string" }
+    },
+    "scope_tree_path": {
+      "type": "string",
+      "description": "Path to the .mmd Mermaid file produced in P3."
+    },
+    "context_diagram_path": {
+      "type": "string",
+      "description": "Path to the .mmd Mermaid file produced in P1."
+    },
+    "hard_constraints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Must-haves that constrain the solution space. Surface from PM intake + iteration."
+    },
+    "module_1_artifacts_referenced": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths to all Module 1 source materials consulted (PPTs, PDFs, lecture transcripts)."
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Unresolved items the PM acknowledged but deferred. Module 2 may reopen any of these."
+    }
+  },
+  "additionalProperties": false
+}

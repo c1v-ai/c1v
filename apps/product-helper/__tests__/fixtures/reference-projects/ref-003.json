@@ -1,0 +1,9 @@
+{
+  "_schema": "reference-project.v1",
+  "project_id": "ref-003",
+  "vision": "Real-time logistics dispatch system",
+  "industry": "logistics",
+  "scale": "large",
+  "anonymized": true,
+  "generated_at": "2026-04-27T22:07:02.701Z"
+}

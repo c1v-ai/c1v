@@ -7,18 +7,15 @@
  * Part of the PRD Overview accordion sections.
  */
 
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Layers,
-  MessageSquare,
-  ArrowRight,
   CheckCircle,
   XCircle,
   Users,
 } from 'lucide-react';
+import { EmptySectionState } from './empty-section-state';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -85,33 +82,14 @@ const PRIORITY_CONFIG: Record<string, { label: string; bgColor: string; textColo
 // Empty State
 // ---------------------------------------------------------------------------
 
-function EmptyState({ projectId, status }: { projectId: number; status: string }) {
-  const message =
-    status === 'intake'
-      ? 'Continue the intake chat to define project scope and use cases.'
-      : 'No scope defined yet. Describe what features should be included in the chat.';
-
+function EmptyState({ projectId }: { projectId: number; status: string }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-center py-16">
-          <Layers className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-40" />
-          <h3 className="text-lg font-semibold mb-2 text-foreground">
-            No Scope Defined
-          </h3>
-          <p className="text-sm mb-6 max-w-md mx-auto text-muted-foreground">
-            {message}
-          </p>
-          <Button asChild>
-            <Link href={`/projects/${projectId}/chat`}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Start Chat
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <EmptySectionState
+      icon={Layers}
+      sectionName="Scope"
+      methodologyCopy="Run Deep Synthesis to define project scope through use cases and explicit system boundaries (in-scope vs out-of-scope)."
+      projectId={projectId}
+    />
   );
 }
 

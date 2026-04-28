@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "number",
+      "const": 2
+    },
+    "functions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F\\.\\d+(\\.\\d+)*$",
+            "description": "F.NN — must resolve in ffbd.v1."
+          },
+          "name": {
+            "type": "string"
+          },
+          "uncertainty": {
+            "type": "string",
+            "enum": [
+              "green",
+              "yellow",
+              "red"
+            ],
+            "description": "Mirror of ffbd.v1 function uncertainty."
+          },
+          "source_uc": {
+            "type": "string",
+            "description": "Use-case ref from ffbd.v1 (if any)."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "uncertainty"
+        ],
+        "additionalProperties": false,
+        "description": "Function lifted from ffbd.v1 for M5 scoping."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "phase",
+    "functions"
+  ],
+  "additionalProperties": false,
+  "description": "Phase 2 — function inventory (derived from ffbd.v1).",
+  "title": "Phase2FunctionInventory",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

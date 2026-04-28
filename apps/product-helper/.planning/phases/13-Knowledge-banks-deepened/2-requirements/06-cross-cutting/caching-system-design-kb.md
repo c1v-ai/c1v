@@ -1,0 +1,1 @@
+../../_shared/caching-system-design-kb.md

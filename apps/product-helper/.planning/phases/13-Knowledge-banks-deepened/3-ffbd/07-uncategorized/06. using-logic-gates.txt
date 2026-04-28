@@ -1,0 +1,52 @@
+FFBDs, as compared to
+some other diagrams, make it very easy to
+represent logical operations. And this is really
+one of the reasons I love to use them all the time. Now, the way that it does
+is using logic gates, which are also known
+as either summary gates, control triggers, control gates, or
+sometimes simply gates. The three most common
+gates are IT, which represents
+iteration, or basically how to show a loop in
+the operational flow. There's also OR, which shows the operational flow could take one of many possible paths. And there's also AND, that shows that
+the operation flows can occur in parallel. Logic code gates typically come as a set of beginning
+and ending pairs, much like a set
+of curly brackets. In the same way you
+might actually section off a piece of code in
+software development. So, to show a loop
+using an IT gate, one IT gate circle is used just before the functional block
+that starts the loop and when IT gate is placed just after the last functional
+block of that loop. An arrow is then drawn from
+the end to the beginning of the IT gate combination
+and that arrow is typically labeled
+with the end condition for that loop. The pair of OR gates
+are simply drawn, with just putting one before where the operational
+flow splits and one where the operational
+flow merges back. The arrows coming out
+of the first OR gate are typically labeled
+with the condition why one path would be followed. If all but one of
+the OR gate arrows are labeled, the unlabeled arrow is
+considered the default path. The AND gate pair
+works very similarly, with one indicating
+where the parallelization begins and the other
+indicating where it ends. The AND gate arrows are
+not often labeled, though. The one case where
+we will see them labeled is perhaps for
+resource allocation, such as 50 percent of the power
+is going to this part, 30 percent is going
+into this part, and the last unlabeled arrow Now, you may see the unlabeled
+arrow be used quite often, but at the same time,
+professionally, it is considered better
+to label all of the arrows if you're
+going to label any when using AND gates. Logical flows can
+also be nested within each other as many times as needed, as is
+shown in the example. Now, gates should always be the same size
+throughout the FFBD. The text inside the gates circle
+should be all caps, bold, and commonly within one font size of
+the functional block text. But, always use the same
+font size for all your gates. With that, we've
+now actually covered all the bare bone
+basics of the FFBD. There are, however,
+still a number of other components and techniques that we will
+go over later to effectively capture the more complex aspects
+of your system, and to do so in a way that's
+very easy to interpret.

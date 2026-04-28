@@ -1,0 +1,69 @@
+{
+  "_schema": "activity_diagram_manifest.v1",
+  "_output_path": "system-design/module-2-requirements/sysml/activity_diagram_manifest.json",
+  "_phase_status": "phase-10-complete",
+
+  "diagrams": [
+    {
+      "use_case_id": "UC01",
+      "ucbd_source": "system-design/module-2-requirements/ucbd/UC01-generate-spec-from-idea.ucbd.json",
+      "mermaid_file": "system-design/module-2-requirements/sysml/UC01-generate-spec-from-idea.activity.mmd",
+      "requirements_linked": ["UC01.R01","UC01.R02","UC01.R03","UC01.R04","UC01.R05","UC01.R06","UC01.R07","UC01.R08","UC01.R09","UC01.R10","UC01.R11","UC01.R12","UC01.R13","UC01.R14","UC01.R15","UC01.R16"],
+      "decisions_modeled": ["Intake complete?"],
+      "forks_modeled": [],
+      "swimlanes": ["Founder", "The System", "LLM Providers", "Product Managers"]
+    },
+    {
+      "use_case_id": "UC03",
+      "ucbd_source": "system-design/module-2-requirements/ucbd/UC03-review-generated-spec.ucbd.json",
+      "mermaid_file": "system-design/module-2-requirements/sysml/UC03-review-generated-spec.activity.mmd",
+      "requirements_linked": ["UC03.R01","UC03.R02","UC03.R03","UC03.R04","UC03.R05","UC03.R06","UC03.R07","UC03.R08","UC03.R09","UC03.R10","UC03.R11","UC03.R12","UC03.R13"],
+      "decisions_modeled": ["Review action ∈ {approve, reject, request_revisions}"],
+      "forks_modeled": [],
+      "swimlanes": ["Product Manager", "The System", "Founder", "Engineering Teams"]
+    },
+    {
+      "use_case_id": "UC04",
+      "ucbd_source": "system-design/module-2-requirements/ucbd/UC04-emit-cli-commands.ucbd.json",
+      "mermaid_file": "system-design/module-2-requirements/sysml/UC04-emit-cli-commands.activity.mmd",
+      "requirements_linked": ["UC04.R01","UC04.R02","UC04.R03","UC04.R04","UC04.R05","UC04.R06","UC04.R07","UC04.R08","UC04.R09","UC04.R10","UC04.R11","UC04.R12","UC04.R13","UC04.R14","UC04.R15"],
+      "decisions_modeled": [],
+      "forks_modeled": ["Parallel: VCS write + IDE/CLI delivery (step 13 vs 14)"],
+      "swimlanes": ["Engineering Team Member", "The System", "Version Control", "IDE / CLI Client"]
+    },
+    {
+      "use_case_id": "UC06",
+      "ucbd_source": "system-design/module-2-requirements/ucbd/UC06-recommend-design-improvements.ucbd.json",
+      "mermaid_file": "system-design/module-2-requirements/sysml/UC06-recommend-design-improvements.activity.mmd",
+      "requirements_linked": ["UC06.R01","UC06.R02","UC06.R03","UC06.R04","UC06.R05","UC06.R06","UC06.R07","UC06.R08","UC06.R09","UC06.R10","UC06.R11","UC06.R12","UC06.R13","UC06.R14","UC06.R15","UC06.R16"],
+      "decisions_modeled": ["Deviation implies missing feature?"],
+      "forks_modeled": ["Notification fan-out: Engineer stream + PM digest"],
+      "swimlanes": ["Observability Tools", "The System", "Engineering Team Member", "Product Managers"]
+    },
+    {
+      "use_case_id": "UC08",
+      "ucbd_source": "system-design/module-2-requirements/ucbd/UC08-trace-tech-stack-to-metric.ucbd.json",
+      "mermaid_file": "system-design/module-2-requirements/sysml/UC08-trace-tech-stack-to-metric.activity.mmd",
+      "requirements_linked": ["UC08.R01","UC08.R02","UC08.R03","UC08.R04","UC08.R05","UC08.R06","UC08.R07","UC08.R08","UC08.R09","UC08.R10","UC08.R11","UC08.R12","UC08.R13","UC08.R14"],
+      "decisions_modeled": ["confidence ≥ TRACEBACK_MIN_CONFIDENCE?", "coverage ≥ TRACEBACK_COVERAGE_PCT?"],
+      "forks_modeled": [],
+      "swimlanes": ["The System", "Documentation Sources", "Cloud Providers", "Engineering Team Member"]
+    },
+    {
+      "use_case_id": "UC11",
+      "ucbd_source": "system-design/module-2-requirements/ucbd/UC11-connect-existing-customer-system.ucbd.json",
+      "mermaid_file": "system-design/module-2-requirements/sysml/UC11-connect-existing-customer-system.activity.mmd",
+      "requirements_linked": ["UC11.R01","UC11.R02","UC11.R03","UC11.R04","UC11.R05","UC11.R06","UC11.R07","UC11.R08","UC11.R09","UC11.R10","UC11.R11","UC11.R12","UC11.R13","UC11.R14","UC11.R15"],
+      "decisions_modeled": ["Write scope grant? (fail closed)", "overhead ≤ MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT?"],
+      "forks_modeled": [],
+      "swimlanes": ["Engineering Team Member", "The System", "Identity Provider", "Version Control + Observability Tools"]
+    }
+  ],
+
+  "summary": {
+    "total_diagrams": 6,
+    "total_requirements_traced": 89,
+    "cross_cutting_requirements_not_diagrammed": ["CC.R01","CC.R02","CC.R03","CC.R04","CC.R05","CC.R06","CC.R07","CC.R08","CC.R09","CC.R10"],
+    "notes": "Cross-cutting requirements intentionally do not have their own activity diagrams. They are attached to step nodes via the cross_cutting_ref in requirements_table.json. UC01/UC03/UC04/UC11 each reference CC.R01 (auth) at step 2; every UC references CC.R02 (audit) at the audit write step."
+  }
+}

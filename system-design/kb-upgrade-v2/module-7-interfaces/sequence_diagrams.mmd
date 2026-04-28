@@ -1,0 +1,162 @@
+%% c1v Dual-Mode Platform — Sequence Diagrams
+%% Module 6 — Defining Interfaces (2026-04-20)
+%% Source: system-design/module-6-qfd/interfaces_handoff.json (cross-interface coordination constraints)
+%%
+%% One diagram per QFD roof negative pair. Each diagram shows HOW M6 resolves the tradeoff
+%% via an interface contract that coordinates the two conflicting ECs.
+%%
+%% Four diagrams:
+%%   SEQ-1 — EC1↔EC2 + EC2↔EC4  (Probe SDK ↔ Collector joint tuning)
+%%   SEQ-2 — EC9↔EC11            (Traceback cache invalidation inside SS7)
+%%   SEQ-3 — EC5↔EC6             (Session lock → parallel dispatch)
+%%   SEQ-4 — EC10 hard floor      (Citation-gated CLI emission)
+
+%% ====================================================================
+%% SEQ-1 — Probe SDK ↔ Collector joint tuning
+%% Resolves:
+%%   EC1↔EC2 (-1): probe frequency ↔ aggregation window
+%%   EC2↔EC4 (-1): aggregation window ↔ batch size
+%% M6 resolution: joint tuning contract + time-based flush fallback on IF-17/IF-18.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS9  as SS9 Probe SDK<br/>(customer-side)
+    participant SS10 as SS10 Metrics Collector
+    participant SS11 as SS11 Metric Store
+
+    Note over SS9,SS10: IF-18 initial config push (collector owns EC1+EC2+EC4 jointly)
+    SS10->>SS9: cfg{probe_freq=6/min (EC1), aggregation_window=60 min (EC2), batch_size=50 (EC4), flush_fallback=10}
+
+    loop every probe tick (≤6/min, EC1)
+        SS9->>SS9: enqueue event (payload ≤4 KB, EC3)
+        alt batch reaches 50 events (EC4 satisfied)
+            SS9->>SS10: IF-17 probe payload (batch=50)
+        else 60-min window elapses without batch fill (roof EC2↔EC4)
+            SS9->>SS10: IF-17 TIME-BASED FLUSH (batch≥flush_fallback)
+            Note right of SS9: Prevents batch-starvation when probe_freq too low for window
+        end
+    end
+
+    SS10->>SS10: aggregate (60-min window, EC2)
+    SS10->>SS11: IF-19 aggregated write
+    alt probe_freq > 6/min OR payload > 4 KB (overhead violation)
+        SS10->>SS9: IF-18 backpressure · REJECT · cfg{probe_freq↓}
+        SS10-->>SS10: IF-26 audit probe-rejection (I.EXT.9)
+    end
+
+%% ====================================================================
+%% SEQ-2 — Traceback cache invalidation (EC9↔EC11, STRONGEST roof negative -2)
+%% Resolves: TTL=24h + refresh_cadence=7d. Invalidation event = vendor doc refresh triggers
+%% expiry of every cache entry keyed to the refreshed doc.
+%% M6 resolution: intra-SS7 invalidation protocol (cache ↔ fetcher inside one subsystem).
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS3  as SS3 Agent Orchestrator
+    participant SS6  as SS6 Spec Generator
+    participant CA   as SS7.cache<br/>(TTL 24h · EC9)
+    participant FE   as SS7.fetcher<br/>(refresh 7d · EC11)
+    participant DOCS as Documentation Sources<br/>(I.EXT.5)
+
+    Note over CA,FE: Cache and fetcher live inside SS7 — invalidation is intra-subsystem
+
+    SS6->>CA: IF-13 citation_check(claim)
+    alt cache HIT and not expired (age < 24h, EC9)
+        CA-->>SS6: IF-14 traced citation
+    else cache MISS or expired
+        CA->>FE: fetch(source_uri)
+        FE->>DOCS: GET vendor doc
+        DOCS-->>FE: doc content
+        FE->>CA: write(citation, fetched_at=now)
+        CA-->>SS6: IF-14 traced citation
+    end
+
+    Note over FE: Every 7d per source (EC11)
+    FE->>DOCS: refresh(source_uri)
+    DOCS-->>FE: new doc content (hash changed?)
+    alt new hash
+        FE->>CA: INVALIDATE all entries keyed to source_uri
+        Note right of CA: Resolves EC9↔EC11 roof (-2): stale TTL is not allowed to outlive refresh
+        CA-->>SS3: invalidation event (for in-flight specs)
+    else same hash
+        FE->>CA: extend fetched_at (no invalidation needed)
+    end
+
+%% ====================================================================
+%% SEQ-3 — Session lock → parallel dispatch (EC5↔EC6 -1)
+%% Resolves: routing policy MUST be written before dispatch (avoids race between
+%% per-request routing and parallel dispatch decisions).
+%% M6 resolution: synchronous IF-09 (SS2→SS4 policy write) before IF-03 returns.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS1  as SS1 Founder Web UI
+    participant SS2  as SS2 Session Manager
+    participant SS13 as SS13 Credential Vault
+    participant SS4  as SS4 LLM Provider Layer
+    participant SS3  as SS3 Agent Orchestrator
+
+    SS1->>SS2: IF-01 login + mode select (cloud | local)
+    SS2->>SS13: auth principal
+    SS13-->>SS2: IF-27 signed session JWT (EC17)
+
+    Note over SS2: lock_mode(cloud | local) · mode pin per session (EC5)
+    SS2->>SS4: IF-09 routing policy write<br/>(scale=2 per-session, EC5)
+    SS13->>SS4: IF-29 provider credentials (for selected mode)
+    SS4-->>SS2: ack(routing_set=true)
+
+    Note over SS2,SS3: EC5↔EC6 resolution — dispatch cannot occur before routing is confirmed
+    SS2->>SS3: IF-03 dispatch(principal, locked_mode, intake_payload)
+    activate SS3
+
+    par up to 5 parallel agents (EC6)
+        SS3->>SS4: IF-07 LLM call · agent A (≤8000 tok EC8)
+        SS3->>SS4: IF-07 LLM call · agent B (≤8000 tok EC8)
+        SS3->>SS4: IF-07 LLM call · agent C (≤8000 tok EC8)
+    end
+    SS3-->>SS2: IF-04 agent run state
+    deactivate SS3
+
+    Note over SS3: If dispatch were issued before IF-09 ack, agents could fan out to the wrong provider — the invariant BLOCKS that.
+
+%% ====================================================================
+%% SEQ-4 — Citation-gated CLI emission (EC10 hard floor, rank 4)
+%% Resolves: 100% citation floor is a HARD gate — emission MUST NOT fire with
+%% any unresolved claim. Shows SS6→SS7 check → SS3 review outcome → SS8 emit/block.
+%% ====================================================================
+sequenceDiagram
+    autonumber
+    participant SS1 as SS1 Founder Web UI
+    participant SS3 as SS3 Agent Orchestrator
+    participant SS6 as SS6 Spec Generator
+    participant SS7 as SS7 Traceback Store
+    participant SS8 as SS8 CLI Bundle Emitter
+    participant SS14 as SS14 Audit Log Store
+    participant VCS as Version Control<br/>(I.EXT.3)
+
+    SS3->>SS6: IF-11 generate spec(requirements)
+    SS6->>SS6: draft spec (Mermaid v1, EC12)
+
+    Note over SS6,SS7: EC10 HARD FLOOR — every claim must resolve
+    SS6->>SS7: IF-13 citation_check(claims[])
+    SS7-->>SS6: IF-14 citations[] + unresolved[]
+
+    alt unresolved.length > 0
+        SS6-->>SS3: IF-12 draft · pending_review=true · citation_miss=N
+        SS3->>SS14: IF-24 audit(citation_miss)
+        SS3-->>SS1: IF-02 "spec blocked: N unresolved citations"
+        Note right of SS3: EMISSION BLOCKED. No IF-15 fires.
+    else unresolved.length == 0 (EC10 = 100% satisfied)
+        SS6-->>SS3: IF-12 draft · pending_review=true · citations_ok
+        SS3->>SS1: IF-02 render spec for approval
+        SS1->>SS6: IF-31 approve
+        SS6-->>SS1: IF-32 rendered Mermaid (review)
+
+        SS3->>SS8: IF-15 emit CLI bundle(spec_uri)<br/>(citation-gate PASSED)
+        SS8->>SS8: package + sign (≤5 MB, EC14)
+        SS8->>VCS: IF-EXT-04 signed commit
+        SS8-->>SS3: IF-16 receipt + signature + vcs_ref
+        SS3->>SS14: IF-24 audit(emission_success)
+        SS8->>SS14: IF-25 audit(bundle_id, hash, signer, vcs_commit)
+        SS3-->>SS1: IF-02 "CLI bundle ready"
+    end

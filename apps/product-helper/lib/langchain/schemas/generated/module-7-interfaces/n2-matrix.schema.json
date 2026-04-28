@@ -1,0 +1,144 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-7.n2-matrix.v1"
+    },
+    "_output_path": {
+      "type": "string"
+    },
+    "_upstream_refs": {
+      "type": "object",
+      "properties": {
+        "ffbd": {
+          "type": "string"
+        },
+        "data_flows": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ffbd",
+        "data_flows"
+      ],
+      "additionalProperties": false
+    },
+    "produced_at": {
+      "type": "string"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "system_name": {
+      "type": "string"
+    },
+    "functions_axis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2,
+      "description": "Ordered function id axis for the matrix (e.g., [\"F.1\",\"F.2\",...])."
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^IF\\.\\d{2,}$",
+            "description": "Stable interface id IF.NN (zero-padded)."
+          },
+          "producer": {
+            "type": "string",
+            "description": "Producing function id from ffbd.v1 (e.g., \"F.2\")."
+          },
+          "consumer": {
+            "type": "string",
+            "description": "Consuming function id from ffbd.v1."
+          },
+          "payload_name": {
+            "type": "string",
+            "description": "Short name of the payload (human-readable)."
+          },
+          "data_flow_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^DE\\.\\d{2,}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Soft-nullable reference to a DE.NN from data_flows.v1."
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Transport / invocation style (e.g., \"in-process\", \"http-json\", \"sse\", \"event-bus\")."
+          },
+          "sync_style": {
+            "type": "string",
+            "enum": [
+              "sync",
+              "async",
+              "streaming",
+              "batch"
+            ],
+            "description": "Invocation style."
+          },
+          "criticality": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "description": "Derived from data_flow_ref.criticality if ref present, else manual."
+          },
+          "criticality_override_rationale": {
+            "type": "string",
+            "description": "Required when criticality deviates from data_flow_ref source."
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "producer",
+          "consumer",
+          "payload_name",
+          "data_flow_ref",
+          "protocol",
+          "sync_style",
+          "criticality"
+        ],
+        "additionalProperties": false,
+        "description": "Single IF.NN row in the N² matrix."
+      },
+      "minItems": 1
+    },
+    "mermaid_path": {
+      "type": "string",
+      "description": "Optional relative path to the Mermaid flowchart render."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_upstream_refs",
+    "produced_at",
+    "produced_by",
+    "system_name",
+    "functions_axis",
+    "rows"
+  ],
+  "additionalProperties": false,
+  "description": "Canonical N² matrix artifact (v1).",
+  "title": "N2Matrix",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

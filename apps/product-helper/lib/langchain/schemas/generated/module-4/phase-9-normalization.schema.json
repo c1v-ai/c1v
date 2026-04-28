@@ -1,0 +1,296 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "description": "x-ui-surface=internal:schema-drift-check — fully-qualified schema id (e.g., \"module-2.phase-6-requirements-table.v1\")."
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18,
+          "description": "x-ui-surface=page-header — methodology phase number (0-18) per F13/4 Decision Matrix module."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header (M4-widened phase_number range 0-18)."
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "pattern": "^PC-[0-9]{2}$"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "min_max",
+              "z_score",
+              "rank",
+              "percentile",
+              "target_hit",
+              "custom"
+            ],
+            "description": "x-ui-surface=section:Normalization > Row — normalization method for this PC."
+          },
+          "math_derivation": {
+            "type": "object",
+            "properties": {
+              "formula": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "number",
+                    "string"
+                  ]
+                },
+                "default": {},
+                "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+              },
+              "kb_source": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+              },
+              "kb_section": {
+                "type": "string",
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+              },
+              "result": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+              }
+            },
+            "required": [
+              "formula",
+              "kb_source"
+            ],
+            "additionalProperties": false,
+            "description": "x-ui-surface=section:Normalization > Row > Math — formula + inputs (e.g., min_max: (x - min) / (max - min)). REQUIRED so normalization isn't opaque."
+          },
+          "output_range": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "default": [
+              0,
+              1
+            ],
+            "description": "x-ui-surface=section:Normalization > Row — normalized output range (default [0,1])."
+          },
+          "direction_flip_applied": {
+            "type": "boolean",
+            "description": "x-ui-surface=section:Normalization > Row — true when PC direction = less_is_better (sign flipped so higher = better)."
+          }
+        },
+        "required": [
+          "criterion_id",
+          "method",
+          "math_derivation",
+          "direction_flip_applied"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Normalization > Row — per-PC normalization config with formula."
+      },
+      "minItems": 6,
+      "maxItems": 10,
+      "description": "x-ui-surface=page:/projects/[id]/system-design/decision-matrix/normalization — per-PC normalization entries (matches Phase 3 criteria count)."
+    },
+    "global_method_default": {
+      "type": "string",
+      "enum": [
+        "min_max",
+        "z_score",
+        "rank",
+        "percentile",
+        "target_hit",
+        "custom"
+      ],
+      "default": "min_max",
+      "description": "x-ui-surface=section:Normalization > Default — method applied when a PC entry omits a method override (default: min_max)."
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "entries"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — base phase envelope extended by every Module 2 phase.",
+  "title": "Phase9Normalization",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

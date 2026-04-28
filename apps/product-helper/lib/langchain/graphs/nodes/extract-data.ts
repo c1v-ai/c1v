@@ -21,6 +21,13 @@ import {
 } from '../../agents/extraction-agent';
 import { ExtractionResult } from '../../schemas';
 import { formatMessagesAsText } from '../utils';
+import { persistArtifact } from './_persist-artifact';
+import {
+  NFR_ENGINE_CONTRACT_VERSION,
+  type NfrEngineContractV1,
+} from '../contracts/nfr-engine-contract-v1';
+import { computeInputsHash } from '../contracts/inputs-hash';
+import { surfaceOpenQuestion } from '@/lib/chat/system-question-bridge';
 
 // ============================================================
 // Main Node Function
@@ -111,6 +118,11 @@ export async function extractData(
     // Compute artifact readiness using the types module function
     const artifactReadiness = computeArtifactReadiness(mergedData);
 
+    // v2.1 Wave A — extract_data augmentation: emit contract-pin envelope for
+    // NFR / constants slices when stubs are on state. Failure path routes to
+    // system-question-bridge instead of throwing (Wave A ↔ Wave E pin).
+    await emitNfrContractEnvelope(state, mergedData);
+
     // [EXTRACT_DEBUG] Function exit
     console.log(`[EXTRACT_DEBUG] Returning state update with completeness: ${completeness}`);
 
@@ -129,6 +141,95 @@ export async function extractData(
       error: `Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
+}
+
+// ============================================================
+// v2.1 Wave A — NFR/constants contract-pin envelope emitter
+// ============================================================
+
+/**
+ * Emit the `nfr_engine_contract_version: 'v1'` envelope for NFR + constants
+ * slices and persist to project_artifacts. Failure path emits a
+ * `needs_user_input` envelope and surfaces an open question via the chat
+ * bridge — NOT a thrown error (per master plan v2.1 §Wave A ↔ Wave E pin).
+ *
+ * Stubs land at `state.extractedData.nfrs` and `state.extractedData.constants`
+ * (set offline by `nfr-resynth-agent` script today; v2.2 Wave E producer will
+ * fill the same envelope from engine internals).
+ */
+async function emitNfrContractEnvelope(
+  state: IntakeState,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mergedData: any,
+): Promise<void> {
+  const ed = mergedData as Record<string, unknown> | undefined;
+  const nfrs = ed?.['nfrs'];
+  const constants = ed?.['constants'];
+  const synthesizedAt = new Date().toISOString();
+  const inputsHash = computeInputsHash({
+    intake: { projectId: state.projectId, projectName: state.projectName, projectVision: state.projectVision },
+    upstreamShas: {},
+  });
+
+  await emitOne('nfr', state, nfrs, synthesizedAt, inputsHash);
+  await emitOne('constants', state, constants, synthesizedAt, inputsHash);
+}
+
+async function emitOne(
+  kind: 'nfr' | 'constants',
+  state: IntakeState,
+  result: unknown,
+  synthesizedAt: string,
+  inputsHash: string,
+): Promise<void> {
+  const artifactKind = kind === 'nfr' ? 'nfrs_v2' : 'constants_v2';
+
+  if (result === undefined || result === null) {
+    // No stub — emit needs_user_input envelope to system-question-bridge.
+    const envelope: NfrEngineContractV1 = {
+      nfr_engine_contract_version: NFR_ENGINE_CONTRACT_VERSION,
+      synthesized_at: synthesizedAt,
+      inputs_hash: inputsHash,
+      status: 'needs_user_input',
+      computed_options: [],
+      math_trace: `${kind} resynth: no upstream stub on state.extractedData.${kind === 'nfr' ? 'nfrs' : 'constants'}; user input required`,
+    };
+    try {
+      await surfaceOpenQuestion({
+        source: 'm2_nfr',
+        question: `Help me synthesize the ${kind === 'nfr' ? 'non-functional requirements' : 'engineering constants'} for this project — I don't have enough upstream context to derive them.`,
+        computed_options: envelope.computed_options,
+        math_trace: envelope.math_trace,
+        project_id: state.projectId,
+      });
+    } catch (e) {
+      // Bridge failures must NEVER throw out of extract_data.
+      console.warn(`[EXTRACT_DEBUG] surfaceOpenQuestion failed (non-fatal):`, e instanceof Error ? e.message : e);
+    }
+    await persistArtifact({
+      projectId: state.projectId,
+      kind: artifactKind,
+      status: 'pending',
+      inputsHash,
+    });
+    return;
+  }
+
+  // Success envelope.
+  const envelope: NfrEngineContractV1 = {
+    nfr_engine_contract_version: NFR_ENGINE_CONTRACT_VERSION,
+    synthesized_at: synthesizedAt,
+    inputs_hash: inputsHash,
+    status: 'ok',
+    result,
+  };
+  await persistArtifact({
+    projectId: state.projectId,
+    kind: artifactKind,
+    status: 'ready',
+    result: envelope,
+    inputsHash,
+  });
 }
 
 // ============================================================

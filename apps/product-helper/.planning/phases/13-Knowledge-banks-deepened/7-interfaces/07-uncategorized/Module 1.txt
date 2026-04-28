@@ -1,0 +1,25 @@
+Module 1: Defining Interfaces
+o Module Introduction: Discovering and Defining Operational Interfaces
+o Interfaces are Failure Points
+o Defining Your System's Subsystems
+o Determine Your Subsystems
+o Communicating Effectively about Interfaces
+o Brainstorming Interfaces with a Data Flow Diagram
+o Formalizing Interface Definition with an N-Squared Diagram
+o N-squared Chart and Data Flow Diagram
+o CRC cards
+o Share Information with Other Subsystem Teams
+o Using Sequence Diagrams to Describe Interactions
+o Sequence Diagram Template
+o Notating Logic, Self-calls, and Interface Specifications in Sequence Diagrams
+o Course Project, Part One—Define Operational Interfaces
+o Interface Insight through a Sequence Diagram
+o Module Wrapup: Discovering/Defining Operational Interfaces
+Discovering and Defining Operational Interfaces
+
+As you begin to consider interfaces, you should have a strong understanding of what your system will do and how its performance will be measured. Now that basic operation has been determined, your system needs to be ready to deliver on your promises. In order to achieve the promised functionality, you need to look at the subsystems inside your system and make sure they function well together.
+You need to explore the functionality between the interfaces within your system in order to find and resolve any conflicts, and the time to do this is early in the design process, well before the system is implemented. To make this happen, the teams developing each individual subsystem will need to share information with each other. So how will that information be exchanged?
+In this module, you will explore how to communicate across teams to discover how subsystems interact and rely on one another. You will do this with a visual tool called a sequence diagram to document the interfaces between two or more subsystems. This will set the stage for even more formal specification of your system's interfaces.
+ 
+
+

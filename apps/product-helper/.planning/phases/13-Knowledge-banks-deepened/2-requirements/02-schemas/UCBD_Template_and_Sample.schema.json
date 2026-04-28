@@ -1,0 +1,205 @@
+{
+  "source_file": "UCBD_Template_and_Sample.xlsx",
+  "sheet": "UCBD Template",
+  "purpose": "Use Case Behavioral Diagram — one per use case. Use case name + initial conditions + actor/step grid + ending conditions + notes.",
+  "known_issues": [
+    "Rows 7 and 10 both labeled 'Target Release' — likely a duplicate. Exposed as target_release and target_release_2.",
+    "Row 12 label 'Aprovers' (typo for 'Approvers').",
+    "Row 16 label truncated: 'Parent OKR / strategic initiativ'."
+  ],
+  "merged_ranges": [
+    "A20:C20",
+    "A19:C19",
+    "A1:B1"
+  ],
+  "static_text": {
+    "title": {
+      "range": "A1:B1",
+      "value": "Use Case Behavioral Diagram"
+    },
+    "about_label": {
+      "cell": "A18",
+      "value": "About this document:"
+    },
+    "about_body": {
+      "range": "A19:C19",
+      "value": "(merged) description paragraph"
+    },
+    "initial_conditions_heading": {
+      "cell": "A22",
+      "value": "Initial Conditions"
+    },
+    "ending_conditions_heading": {
+      "cell": "A42",
+      "value": "Ending conditions"
+    },
+    "notes_heading": {
+      "cell": "A44",
+      "value": "Notes"
+    }
+  },
+  "fields": {
+    "project_name": {
+      "label_cell": "A2",
+      "label_literal": "Project Name",
+      "cell": "B2",
+      "type": "string"
+    },
+    "document_id": {
+      "label_cell": "A3",
+      "label_literal": "Document ID",
+      "cell": "B3",
+      "type": "string"
+    },
+    "document_type": {
+      "label_cell": "A4",
+      "label_literal": "Document Type",
+      "cell": "B4",
+      "type": "string"
+    },
+    "status": {
+      "label_cell": "A5",
+      "label_literal": "Status",
+      "cell": "B5",
+      "type": "string"
+    },
+    "last_update": {
+      "label_cell": "A6",
+      "label_literal": "Last Update",
+      "cell": "B6",
+      "type": "string"
+    },
+    "target_release": {
+      "label_cell": "A7",
+      "label_literal": "Target Release",
+      "cell": "B7",
+      "type": "string"
+    },
+    "confidentiality": {
+      "label_cell": "A8",
+      "label_literal": "Confidentiality",
+      "cell": "B8",
+      "type": "string"
+    },
+    "created_date": {
+      "label_cell": "A9",
+      "label_literal": "Created date",
+      "cell": "B9",
+      "type": "string"
+    },
+    "target_release_2": {
+      "label_cell": "A10",
+      "label_literal": "Target Release",
+      "cell": "B10",
+      "type": "string"
+    },
+    "author": {
+      "label_cell": "A11",
+      "label_literal": "Author",
+      "cell": "B11",
+      "type": "string"
+    },
+    "approvers": {
+      "label_cell": "A12",
+      "label_literal": "Aprovers",
+      "cell": "B12",
+      "type": "string"
+    },
+    "stakeholders": {
+      "label_cell": "A13",
+      "label_literal": "Stakeholders",
+      "cell": "B13",
+      "type": "string"
+    },
+    "supersedes": {
+      "label_cell": "A14",
+      "label_literal": "Supersedes / replaces",
+      "cell": "B14",
+      "type": "string"
+    },
+    "linked_ticket": {
+      "label_cell": "A15",
+      "label_literal": "Linked epic/ticket",
+      "cell": "B15",
+      "type": "string"
+    },
+    "parent_okr": {
+      "label_cell": "A16",
+      "label_literal": "Parent OKR / strategic initiativ",
+      "cell": "B16",
+      "type": "string"
+    },
+    "regulatory_refs": {
+      "label_cell": "A17",
+      "label_literal": "Regulatory refs",
+      "cell": "B17",
+      "type": "string"
+    },
+    "use_case_name": {
+      "range": "A20:C20",
+      "anchor_cell": "A20",
+      "type": "string",
+      "note": "Merged cell — write to A20 only."
+    },
+    "initial_conditions": {
+      "type": "list",
+      "start_row": 23,
+      "bounded_by_row": 24,
+      "col": "A",
+      "item_format": "numbered",
+      "write_strategy": "fill_rows_23_24 (bounded by actor header on row 25); if more needed, insert rows above row 25."
+    },
+    "actor_steps_table": {
+      "type": "table",
+      "header_row": 25,
+      "header_range": "A25:D25",
+      "columns": [
+        {
+          "name": "primary_actor",
+          "cell_col": "A",
+          "header": "Primary Actor",
+          "type": "string"
+        },
+        {
+          "name": "the_system",
+          "cell_col": "B",
+          "header": "The System",
+          "type": "string"
+        },
+        {
+          "name": "other_actors",
+          "cell_col": "C",
+          "header": "Other Actors / Interaction Elements",
+          "type": "string"
+        },
+        {
+          "name": "extra_actor_col",
+          "cell_col": "D",
+          "header": "[Add more columns for more actors, interaction elements]",
+          "type": "string"
+        }
+      ],
+      "data_start_row": 26,
+      "data_end_row": 41,
+      "data_range": "A26:D41",
+      "write_strategy": "fill_bounded_range (16 step rows available; insert rows above row 42 if more needed).",
+      "note": "Each row is one step in the use case flow; leave cells blank for actors not involved in that step."
+    },
+    "ending_conditions": {
+      "type": "list",
+      "start_row": 43,
+      "col": "A",
+      "item_format": "numbered",
+      "bounded_by_row": 43,
+      "write_strategy": "row 43 is the first slot (template has example). Insert rows above row 44 if more needed."
+    },
+    "notes": {
+      "type": "list",
+      "start_row": 45,
+      "col": "A",
+      "item_format": "numbered",
+      "write_strategy": "append downward from row 45."
+    }
+  },
+  "data_validations": []
+}

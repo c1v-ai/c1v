@@ -1,0 +1,524 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-4.optimization-patterns.v1"
+    },
+    "_output_path": {
+      "type": "string",
+      "description": "x-ui-surface=internal:xlsx-marshaller — target filesystem path for the marshalled artifact."
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ],
+      "description": "x-ui-surface=page-header — workflow state (drives C4 requirements-table branch)."
+    },
+    "_columns_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "column_letter": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,3}$",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel column letter (A..AZ..)."
+          },
+          "field_name": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — Zod field path emitted in this column."
+          },
+          "header_text": {
+            "type": "string",
+            "description": "x-ui-surface=internal:xlsx-marshaller — text printed in the header row."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "x-ui-surface=internal:xlsx-marshaller — preferred column width in Excel units."
+          },
+          "type_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "bool",
+              "enum",
+              "json",
+              "formula"
+            ],
+            "description": "x-ui-surface=internal:xlsx-marshaller — Excel cell-type hint for the marshaller."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "x-ui-surface=internal:xlsx-marshaller — whether marshaller should error on null."
+          }
+        },
+        "required": [
+          "column_letter",
+          "field_name",
+          "header_text"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=internal:xlsx-marshaller — single column-layout instruction (first-class per C5)."
+      },
+      "description": "x-ui-surface=internal:xlsx-marshaller — optional layout instructions (first-class per C5)."
+    },
+    "_insertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_slug": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — phase that received this insertion."
+          },
+          "field_path": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — dotted path within the phase schema (e.g., \"rows[].math_derivation\")."
+          },
+          "introduced_in": {
+            "type": "string",
+            "description": "x-ui-surface=internal:methodology-drift-check — schema semver where this field was added."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — reviewer-facing reason the insertion was made."
+          },
+          "kb_source": {
+            "type": "string",
+            "description": "x-ui-surface=section:Methodology Lineage — KB file that motivated the insertion, if any."
+          }
+        },
+        "required": [
+          "phase_slug",
+          "field_path",
+          "introduced_in",
+          "rationale"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Methodology Lineage — methodology insertion (first-class per C5)."
+      },
+      "description": "x-ui-surface=section:Methodology Lineage — optional methodology insertions applied to this phase (first-class per C5)."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "phase_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "x-ui-surface=page-header — methodology phase number (0-12) per plan §4.5."
+        },
+        "phase_slug": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — URL-safe slug (e.g., \"requirements-table\"). Also the xlsx sheet slug."
+        },
+        "phase_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — human-facing phase title (e.g., \"Phase 6 — Extract Requirements Table\")."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — Zod schema semver (e.g., \"1.0.0\") for drift-detection."
+        },
+        "project_id": {
+          "type": "integer",
+          "description": "x-ui-surface=page-header — parent project id; keys workbook + PDF filename."
+        },
+        "project_name": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — project display name; rendered at top and used as xlsx workbook title."
+        },
+        "author": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — emitting agent or human reviewer identifier."
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — ISO-8601 timestamp of emission."
+        },
+        "generator": {
+          "type": "string",
+          "description": "x-ui-surface=page-header — tool that produced this artifact (e.g., \"product-helper@0.1.0\")."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "x-ui-surface=page-header — monotonic revision counter per (project, phase)."
+        }
+      },
+      "required": [
+        "phase_number",
+        "phase_slug",
+        "phase_name",
+        "schema_version",
+        "project_id",
+        "project_name",
+        "author",
+        "generated_at",
+        "generator"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=page-header — dual-surface header metadata (C1)."
+    },
+    "architect_task_assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string",
+            "enum": [
+              "frame_problem",
+              "select_pattern",
+              "compose_subproblems",
+              "tune_value_function",
+              "verify_constraints",
+              "choose_solver"
+            ],
+            "description": "x-ui-surface=section:Optimization Patterns > Architect Task — Crawley Table 16.1 six tasks."
+          },
+          "assignee": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "task",
+          "assignee"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Optimization Patterns > Architect Tasks — Table 16.1 assignment."
+      },
+      "default": []
+    },
+    "sub_problems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sub_problem_id": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "down_selecting",
+              "assigning",
+              "partitioning",
+              "permuting",
+              "connecting",
+              "standards_definition"
+            ],
+            "description": "x-ui-surface=section:Optimization Patterns > Pattern — Crawley Box 16.1 six Patterns."
+          },
+          "decision_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "element_interactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from_element_id": {
+                  "type": "string"
+                },
+                "to_element_id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "compatibility",
+                    "synergy",
+                    "interference"
+                  ],
+                  "description": "x-ui-surface=section:Optimization Patterns > Element Interactions — Crawley §16.2 kinds."
+                },
+                "weight": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "from_element_id",
+                "to_element_id",
+                "kind",
+                "weight"
+              ],
+              "additionalProperties": false,
+              "description": "x-ui-surface=section:Optimization Patterns > Element Interactions — sparse triple."
+            },
+            "default": []
+          },
+          "architecture_style": {
+            "type": "string",
+            "enum": [
+              "integral",
+              "modular",
+              "platform",
+              "product_family"
+            ],
+            "description": "x-ui-surface=section:Optimization Patterns > Architecture Style — Crawley §16.3 styles."
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sub_problem_id",
+          "pattern",
+          "decision_ids",
+          "description"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Optimization Patterns > Sub-Problems — one Pattern instance."
+      },
+      "minItems": 1
+    },
+    "composition": {
+      "type": "object",
+      "properties": {
+        "operator": {
+          "type": "string",
+          "enum": [
+            "cartesian_product",
+            "sequential",
+            "hierarchical",
+            "shared_resource"
+          ],
+          "description": "x-ui-surface=section:Optimization Patterns > Composition — NEOSS-style operators."
+        },
+        "sub_problem_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "operator",
+        "sub_problem_ids",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Optimization Patterns > Composition — multi-subproblem operator."
+    },
+    "value_function": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "weighted_sum",
+            "multiplicative",
+            "lexicographic",
+            "satisficing"
+          ],
+          "description": "x-ui-surface=section:Optimization Patterns > Value Function — Crawley Box 16.3 kinds."
+        },
+        "weights": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "equation_ref": {
+          "type": "object",
+          "properties": {
+            "formula": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+            },
+            "inputs": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "string"
+                ]
+              },
+              "default": {},
+              "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+            },
+            "kb_source": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+            },
+            "kb_section": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+            },
+            "result": {
+              "type": [
+                "number",
+                "string"
+              ],
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+            }
+          },
+          "required": [
+            "formula",
+            "kb_source"
+          ],
+          "additionalProperties": false,
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation)."
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "description"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Optimization Patterns > Value Function — V(A) per architecture."
+    },
+    "constraint_hardness": {
+      "type": "object",
+      "properties": {
+        "hard_constraint_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "soft_constraint_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "penalty_scalar": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "penalty_scalar"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Optimization Patterns > Constraint Hardness — hard/soft + penalty scalar."
+    },
+    "solver": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "exhaustive",
+            "branch_and_bound",
+            "genetic_algorithm",
+            "simulated_annealing",
+            "mip"
+          ],
+          "description": "x-ui-surface=section:Optimization Patterns > Solver — Crawley §16.5 solver kinds."
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "string",
+              "boolean"
+            ]
+          },
+          "default": {}
+        },
+        "justification": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "justification"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Optimization Patterns > Solver — solver choice + tuning."
+    },
+    "non_dominated_architecture_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "crawley_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_output_path",
+    "_phase_status",
+    "metadata",
+    "sub_problems",
+    "value_function",
+    "constraint_hardness",
+    "solver"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M4 Phase 3: optimization Patterns per Crawley Ch 16.",
+  "title": "OptimizationPatterns",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase_artifact.v1",
+  "title": "Defining Scope Phase Artifact",
+  "description": "Shared envelope for every JSON artifact produced by Phases P0-P4 of the Defining Scope KB. Wraps the body of one diagram, list, or summary with status, stop-gap state, and fail-closed checks.",
+  "type": "object",
+  "required": ["_schema", "phase_id", "artifact_type", "status", "stop_gap_cleared", "produced_at", "body", "fail_closed_check"],
+  "properties": {
+    "_schema": { "const": "phase_artifact.v1" },
+    "_output_path": {
+      "type": "string",
+      "description": "Recommended write location, e.g. <project>/module-1-defining-scope/<artifact_type>.json"
+    },
+    "phase_id": {
+      "enum": ["P0", "P1", "P2", "P3", "P4"],
+      "description": "P0 Intake/Unname · P1 Context Diagram · P2 Use Case Diagram · P3 Scope Tree · P4 Review/Handoff"
+    },
+    "artifact_type": {
+      "enum": [
+        "intake_summary",
+        "context_diagram",
+        "stakeholder_list",
+        "use_case_inventory",
+        "use_case_diagram",
+        "scope_tree",
+        "system_scope_summary"
+      ]
+    },
+    "status": {
+      "enum": ["draft", "first_pass", "iterated", "ready_for_review", "approved"],
+      "description": "first_pass = pre-iteration-break (Step 6). iterated = post iteration break. ready_for_review = STOP GAP about to be presented. approved = PM cleared the STOP GAP."
+    },
+    "stop_gap_cleared": {
+      "type": "boolean",
+      "description": "True only after the PM has explicitly approved the STOP GAP for this phase. Downstream phases MUST refuse to start if their upstream artifact has stop_gap_cleared=false."
+    },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "produced_by": { "type": "string", "description": "Agent/PM identifier" },
+    "iteration_count": { "type": "integer", "minimum": 0 },
+    "body": {
+      "type": "object",
+      "description": "Phase-specific payload. Schema varies by artifact_type — see each phase file's Output Format section."
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Anything the LLM could not resolve and the PM has not yet answered. Carried forward to next phase."
+    },
+    "fail_closed_check": {
+      "type": "object",
+      "description": "All five must be true (or N/A for the phase) before stop_gap_cleared can flip to true.",
+      "required": [
+        "unnamed_system_ok",
+        "no_subsystems_ok",
+        "interactions_only_ok",
+        "iteration_break_done",
+        "no_externals_inside_system_box"
+      ],
+      "properties": {
+        "unnamed_system_ok": {
+          "type": ["boolean", "null"],
+          "description": "Rule R1: 'The System' has no product/solution name (until P4 Step 8). null = N/A for this phase."
+        },
+        "no_subsystems_ok": {
+          "type": ["boolean", "null"],
+          "description": "Rule R2: 'The System' is not split into subsystems in the context diagram. null = N/A."
+        },
+        "interactions_only_ok": {
+          "type": ["boolean", "null"],
+          "description": "Rule R3: No properties/attributes/performance criteria appear as context-diagram boxes. null = N/A."
+        },
+        "iteration_break_done": {
+          "type": ["boolean", "null"],
+          "description": "Rule R4: Step 6 iteration break performed for context diagram (true after P1 mid-phase STOP GAP). null = N/A."
+        },
+        "no_externals_inside_system_box": {
+          "type": ["boolean", "null"],
+          "description": "Rule R5: External entities are not placed inside the dashed system boundary. null = N/A."
+        }
+      }
+    },
+    "source_references": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths to source artifacts consulted (course materials, prior phase outputs, PM-provided docs)."
+    }
+  },
+  "additionalProperties": false
+}

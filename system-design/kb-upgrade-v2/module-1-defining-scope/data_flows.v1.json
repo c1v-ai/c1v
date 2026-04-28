@@ -1,0 +1,318 @@
+{
+  "_schema": "module-1.phase-2-5-data-flows.v1",
+  "_output_path": "system-design/kb-upgrade-v2/module-1-defining-scope/data_flows.v1.json",
+  "_upstream_refs": {
+    "scope_tree": "system-design/kb-upgrade-v2/module-1-defining-scope/scope_tree.json",
+    "context_diagram": "system-design/kb-upgrade-v2/module-1-defining-scope/context_diagram.json"
+  },
+  "produced_at": "2026-04-24T12:00:00-04:00",
+  "produced_by": "c1v-m3-ffbd-n2-fmea-early@wave-2-early/m1-data-flows",
+  "system_name": "c1v",
+  "entries": [
+    {
+      "id": "DE.01",
+      "name": "Founder Idea Prompt",
+      "description": "One-sentence product idea submitted by a Founder to seed spec generation.",
+      "source": "FOUNDERS",
+      "sink": "SpecGen.FromIdea.Intake",
+      "payload_shape": {
+        "name": "OneSentenceIdea",
+        "fields": [
+          { "name": "text", "type": "string", "optional": false },
+          { "name": "submitted_by_user_id", "type": "string", "optional": false },
+          { "name": "project_id", "type": "string", "optional": false }
+        ],
+        "format_hint": "json"
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.02",
+      "name": "Existing Codebase Read Stream",
+      "description": "Read-only source-tree contents pulled from a customer's VCS for scope inference.",
+      "source": "EXISTING CODEBASES",
+      "sink": "SpecGen.FromCode.Clone",
+      "payload_shape": {
+        "name": "RepoSnapshot",
+        "fields": [
+          { "name": "repo_url", "type": "string", "optional": false },
+          { "name": "commit_sha", "type": "string", "optional": false },
+          { "name": "file_manifest", "type": "json", "optional": false }
+        ]
+      },
+      "criticality": "critical",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "sensitive"
+    },
+    {
+      "id": "DE.03",
+      "name": "Draft Spec",
+      "description": "Working-draft PRD/spec emitted by F.2 Generate Spec, consumed by F.3 Review.",
+      "source": "SpecGen.FromIdea",
+      "sink": "SpecGen.Versioning.ReviewUI",
+      "payload_shape": {
+        "name": "DraftSpec",
+        "fields": [
+          { "name": "spec_id", "type": "string", "optional": false },
+          { "name": "version", "type": "string", "optional": false },
+          { "name": "sections", "type": "json", "optional": false },
+          { "name": "citations", "type": "json", "optional": false }
+        ],
+        "format_hint": "json"
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.04",
+      "name": "Review Decision",
+      "description": "Approve/revise decision emitted by a human reviewer at F.3.",
+      "source": "PRODUCT MANAGERS",
+      "sink": "SpecGen.Versioning.ReviewUI",
+      "payload_shape": {
+        "name": "ReviewDecision",
+        "fields": [
+          { "name": "decision", "type": "string", "optional": false },
+          { "name": "comments", "type": "json", "optional": true },
+          { "name": "reviewer_user_id", "type": "string", "optional": false }
+        ]
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.05",
+      "name": "Approved Spec",
+      "description": "Approved, immutable spec snapshot handed off to F.4 CLI emitter.",
+      "source": "SpecGen.Versioning",
+      "sink": "CliGen.Emitter",
+      "payload_shape": {
+        "name": "ApprovedSpec",
+        "fields": [
+          { "name": "spec_id", "type": "string", "optional": false },
+          { "name": "version", "type": "string", "optional": false },
+          { "name": "snapshot", "type": "json", "optional": false },
+          { "name": "audit_ref", "type": "string", "optional": false }
+        ]
+      },
+      "criticality": "critical",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.06",
+      "name": "CLI Bundle",
+      "description": "Emitted CLI command bundle + SKILL.md + CLAUDE.md + MCP tool exports.",
+      "source": "CliGen.Emitter",
+      "sink": "IDE / CLI CLIENTS",
+      "payload_shape": {
+        "name": "CliBundle",
+        "fields": [
+          { "name": "bundle_id", "type": "string", "optional": false },
+          { "name": "commands", "type": "json", "optional": false },
+          { "name": "skill_md", "type": "string", "optional": false },
+          { "name": "claude_md", "type": "string", "optional": false },
+          { "name": "mcp_tools", "type": "json", "optional": false }
+        ]
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": false,
+      "encryption_in_transit_required": true,
+      "pii_class": "none"
+    },
+    {
+      "id": "DE.07",
+      "name": "Customer System Connection Manifest",
+      "description": "Connection config (read-only credentials) for a customer system being observed by F.5.",
+      "source": "TEAM ADMINS",
+      "sink": "Integration.Observability",
+      "payload_shape": {
+        "name": "ConnectionManifest",
+        "fields": [
+          { "name": "connection_id", "type": "string", "optional": false },
+          { "name": "adapter", "type": "string", "optional": false },
+          { "name": "credentials_ref", "type": "string", "optional": false },
+          { "name": "scope", "type": "json", "optional": false }
+        ]
+      },
+      "criticality": "critical",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "sensitive"
+    },
+    {
+      "id": "DE.08",
+      "name": "Live Performance Metrics Stream",
+      "description": "Availability, throughput, latency samples streamed from customer observability tools.",
+      "source": "OBSERVABILITY TOOLS",
+      "sink": "Feedback.Ingest",
+      "payload_shape": {
+        "name": "MetricSample",
+        "fields": [
+          { "name": "ts", "type": "string", "optional": false },
+          { "name": "metric", "type": "string", "optional": false },
+          { "name": "value", "type": "number", "optional": false },
+          { "name": "labels", "type": "json", "optional": true }
+        ],
+        "format_hint": "event-stream"
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.09",
+      "name": "Tech Catalog + Vendor Docs",
+      "description": "Tech-registry profiles + vendor docs + cloud SLAs feeding the recommendation engine.",
+      "source": "DOCUMENTATION SOURCES",
+      "sink": "TechStack.Catalog",
+      "payload_shape": {
+        "name": "TechCatalogSnapshot",
+        "fields": [
+          { "name": "tech_id", "type": "string", "optional": false },
+          { "name": "availability_sla", "type": "number", "optional": true },
+          { "name": "throughput_profile", "type": "json", "optional": true },
+          { "name": "latency_profile", "type": "json", "optional": true },
+          { "name": "citation", "type": "string", "optional": false }
+        ]
+      },
+      "criticality": "medium",
+      "encryption_at_rest_required": false,
+      "encryption_in_transit_required": true,
+      "pii_class": "none"
+    },
+    {
+      "id": "DE.10",
+      "name": "Design Recommendation",
+      "description": "Traced recommendation (with citations) emitted by F.7 back to spec pipeline.",
+      "source": "Feedback.Recommend",
+      "sink": "SpecGen.FromIdea",
+      "payload_shape": {
+        "name": "Recommendation",
+        "fields": [
+          { "name": "recommendation_id", "type": "string", "optional": false },
+          { "name": "rationale", "type": "string", "optional": false },
+          { "name": "citations", "type": "json", "optional": false },
+          { "name": "target_metric", "type": "string", "optional": false }
+        ]
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.11",
+      "name": "Audit Event",
+      "description": "Append-only event emitted by every state-mutating function per CC.R02.",
+      "source": "Audit.Trail",
+      "sink": "Audit.Export",
+      "payload_shape": {
+        "name": "AuditEvent",
+        "fields": [
+          { "name": "event_id", "type": "string", "optional": false },
+          { "name": "ts", "type": "string", "optional": false },
+          { "name": "actor_user_id", "type": "string", "optional": false },
+          { "name": "action", "type": "string", "optional": false },
+          { "name": "target_ref", "type": "string", "optional": false }
+        ]
+      },
+      "criticality": "critical",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.12",
+      "name": "Session Token",
+      "description": "Authenticated session token emitted by IDP, consumed by F.1 (authenticate).",
+      "source": "IDENTITY PROVIDERS",
+      "sink": "IdentityAuth.SSO",
+      "payload_shape": {
+        "name": "SessionToken",
+        "fields": [
+          { "name": "token", "type": "string", "optional": false },
+          { "name": "subject_user_id", "type": "string", "optional": false },
+          { "name": "expires_at", "type": "string", "optional": false }
+        ]
+      },
+      "criticality": "critical",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "direct"
+    },
+    {
+      "id": "DE.13",
+      "name": "LLM Completion",
+      "description": "Model completion returned from an LLM provider to an agent workflow.",
+      "source": "LLM PROVIDERS",
+      "sink": "Integration.LLM",
+      "payload_shape": {
+        "name": "LlmCompletion",
+        "fields": [
+          { "name": "request_id", "type": "string", "optional": false },
+          { "name": "content", "type": "string", "optional": false },
+          { "name": "tokens_in", "type": "number", "optional": true },
+          { "name": "tokens_out", "type": "number", "optional": true }
+        ]
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "indirect"
+    },
+    {
+      "id": "DE.14",
+      "name": "Compliance Policy",
+      "description": "Compliance rulebook (SOC2/HIPAA/GDPR/PCI-DSS) applied at review and emit gates.",
+      "source": "COMPLIANCE FRAMEWORKS",
+      "sink": "Audit.Frameworks",
+      "payload_shape": {
+        "name": "CompliancePolicy",
+        "fields": [
+          { "name": "framework", "type": "string", "optional": false },
+          { "name": "rules", "type": "json", "optional": false }
+        ]
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": false,
+      "encryption_in_transit_required": true,
+      "pii_class": "none"
+    },
+    {
+      "id": "DE.15",
+      "name": "Spec Commit",
+      "description": "Approved spec written as an artifact commit to a VCS remote.",
+      "source": "SpecGen.Versioning",
+      "sink": "VERSION CONTROL",
+      "payload_shape": {
+        "name": "VcsCommit",
+        "fields": [
+          { "name": "repo", "type": "string", "optional": false },
+          { "name": "branch", "type": "string", "optional": false },
+          { "name": "files", "type": "json", "optional": false }
+        ]
+      },
+      "criticality": "high",
+      "encryption_at_rest_required": true,
+      "encryption_in_transit_required": true,
+      "pii_class": "none"
+    }
+  ],
+  "coverage_notes": [
+    "15 DE entries cover the 5 performance criteria nodes in scope_tree (availability, throughput, latency, auditability, non-invasiveness).",
+    "DE.02 and DE.07 flagged critical + pii_class=sensitive per UC11 non-invasiveness constraint.",
+    "DE.08 is the metric-stream backbone feeding the feedback loop; its encryption-at-rest requirement reflects retention policy (EC18).",
+    "No DE resolves to 'external' sentinel in v1 — all edges terminate in a scope_tree node or named context_diagram actor."
+  ]
+}

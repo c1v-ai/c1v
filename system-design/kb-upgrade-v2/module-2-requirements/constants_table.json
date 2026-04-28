@@ -1,0 +1,587 @@
+{
+  "_schema": "Requirement_Constants_Definition_Template.schema.json",
+  "_output_path": "system-design/module-2-requirements/constants_table.json",
+  "_upstream_refs": {
+    "scope_summary": "system-design/kb-upgrade-v2/module-1-defining-scope/system_scope_summary.json",
+    "requirements_table": "system-design/kb-upgrade-v2/module-2-requirements/requirements_table.json"
+  },
+  "_phase_status": "phase-8-complete",
+  "metadata": {
+    "project_name": "c1v",
+    "document_id": "C1V-M2-CON",
+    "document_type": "Requirement Constants Definition Table",
+    "status": "Draft — Module 2 first pass with confidence-scored auto-fill",
+    "last_update": "2026-04-20",
+    "target_release": "v1.0",
+    "confidentiality": "Internal",
+    "created_date": "2026-04-20",
+    "target_release_2": "v1.0",
+    "author": "David Ancor",
+    "approvers": "David Ancor (Founder)",
+    "stakeholders": "Founders; Product Managers; Engineering Teams; Team Admins; Compliance Officers; Site Reliability / DevOps",
+    "supersedes": "",
+    "linked_ticket": "",
+    "parent_okr": "Ship c1v v1.0 with metric-traceable specs and live feedback loop",
+    "regulatory_refs": "SOC 2 Type II; HIPAA; GDPR; PCI-DSS (scope tbd in Module 4)"
+  },
+  "auto_fill_policy": {
+    "default_threshold": 0.9,
+    "below_threshold_action": "surface_to_user",
+    "audit_trail_path": "system-design/module-2-requirements/decision_audit.jsonl",
+    "notes": "Constants with confidence ≥ 0.90 are auto-filled as 'Estimate'. Constants with confidence < 0.90 are flagged needs_user_input=true and replicated in open_questions.json. All constants carry Estimate status in Module 2; Module 4 Decision Matrix tightens several to Final."
+  },
+  "constants_table": [
+    {
+      "constant": "FOUNDER_INTAKE_RESPONSE_BUDGET_MS",
+      "value": 2000,
+      "units": "ms",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md (SLO p95 for LLM-backed chat UX)",
+      "owned_by": "Engineering Lead",
+      "notes": "Per-turn chat latency budget in conversational intake. Industry baseline for LLM chat p95.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC01.R04"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.82,
+      "needs_user_input": true
+    },
+    {
+      "constant": "INTAKE_COMPLETENESS_THRESHOLD",
+      "value": 0.85,
+      "units": "ratio",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "apps/product-helper/lib/langchain/agents/intake/completion-detector.ts (production heuristic)",
+      "owned_by": "Engineering Lead",
+      "notes": "Intake loop exit gate. Value carried from production completion-detector's threshold.",
+      "category": "maintainability",
+      "referenced_requirements": [
+        "UC01.R06"
+      ],
+      "computed": true,
+      "computed_by": "story-12-maintainability-posture@v1.0",
+      "confidence": 0.78,
+      "needs_user_input": true
+    },
+    {
+      "constant": "SPEC_GENERATION_TIMEOUT_SEC",
+      "value": 300,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md (multi-agent LLM workflow SLO)",
+      "owned_by": "Engineering Lead",
+      "notes": "End-to-end spec assembly ceiling. 5 minutes is the industry norm for multi-agent pipelines.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC01.R12"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.8,
+      "needs_user_input": true
+    },
+    {
+      "constant": "REVIEW_QUEUE_LOAD_BUDGET_MS",
+      "value": 800,
+      "units": "ms",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (dashboard initial render p95)",
+      "owned_by": "Engineering Lead",
+      "notes": "List render latency. Standard dashboard p95 for authenticated list views.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC03.R03"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.88,
+      "needs_user_input": true
+    },
+    {
+      "constant": "SPEC_RENDER_BUDGET_MS",
+      "value": 1500,
+      "units": "ms",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (rich-content render p95)",
+      "owned_by": "Engineering Lead",
+      "notes": "Spec bundle render latency (markdown + diagrams + constants).",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC03.R06"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.85,
+      "needs_user_input": true
+    },
+    {
+      "constant": "STATE_TRANSITION_BUDGET_MS",
+      "value": 500,
+      "units": "ms",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (user-facing sync write p95)",
+      "owned_by": "Engineering Lead",
+      "notes": "Spec state mutation: DB write + notification dispatch.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC03.R09"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.9,
+      "needs_user_input": false
+    },
+    {
+      "constant": "CLI_EMISSION_TIMEOUT_SEC",
+      "value": 60,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md (artifact generation SLO)",
+      "owned_by": "Engineering Lead",
+      "notes": "Bundle generation + signing + delivery ceiling.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC04.R10"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.82,
+      "needs_user_input": true
+    },
+    {
+      "constant": "MAX_CUSTOMER_SYSTEM_OVERHEAD_PCT",
+      "value": 2,
+      "units": "%",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (monitoring-agent overhead industry norm)",
+      "owned_by": "SRE / DevOps Lead",
+      "notes": "Non-invasive integration ceiling. M1 hard-constraint anchor. Industry range 1–3% for agentless + read-only collectors.",
+      "category": "resiliency",
+      "referenced_requirements": [
+        "UC06.R02",
+        "UC11.R10"
+      ],
+      "computed": true,
+      "computed_by": "story-04-availability-posture@v1.0",
+      "confidence": 0.82,
+      "needs_user_input": true
+    },
+    {
+      "constant": "AGGREGATION_WINDOW_MIN",
+      "value": 60,
+      "units": "min",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (SLO rolling-window default)",
+      "owned_by": "Engineering Lead",
+      "notes": "Feedback-loop sample aggregation window. 1-hour rolling window balances signal vs noise.",
+      "category": "observability",
+      "referenced_requirements": [
+        "UC06.R03"
+      ],
+      "computed": true,
+      "computed_by": "story-08-observability-posture@v1.0",
+      "confidence": 0.8,
+      "needs_user_input": true
+    },
+    {
+      "constant": "RECOMMENDATION_CADENCE_MIN",
+      "value": 60,
+      "units": "min",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (SRE alerting cadence default)",
+      "owned_by": "Engineering Lead",
+      "notes": "How often the recommendation cycle fires.",
+      "category": "observability",
+      "referenced_requirements": [
+        "UC06.R03"
+      ],
+      "computed": true,
+      "computed_by": "story-08-observability-posture@v1.0",
+      "confidence": 0.78,
+      "needs_user_input": true
+    },
+    {
+      "constant": "DEVIATION_SUPPRESSION_THRESHOLD",
+      "value": 0.1,
+      "units": "ratio",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (noise-suppression heuristic)",
+      "owned_by": "Engineering Lead",
+      "notes": "Deviations below 10% are suppressed to reduce alert fatigue. Tune per project after calibration.",
+      "category": "observability",
+      "referenced_requirements": [
+        "UC06.R06"
+      ],
+      "computed": true,
+      "computed_by": "story-08-observability-posture@v1.0",
+      "confidence": 0.72,
+      "needs_user_input": true
+    },
+    {
+      "constant": "RECOMMENDATION_LATENCY_SEC",
+      "value": 120,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md (batch-latency SLO)",
+      "owned_by": "Engineering Lead",
+      "notes": "Cycle start → recommendation delivered. 2-minute batch latency on hourly cadence.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC06.R09"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.78,
+      "needs_user_input": true
+    },
+    {
+      "constant": "MAX_RECOMMENDATIONS_PER_CYCLE",
+      "value": 10,
+      "units": "count",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (pagination / list ceiling)",
+      "owned_by": "Product Manager",
+      "notes": "Cap on list size delivered to engineers per cycle. Reduces review cost.",
+      "category": "capacity",
+      "referenced_requirements": [
+        "UC06.R10"
+      ],
+      "computed": true,
+      "computed_by": "story-10-api-contract@v1.0",
+      "confidence": 0.8,
+      "needs_user_input": true
+    },
+    {
+      "constant": "TRACEBACK_MIN_CONFIDENCE",
+      "value": 0.9,
+      "units": "ratio",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": ".claude/plans/schema-first-kb-rewrite-and-nfr-engine.md §5.2 (confidence gate default)",
+      "owned_by": "Engineering Lead",
+      "notes": "Auto-attach gate for traceback triples. Inherits schema-first plan's global threshold.",
+      "category": "consistency",
+      "referenced_requirements": [
+        "UC08.R10",
+        "UC08.R11"
+      ],
+      "computed": true,
+      "computed_by": "story-01-consistency-posture@v1.0",
+      "confidence": 0.92,
+      "needs_user_input": false
+    },
+    {
+      "constant": "TRACEBACK_COVERAGE_PCT",
+      "value": 100,
+      "units": "%",
+      "estimate_final": "Final",
+      "date_update": "2026-04-20",
+      "final_date": "2026-04-20",
+      "source": "system_scope_summary.hard_constraints[2] (M1 hard constraint)",
+      "owned_by": "David Ancor",
+      "notes": "M1 hard-constraint anchor: every tech-stack recommendation must trace. Non-negotiable in v1.",
+      "category": "security",
+      "referenced_requirements": [
+        "UC08.R12"
+      ],
+      "computed": false,
+      "computed_by": null,
+      "confidence": 1.0,
+      "needs_user_input": false
+    },
+    {
+      "constant": "TRACEBACK_LATENCY_SEC",
+      "value": 5,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md (per-item enrichment SLO)",
+      "owned_by": "Engineering Lead",
+      "notes": "Per-recommendation traceback ceiling. Called from UC01 and UC06 inside their budgets.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC08.R14"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.8,
+      "needs_user_input": true
+    },
+    {
+      "constant": "ENCRYPTED_CREDENTIAL_EXPIRY_DAYS",
+      "value": 90,
+      "units": "days",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (OAuth credential rotation default)",
+      "owned_by": "Security Lead",
+      "notes": "Quarterly rotation aligned with SOC2 control baselines.",
+      "category": "security",
+      "referenced_requirements": [
+        "UC11.R05"
+      ],
+      "computed": true,
+      "computed_by": "story-13-security-posture@v1.0",
+      "confidence": 0.85,
+      "needs_user_input": true
+    },
+    {
+      "constant": "BASELINE_PROBE_WINDOW_SEC",
+      "value": 300,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (baseline measurement window default)",
+      "owned_by": "SRE / DevOps Lead",
+      "notes": "Overhead measurement baseline window. 5-minute probe aligns with typical metric scrape intervals.",
+      "category": "observability",
+      "referenced_requirements": [
+        "UC11.R09"
+      ],
+      "computed": true,
+      "computed_by": "story-08-observability-posture@v1.0",
+      "confidence": 0.82,
+      "needs_user_input": true
+    },
+    {
+      "constant": "CONNECTION_REAUTH_DAYS",
+      "value": 30,
+      "units": "days",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (OAuth refresh cadence)",
+      "owned_by": "Security Lead",
+      "notes": "Monthly re-authorization. Balances freshness against onboarding UX.",
+      "category": "security",
+      "referenced_requirements": [
+        "UC11.R12"
+      ],
+      "computed": true,
+      "computed_by": "story-13-security-posture@v1.0",
+      "confidence": 0.78,
+      "needs_user_input": true
+    },
+    {
+      "constant": "CONNECTION_ESTABLISHMENT_BUDGET_SEC",
+      "value": 120,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md (onboarding-flow SLO)",
+      "owned_by": "Engineering Lead",
+      "notes": "Connection inputs → persisted connection record ceiling.",
+      "category": "latency",
+      "referenced_requirements": [
+        "UC11.R14"
+      ],
+      "computed": true,
+      "computed_by": "story-03-latency-budget@v1.0",
+      "confidence": 0.8,
+      "needs_user_input": true
+    },
+    {
+      "constant": "SESSION_TTL_MIN",
+      "value": 60,
+      "units": "min",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (JWT / session TTL default)",
+      "owned_by": "Security Lead",
+      "notes": "Active-session lifetime. 1-hour default with refresh supported.",
+      "category": "security",
+      "referenced_requirements": [
+        "CC.R01"
+      ],
+      "computed": true,
+      "computed_by": "story-13-security-posture@v1.0",
+      "confidence": 0.85,
+      "needs_user_input": true
+    },
+    {
+      "constant": "ENCRYPTION_CLASS",
+      "value": "AES-256-GCM + TLS-1.3",
+      "units": "enum",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "software_architecture_system.md + FIPS-aligned SOC2 control baseline",
+      "owned_by": "Security Lead",
+      "notes": "At-rest and in-transit encryption class. AES-256-GCM at rest; TLS-1.3 in transit.",
+      "category": "security",
+      "referenced_requirements": [
+        "CC.R04"
+      ],
+      "computed": true,
+      "computed_by": "story-13-security-posture@v1.0",
+      "confidence": 0.92,
+      "needs_user_input": false
+    },
+    {
+      "constant": "AUDIT_RETENTION_DAYS",
+      "value": 2555,
+      "units": "days",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md + regulatory_refs union (SOC2 1-yr, HIPAA 6-yr, GDPR indefinite, PCI-DSS 1-yr)",
+      "owned_by": "Compliance Officer",
+      "notes": "7-year retention (2555 days) satisfies the union of named frameworks. Tighten if compliance scope narrows in Module 4.",
+      "category": "retention",
+      "referenced_requirements": [
+        "CC.R05"
+      ],
+      "computed": true,
+      "computed_by": "story-09-data-model@v1.0",
+      "confidence": 0.82,
+      "needs_user_input": true
+    },
+    {
+      "constant": "RATE_LIMIT_RPM",
+      "value": 100,
+      "units": "req/min",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "api-design-sys-design-kb.md (per-actor rate-limit default)",
+      "owned_by": "Engineering Lead",
+      "notes": "Per authenticated actor. Aligned with existing MCP server rate limit in apps/product-helper/lib/mcp/.",
+      "category": "security",
+      "referenced_requirements": [
+        "CC.R06"
+      ],
+      "computed": true,
+      "computed_by": "story-13-security-posture@v1.0",
+      "confidence": 0.8,
+      "needs_user_input": true
+    },
+    {
+      "constant": "LLM_PROVIDER_TIMEOUT_SEC",
+      "value": 30,
+      "units": "sec",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "resilliency-patterns-kb.md (external-service timeout default)",
+      "owned_by": "Engineering Lead",
+      "notes": "Per-call LLM timeout; triggers fallback to next configured provider.",
+      "category": "resiliency",
+      "referenced_requirements": [
+        "CC.R07"
+      ],
+      "computed": true,
+      "computed_by": "story-04-availability-posture@v1.0",
+      "confidence": 0.88,
+      "needs_user_input": true
+    },
+    {
+      "constant": "LOG_LEVEL_PROD",
+      "value": "info",
+      "units": "enum",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (production log level default)",
+      "owned_by": "Engineering Lead",
+      "notes": "Production structured-log level. Dial to 'warn' under cost pressure.",
+      "category": "observability",
+      "referenced_requirements": [
+        "CC.R09"
+      ],
+      "computed": true,
+      "computed_by": "story-08-observability-posture@v1.0",
+      "confidence": 0.9,
+      "needs_user_input": false
+    },
+    {
+      "constant": "TRACE_SAMPLING_RATE",
+      "value": 0.1,
+      "units": "ratio",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "observability-kb.md (distributed-trace sampling default)",
+      "owned_by": "Engineering Lead",
+      "notes": "10% sampling balances visibility against storage cost.",
+      "category": "observability",
+      "referenced_requirements": [
+        "CC.R09"
+      ],
+      "computed": true,
+      "computed_by": "story-08-observability-posture@v1.0",
+      "confidence": 0.85,
+      "needs_user_input": true
+    },
+    {
+      "constant": "EVIDENCE_EXPORT_FORMATS",
+      "value": "SOC2; HIPAA; GDPR; PCI-DSS",
+      "units": "enum-set",
+      "estimate_final": "Estimate",
+      "date_update": "2026-04-20",
+      "final_date": null,
+      "source": "system_scope_summary.project_metadata.regulatory_refs",
+      "owned_by": "Compliance Officer",
+      "notes": "Full union of M1-declared regulatory refs. Will narrow in Module 4 Decision Matrix per compliance-scope decision.",
+      "category": "security",
+      "referenced_requirements": [
+        "CC.R10"
+      ],
+      "computed": true,
+      "computed_by": "story-13-security-posture@v1.0",
+      "confidence": 0.78,
+      "needs_user_input": true
+    }
+  ],
+  "coverage_check": {
+    "every_placeholder_has_a_constant": true,
+    "every_constant_has_referenced_requirements": true,
+    "every_constant_has_owner": true,
+    "every_constant_has_units": true,
+    "orphans": [],
+    "name_collisions": []
+  },
+  "source_references": [
+    "system-design/module-2-requirements/requirements_table.json",
+    "system-design/module-1-defining-scope/system_scope_summary.json",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/software_architecture_system.md",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/api-design-sys-design-kb.md",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/resilliency-patterns-kb.md",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/observability-kb.md",
+    "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/New-knowledge-banks/2-dev-sys-reqs-for-kb-llm-software/data-model-kb.md",
+    ".claude/plans/schema-first-kb-rewrite-and-nfr-engine.md"
+  ]
+}

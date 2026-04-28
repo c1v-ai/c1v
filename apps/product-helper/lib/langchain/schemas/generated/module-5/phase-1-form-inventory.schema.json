@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "number",
+      "const": 1
+    },
+    "forms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^FR\\.\\d{2,}$",
+            "description": "FR.NN — stable form id."
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "service",
+              "library",
+              "adapter",
+              "store",
+              "ui",
+              "job",
+              "external"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "realizes_functions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "F.NN ids this form realizes (validated referentially at top-level)."
+          },
+          "redundancy_source_fm": {
+            "type": "string",
+            "pattern": "^FM\\.\\d{2,}$",
+            "description": "FMEA id that requires this form as redundancy; absent on primary forms."
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "description",
+          "realizes_functions"
+        ],
+        "additionalProperties": false,
+        "description": "A single candidate form element."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "phase",
+    "forms"
+  ],
+  "additionalProperties": false,
+  "description": "Phase 1 — form inventory (raw catalog).",
+  "title": "Phase1FormInventory",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

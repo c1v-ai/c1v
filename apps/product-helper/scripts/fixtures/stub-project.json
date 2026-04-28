@@ -1,0 +1,22 @@
+{
+  "_comment": "Minimal stub project for build-all-headless smoke. NOT c1v itself; intentionally trivial so the test exercises pipeline integrity, not domain depth.",
+  "projectName": "Stub Smoke Project",
+  "projectDescription": "A tiny todo-list web app with one user role and one entity (Task). Used solely to drive the build-all-headless pipeline end-to-end against fixture-backed phase outputs.",
+  "storyId": "stub-smoke",
+  "actors": [
+    { "name": "User", "role": "Primary", "description": "Creates and completes tasks." }
+  ],
+  "useCases": [
+    { "id": "UC-01", "name": "Create Task", "actor": "User" },
+    { "id": "UC-02", "name": "Complete Task", "actor": "User" }
+  ],
+  "expectedPhases": ["m1", "m2", "m3", "m4", "m5", "m6", "m7"],
+  "expectedSynthesisArtifacts": [
+    "architecture-recommendation.v1.json",
+    "diagrams/context.mmd",
+    "diagrams/use_case.mmd",
+    "diagrams/class.mmd",
+    "diagrams/sequence.mmd",
+    "diagrams/decision_network.mmd"
+  ]
+}

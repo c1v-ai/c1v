@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase3Schema, ucbdHeaderSchema, ucIdSchema } from '../phase-3-ucbd-setup';
+import { phase3Schema, ucbdHeaderSchema, ucIdSchema } from '..';
 
 function envelope() {
   return {

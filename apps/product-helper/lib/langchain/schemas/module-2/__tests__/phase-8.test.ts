@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase8Schema, phase8RowSchema } from '../phase-8-constants-table';
+import { phase8Schema, phase8RowSchema } from '..';
 
 function envelope() {
   return {

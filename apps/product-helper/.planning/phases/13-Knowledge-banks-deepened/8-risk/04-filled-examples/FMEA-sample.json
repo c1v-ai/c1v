@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FMEA Sample — IR Sensor Encoder (Canonical Course Example)",
+  "version": "1.0.0",
+  "source": {
+    "xlsx": "FMEA-sample.xlsx",
+    "course": "Cornell CESYS527 — Identifying and Evaluating Risk",
+    "context": "Pedal-Motor-Bicycle (PMB) design — IR Sensor Encoder subsystem"
+  },
+  "description": "Machine-readable transcription of the course-provided FMEA sample. Use this as the calibration reference for format, rating assignment, corrective-action quality, and stoplight chart construction. The 7 cause rows are distributed across 3 failure modes (F.1, F.2, F.3) with two rounds of corrective actions and three stoplight charts (before, after round 1, after round 2).",
+  "system_context": {
+    "system_name": "Pedal-Motor-Bicycle (PMB)",
+    "subsystem_analyzed": "IR Sensor Encoder",
+    "subsystem_function": "Reports number of wheel rotations to the Demand Algorithm, which determines energy usage vs. storage for the motor-assist system.",
+    "related_subsystems": [
+      "Sensor Filter System",
+      "Demand Algorithm",
+      "Controller",
+      "GUI",
+      "Energy Storage System",
+      "PMB Engine"
+    ]
+  },
+  "rating_systems": {
+    "severity": {
+      "scale_range": [1, 4],
+      "assignment_rule": "Assign the WORST (highest) severity rating that has at least ONE condition met by the effect/cause.",
+      "levels": [
+        {
+          "rating": 1,
+          "label": "Negligible",
+          "conditions": [
+            "Cost is less than 5% of the total budget",
+            "Requires less than 1 day to address",
+            "Performance is adversely affected by less than 5%",
+            "No harm to a person"
+          ]
+        },
+        {
+          "rating": 2,
+          "label": "Marginal",
+          "conditions": [
+            "Cost is 5%-10% of the total budget",
+            "Requires 1-6 days to address",
+            "Performance is adversely affected by 5-10%",
+            "No harm to a person"
+          ]
+        },
+        {
+          "rating": 3,
+          "label": "Critical",
+          "conditions": [
+            "Cost is 10%-20% of the total budget",
+            "Requires 1-2 weeks to address",
+            "Performance is adversely affected by 10-20%",
+            "No harm to a person"
+          ]
+        },
+        {
+          "rating": 4,
+          "label": "Catastrophic",
+          "conditions": [
+            "Cost is more than 20% of the total budget",
+            "Requires more than 2 weeks to address",
+            "Performance is adversely affected by greater than 20%",
+            "Causes potential harm to a person"
+          ]
+        }
+      ]
+    },
+    "likelihood": {
+      "scale_range": [1, 5],
+      "maturity_context": "Prototype development. In a final product, all of these levels would be considered too frequent.",
+      "levels": [
+        {
+          "rating": 1,
+          "label": "Remote",
+          "conditions": ["Occurs less than once every 3 months"]
+        },
+        {
+          "rating": 2,
+          "label": "Unlikely",
+          "conditions": ["Occurs between once every 2 weeks to once every 3 months"]
+        },
+        {
+          "rating": 3,
+          "label": "Possible",
+          "conditions": ["Occurs no more than once a week"]
+        },
+        {
+          "rating": 4,
+          "label": "Likely",
+          "conditions": [
+            "Occurs greater than once a week",
+            "Occurs in 5-10% of the operations"
+          ]
+        },
+        {
+          "rating": 5,
+          "label": "Frequent",
+          "conditions": [
+            "Occurs greater than once a week",
+            "Occurs in greater than 10% of the operations"
+          ]
+        }
+      ]
+    },
+    "rpn_matrix": {
+      "formula": "severity * likelihood",
+      "axes": { "x": "severity", "y": "likelihood" },
+      "cells": {
+        "L5_S1": 5, "L5_S2": 10, "L5_S3": 15, "L5_S4": 20,
+        "L4_S1": 4, "L4_S2": 8,  "L4_S3": 12, "L4_S4": 16,
+        "L3_S1": 3, "L3_S2": 6,  "L3_S3": 9,  "L3_S4": 12,
+        "L2_S1": 2, "L2_S2": 4,  "L2_S3": 6,  "L2_S4": 8,
+        "L1_S1": 1, "L1_S2": 2,  "L1_S3": 3,  "L1_S4": 4
+      }
+    },
+    "criticality_ranges": [
+      { "rpn_min": 15, "rpn_max": 20, "category": "HIGH",        "color": "Red" },
+      { "rpn_min": 9,  "rpn_max": 14, "category": "MEDIUM HIGH", "color": "Orange" },
+      { "rpn_min": 5,  "rpn_max": 8,  "category": "MEDIUM",      "color": "Yellow" },
+      { "rpn_min": 3,  "rpn_max": 4,  "category": "MEDIUM LOW",  "color": "Light Green" },
+      { "rpn_min": 1,  "rpn_max": 2,  "category": "LOW",         "color": "Green" }
+    ]
+  },
+  "failure_modes": [
+    {
+      "failure_mode_id": "F.1",
+      "subsystem": "IR Sensor Encoder",
+      "failure_mode": "Reported number of rotations from the IR sensor is too few",
+      "failure_effects": [
+        "Demand incorrectly larger than necessary",
+        "Energy usage is larger than necessary",
+        "Bicycle goes far faster than desired"
+      ],
+      "cause_rows": [
+        {
+          "cause_index": 1,
+          "possible_cause": "sensor detector or emitter is partially blocked or damaged",
+          "mmmme": "Machine",
+          "original": { "severity": 4, "likelihood": 5, "rpn": 20, "criticality": "HIGH" },
+          "corrective_action": "Add a shielding cone to the detector. Add a sweep to the emitter just before it passes the detector to help clear off the emitter. Increase the intensity of the emitter. Research more robust parts. Put in a redundant encoder and adjust sensor filter system to account for this redundancy. Ensure manual override system is functioning properly.",
+          "adjusted_round_1": { "severity": 4, "likelihood": 2, "rpn": 8, "criticality": "MEDIUM" },
+          "adjusted_round_2": { "severity": 4, "likelihood": 1, "rpn": 4, "criticality": "MEDIUM LOW", "note": "Second iteration further reduced likelihood." },
+          "corrective_action_effort": "15 hrs. (See Timeline's IR Sensor Risk Plan B)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check encoders for debris and clean if need be. Check encoders to make sure they're still working. Replace encoders if need be."
+        },
+        {
+          "cause_index": 2,
+          "possible_cause": "sensor detector or emitter is damaged",
+          "mmmme": "Machine",
+          "original": { "severity": 4, "likelihood": 2, "rpn": 8, "criticality": "MEDIUM" },
+          "corrective_action": "Research more robust parts. Put in a redundant encoder and adjust sensor filter system to account for this redundancy. Ensure manual override system is functioning properly.",
+          "adjusted_round_1": { "severity": 4, "likelihood": 1, "rpn": 4, "criticality": "MEDIUM LOW" },
+          "corrective_action_effort": "12 hrs. (See Timeline's IR Sensor Risk Plan B)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check encoders for debris and clean if need be. Check encoders to make sure they're still working. Replace encoders if need be."
+        },
+        {
+          "cause_index": 3,
+          "possible_cause": "sensor detector or emitter has become loose or is no longer oriented properly",
+          "mmmme": "Machine",
+          "original": { "severity": 4, "likelihood": 4, "rpn": 16, "criticality": "MEDIUM HIGH" },
+          "corrective_action": "Increase the robustness of the mechanical housing. Include checking its secureness as part of the recommended start up safety check. Put in a redundant encoder and adjust sensor filter system to account for this redundancy.",
+          "adjusted_round_1": { "severity": 4, "likelihood": 1, "rpn": 4, "criticality": "MEDIUM LOW" },
+          "corrective_action_effort": "12 hrs. (See Timeline's IR Sensor Risk Plan B and Plan C)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check wiring for frays and proper connections. Replace encoders or connections if need be."
+        }
+      ]
+    },
+    {
+      "failure_mode_id": "F.2",
+      "subsystem": "IR Sensor Encoder",
+      "failure_mode": "Reported number of rotations from the IR sensor is too many",
+      "failure_effects": [
+        "Demand incorrectly smaller than necessary",
+        "Energy storage is conserved or even increased more than it should be",
+        "Bicycle goes far slower than desired"
+      ],
+      "cause_rows": [
+        {
+          "cause_index": 1,
+          "possible_cause": "sensor detector or emitter is partially damaged",
+          "mmmme": "Machine",
+          "original": { "severity": 2, "likelihood": 1, "rpn": 2, "criticality": "LOW" },
+          "corrective_action": "Use COTS Encoder. Put in a redundant encoder and adjust sensor filter system to account for this redundancy. Ensure manual override system is functioning properly.",
+          "adjusted_round_1": { "severity": 2, "likelihood": 1, "rpn": 2, "criticality": "LOW", "note": "Cause was already LOW risk; corrective action applied as precaution." },
+          "corrective_action_effort": "10 hrs. (See Timeline's IR Sensor Risk Plan E)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check encoders for debris and clean if need be. Check encoders to make sure they're still working. Replace encoders if need be."
+        }
+      ]
+    },
+    {
+      "failure_mode_id": "F.3",
+      "subsystem": "IR Sensor Encoder",
+      "failure_mode": "No signal provided",
+      "failure_effects": [
+        "Sensor Filter System reports error",
+        "Demand Algorithm reports error",
+        "Controller switches to energy storage only, no usage",
+        "GUI reports error",
+        "Bicycle functions inefficiently until user disengages PMB engine"
+      ],
+      "cause_rows": [
+        {
+          "cause_index": 1,
+          "possible_cause": "broken detector or emitter",
+          "mmmme": "Machine",
+          "original": { "severity": 2, "likelihood": 2, "rpn": 4, "criticality": "MEDIUM LOW" },
+          "corrective_action": "Research more robust parts. Put in a redundant encoder and adjust sensor filter system to account for this redundancy.",
+          "adjusted_round_1": { "severity": 2, "likelihood": 1, "rpn": 2, "criticality": "LOW" },
+          "corrective_action_effort": "12 hrs. (See Timeline's IR Sensor Risk Plan B)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check wiring for frays and proper connections. Replace encoders or connections if need be."
+        },
+        {
+          "cause_index": 2,
+          "possible_cause": "power cables disconnected",
+          "mmmme": "Machine",
+          "original": { "severity": 2, "likelihood": 4, "rpn": 8, "criticality": "MEDIUM" },
+          "corrective_action": "Increase the robustness of the mechanical housing to take stress of cable connections.",
+          "adjusted_round_1": { "severity": 2, "likelihood": 1, "rpn": 2, "criticality": "LOW" },
+          "corrective_action_effort": "3 hrs. (See Timeline's IR Sensor Risk Plan D)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check wiring for frays and proper connections. Replace encoders or connections if need be."
+        },
+        {
+          "cause_index": 3,
+          "possible_cause": "signal cables disconnected",
+          "mmmme": "Machine",
+          "original": { "severity": 2, "likelihood": 5, "rpn": 10, "criticality": "MEDIUM" },
+          "corrective_action": "Increase the robustness of the mechanical housing to take stress of cable connections.",
+          "adjusted_round_1": { "severity": 2, "likelihood": 1, "rpn": 2, "criticality": "LOW" },
+          "corrective_action_effort": "3 hrs. (See Timeline's IR Sensor Risk Plan D)",
+          "troubleshooting": "Check encoders to make sure they are securely fastened and properly aligned. Check wiring for frays and proper connections. Replace encoders or connections if need be."
+        }
+      ]
+    }
+  ],
+  "stoplight_charts": {
+    "note": "Cells show the COUNT of cause-rows at each (Likelihood, Severity) intersection. Total must equal 7 (total cause rows) across all three charts.",
+    "before_corrective_actions": {
+      "total_rows": 7,
+      "cells": {
+        "L5_S1": 0, "L5_S2": 1, "L5_S3": 0, "L5_S4": 1,
+        "L4_S1": 0, "L4_S2": 1, "L4_S3": 0, "L4_S4": 1,
+        "L3_S1": 0, "L3_S2": 0, "L3_S3": 0, "L3_S4": 0,
+        "L2_S1": 0, "L2_S2": 1, "L2_S3": 0, "L2_S4": 1,
+        "L1_S1": 0, "L1_S2": 1, "L1_S3": 0, "L1_S4": 0
+      },
+      "risk_distribution": {
+        "HIGH": 1,
+        "MEDIUM HIGH": 1,
+        "MEDIUM": 3,
+        "MEDIUM LOW": 1,
+        "LOW": 1
+      }
+    },
+    "after_corrective_actions_round_1": {
+      "total_rows": 7,
+      "cells": {
+        "L5_S1": 0, "L5_S2": 0, "L5_S3": 0, "L5_S4": 0,
+        "L4_S1": 0, "L4_S2": 0, "L4_S3": 0, "L4_S4": 0,
+        "L3_S1": 0, "L3_S2": 0, "L3_S3": 0, "L3_S4": 0,
+        "L2_S1": 0, "L2_S2": 0, "L2_S3": 0, "L2_S4": 1,
+        "L1_S1": 0, "L1_S2": 4, "L1_S3": 0, "L1_S4": 2
+      },
+      "risk_distribution": {
+        "HIGH": 0,
+        "MEDIUM HIGH": 0,
+        "MEDIUM": 1,
+        "MEDIUM LOW": 2,
+        "LOW": 4
+      }
+    },
+    "after_corrective_actions_round_2": {
+      "note": "Second iteration (Step 13). F.1 cause 1 received additional corrective action reducing adjusted likelihood from 2 to 1.",
+      "total_rows": 7,
+      "cells": {
+        "L5_S1": 0, "L5_S2": 0, "L5_S3": 0, "L5_S4": 0,
+        "L4_S1": 0, "L4_S2": 0, "L4_S3": 0, "L4_S4": 0,
+        "L3_S1": 0, "L3_S2": 0, "L3_S3": 0, "L3_S4": 0,
+        "L2_S1": 0, "L2_S2": 0, "L2_S3": 0, "L2_S4": 0,
+        "L1_S1": 0, "L1_S2": 4, "L1_S3": 0, "L1_S4": 3
+      },
+      "risk_distribution": {
+        "HIGH": 0,
+        "MEDIUM HIGH": 0,
+        "MEDIUM": 0,
+        "MEDIUM LOW": 3,
+        "LOW": 4
+      }
+    }
+  },
+  "risk_migration_summary": [
+    { "criticality": "HIGH",        "before": 1, "after_round_1": 0, "after_round_2": 0 },
+    { "criticality": "MEDIUM HIGH", "before": 1, "after_round_1": 0, "after_round_2": 0 },
+    { "criticality": "MEDIUM",      "before": 3, "after_round_1": 1, "after_round_2": 0 },
+    { "criticality": "MEDIUM LOW",  "before": 1, "after_round_1": 2, "after_round_2": 3 },
+    { "criticality": "LOW",         "before": 1, "after_round_1": 4, "after_round_2": 4 }
+  ]
+}

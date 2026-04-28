@@ -1,6 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { phase0Schema } from '../phase-0-ingest';
-import { phase1Schema, ucPriorityRowSchema } from '../phase-1-use-case-priority';
+import { phase0Schema, phase1Schema, ucPriorityRowSchema } from '..';
 
 function envelope(n: number, slug: string, name: string) {
   return {

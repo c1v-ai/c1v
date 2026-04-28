@@ -197,12 +197,90 @@ async function generateQFD(state: IntakeState): Promise<Partial<IntakeState>> {
 
 /**
  * Generate Interfaces Node (Step 6)
- * Extracts subsystems, data flows, N2 chart, and sequence diagrams
+ * v2.1 Wave A: AUGMENTED to additionally invoke interface-specs-agent (M7.b).
  */
 async function generateInterfaces(state: IntakeState): Promise<Partial<IntakeState>> {
   const { generateInterfaces: generateInterfacesImpl } = await import('./nodes/generate-interfaces');
   return generateInterfacesImpl(state);
 }
+
+// ============================================================
+// v2.1 Wave A — 7 NEW node placeholders (langgraph-wirer)
+// v2.1 Wave B (TB1 observability) — wrapped in `withNodeMetrics` to emit
+// per-node start/end + cache_hit/miss events. Cache hit signal is read
+// off `state.kbStepData.__cache_hit` if a sibling cache layer set it
+// (TB1 cache-and-lazy-gen contract); absent ⇒ unknown.
+// ============================================================
+
+import { recordNodeStart, recordNodeEnd } from '@/lib/observability/synthesis-metrics';
+
+function withNodeMetrics(
+  nodeName: string,
+  fn: (state: IntakeState) => Promise<Partial<IntakeState>>,
+): (state: IntakeState) => Promise<Partial<IntakeState>> {
+  return async (state) => {
+    const project_id = state.projectId;
+    const cacheRaw = (state.kbStepData as Record<string, unknown> | undefined)?.__cache_hit;
+    const cache_hit = typeof cacheRaw === 'boolean' ? cacheRaw : undefined;
+    recordNodeStart({ node: nodeName, project_id, cache_hit });
+    const start = performance.now();
+    try {
+      const result = await fn(state);
+      recordNodeEnd({
+        node: nodeName,
+        project_id,
+        latency_ms: performance.now() - start,
+        success: true,
+        cache_hit,
+      });
+      return result;
+    } catch (err) {
+      recordNodeEnd({
+        node: nodeName,
+        project_id,
+        latency_ms: performance.now() - start,
+        success: false,
+        cache_hit,
+      });
+      throw err;
+    }
+  };
+}
+
+const generateDataFlows = withNodeMetrics('generate_data_flows', async (state) => {
+  const { generateDataFlows: impl } = await import('./nodes/generate-data-flows');
+  return impl(state);
+});
+
+const generateFormFunction = withNodeMetrics('generate_form_function', async (state) => {
+  const { generateFormFunction: impl } = await import('./nodes/generate-form-function');
+  return impl(state);
+});
+
+const generateDecisionNetwork = withNodeMetrics('generate_decision_network', async (state) => {
+  const { generateDecisionNetwork: impl } = await import('./nodes/generate-decision-network');
+  return impl(state);
+});
+
+const generateN2 = withNodeMetrics('generate_n2', async (state) => {
+  const { generateN2: impl } = await import('./nodes/generate-n2');
+  return impl(state);
+});
+
+const generateFmeaEarly = withNodeMetrics('generate_fmea_early', async (state) => {
+  const { generateFmeaEarly: impl } = await import('./nodes/generate-fmea-early');
+  return impl(state);
+});
+
+const generateFmeaResidual = withNodeMetrics('generate_fmea_residual', async (state) => {
+  const { generateFmeaResidual: impl } = await import('./nodes/generate-fmea-residual');
+  return impl(state);
+});
+
+const generateSynthesis = withNodeMetrics('generate_synthesis', async (state) => {
+  const { generateSynthesis: impl } = await import('./nodes/generate-synthesis');
+  return impl(state);
+});
 
 // ============================================================
 // State Annotation Definition
@@ -389,6 +467,15 @@ export function buildIntakeGraph() {
     .addNode('generate_decision_matrix', generateDecisionMatrix)
     .addNode('generate_qfd', generateQFD)
     .addNode('generate_interfaces', generateInterfaces)
+    // v2.1 Wave A — 7 NEW nodes (langgraph-wirer; D-V21.25 coexistence preserved
+    // for generate_decision_network alongside existing generate_decision_matrix).
+    .addNode('generate_data_flows', generateDataFlows)
+    .addNode('generate_form_function', generateFormFunction)
+    .addNode('generate_decision_network', generateDecisionNetwork)
+    .addNode('generate_n2', generateN2)
+    .addNode('generate_fmea_early', generateFmeaEarly)
+    .addNode('generate_fmea_residual', generateFmeaResidual)
+    .addNode('generate_synthesis', generateSynthesis)
     // ============================================================
     // Add Entry Edge
     // ============================================================
@@ -432,8 +519,23 @@ export function buildIntakeGraph() {
       routeAfterDecisionMatrix,
       ['generate_qfd', END]
     )
+    // Legacy intake terminus.
     .addEdge('generate_qfd', END)
-    .addEdge('generate_interfaces', END)
+    // v2.1 Wave A — synthesis chain (7 NEW nodes). Routes from
+    // `generate_interfaces` into the system-design fan: data_flows →
+    // form_function (after FFBD/FMEA already on state) → decision_network →
+    // n2 → fmea_early → fmea_residual → synthesis (keystone) → END.
+    // This linear order is the dependency order; persistence to
+    // project_artifacts happens in each node so partial chains still produce
+    // observable rows.
+    .addEdge('generate_interfaces', 'generate_data_flows')
+    .addEdge('generate_data_flows', 'generate_form_function')
+    .addEdge('generate_form_function', 'generate_decision_network')
+    .addEdge('generate_decision_network', 'generate_n2')
+    .addEdge('generate_n2', 'generate_fmea_early')
+    .addEdge('generate_fmea_early', 'generate_fmea_residual')
+    .addEdge('generate_fmea_residual', 'generate_synthesis')
+    .addEdge('generate_synthesis', END)
     // ============================================================
     // Add Simple Edges
     // ============================================================

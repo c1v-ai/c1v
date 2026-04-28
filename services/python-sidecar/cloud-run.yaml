@@ -1,0 +1,80 @@
+# Cloud Run service config for c1v python-sidecar.
+#
+# Deploy:
+#   gcloud run services replace services/python-sidecar/cloud-run.yaml \
+#     --region us-central1 --project <PROJECT_ID>
+#
+# IAM: only the Vercel-side service account may invoke /run-render.
+#   gcloud run services add-iam-policy-binding python-sidecar \
+#     --region us-central1 \
+#     --member serviceAccount:vercel-invoker@<PROJECT_ID>.iam.gserviceaccount.com \
+#     --role roles/run.invoker
+#
+# Resource sizing per TA3 spec: cpu=2, memory=4Gi, timeout=900s,
+# max-instances=10, concurrency=1 (per-tenant bursty pipeline).
+# min-instances=0 (warm-up cron handles cold start). If EC-V21-A.2 cold-start
+# p95 > 15s, flip min-instances to 1 (cost: ~$3/mo per instance).
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: python-sidecar
+  labels:
+    cloud.googleapis.com/location: us-central1
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+spec:
+  template:
+    metadata:
+      annotations:
+        # Scaling
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        # Generation 2 execution environment for full chromium / mmdc support.
+        run.googleapis.com/execution-environment: gen2
+        # Allow up to 1 concurrent request per instance (subprocess-heavy).
+        run.googleapis.com/cpu-throttling: "false"
+    spec:
+      containerConcurrency: 1
+      timeoutSeconds: 900
+      serviceAccountName: python-sidecar-runtime@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: us-central1-docker.pkg.dev/PROJECT_ID/c1v/python-sidecar:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          env:
+            - name: GENERATORS_DIR
+              value: /app/generators
+            - name: ARTIFACT_STORAGE_BUCKET
+              value: project-artifacts
+            - name: GENERATOR_TIMEOUT_S
+              value: "240"
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-url
+                  key: latest
+            - name: SUPABASE_SERVICE_ROLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-service-role-key
+                  key: latest
+          startupProbe:
+            httpGet:
+              path: /healthz
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+            periodSeconds: 30
+            timeoutSeconds: 5
+  traffic:
+    - percent: 100
+      latestRevision: true

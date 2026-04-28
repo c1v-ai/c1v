@@ -2,6 +2,35 @@
 @.cleo/templates/AGENT-INJECTION.md
 <!-- CLEO:END -->
 
+# c1v Monorepo
+
+## Quick Start
+
+```bash
+pnpm install                                    # from repo root
+pnpm dev --filter=product-helper                # main app, port 3000
+# tests (per-app, not monorepo-wide):
+cd apps/product-helper && POSTGRES_URL=stub AUTH_SECRET=stub ANTHROPIC_API_KEY=stub \
+  STRIPE_SECRET_KEY=stub STRIPE_WEBHOOK_SECRET=stub BASE_URL=http://localhost:3000 \
+  npx jest
+```
+
+## Current Reality (2026-04-24)
+
+**Apps that actually exist:**
+- `apps/product-helper/` — Next.js 15 AI-native PRD + system-design tool (main, deployed at prd.c1v.ai)
+- `apps/c1v-identity/` — Python/FastAPI identity CDP (scaffold; see app-level CLAUDE.md)
+
+**Fresh Claude after `/clear`, read in order:**
+1. `plans/HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md` — session transcript + locked decisions
+2. `plans/c1v-MIT-Crawley-Cornell.v2.md` — authoritative plan
+3. This file (below) for methodology stack + gotchas
+4. `apps/product-helper/CLAUDE.md` for app-specific conventions
+
+The "Recommended Monorepo Structure" section below is **aspirational** (from an earlier Claude session) — treat as roadmap, not reality. `apps/web/`, `apps/admin/`, `packages/*`, `python-packages/`, `services/`, `infra/` do NOT exist yet.
+
+---
+
 # c1v Monorepo Recommendation (Claude + inline comments)
 
 **How to read this doc**
@@ -512,4 +541,60 @@ Notes: Works in both ecosystems
 Layer: Deployment
 Technology: Vercel (Next.js) + Cloud Run (Python)
 Notes: Optimized for each stack
+
+---
+
+## Methodology Stack (L1/L2/L3)
+
+- **L1 Deepened KBs** — `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/` — LLM instructions + schemas + xlsx templates. What agents retrieve from.
+- **L2 v2 artifacts** — `plans/kb-upgrade-v2/module-{1..8}/` — JSON + xlsx + pptx + mmd OUTPUT of running L1 on c1v-itself (self-application).
+- **L3 v3 deltas** — `plans/v3_revised/` — Apr 20 foundation re-set; delta files only, never expanded to artifacts.
+- **Handoff contract:** every v2 JSON has `_schema` + `_upstream_refs` + `_output_path` fields — follow these to navigate module dependencies, don't re-derive.
+
+## Active Plans (c1v MIT-Crawley-Cornell)
+
+- **v1:** `plans/c1v-MIT-Crawley-Cornell.md` — hybrid Cornell+Crawley+Atlas pivot.
+- **v2 amendment:** `plans/c1v-MIT-Crawley-Cornell.v2.md` — supersedes v1 §0, §5.3, §14; adds §0.2 (T9 KB hygiene), §0.3 (flow restructure), §0.4 (cross-tree renumber), §15 (T10 artifact-gen). 12 teams / 4 waves / ~50 agents. **v2 SHIPPED 2026-04-24** — all 12 teams (T1/T2/T3/T8/T9/T10/T4a/T7/T11/T4b/T5/T6) closed at canonical verification bar. Portfolio keystone `architecture_recommendation.v1.json` on disk.
+- **v2 release notes:** `plans/v2-release-notes.md` (commit `7e2b202`) — end-to-end summary: shipped/deferred/portfolio-artifact.
+- **Post-v2 backlog:** `plans/post-v2-followups.md` — `projects` table RLS hardening, fmea_residual prose-vs-data drift, kb_chunk_ids placeholders, weasyprint PDF.
+- **v2 handoff:** `plans/HANDOFF-2026-04-24-c1v-MIT-Crawley-Cornell-v2.md` — transcript + verbatim quotes + locked decisions.
+- **Methodology correction:** `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` — three-pass argument (FMEA instrumental, not terminal). v2 absorbs without relabeling phases. Canonical home declared at `plans/v21-outputs/ta1/methodology-canonical.md` (2026-04-26 reconciliation revoked the original 2026-04-25 lock — that lock was built on hallucinated disk facts; see audit doc for details).
+- **Crawley source-of-truth:** `plans/research/crawley-book-findings.md` — agents read this; do NOT rescan the book.
+
+## Team Status (cumulative across sessions)
+
+- **Wave 1 — COMPLETE 2026-04-24:**
+  - **T1 `c1v-crawley-kb`** — ✅ done.
+  - **T2 `c1v-kb8-atlas`** — ✅ done (37-task multi-agent build closed).
+  - **T3 `c1v-runtime-prereqs`** — ✅ tag `t3-wave-1-complete` @ commit `3641e97`. Phase B ingest landed 2026-04-24 (0/3289 dedup no-op).
+  - **T9 `c1v-kb-hygiene`** — ✅ tag `t9-wave-1-complete`. 52 duplicate cross-cutting KBs deduped → `_shared/` pool + 117 relative symlinks; 9 KB folders renamed per v2 §0.4.3; Atlas consolidated to KB-9; 18 Crawley chapter excerpts patched into 7 KBs + `_shared/`, 0 fabricated.
+  - **T10 `c1v-artifact-centralization`** — ✅ tag `t10-wave-1-complete`. 13 Python artifact generators at `scripts/artifact-generators/` (9 migrated + 4 new Crawley); TS pipeline (invoker + config + manifest + BullMQ-optional) + `/api/projects/[id]/artifacts/manifest` endpoint; new FMEA viewer (255 LOC) per R-v2.3; `artifact-pipeline.tsx` extended (142→178 LOC). tsc green across product-helper.
+  - **T8 `c1v-reorg`** — ✅ tag `t8-wave-1-complete` @ commit `e173d3b` (verified 2026-04-24 20:51 EDT). 3×8 submodule layout for M2/M3/M4 landed; verification report at `plans/reorg-verification-report.md` (5/5 checks GREEN: generate-all byte-identical to pre-reorg baseline, tsc clean, jest 119/119 green, 14 M4 schemas registered, all submodule files present). Bonus: `scripts/verify-tree-pair-consistency.ts` shipped @ commit `2be3ef4` per v2 §0.4.4 + CI workflow `.github/workflows/verify-trees.yml`. EC=3 broken `_upstream_ref` in `module-8-risk/phase_0_context.json` (stale `use_cases.json` → `use_case_inventory.json`) fixed; verifier now exits 0 on main.
+- **Wave 2-early — COMPLETE 2026-04-24** (forward-filled to canonical bar 21:15 EDT; roll-up tag `wave-2-early-complete`):
+  - **T4a `c1v-m3-ffbd-n2-fmea-early`** — tag `t4a-wave-2-early-complete` @ commit `18e75c8`. Ships M1 phase-2.5 `data_flows.v1.json` (15 DE.NN), M3 `ffbd.v1.json` (7 fns), M7.a `n2_matrix.v1.json` (10 IF.NN), M8.a `fmea_early.v1.json` (12 FM.NN) + `verify-t4a.ts`. 6/6 V4a gates green; report at `plans/t4a-outputs/verification-report.md`. Producer commits: 15f5855 / b1082cd / 152e38b / 84e194b.
+  - **T7 `c1v-module0-be`** — tag `t7-wave-2-early-complete` @ commit `581afd9`. Ships M0 `user_profile.v1` + `project_entry.v1` + `intake_discriminators.v1` schemas + `MODULE_0_PHASE_SCHEMAS` registry + `signup-signals-agent.ts` + `discriminator-intake-agent.ts` + `/api/signup-signals/[userId]/route.ts` + `user_signals` / `project_entry_states` tables with RLS + `verify-t7.ts`. 7/7 V7 gates green (V7.7 SKIP-with-fail-forward — M0 has no self-app artifact by design); report at `plans/t7-outputs/verification-report.md`. Producer commits: 997f237 / 07849d5 / ba49246 / 618ba1b / 68af2dc / 2c9cfe3.
+- **Wave 2-mid — COMPLETE 2026-04-24** (forward-filled 21:17 EDT; roll-up tag `wave-2-mid-complete`):
+  - **T11 `c1v-m2-nfr-resynth`** — tag `t11-wave-2-mid-complete` @ commit `91f159e`. Ships M2 schema `derivedFrom` discriminated union + NFR v2.1 (26 NFRs; 12 fmea-derived, 3 data-flow, 11 fr) + constants v2.1 (28 constants; 19 NFR-anchored, 9 FR-anchored, 5 Final) + `verify-t11.ts`. 6/6 V11 gates green; report at `plans/t11-outputs/verification-report.md`. Producer commits: b3a8ee4 / 8c47cb8 / 020766a. **Non-blocking finding:** commit message on 020766a claims 18/10/4 (NFR/FR/Final) but file ships 19/9/5; verifier records the prose-vs-data drift in V11.3.
+- **Wave 3 — COMPLETE 2026-04-24:**
+  - **T4b `c1v-m4-decision-net`** — tag `t4b-wave-3-complete` @ commit `4ecfe3f`. Ships `decision-net-agent.ts` + `interface-specs-agent.ts` + `decision_network.v1.json` + `interface_specs.v1.json` + `verify-t4b.ts`. 5/5 V4b gates green; report backfilled to canonical bar at `plans/t4b-outputs/verification-report.md` (commit `0fd35af`).
+  - **T5 `c1v-m5-formfunction`** — tag `t5-wave-3-complete` @ commit `a30d9c6`. Ships `form-function-agent.ts` + 8-case test + `verify-t5.ts`; re-validates `form_function_map.v1.json`. 4/4 V5 gates green; report backfilled at `plans/t5-outputs/verification-report.md` (commit `0fd35af`). Plan: `plans/t4b-t5-completion.md`.
+- **Wave 4 — COMPLETE 2026-04-24** (T6 `c1v-synthesis` terminal wave; tag `synthesizer-wave-4-complete` @ commit `56532d4`):
+  - **hoq-agent** — 10 commits `16bc96c`..`8c9a172`. M6 HoQ schemas (6 phases) + agent + `hoq.v1.json` (6 PCs × 18 ECs, 27 nonzero matrix cells, 14 roof pairs) + xlsx artifact via `gen-qfd.py`. Created `qfd-legacy.schema.json` adapter (frozen `qfd.schema.json` untouched).
+  - **fmea-residual-agent** — 4 commits `b7def3b` / `55d7737` / `629303e` / `aa55cf3`. M8.b `fmea_residual.v1.json` (16 FMs: 4 new + 12 surviving from `fmea_early`; 13 high-RPN flagged per source-of-truth boolean) + `gen-fmea.py variant=residual` extension + xlsx with stoplight sheet.
+  - **drizzle-runstate** — commit `3691617`. `project_run_state` Drizzle table + migration `0013_project_run_state.sql` + RLS policies (5 total). 6/6 RLS smoke tests green against local Supabase :54322. **Surfaced gap:** `projects` table has RLS enabled but zero tenant policies — EXISTS gates from non-owner roles return 0 rows. Deferred to `plans/post-v2-followups.md` (P3 security pass).
+  - **build-all-headless** — commit `94f6c0e`. E2E smoke pipeline at `apps/product-helper/__tests__/build-all-headless.test.ts` + minimal stub-project fixture + 14/14 jest tests in <0.5s. Verifies 15/15 expected artifacts emit + 61 schemas across 9 modules + synthesis register clean. Per-module schema preload routes pending (only m4 ships HTTP route today).
+  - **synthesizer** — 4 commits `2a4a05b` / `15ffe20` / `a2ee9b8` / `56532d4`. **Portfolio keystone:** `architecture_recommendation.v1.json` with derivation_chain (4 decisions D-01..D-04 against winning DN nodes), 3 Pareto alternatives (AV.01 recommended = Sonnet 4.5 + pgvector + LangGraph + Vercel; $320/mo; 2600ms p95; 99.9% avail), 7 atlas empirical_priors across 4 KB-9 companies (anthropic/supabase/langchain/vercel), embedded fmea_residual flags + HoQ target-values + tail-latency consistency check. Verifier `apps/product-helper/scripts/verify-t6.ts` 6/6 V6 gates green; report at `plans/t6-outputs/verification-report.md`. Deterministic `inputs_hash` enables byte-identical re-runs. Cleanup commit `a4d1bb6` dropped unused readJson helper + captured RLS gap.
+  - **plan-updater** — commit `7e2b202`. v1 §11 R1 (Crawley ToC) + R6 (React Flow vs Mermaid) marked resolved; v1 §12 Exit Criteria annotated SATISFIED with commit SHAs; v2 doc flipped DRAFT→SHIPPED with new CLOSEOUT section; new `plans/v2-release-notes.md` (142 lines).
+
+## KB Corpus History (RESOLVED — Wave-1 close)
+
+These three issues were live before Wave-1; all resolved by T8/T9 atomic merge on 2026-04-24:
+
+- ~~**4× duplication:** 13 cross-cutting sw-design KBs copy-pasted into M2, M5-HoQ, M6, M7 folders.~~ → T9 deduped 52 files into `_shared/` pool + 117 relative symlinks (tag `t9-wave-1-complete`).
+- ~~**Atlas location:** KB-8 lived outside deepened-KB tree at `New-knowledge-banks/8-public-company-stacks-atlas/`.~~ → T9 consolidated to `13-Knowledge-banks-deepened/9-stacks-atlas/`.
+- ~~**Folder numbering lag:** disk was still Cornell-era (5-HoQ, 6-interfaces, 7-risk).~~ → T8+T9 atomic merge applied v2 §0.4.2 renumber. CI gate `scripts/verify-tree-pair-consistency.ts` now blocks any future drift.
+
+## Verification-Before-Assertion
+
+Never claim a feature "doesn't ship" or "doesn't exist" without walking the actual code. Deployed-features lists can be stale. Verify via `ls app/(dashboard)/**/page.tsx` + `ls components/**/*.tsx` before asserting absence.
 

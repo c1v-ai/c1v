@@ -1,0 +1,9 @@
+{
+  "_schema": "reference-project.v1",
+  "project_id": "ref-006",
+  "vision": "University course-recommendation tool",
+  "industry": "edtech",
+  "scale": "small",
+  "anonymized": true,
+  "generated_at": "2026-04-27T22:07:02.701Z"
+}

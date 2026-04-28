@@ -4,3 +4,4 @@ export { InlineApiKeyCreation } from './api-key-management';
 export { IdeAccordion } from './ide-accordion';
 export { ConnectionsFlow } from './connections-flow';
 export { ConnectionStatus } from './connection-status';
+export { BundleZipEntry } from './bundle-zip-entry';

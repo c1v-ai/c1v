@@ -1,0 +1,49 @@
+# Sentry Dashboard: Top-line synthesis cost (TB1 / EC-V21-B.6)
+#
+# Cost-as-blocker DECLASSIFIED 2026-04-25 by David: "we are moving forward
+# regardless of cost." This dashboard is for VISIBILITY. There are NO
+# alert thresholds in v2.1.
+#
+# Source events: agent_invocation:* (extra.cost_usd)
+# Aggregation: sum(extra.cost_usd) grouped by tag.agent + day bucket.
+title: c1v Synthesis Cost — Top Line
+description: >
+  Per-day synthesis cost for the 6 v2 system-design agents + synthesizer,
+  rolled up to monthly burn. Visibility-only — no alerts.
+layout: 12_columns
+panels:
+  - id: cost_per_day_total
+    title: Cost per day — all agents (USD)
+    type: timeseries
+    width: 12
+    query:
+      event: 'agent_invocation:*'
+      aggregation: sum(extra.cost_usd)
+      group_by: time(1d)
+    notes: >
+      Tracks rolling daily burn. Useful for spotting an unexpected step
+      change (e.g., a runaway retry loop, model swap).
+  - id: cost_per_agent_per_day
+    title: Cost per day — by agent
+    type: timeseries
+    width: 12
+    query:
+      event: 'agent_invocation:*'
+      aggregation: sum(extra.cost_usd)
+      group_by: [tag.agent, time(1d)]
+  - id: rolling_30d_burn
+    title: Rolling 30-day burn (USD)
+    type: bignum
+    width: 6
+    query:
+      event: 'agent_invocation:*'
+      aggregation: sum(extra.cost_usd)
+      window: 30d
+  - id: tokens_per_day
+    title: Tokens per day (prompt + completion)
+    type: timeseries
+    width: 6
+    query:
+      event: 'agent_invocation:*'
+      aggregation: sum(extra.prompt_tokens + extra.completion_tokens)
+      group_by: time(1d)

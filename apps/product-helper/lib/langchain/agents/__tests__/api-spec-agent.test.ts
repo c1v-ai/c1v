@@ -11,12 +11,25 @@
  * @module lib/langchain/agents/__tests__/api-spec-agent.test.ts
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
+jest.mock('../../config', () => ({
+  createClaudeAgent: jest.fn(),
+}));
+
 import {
   buildAPISpecPromptText,
   formatInterfaceMatrixSection,
+  generateAPISpecification,
+  apiSpecificationSchema,
 } from '../api-spec-agent';
+import { createClaudeAgent } from '../../config';
 import type { APISpecGenerationContext } from '../../../types/api-specification';
+
+const mockedCreateClaudeAgent = createClaudeAgent as jest.MockedFunction<
+  typeof createClaudeAgent
+>;
 
 function baseContext(): APISpecGenerationContext {
   return {
@@ -198,5 +211,97 @@ describe('api-spec format helpers — isolated', () => {
       undefined,
     );
     expect(out).toContain('| IF-01 | Basic | A → B | — | — | — | x |');
+  });
+});
+
+describe('generateAPISpecification — runtime', () => {
+  beforeEach(() => {
+    mockedCreateClaudeAgent.mockReset();
+  });
+
+  function runtimeContext(): APISpecGenerationContext {
+    return {
+      projectName: 'Heat Guard',
+      projectVision: 'Predictive heat-safety platform',
+      useCases: [
+        {
+          id: 'UC1',
+          name: 'Predict heat strain',
+          description: 'Real-time risk scoring',
+          actor: 'Worker',
+        },
+      ],
+      dataEntities: [
+        { name: 'Worker', attributes: ['id', 'name'], relationships: [] },
+        { name: 'Reading', attributes: ['id', 'temp'], relationships: [] },
+      ],
+    };
+  }
+
+  it('falls back to deterministic CRUD when both attempts return only 3 keys (logs.md regression shape)', async () => {
+    const threeKeyShape = {
+      baseUrl: '/api/v1',
+      version: '1.0.0',
+      authentication: { type: 'bearer', description: 'JWT', headerName: 'Authorization', tokenPrefix: 'Bearer' },
+      // missing: endpoints, responseFormat, errorHandling
+    };
+    const invoke = jest.fn<() => Promise<unknown>>().mockResolvedValue(threeKeyShape);
+    mockedCreateClaudeAgent.mockReturnValue({ invoke } as never);
+
+    // twoStage: false — pin legacy single-call path; this test verifies
+    // the legacy retry+fallback chain (Wave D Step D-3 added a two-stage
+    // default; this test predates that and asserts the legacy contract).
+    const spec = await generateAPISpecification(runtimeContext(), { twoStage: false });
+
+    // 2 entities × 3 fallback endpoints (list, create, get) = 6
+    expect(spec.endpoints.length).toBeGreaterThanOrEqual(6);
+    // First attempt + retry = 2 invocations before fallback
+    expect(invoke).toHaveBeenCalledTimes(2);
+    // Fallback shape signature: deterministic GET /api/v1/<plural>
+    expect(spec.endpoints.some((ep) => ep.path === '/api/v1/workers' && ep.method === 'GET')).toBe(true);
+    expect(spec.endpoints.some((ep) => ep.path === '/api/v1/readings' && ep.method === 'POST')).toBe(true);
+  });
+
+  it('returns LLM output unchanged when first attempt yields a full 6-key shape with ≥25 endpoints', async () => {
+    const endpoints = Array.from({ length: 26 }, (_, i) => ({
+      path: `/api/v1/resource-${i}`,
+      method: 'GET' as const,
+      description: `Endpoint ${i}`,
+      authentication: true,
+      operationId: `getResource${i}`,
+      tags: ['Resources'],
+      responseBody: { type: 'object' as const, description: 'response' },
+      errorCodes: [{ code: 401, name: 'Unauthorized', description: 'Missing auth' }],
+    }));
+    const fullShape = {
+      baseUrl: '/api/v1',
+      version: '1.0.0',
+      authentication: { type: 'bearer', description: 'JWT', headerName: 'Authorization', tokenPrefix: 'Bearer' },
+      endpoints,
+      responseFormat: { wrapped: true, contentType: 'application/json' },
+      errorHandling: {
+        format: { type: 'object', description: 'error envelope' },
+        commonErrors: [{ code: 500, name: 'InternalError', description: 'Server error' }],
+      },
+    };
+    const invoke = jest.fn<() => Promise<unknown>>().mockResolvedValue(fullShape);
+    mockedCreateClaudeAgent.mockReturnValue({ invoke } as never);
+
+    // twoStage: false — see prior test rationale.
+    const spec = await generateAPISpecification(runtimeContext(), { twoStage: false });
+
+    expect(invoke).toHaveBeenCalledTimes(1); // No retry, no fallback
+    expect(spec.endpoints).toHaveLength(26);
+    expect(spec.metadata?.endpointCount).toBe(26);
+    // First endpoint preserved verbatim from LLM (not deterministic CRUD shape)
+    expect(spec.endpoints[0].path).toBe('/api/v1/resource-0');
+  });
+
+  it('apiSpecificationSchema is acyclic and inlines fully (no recursion, no needed $refs)', () => {
+    const json = zodToJsonSchema(apiSpecificationSchema, { $refStrategy: 'none' });
+    const stringified = JSON.stringify(json);
+    expect(stringified).not.toContain('"$ref"');
+    expect(stringified).not.toContain('"definitions"');
+    expect(stringified).not.toContain('"$defs"');
   });
 });

@@ -1,0 +1,342 @@
+{
+  "type": "object",
+  "properties": {
+    "_schema": {
+      "type": "string",
+      "const": "module-3.decomposition-plane.v1"
+    },
+    "_phase_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "complete",
+        "needs_revision"
+      ]
+    },
+    "decomposition_plane": {
+      "type": "string",
+      "enum": [
+        "delivered_function_emergence",
+        "form_structure",
+        "design_latitude",
+        "changeability_evolution",
+        "integration_transparency",
+        "suppliers",
+        "openness",
+        "legacy_components",
+        "clockspeed_technology",
+        "marketing_sales",
+        "operations_interoperability",
+        "timing_of_investment",
+        "organization_conway"
+      ],
+      "description": "x-ui-surface=section:Decomposition > Plane — Crawley Box 13.8 thirteen decomposition planes."
+    },
+    "plane_alignment_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "plane_rationale": {
+      "type": "string"
+    },
+    "complexity_measures": {
+      "type": "object",
+      "properties": {
+        "N1": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Decomposition > Complexity — number of things."
+        },
+        "N2": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Decomposition > Complexity — types of things."
+        },
+        "N3": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Decomposition > Complexity — number of interfaces."
+        },
+        "N4": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Decomposition > Complexity — types of interfaces."
+        },
+        "C_crawley": {
+          "type": "number",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Decomposition > Complexity — C = N1+N2+N3+N4."
+        },
+        "C_boothroyd_dewhurst": {
+          "type": "number",
+          "minimum": 0,
+          "description": "x-ui-surface=section:Decomposition > Complexity — (N1*N2*N3)^(1/3)."
+        },
+        "complexity_source": {
+          "type": "string",
+          "enum": [
+            "crawley",
+            "boothroyd_dewhurst"
+          ]
+        }
+      },
+      "required": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "C_crawley",
+        "C_boothroyd_dewhurst",
+        "complexity_source"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Decomposition > Complexity — Crawley Box 13.1."
+    },
+    "complexity_derivations": {
+      "type": "object",
+      "properties": {
+        "crawley": {
+          "type": "object",
+          "properties": {
+            "formula": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+            },
+            "inputs": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "string"
+                ]
+              },
+              "default": {},
+              "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+            },
+            "kb_source": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+            },
+            "kb_section": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+            },
+            "result": {
+              "type": [
+                "number",
+                "string"
+              ],
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+            }
+          },
+          "required": [
+            "formula",
+            "kb_source"
+          ],
+          "additionalProperties": false,
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation)."
+        },
+        "boothroyd_dewhurst": {
+          "type": "object",
+          "properties": {
+            "formula": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — LaTeX-like or plain-English formula (e.g., \"p95 = base + queueing_delay(λ, μ)\")."
+            },
+            "inputs": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "string"
+                ]
+              },
+              "default": {},
+              "description": "x-ui-surface=internal:math-derivation-resolver — named inputs to the formula (e.g., {\"lambda\": 150, \"mu\": 200})."
+            },
+            "kb_source": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — KB filename (matches softwareArchRefSchema or \"inline\") that sourced the formula."
+            },
+            "kb_section": {
+              "type": "string",
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — optional heading/anchor within the KB file (e.g., \"§P95 envelope\")."
+            },
+            "result": {
+              "type": [
+                "number",
+                "string"
+              ],
+              "description": "x-ui-surface=section:Requirement Detail > Design Rationale — computed value, if the formula is evaluated at generation time."
+            }
+          },
+          "required": [
+            "formula",
+            "kb_source"
+          ],
+          "additionalProperties": false,
+          "description": "x-ui-surface=section:Requirement Detail > Design Rationale — math derivation for a numeric field (formula + inputs + KB citation)."
+        }
+      },
+      "required": [
+        "crawley"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Decomposition > Complexity — scalar mathDerivation records."
+    },
+    "essential_complexity": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "delta_above_essential": {
+      "type": "integer"
+    },
+    "gratuitous_complexity_flag": {
+      "type": "boolean"
+    },
+    "level_1_clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cluster_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "internal_coupling_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "external_coupling_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "level_2_detail_populated": {
+            "type": "boolean"
+          },
+          "level_2_relationship_evidence": {
+            "type": "string"
+          },
+          "needs_subdivision": {
+            "type": "boolean",
+            "default": false
+          },
+          "consider_merging_level": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "cluster_id",
+          "name",
+          "entities",
+          "internal_coupling_score",
+          "external_coupling_score",
+          "level_2_detail_populated",
+          "level_2_relationship_evidence"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Decomposition > Level 1 — one Level-1 cluster with required 2-Down-1-Up evidence."
+      },
+      "minItems": 1
+    },
+    "conway_law_alignment": {
+      "type": "object",
+      "properties": {
+        "target_organizational_structure": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "aligned": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "misalignment_notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "target_organizational_structure",
+        "aligned",
+        "misalignment_notes"
+      ],
+      "additionalProperties": false,
+      "description": "x-ui-surface=section:Decomposition > Conway's Law — Box 13.8 plane 13."
+    },
+    "crawley_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — phase slug (e.g., \"phase-6-requirements-table\")."
+          },
+          "artifact": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — artifact identifier within the phase (e.g., \"UC03.R02\", \"PC-01\")."
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "sourced_from",
+              "also_appears_in",
+              "derived_from",
+              "refines"
+            ],
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — kind of link to the source artifact."
+          },
+          "note": {
+            "type": "string",
+            "description": "x-ui-surface=section:Requirement Detail > Provenance — reviewer-facing context for the link."
+          }
+        },
+        "required": [
+          "phase",
+          "artifact",
+          "relationship"
+        ],
+        "additionalProperties": false,
+        "description": "x-ui-surface=section:Requirement Detail > Provenance — cross-phase reference (also_appears_in / source_ucbd unified per C11)."
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "_schema",
+    "_phase_status",
+    "decomposition_plane",
+    "plane_alignment_score",
+    "plane_rationale",
+    "complexity_measures",
+    "complexity_derivations",
+    "essential_complexity",
+    "delta_above_essential",
+    "gratuitous_complexity_flag",
+    "level_1_clusters"
+  ],
+  "additionalProperties": false,
+  "description": "x-ui-surface=page-header — M3 Decomposition Plane supplement per Crawley Ch 13.",
+  "title": "DecompositionPlaneArtifact",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

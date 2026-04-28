@@ -1,0 +1,17 @@
+When significant arrow
+overlaps seem necessary, an arrow shortcut
+component is often preferred instead of
+overlaps or line jumps. Arrow shortcuts come in pairs of matching capital letters
+and circles. It's often described informally
+as an arrow entering into a wormhole and then popping back out of the matching pair. Now, an example of
+arrow shortcuts is shown in the Measure Health
+Conditions FFBD diagram. Here connecting the "Estimate
+Sweating" function block to the "Monitor Dissolved Oxygen"
+block without the shortcut would have resulted in
+a very messy diagram. Arrow shortcuts are for
+the connections only within a single FFBD diagram. Connection between
+multiple diagrams should use reference blocks,
+which we'll describe later. The first arrow shortcut in a diagram should be labeled A. The next should be
+labeled B, and so forth. If you need more
+than 26 shortcuts you may actually want to rethink your diagram layout and/or size. But if you do need more, the 27th is 
+labeled AA, and so on.

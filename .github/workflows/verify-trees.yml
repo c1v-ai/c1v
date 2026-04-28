@@ -1,0 +1,52 @@
+name: Verify Tree-Pair Consistency
+
+# Static workflow: no untrusted user input is interpolated into run: commands.
+# All `${{ ... }}` expressions are restricted to github.workflow / github.ref
+# (safe, controlled by GitHub itself) inside the concurrency key.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/product-helper/lib/langchain/schemas/**'
+      - 'apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/**'
+      - 'apps/product-helper/lib/mcp/**'
+      - 'system-design/kb-upgrade-v2/**'
+      - 'scripts/verify-tree-pair-consistency.ts'
+      - 'scripts/__tests__/verify-tree-pair-consistency.test.ts'
+      - '.github/workflows/verify-trees.yml'
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Cross-tree consistency (T8 v2 0.4.4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run fixture tests
+        working-directory: apps/product-helper
+        run: pnpm tsx ../../scripts/__tests__/verify-tree-pair-consistency.test.ts
+
+      - name: Run verifier against live repo
+        working-directory: apps/product-helper
+        run: pnpm tsx ../../scripts/verify-tree-pair-consistency.ts

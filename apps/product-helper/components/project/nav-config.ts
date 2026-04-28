@@ -12,7 +12,6 @@ import {
   Code,
   BookOpen,
   Database,
-  Cloud,
   Target,
   BarChart3,
   Shield,
@@ -20,6 +19,11 @@ import {
   Scale,
   Grid3X3,
   Network,
+  Trophy,
+  Waves,
+  HelpCircle,
+  GitGraph,
+  AlertTriangle,
 } from 'lucide-react';
 import type { DiagramType } from '@/lib/db/type-guards';
 
@@ -30,11 +34,15 @@ export interface NavItem {
   exact?: boolean;
   children?: NavItem[];
   dataKey?: string;
+  deprecated?: boolean;
 }
 
 export function getProjectNavItems(projectId: number): NavItem[] {
   return [
     { name: 'Overview', href: `/projects/${projectId}`, icon: LayoutDashboard, exact: true },
+
+    // v2.1: synthesis keystone — top-level entry per D-V21.03
+    { name: 'Recommendation', href: `/projects/${projectId}/synthesis`, icon: Trophy, dataKey: 'hasRecommendation' },
 
     // Steps 1-2: Scope & Requirements
     {
@@ -47,6 +55,8 @@ export function getProjectNavItems(projectId: number): NavItem[] {
         { name: 'User Stories', href: `/projects/${projectId}/requirements/user-stories`, icon: BookOpen, dataKey: 'hasUserStories' },
         { name: 'System Overview', href: `/projects/${projectId}/requirements/system-overview`, icon: Users, dataKey: 'hasSystemOverview' },
         { name: 'Non-Functional Req.', href: `/projects/${projectId}/requirements/nfr`, icon: Shield, dataKey: 'hasNfr' },
+        { name: 'Data Flows', href: `/projects/${projectId}/requirements/data-flows`, icon: Waves, dataKey: 'hasDataFlows' },
+        { name: 'Open Questions', href: `/projects/${projectId}/requirements/open-questions`, icon: HelpCircle, dataKey: 'hasOpenQuestions' },
       ],
     },
 
@@ -57,15 +67,21 @@ export function getProjectNavItems(projectId: number): NavItem[] {
       children: [
         { name: 'FFBD', href: `/projects/${projectId}/system-design/ffbd`, icon: Workflow, dataKey: 'hasFfbd' },
         { name: 'Decision Matrix', href: `/projects/${projectId}/system-design/decision-matrix`, icon: Scale, dataKey: 'hasDecisionMatrix' },
+        // v2.1: Decision Network is a sibling to Decision Matrix (not a rename — both coexist per critique iter-1)
+        { name: 'Decision Network', href: `/projects/${projectId}/system-design/decision-network`, icon: GitGraph, dataKey: 'hasDecisionNetwork' },
         { name: 'House of Quality', href: `/projects/${projectId}/system-design/qfd`, icon: Grid3X3, dataKey: 'hasQfd' },
+        { name: 'Form-Function Map', href: `/projects/${projectId}/system-design/form-function-map`, icon: Layers, dataKey: 'hasFormFunctionMap' },
         { name: 'Interfaces', href: `/projects/${projectId}/system-design/interfaces`, icon: Network, dataKey: 'hasInterfaces' },
+        // v2.1 (D-V21.15): FMEA promoted into nav
+        { name: 'FMEA', href: `/projects/${projectId}/system-design/fmea`, icon: AlertTriangle, dataKey: 'hasFmea' },
       ],
     },
 
-    // Diagrams: All visual artifacts across steps
-    { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch, dataKey: 'hasDiagrams' },
+    // Diagrams: deprecated-not-deleted. Legacy projects with extractedData.diagrams.* still navigate here.
+    { name: 'Diagrams', href: `/projects/${projectId}/diagrams`, icon: GitBranch, dataKey: 'hasDiagrams', deprecated: true },
 
-    // Implementation: Generated AFTER interfaces are defined
+    // Implementation: Generated AFTER interfaces are defined.
+    // v2.1 P4: Infrastructure absorbed into Tech Stack as inline Mermaid.
     {
       name: 'Implementation',
       icon: Server,
@@ -74,7 +90,6 @@ export function getProjectNavItems(projectId: number): NavItem[] {
         { name: 'Tech Stack', href: `/projects/${projectId}/requirements/tech-stack`, icon: Code, dataKey: 'hasTechStack' },
         { name: 'Database Schema', href: `/projects/${projectId}/backend/schema`, icon: Database, dataKey: 'hasSchema' },
         { name: 'API Specification', href: `/projects/${projectId}/backend/api-spec`, icon: Code, dataKey: 'hasApiSpec' },
-        { name: 'Infrastructure', href: `/projects/${projectId}/backend/infrastructure`, icon: Cloud, dataKey: 'hasInfrastructure' },
         { name: 'Coding Guidelines', href: `/projects/${projectId}/backend/guidelines`, icon: FileText, dataKey: 'hasGuidelines' },
       ],
     },
@@ -92,7 +107,6 @@ export function isNavItemActive(item: NavItem, pathname: string): boolean {
   if (item.href) {
     return pathname.startsWith(item.href);
   }
-  // For parent items without href, check if any child is active
   if (item.children) {
     return item.children.some(child => isNavItemActive(child, pathname));
   }

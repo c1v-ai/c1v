@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "number",
+      "const": 6
+    },
+    "decompositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "function_id": {
+            "type": "string",
+            "pattern": "^F\\.\\d+(\\.\\d+)*$"
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "form_id": {
+                  "type": "string",
+                  "pattern": "^FR\\.\\d{2,}$"
+                },
+                "dominance_rationale": {
+                  "type": "string",
+                  "minLength": 10,
+                  "description": "Why this form is a contender (≥10 chars)."
+                }
+              },
+              "required": [
+                "form_id",
+                "dominance_rationale"
+              ],
+              "additionalProperties": false,
+              "description": "One alternative form with dominance rationale."
+            },
+            "minItems": 2
+          }
+        },
+        "required": [
+          "function_id",
+          "alternatives"
+        ],
+        "additionalProperties": false,
+        "description": "Decomposition of one function into ≥2 alternative forms."
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "phase",
+    "decompositions"
+  ],
+  "additionalProperties": false,
+  "description": "Phase 6 — concept alternatives (≥2 per decomposition).",
+  "title": "Phase6ConceptAlternatives",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+
+    
+
+    
+    <html lang="en">
+      <head>
+        <meta name="pageKey" content="d_lithograph_content">
+<!----><!----><!---->        <meta name="locale" content="en_US">
+<!---->        <meta id="config" data-app-id="lithograph" data-app-version="0.0.1888" data-call-tree-id="AAZQHAkNKSPaFzeNsLyNIQ==" data-multiproduct-name="lithograph-publish-frontend" data-service-name="lithograph-publish-frontend" data-browser-id="f78f005c-3d46-47e1-8d0f-7273251900c7" data-is-bot="false" data-page-instance="urn:li:page:d_lithograph_content;eCkgHUyjQ76Pm9M/JY4dJA==" data-disable-jsbeacon-pagekey-suffix="false" data-dna-member-lix-treatment="control" data-human-member-lix-treatment="control" data-dfp-member-lix-treatment="control" data-sync-apfc-headers-lix-treatment="control" data-sync-apfc-cb-lix-treatment="control" data-recaptcha-v3-integration-lix-value="control" data-network-interceptor-lix-value="control" data-is-epd-audit-event-enabled="false" data-is-feed-sponsored-tracking-kill-switch-enabled="false" data-sequence-auto-redirect-before-request-enabled="false">
+
+        <link rel="canonical" href="https://www.linkedin.com/blog/engineering/optimization/reducing-latency-and-cost-for-identity-services">
+<!----><!---->
+<!---->
+<!---->
+<!---->
+<!---->
+          <link rel="icon" href="https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca">
+
+
+        <script>
+          function getDfd() {let yFn,nFn;const p=new Promise(function(y, n){yFn=y;nFn=n;});p.resolve=yFn;p.reject=nFn;return p;}
+          window.lazyloader = getDfd();
+          window.tracking = getDfd();
+          window.impressionTracking = getDfd();
+          window.ingraphTracking = getDfd();
+          window.appDetection = getDfd();
+          window.pemTracking = getDfd();
+          window.appRedirectCompleted = getDfd();
+        </script>
+
+<!---->
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+
+    <title>How we reduced latency and cost-to-serve by merging two systems</title>
+    <!---->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="How we reduced latency and cost-to-serve by merging two systems">
+    <!---->
+    <meta property="og:url" content="https://www.linkedin.com/blog/engineering/optimization/reducing-latency-and-cost-for-identity-services">
+    <meta property="og:image" content="https://media.licdn.com/dms/image/v2/D4D08AQE0XvXYtOYrKw/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731096?e=2147483647&amp;v=beta&amp;t=1ueZYsbTOpAPVRJ0cHKmJYA8A4a8IurYALuMtkgmQ8c">
+    <meta name="twitter:title" content="How we reduced latency and cost-to-serve by merging two systems">
+    <meta name="twitter:site" content="@linkedin">
+    <!---->
+    <!---->
+    <meta name="robots" content="noarchive">
+
+    <meta name="linkedin:pageTag" content="/blog/engineering/optimization/reducing-latency-and-cost-for-identity-services">
+    <meta name="litmsProfileName" content="lithograph">
+  
+
+        
+<!---->        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="asset-url" id="artdeco/static/images/icons.svg" content="https://static.licdn.com/aero-v1/sc/h/6sz1e821vgereyxaakx87tt4z ">
+        <link rel="stylesheet" href="https://static.licdn.com/aero-v1/sc/h/17lxyn3wses9enkvjbmwuynmr">
+<!---->      
+      
+<!---->      </head>
+      <body dir="ltr">
+<!---->          
+          
+    
+
+    <a href="#lithograph-app" class="skip-link btn-md btn-primary absolute z-11 -top-[100vh] focus:top-0">
+      Skip to main content
+    </a>
+  
+<!---->
+        
+
+          
+
+    
+    
+
+    <div class="page-header__wrapper page-header__wrapper--margin" data-custom-nav-wrapper="true">
+      <div class="page-header__container">
+        <header id="page-header" class="page-header page-header--hide-dropshadow">
+          <div class="page-header__content-container">
+            <div class="header__logo">
+              <a href="https://www.linkedin.com/blog/engineering" class="custom-nav__logo-link">
+                <img class="header__linkedin-logo header__full-logo" src="https://static.licdn.com/aero-v1/sc/h/6zm111mce7vohqze950ilreo4" alt="LinkedIn Logo">
+                <img class="header__linkedin-logo header__in-bug" src="https://static.licdn.com/aero-v1/sc/h/5g0hjlcng3j5pgn50n2et1ca2" alt="LinkedIn Logo">
+                <span class="t-17 t-black t-bold default-header-title">
+                  Engineering Blog
+                </span>
+              </a>
+            </div>
+
+<!---->
+<!---->
+              <button class="stripped header__expand-nav-button" data-mobile-header-navigation-button data-header-expand-navigation-button aria-expanded="false">
+                <li-icon class="header__expand-nav-icon" a11y-text="Open navigation" type="hamburger-icon"></li-icon>
+              </button>
+              <button class="stripped header__expand-nav-button hidden" data-mobile-header-navigation-button data-header-collapse-navigation-button aria-expanded="false">
+                <li-icon class="header__expand-nav-icon" a11y-text="Close navigation" type="cancel-icon"></li-icon>
+                </button>
+          </div>
+        </header>
+      </div>
+
+        
+    
+
+    <nav class="header-nav fixed" aria-label="main" data-header-navigation>
+      <ul class="header-nav__list">
+          <li>
+            
+
+    
+    <div class="artdeco-dropdown">
+      <div class="artdeco-dropdown__trigger">
+        <a href="https://www.linkedin.com/blog/engineering/data" class="t-sans t-black--light t-semibold header-nav__toplink" target="_self">
+          Data
+        </a>
+
+          <button class="header-navigation__button" aria-label="Expand to show more links for Data" aria-expanded="false" data-trigger-dropdown-menu type="button">
+            <li-icon size="small" type="caret-filled-down-icon"></li-icon>
+          </button>
+          
+
+    <div class="artdeco-dropdown__content header-nav__dropdown-offset">
+      <ul>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/graph-systems" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Graph System</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/economic-graph" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Economic Graph</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/skills-graph" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Skills Graph</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/knowledge" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Knowledge Graph</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/data-management" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Data Management</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/data-streaming-processing" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Data Streams/Processing</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/data-science" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Data Science</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/research" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Research</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/ab-testing-experimentation" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">A/B Testing/Experimentation</a>
+            </div>
+          </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+          </li>
+          <li>
+            
+
+    
+    <div class="artdeco-dropdown">
+      <div class="artdeco-dropdown__trigger">
+        <a href="https://www.linkedin.com/blog/engineering/artificial-intelligence" class="t-sans t-black--light t-semibold header-nav__toplink" target="_self">
+          AI
+        </a>
+
+          <button class="header-navigation__button" aria-label="Expand to show more links for AI" aria-expanded="false" data-trigger-dropdown-menu type="button">
+            <li-icon size="small" type="caret-filled-down-icon"></li-icon>
+          </button>
+          
+
+    <div class="artdeco-dropdown__content header-nav__dropdown-offset">
+      <ul>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/machine-learning" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Machine Learning</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/natural-language-processing" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Natural Language Processing</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/generative-ai" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Generative AI</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/data-modeling" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Data Modeling</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/responsible-ai" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Responsible AI</a>
+            </div>
+          </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+          </li>
+          <li>
+            
+
+    
+    <div class="artdeco-dropdown">
+      <div class="artdeco-dropdown__trigger">
+        <a href="https://www.linkedin.com/blog/engineering/trust-and-safety" class="t-sans t-black--light t-semibold header-nav__toplink" target="_self">
+          Trust & Safety
+        </a>
+
+          <button class="header-navigation__button" aria-label="Expand to show more links for Trust &amp;amp; Safety" aria-expanded="false" data-trigger-dropdown-menu type="button">
+            <li-icon size="small" type="caret-filled-down-icon"></li-icon>
+          </button>
+          
+
+    <div class="artdeco-dropdown__content header-nav__dropdown-offset">
+      <ul>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/fairness" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Fairness</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/verification" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Verification </a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/security" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Security</a>
+            </div>
+          </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+          </li>
+          <li>
+            
+
+    
+    <div class="artdeco-dropdown">
+      <div class="artdeco-dropdown__trigger">
+        <a href="https://www.linkedin.com/blog/engineering/product-design" class="t-sans t-black--light t-semibold header-nav__toplink" target="_self">
+          Product Design
+        </a>
+
+          <button class="header-navigation__button" aria-label="Expand to show more links for Product Design" aria-expanded="false" data-trigger-dropdown-menu type="button">
+            <li-icon size="small" type="caret-filled-down-icon"></li-icon>
+          </button>
+          
+
+    <div class="artdeco-dropdown__content header-nav__dropdown-offset">
+      <ul>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/marketing" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Marketing </a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/sales" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Sales</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/learning" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Learning</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/hiring" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Hiring</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/profile" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Profile</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/messaging-notifications" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Messaging/Notifications</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/feed" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Feed</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/profile" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Profile</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/groups" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Groups</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/accessibility" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Accessibility</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/member-customer-experience" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Member/Customer Experience</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/search" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Search</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/recommendations" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Recommendations</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/skills" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Skills</a>
+            </div>
+          </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+          </li>
+          <li>
+            
+
+    
+    <div class="artdeco-dropdown">
+      <div class="artdeco-dropdown__trigger">
+        <a href="https://www.linkedin.com/blog/engineering/infrastructure" class="t-sans t-black--light t-semibold header-nav__toplink" target="_self">
+          Infrastructure
+        </a>
+
+          <button class="header-navigation__button" aria-label="Expand to show more links for Infrastructure" aria-expanded="false" data-trigger-dropdown-menu type="button">
+            <li-icon size="small" type="caret-filled-down-icon"></li-icon>
+          </button>
+          
+
+    <div class="artdeco-dropdown__content header-nav__dropdown-offset">
+      <ul>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/code" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Code</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/scalability" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Scalability</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/distributed-systems" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Distributed Systems</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/graph-systems" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Graph Systems</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/architecture" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Architecture</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/analytics" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Analytics</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/automation" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Automation</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/platform-platformization" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Platforms/Platformization</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/cloud-computing" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Cloud Computing</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/open-source" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Open Source</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/additional-innovations" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Additional Innovations</a>
+            </div>
+          </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+          </li>
+          <li>
+            
+
+    
+    <div class="artdeco-dropdown">
+      <div class="artdeco-dropdown__trigger">
+        <a href="https://www.linkedin.com/blog/engineering/talent" class="t-sans t-black--light t-semibold header-nav__toplink" target="_self">
+          Talent
+        </a>
+
+          <button class="header-navigation__button" aria-label="Expand to show more links for Talent" aria-expanded="false" data-trigger-dropdown-menu type="button">
+            <li-icon size="small" type="caret-filled-down-icon"></li-icon>
+          </button>
+          
+
+    <div class="artdeco-dropdown__content header-nav__dropdown-offset">
+      <ul>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/culture" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Culture</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/developer-experience-productivity" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Developer Experience/Productivity</a>
+            </div>
+          </li>
+          <li>
+            <div class="artdeco-dropdown__item">
+              <a href="https://www.linkedin.com/blog/engineering/leadership" class="t-14 t-sans t-black t-bold header-nav__link" target="_self">Leadership</a>
+            </div>
+          </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+          </li>
+      </ul>
+    </nav>
+  
+
+      
+    
+
+    <nav class="custom-header__nav--mobile invisible" data-mobile-navigation="true" aria-label="main">
+        
+    <ul class="custom-header__list--mobile">
+        <li class="custom-header__list-item--mobile" data-mobile-navigation-list-item="true">
+          
+    
+    
+
+    <a href="https://www.linkedin.com/blog/engineering/data" class="t-16 t-sans t-black t-semibold header-nav__toplink" target="_self">
+      Data
+    </a>
+
+      <button class="header-navigation__button" aria-label="Expand to show more links for Data" aria-expanded="false" data-label-expand="Expand to show more links for Data" data-label-collapse="Collapse to show less links for Data" data-mobile-dropdown-trigger type="button">
+        <li-icon size="small" type="chevron-down-icon"></li-icon>
+      </button>
+      
+    <ul class="custom-header__dropdownlink-list--mobile hidden" data-dropdownlinks-list="true">
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/graph-systems" class="t-sans t-black t-normal header-nav__link" target="_self">Graph System</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/economic-graph" class="t-sans t-black t-normal header-nav__link" target="_self">Economic Graph</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/skills-graph" class="t-sans t-black t-normal header-nav__link" target="_self">Skills Graph</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/knowledge" class="t-sans t-black t-normal header-nav__link" target="_self">Knowledge Graph</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/data-management" class="t-sans t-black t-normal header-nav__link" target="_self">Data Management</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/data-streaming-processing" class="t-sans t-black t-normal header-nav__link" target="_self">Data Streams/Processing</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/data-science" class="t-sans t-black t-normal header-nav__link" target="_self">Data Science</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/research" class="t-sans t-black t-normal header-nav__link" target="_self">Research</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/ab-testing-experimentation" class="t-sans t-black t-normal header-nav__link" target="_self">A/B Testing/Experimentation</a>
+        </li>
+    </ul>
+  
+
+        </li>
+        <li class="custom-header__list-item--mobile" data-mobile-navigation-list-item="true">
+          
+    
+    
+
+    <a href="https://www.linkedin.com/blog/engineering/artificial-intelligence" class="t-16 t-sans t-black t-semibold header-nav__toplink" target="_self">
+      AI
+    </a>
+
+      <button class="header-navigation__button" aria-label="Expand to show more links for AI" aria-expanded="false" data-label-expand="Expand to show more links for AI" data-label-collapse="Collapse to show less links for AI" data-mobile-dropdown-trigger type="button">
+        <li-icon size="small" type="chevron-down-icon"></li-icon>
+      </button>
+      
+    <ul class="custom-header__dropdownlink-list--mobile hidden" data-dropdownlinks-list="true">
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/machine-learning" class="t-sans t-black t-normal header-nav__link" target="_self">Machine Learning</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/natural-language-processing" class="t-sans t-black t-normal header-nav__link" target="_self">Natural Language Processing</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/generative-ai" class="t-sans t-black t-normal header-nav__link" target="_self">Generative AI</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/data-modeling" class="t-sans t-black t-normal header-nav__link" target="_self">Data Modeling</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/responsible-ai" class="t-sans t-black t-normal header-nav__link" target="_self">Responsible AI</a>
+        </li>
+    </ul>
+  
+
+        </li>
+        <li class="custom-header__list-item--mobile" data-mobile-navigation-list-item="true">
+          
+    
+    
+
+    <a href="https://www.linkedin.com/blog/engineering/trust-and-safety" class="t-16 t-sans t-black t-semibold header-nav__toplink" target="_self">
+      Trust &amp; Safety
+    </a>
+
+      <button class="header-navigation__button" aria-label="Expand to show more links for Trust &amp;amp; Safety" aria-expanded="false" data-label-expand="Expand to show more links for Trust &amp;amp; Safety" data-label-collapse="Collapse to show less links for Trust &amp;amp; Safety" data-mobile-dropdown-trigger type="button">
+        <li-icon size="small" type="chevron-down-icon"></li-icon>
+      </button>
+      
+    <ul class="custom-header__dropdownlink-list--mobile hidden" data-dropdownlinks-list="true">
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/fairness" class="t-sans t-black t-normal header-nav__link" target="_self">Fairness</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/verification" class="t-sans t-black t-normal header-nav__link" target="_self">Verification </a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/security" class="t-sans t-black t-normal header-nav__link" target="_self">Security</a>
+        </li>
+    </ul>
+  
+
+        </li>
+        <li class="custom-header__list-item--mobile" data-mobile-navigation-list-item="true">
+          
+    
+    
+
+    <a href="https://www.linkedin.com/blog/engineering/product-design" class="t-16 t-sans t-black t-semibold header-nav__toplink" target="_self">
+      Product Design
+    </a>
+
+      <button class="header-navigation__button" aria-label="Expand to show more links for Product Design" aria-expanded="false" data-label-expand="Expand to show more links for Product Design" data-label-collapse="Collapse to show less links for Product Design" data-mobile-dropdown-trigger type="button">
+        <li-icon size="small" type="chevron-down-icon"></li-icon>
+      </button>
+      
+    <ul class="custom-header__dropdownlink-list--mobile hidden" data-dropdownlinks-list="true">
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/marketing" class="t-sans t-black t-normal header-nav__link" target="_self">Marketing </a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/sales" class="t-sans t-black t-normal header-nav__link" target="_self">Sales</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/learning" class="t-sans t-black t-normal header-nav__link" target="_self">Learning</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/hiring" class="t-sans t-black t-normal header-nav__link" target="_self">Hiring</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/profile" class="t-sans t-black t-normal header-nav__link" target="_self">Profile</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/messaging-notifications" class="t-sans t-black t-normal header-nav__link" target="_self">Messaging/Notifications</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/feed" class="t-sans t-black t-normal header-nav__link" target="_self">Feed</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/profile" class="t-sans t-black t-normal header-nav__link" target="_self">Profile</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/groups" class="t-sans t-black t-normal header-nav__link" target="_self">Groups</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/accessibility" class="t-sans t-black t-normal header-nav__link" target="_self">Accessibility</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/member-customer-experience" class="t-sans t-black t-normal header-nav__link" target="_self">Member/Customer Experience</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/search" class="t-sans t-black t-normal header-nav__link" target="_self">Search</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/recommendations" class="t-sans t-black t-normal header-nav__link" target="_self">Recommendations</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/skills" class="t-sans t-black t-normal header-nav__link" target="_self">Skills</a>
+        </li>
+    </ul>
+  
+
+        </li>
+        <li class="custom-header__list-item--mobile" data-mobile-navigation-list-item="true">
+          
+    
+    
+
+    <a href="https://www.linkedin.com/blog/engineering/infrastructure" class="t-16 t-sans t-black t-semibold header-nav__toplink" target="_self">
+      Infrastructure
+    </a>
+
+      <button class="header-navigation__button" aria-label="Expand to show more links for Infrastructure" aria-expanded="false" data-label-expand="Expand to show more links for Infrastructure" data-label-collapse="Collapse to show less links for Infrastructure" data-mobile-dropdown-trigger type="button">
+        <li-icon size="small" type="chevron-down-icon"></li-icon>
+      </button>
+      
+    <ul class="custom-header__dropdownlink-list--mobile hidden" data-dropdownlinks-list="true">
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/code" class="t-sans t-black t-normal header-nav__link" target="_self">Code</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/scalability" class="t-sans t-black t-normal header-nav__link" target="_self">Scalability</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/distributed-systems" class="t-sans t-black t-normal header-nav__link" target="_self">Distributed Systems</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/graph-systems" class="t-sans t-black t-normal header-nav__link" target="_self">Graph Systems</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/architecture" class="t-sans t-black t-normal header-nav__link" target="_self">Architecture</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/analytics" class="t-sans t-black t-normal header-nav__link" target="_self">Analytics</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/automation" class="t-sans t-black t-normal header-nav__link" target="_self">Automation</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/platform-platformization" class="t-sans t-black t-normal header-nav__link" target="_self">Platforms/Platformization</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/cloud-computing" class="t-sans t-black t-normal header-nav__link" target="_self">Cloud Computing</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/open-source" class="t-sans t-black t-normal header-nav__link" target="_self">Open Source</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/additional-innovations" class="t-sans t-black t-normal header-nav__link" target="_self">Additional Innovations</a>
+        </li>
+    </ul>
+  
+
+        </li>
+        <li class="custom-header__list-item--mobile" data-mobile-navigation-list-item="true">
+          
+    
+    
+
+    <a href="https://www.linkedin.com/blog/engineering/talent" class="t-16 t-sans t-black t-semibold header-nav__toplink" target="_self">
+      Talent
+    </a>
+
+      <button class="header-navigation__button" aria-label="Expand to show more links for Talent" aria-expanded="false" data-label-expand="Expand to show more links for Talent" data-label-collapse="Collapse to show less links for Talent" data-mobile-dropdown-trigger type="button">
+        <li-icon size="small" type="chevron-down-icon"></li-icon>
+      </button>
+      
+    <ul class="custom-header__dropdownlink-list--mobile hidden" data-dropdownlinks-list="true">
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/culture" class="t-sans t-black t-normal header-nav__link" target="_self">Culture</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/developer-experience-productivity" class="t-sans t-black t-normal header-nav__link" target="_self">Developer Experience/Productivity</a>
+        </li>
+        <li>
+          <a href="https://www.linkedin.com/blog/engineering/leadership" class="t-sans t-black t-normal header-nav__link" target="_self">Leadership</a>
+        </li>
+    </ul>
+  
+
+        </li>
+    </ul>
+  
+
+      <div class="custom-header__button-share-container--mobile">
+<!---->
+      </div>
+    </nav>
+  
+    </div>
+  
+
+        <main role="main">
+          
+        <div id="lithograph-app">
+          
+
+    <section id="component-container" data-attach-collapse-behavior="true">
+      
+
+      <div id class="component component-articleHeadline" data-component-type="articleHeadline">
+        
+
+        
+
+    <div class="article-headline-container">
+        <p class="article-headline__topic">
+          <a class="t-14" href="https://www.linkedin.com/blog/engineering/optimization">Optimization</a>
+        </p>
+
+      <h1 class="article-headline t-40" data-article-title="How we reduced latency and cost-to-serve by merging two systems">How we reduced latency and cost-to-serve by merging two systems</h1>
+      <div class="article-meta t-14 article-meta__hairline">
+        <div class="article-meta__byline-container">
+              <p class="t-14 t-black--light" data-published-date="2020-4-22">
+                April 22, 2020
+              </p>
+        </div>
+          
+
+    
+    
+    
+    
+    
+
+    <div class="social-share">
+      <ul class="social-share__list share-list" title="Share via" data-share-list>
+        
+
+    <li class="share-list__item share-item">
+      <a href="#" class="share-item__link medium-round-muted-tertiary-button" role="button" data-tracking-control-name="_linkedin_share" data-share-type="linkedin" aria-label="Share on LinkedIn, New window will open">
+          <li-icon class="share-item__icon" type="linkedin-icon"></li-icon>
+      </a>
+    </li>
+        
+
+    <li class="share-list__item share-item">
+      <a href="#" class="share-item__link medium-round-muted-tertiary-button" role="button" data-tracking-control-name="_facebook_share" data-share-type="facebook" aria-label="Share on Facebook, New window will open">
+          <li-icon class="share-item__icon" type="facebook-icon"></li-icon>
+      </a>
+    </li>
+        
+
+    <li class="share-list__item share-item">
+      <a href="#" class="share-item__link medium-round-muted-tertiary-button" role="button" data-tracking-control-name="_twitter_share" data-share-type="twitter" aria-label="Share on Twitter, New window will open">
+          <li-icon class="share-item__icon" type="twitter-icon"></li-icon>
+      </a>
+    </li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+  
+  
+      </div>
+      <div id class="component component-migratedContent" data-component-type="migratedContent">
+        
+
+        
+
+    <div class="rich-text">
+      <p><i>Co-authors: <a href="https://www.linkedin.com/in/zhangxiang/" target="_blank" data-tracking-control-name="_anchor_link">Xiang Zhang</a>, <a href="https://www.linkedin.com/in/abcdef33333/" target="_blank" data-tracking-control-name="_anchor_link">Estella Pham</a>, and <a href="https://www.linkedin.com/in/kwu/" target="_blank" data-tracking-control-name="_anchor_link">Ke Wu</a></i></p> 
+<p>Identity services are critical systems that serve data on profile and member settings to help power many other applications at LinkedIn. In this blog post, we’ll share how we merged two layers of the identity services that handle more than half a million queries per second (QPS) that drove a 10% reduction in latency and reduced our annual cost-to-serve significantly. We will also describe the data-driven rationale behind this approach through the context of microservices, the tools we used to make this effort seamless, and the lessons learned from our old design.&nbsp;</p> 
+<h2>Background</h2> 
+<p>LinkedIn uses service-oriented architecture to build systems to deliver various member experiences. Each service abstracts internal domain complexities and exposes functionalities through a well-defined service API. Such abstractions enable evolvability and composability.&nbsp;&nbsp;</p> 
+<p>Below is a high-level representation of identity services, clients, and downstream services before merging. Client applications call the identity midtier service to get profile and settings data. The midtier service depends on the identity data service, which provides CRUD operations to an <a href="https://engineering.linkedin.com/blog/search?q=Espresso" target="_blank" data-tracking-control-name="_anchor_link">Espresso</a> data store. Only a limited logic set is implemented in the identity data service, such as data validation (e.g., data type validation, string length validation, etc.). The midtier invokes other downstream services owned by different teams at LinkedIn to provide important domain-specific data. These downstream services provide spam filtering and blocking, member-to-member networking invitations, member-to-member connections, etc. Based on such information, the midtier implements the business logic to ensure we honor members’ settings, and how they want to interact with LinkedIn and third-party applications.&nbsp;</p>
+    </div>  
+  
+      </div>
+      <div id class="component component-standaloneImage" data-component-type="standaloneImage">
+        
+
+        
+
+    <div class="standalone-image-component standalone-image-component--article-width">
+        <figure>
+          <img class="standalone-image-component__image" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 1920px" data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQHwNsFx09mGig/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731152?e=2147483647&amp;v=beta&amp;t=ZsiXSWVm3p02-oK9-Eml0ta4TrWyHq5Q5ei-9B1_P6c" alt="diagram-showing-the-architecture-of-identity-services">
+<!---->        </figure>
+    </div>
+  
+      </div>
+      <div id class="component component-migratedContent" data-component-type="migratedContent">
+        
+
+        
+
+    <div class="rich-text">
+      <p><i>Architecture of identity services</i></p> 
+<h2>Motivation</h2> 
+<p>As our Identity applications footprint expanded, and LinkedIn applications and their features grew, the team started to shift focus to performance, cost-to-serve, and operational overheads. One example can be found in this <a href="https://engineering.linkedin.com/blog/2020/how-we-improved-latency-through-projection-in-espresso" target="_blank" data-tracking-control-name="_anchor_link">article</a>. In addition, we started to re-evaluate some of our assumptions and practices in developing the identity services.&nbsp;</p> 
+<p>We observed a couple of downsides of keeping the identity data service separate from the identity midtier:</p> 
+<ol> 
+ <li>The design of having the data service separate from the midtier turned out to be less valuable than we initially thought. We discovered that most scalability challenges could be addressed at the storage layer, i.e., the Espresso data store. Furthermore, reads and writes to Espresso were in effect passthrough from the identity data service to Espresso.</li> 
+ <li>Maintaining the data service as a standalone service incurred operational overheads and increased code complexity. We provisioned over 1,000 application instances in multiple data centers for it. Furthermore, we had to maintain the API in the data service to provide access to only the midtier. This involved data modeling, evolving the API, and security, to mention a few.</li> 
+ <li>The business logic in the data service is minimal, and the majority involves data validations.&nbsp;</li> 
+ <li>Keeping the midtier and backend services separate also incurred additional network hops for client applications.</li> 
+</ol> 
+<p>With these considerations, we embarked upon the effort to combine the midtier and the data service into a single service, while maintaining the APIs unchanged. This, at first glance, is counterintuitive, considering that we generally follow service-oriented architectures to tackle complexities by breaking big systems into smaller ones. However, we believe there is a right balance to strike in deconstructing systems. In the case of identity services, the benefits of potential gains from performance, cost-to-serve, and operational overheads triumphed over the additional complexity bundled in a single service.</p> 
+<h2>Implementation</h2> 
+<p>Thanks to the microservice architecture we employ at LinkedIn, we were able to merge the two services with significant footprints into a single one without disrupting our clients. We would merge the code from the data service to the midtier and enable the midtier to interact directly with the data store while keeping the midtier’s interface unchanged. One important goal we had was to maintain the feature and performance parity between the new and old architectures. We were also focused on managing the risks that came with merging two critical applications, and keeping the development cost of the merger to a minimum.</p> 
+<p>Our implementation was completed in four steps.</p> 
+<p><b>Step 1.</b> To seamlessly merge the two code bases and run them in a single service, there were two approaches we could take. An intuitive approach would be copying select code from the data service to the midtier service so that it could perform logic such as data validation and interact with the data store. While that was the cleanest approach, it required a significant amount of upfront development cost before we could validate the idea. Consequently, we opted for a creative “hack” by using the data service’s REST API as a local library in the midtier. We then would have the option to clean up the tech debt once the idea was validated.</p> 
+<p><b>Step 2. </b>We gradually ramped the change described in Step 1. At LinkedIn, we have a state-of-the-art A/B testing framework called <a href="https://engineering.linkedin.com/teams/data/analytics-platform-apps/data-applications/t-rex" target="_blank" data-tracking-control-name="_anchor_link">T-REX</a>. With T-REX, we can create a ramp schedule based on the level of risk and impacts of a change, and generate statistical reports to measure top-tier metrics. This allows us to gradually ramp the change while observing the impacts, and gives us a fast rollback capability (within a few minutes) if needed. Since our change to the two critical services was a high-risk and high-impact kind of change, we took extra caution with our ramp schedule. We ramped one data center after another, and within each data center, we ramped from small percentiles to larger percentiles, with enough time in between to generate reports.</p> 
+<p><b>Step 3. </b>We decommissioned the data service hosts.&nbsp;</p> 
+<p><b>Step 4. </b>Since we took a creative shortcut in Step 1 by embedding the data service code developed for a REST service as a local library, we needed to clean this up because craftsmanship is an important tenet of our culture. We simplified the layers of classes by removing those classes and interfaces that were used to expose Rest.li services, and kept only the essential classes that interact with the data store.&nbsp;</p> 
+<p>The diagram below shows the difference in the architecture before and after the change.</p>
+    </div>  
+  
+      </div>
+      <div id class="component component-standaloneImage" data-component-type="standaloneImage">
+        
+
+        
+
+    <div class="standalone-image-component standalone-image-component--article-width">
+        <figure>
+          <img class="standalone-image-component__image" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 1920px" data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQELCFP3JejwTA/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731244?e=2147483647&amp;v=beta&amp;t=GzLmcV7RDHjpfekx8x8Adr3ti9lrDiCa3It6xwlcTzM" alt="diagram-showing-the-new-architecture-of-identity-services">
+<!---->        </figure>
+    </div>
+  
+      </div>
+      <div id class="component component-migratedContent" data-component-type="migratedContent">
+        
+
+        
+
+    <div class="rich-text">
+      <p><i>Architecture of identity services after the merger</i></p> 
+<h2>Performance analysis</h2> 
+<p>To analyze performance gains and provide the apple-to-apple comparison of the services before and after the merger, we used a mechanism called Dark Canary. With dark canary, we can copy the real read-only production traffic to testing hosts, and we can control how and where this happens. For example, we can replicate and multiply read traffic from one production host to a test host. All of this can be done without impacting the hosts serving production traffic, which means we can perform performance testing using production traffic without impacting our business. Below is our dark canary setup.</p>
+    </div>  
+  
+      </div>
+      <div id class="component component-standaloneImage" data-component-type="standaloneImage">
+        
+
+        
+
+    <div class="standalone-image-component standalone-image-component--article-width">
+        <figure>
+          <img class="standalone-image-component__image" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 1920px" data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQFyrQnxIT-31Q/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731287?e=2147483647&amp;v=beta&amp;t=XV1AQSNko3XfuTmjr2gz_xmYQPuePab3kVD_ofZlPps" alt="dark-canary-setup">
+<!---->        </figure>
+    </div>
+  
+      </div>
+      <div id class="component component-migratedContent" data-component-type="migratedContent">
+        
+
+        
+
+    <div class="rich-text">
+      <p><i>Dark canary setup</i><br> </p> 
+<p>Below are two graphs showing the 90th percentile latency differences between the regular production traffic and the dark canary traffic. On average, the 90th percentile latency dropped from 26.67ms to 24.84ms—a sizable 6.9% drop—for calls to fetch profiles.</p>
+    </div>  
+  
+      </div>
+      <div id class="component component-standaloneImage" data-component-type="standaloneImage">
+        
+
+        
+
+    <div class="standalone-image-component standalone-image-component--article-width">
+        <figure>
+          <img class="standalone-image-component__image" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 1920px" data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQE-ik18c2udAQ/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731337?e=2147483647&amp;v=beta&amp;t=OuWG6Ytheg5oePgg7GdH7a9Voh9eO2xdshoK4QeYoSE" alt="comparing-the-latency-differences-between-regular-production-traffic-and-dark-canary-traffic">
+<!---->        </figure>
+    </div>
+  
+      </div>
+      <div id class="component component-standaloneImage" data-component-type="standaloneImage">
+        
+
+        
+
+    <div class="standalone-image-component standalone-image-component--article-width">
+        <figure>
+          <img class="standalone-image-component__image" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 1920px" data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQGkjD-7D-R5XA/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731400?e=2147483647&amp;v=beta&amp;t=bL-jSRUbJVP21hs8a42Q9KTbPk_qx42yXQICZU8owEE" alt="comparing-the-latency-differences-between-regular-production-traffic-and-dark-canary-traffic">
+<!---->        </figure>
+    </div>
+  
+      </div>
+      <div id class="component component-migratedContent" data-component-type="migratedContent">
+        
+
+        
+
+    <div class="rich-text">
+      <p>In general, p99 is very hard to improve, given that many factors can impact the performance. We were able to see that we improved the performance across all percentiles. In summary, the merger improved p50, p90, and p99 by 14%, 6.9%, and 9.6%, respectively.&nbsp;</p> 
+<p><b>Memory allocation<br> </b>To understand the performance characteristics, we analyzed memory allocation rates based on the data from the GC logs on the three hosts involved: the identity midtier dark canary host, the identity midtier production host, and the identity data service hosts. GC logs provide valuable information about object allocation patterns, which usually indicate how performant the application is, and how well the application is using memory. Below is a diagram showing the memory allocation rate on the production host for the identity midtier, where it has an average memory allocation rate of around 350MB/s. </p>
+    </div>  
+  
+      </div>
+      <div id class="component component-standaloneImage" data-component-type="standaloneImage">
+        
+
+        
+
+    <div class="standalone-image-component standalone-image-component--article-width">
+        <figure>
+          <img class="standalone-image-component__image" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 1920px" data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQH6CjDhJfgX4g/croft-frontend-shrinkToFit1024/croft-frontend-shrinkToFit1024/0/1700687731599?e=2147483647&amp;v=beta&amp;t=YRm6_CHfGNChQcbmEsOWa0P0EL6B9QuPQ87vrfefxA0" alt="diagram-showing-memory-allocation">
+<!---->        </figure>
+    </div>
+  
+      </div>
+      <div id class="component component-migratedContent" data-component-type="migratedContent">
+        
+
+        
+
+    <div class="rich-text">
+      <p>The memory allocation rate in the identity midtier after the merger is about 100MB/s (or 28.6%) lower per host than would have been required to serve the same amount of traffic before the merger. This not only helped improve the performance, but also had a significant impact on the cost-to-serve for identity services, as explained in the next section.&nbsp;</p> 
+<h2>Cost-to-serve reduction</h2> 
+<p>Understanding the cost of running each service is a fundamental business decision parameter. At LinkedIn, we use an in-house framework that enables teams to calculate cost-to-serve based on hardware and the operational costs. Our team used this framework to measure the impact of the merger. After decommissioning the entire data service cluster, the physical resources that we saved added up to over 12,000 cores and over 13,000 GB of memory, which translated into significant annual savings.&nbsp;</p> 
+<h2>Acknowledgements</h2> 
+<p>Thanks to <a href="https://www.linkedin.com/in/joshabadie/" target="_blank" data-tracking-control-name="_anchor_link">Josh Abadie</a> and <a href="https://www.linkedin.com/in/zafnz/" target="_blank" data-tracking-control-name="_anchor_link">Nick Clifford</a> for supporting the feature ramp on the SRE side; <a href="https://www.linkedin.com/in/hakusin/" target="_blank" data-tracking-control-name="_anchor_link">Shun-Xuan Wang</a>'s contribution to implementing the merger; <a href="https://www.linkedin.com/in/winstonmzhang/" target="_blank" data-tracking-control-name="_anchor_link">Winston Zhang</a>'s guidance on performance analysis; <a href="https://www.linkedin.com/in/szczepanf/" target="_blank" data-tracking-control-name="_anchor_link">Szczepan Faber</a> and <a href="https://www.linkedin.com/in/priyamawasthi/" target="_blank" data-tracking-control-name="_anchor_link">Priyam Awasthi</a>’s review and feedback on this post; <a href="https://www.linkedin.com/in/srirampanyam/" target="_blank" data-tracking-control-name="_anchor_link">Sriram Panyam</a> and <a href="https://www.linkedin.com/in/bayenew/" target="_blank" data-tracking-control-name="_anchor_link">Bef Ayenew</a> for their support on this project.</p>
+    </div>  
+  
+      </div>
+      <div id class="component component-postList" data-component-type="postList">
+        
+
+        
+
+    <section id="postList0FocusPoint" class="component__content-container list-layout" data-post-list>
+        <section class="simple-topic-list">
+          <p class="t-14 t-bold">Topics:
+              <a class="simple-topic-list__topic" href="https://www.linkedin.com/blog/engineering/optimization">
+                Optimization
+              </a>
+              <a class="simple-topic-list__topic" href="https://www.linkedin.com/blog/engineering/architecture">
+                Architecture
+              </a>
+              <a class="simple-topic-list__topic" href="https://www.linkedin.com/blog/engineering/open-source">
+                Open Source
+              </a>
+              <a class="simple-topic-list__topic" href="https://www.linkedin.com/blog/engineering/ab-testing-experimentation">
+                A/B Testing/Experimentation
+              </a>
+          </p>
+        </section>
+
+        <hr class="artdeco-divider">
+
+        <section class="list-layout__headline-container">
+          
+
+        <p class="list-layout__headline t-32 t-sans">Related articles</p>
+        
+          
+
+<!---->  
+        </section>
+
+        <ul class="list-layout__posts">
+              
+
+    <li class="post-list__item list-post">
+      <div class="list-post__content-container">
+          <p class="list-post__content-container__topic">
+            <a class="t-14 t-bold" href="https://www.linkedin.com/blog/engineering/ai">
+              AI
+            </a>
+          </p>
+
+        <div class="list-post__content-container__title">
+          <a class="list-post__link t-20 t-black" href="https://www.linkedin.com/blog/engineering/ai/scaling-llm-based-ranking-systems-with-sglang-at-linkedin">
+            Scaling LLM-Based ranking systems with SGLang at LinkedIn
+          </a>
+        </div>
+
+        <div class="list-post__content-container__byline">
+              <p class="list-post__content-container__author t-14 t-bold t-black">
+                  Sundara Raman  Ramachandran
+              </p>
+<!----><!----><!----><!---->
+            <p class="list-post__content-container__date t-14 t-black--light">
+              Feb 20, 2026
+            </p>
+        </div>
+      </div>
+
+      <div class="list-post__image-container">
+        <figure class="post__image-figure">
+          
+
+        <img class="post__image" alt data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQHrlPu9iSPRcQ/croft-frontend-shrinkToFit480/B4DZx70UoNHIAM-/0/1771603840485?e=2147483647&amp;v=beta&amp;t=u7rWuKzSegBjGCP2eQyZO4dqHqlsIsOwFwl6iUwa4y4" data-ghost-url="https://static.licdn.com/aero-v1/sc/h/8pouyb1ly746xtru0x7p2axm0" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 480px">
+  
+        </figure>
+      </div>
+    </li>
+  
+              
+
+    <li class="post-list__item list-post">
+      <div class="list-post__content-container">
+          <p class="list-post__content-container__topic">
+            <a class="t-14 t-bold" href="https://www.linkedin.com/blog/engineering/infrastructure">
+              Infrastructure
+            </a>
+          </p>
+
+        <div class="list-post__content-container__title">
+          <a class="list-post__link t-20 t-black" href="https://www.linkedin.com/blog/engineering/infrastructure/engineering-linkedins-job-ingestion-system-at-scale">
+            Engineering LinkedIn's job ingestion system at scale
+          </a>
+        </div>
+
+        <div class="list-post__content-container__byline">
+              <p class="list-post__content-container__author t-14 t-bold t-black">
+                  Anvesh Uppoora
+              </p>
+<!----><!---->
+            <p class="list-post__content-container__date t-14 t-black--light">
+              Jan 29, 2026
+            </p>
+        </div>
+      </div>
+
+      <div class="list-post__image-container">
+        <figure class="post__image-figure">
+          
+
+        <img class="post__image" alt data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQF5pjeIYCib_A/croft-frontend-shrinkToFit480/B4DZwHa.FIKIAM-/0/1769651037872?e=2147483647&amp;v=beta&amp;t=pnn1LfGnO3Mjv8A-tirpe_6Yj428JtrVBSmekuIsgwk" data-ghost-url="https://static.licdn.com/aero-v1/sc/h/8pouyb1ly746xtru0x7p2axm0" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 480px">
+  
+        </figure>
+      </div>
+    </li>
+  
+              
+
+    <li class="post-list__item list-post">
+      <div class="list-post__content-container">
+          <p class="list-post__content-container__topic">
+            <a class="t-14 t-bold" href="https://www.linkedin.com/blog/engineering/ai">
+              AI
+            </a>
+          </p>
+
+        <div class="list-post__content-container__title">
+          <a class="list-post__link t-20 t-black" href="https://www.linkedin.com/blog/engineering/ai/turbocharging-linkedins-recommendation-systems-with-sglang">
+            Turbocharging LinkedIn’s Recommendation Systems with SGLang
+          </a>
+        </div>
+
+        <div class="list-post__content-container__byline">
+              <p class="list-post__content-container__author t-14 t-bold t-black">
+                  Steven Shimizu
+              </p>
+<!----><!----><!----><!----><!----><!----><!----><!----><!----><!---->
+            <p class="list-post__content-container__date t-14 t-black--light">
+              Dec 9, 2025
+            </p>
+        </div>
+      </div>
+
+      <div class="list-post__image-container">
+        <figure class="post__image-figure">
+          
+
+        <img class="post__image" alt data-delayed-url="https://media.licdn.com/dms/image/v2/D4D08AQGYk3FhVZQfeQ/croft-frontend-shrinkToFit480/B4DZrvWZLCIEAM-/0/1764952217834?e=2147483647&amp;v=beta&amp;t=4XJmBvD9Y7-t3QyDGllZCaW2m-T_l3-9u5hOtpDj3XM" data-ghost-url="https://static.licdn.com/aero-v1/sc/h/8pouyb1ly746xtru0x7p2axm0" sizes="(max-width: 480px) 480px, (max-width: 767px) 767px, (max-width: 1024px) 1024px, 480px">
+  
+        </figure>
+      </div>
+    </li>
+  
+        </ul>
+
+<!---->    </section>
+  
+  
+      </div>
+  
+
+<!---->    </section>  
+        </div>
+
+        <script src="https://static.licdn.com/aero-v1/sc/h/8hfbuq1ftcvnnx4dd5067pi0t" async></script>
+        <script src="https://static.licdn.com/aero-v1/sc/h/bknx7jzs0ylu540sn4wuo6bue" async></script>
+        <script src="https://static.licdn.com/aero-v1/sc/h/egqq1vs0784qd3h3801e2w9lr" async></script>
+      
+        </main>
+
+        
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+
+    <footer class="li-footer bg-transparent w-full ">
+      <ul class="li-footer__list flex flex-wrap flex-row items-start justify-start w-full h-auto min-h-[50px] my-[0px] mx-auto py-3 px-2 papabear:p-0">
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        
+          <span class="sr-only">LinkedIn</span>
+          <icon class="li-footer__copy-logo text-color-logo-brand-alt inline-block self-center h-[14px] w-[56px] mr-1" data-delayed-url="https://static.licdn.com/aero-v1/sc/h/5mebydpuuijm3uhv1q375inqh"></icon>
+          <span class="li-footer__copy-text flex items-center">&copy; 2026</span>
+        
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://about.linkedin.com?trk=content_footer-about" data-tracking-control-name="content_footer-about" data-tracking-will-navigate>
+          
+          About
+        
+        </a>
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/accessibility?trk=content_footer-accessibility" data-tracking-control-name="content_footer-accessibility" data-tracking-will-navigate>
+          
+          Accessibility
+        
+        </a>
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/legal/user-agreement?trk=content_footer-user-agreement" data-tracking-control-name="content_footer-user-agreement" data-tracking-will-navigate>
+          
+          User Agreement
+        
+        </a>
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/legal/privacy-policy?trk=content_footer-privacy-policy" data-tracking-control-name="content_footer-privacy-policy" data-tracking-will-navigate>
+          
+          Privacy Policy
+        
+        </a>
+  </li>
+
+<!---->        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/legal/cookie-policy?trk=content_footer-cookie-policy" data-tracking-control-name="content_footer-cookie-policy" data-tracking-will-navigate>
+          
+          Cookie Policy
+        
+        </a>
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/legal/copyright-policy?trk=content_footer-copyright-policy" data-tracking-control-name="content_footer-copyright-policy" data-tracking-will-navigate>
+          
+          Copyright Policy
+        
+        </a>
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://brand.linkedin.com/policies?trk=content_footer-brand-policy" data-tracking-control-name="content_footer-brand-policy" data-tracking-will-navigate>
+          
+          Brand Policy
+        
+        </a>
+  </li>
+
+          
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/psettings/guest-controls?trk=content_footer-guest-controls" data-tracking-control-name="content_footer-guest-controls" data-tracking-will-navigate>
+          
+            Guest Controls
+          
+        </a>
+  </li>
+
+        
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        <a class="li-footer__item-link flex items-center font-sans text-xs font-bold text-color-text-solid-secondary hover:text-color-link-hover focus:text-color-link-focus" href="https://www.linkedin.com/help/linkedin/answer/34593?trk=content_footer-community-guide" data-tracking-control-name="content_footer-community-guide" data-tracking-will-navigate>
+          
+          Community Guidelines
+        
+        </a>
+  </li>
+
+        
+<!---->
+          
+          
+  <li class="li-footer__item font-sans text-xs text-color-text-solid-secondary flex flex-shrink-0 justify-start p-1 relative w-50% papabear:justify-center papabear:w-auto">
+        
+              
+
+    
+    
+
+    
+
+    
+
+    <div class="collapsible-dropdown collapsible-dropdown--footer collapsible-dropdown--up flex items-center relative hyphens-auto language-selector z-2">
+<!---->
+        <ul class="collapsible-dropdown__list hidden container-raised absolute w-auto overflow-y-auto flex-col items-stretch z-[9999] bottom-[100%] top-auto" role="menu" tabindex="-1">
+          
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="العربية (Arabic)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-ar_AE" data-locale="ar_AE" role="menuitem" lang="ar_AE">
+                العربية (Arabic)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="বাংলা (Bangla)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-bn_IN" data-locale="bn_IN" role="menuitem" lang="bn_IN">
+                বাংলা (Bangla)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Čeština (Czech)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-cs_CZ" data-locale="cs_CZ" role="menuitem" lang="cs_CZ">
+                Čeština (Czech)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Dansk (Danish)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-da_DK" data-locale="da_DK" role="menuitem" lang="da_DK">
+                Dansk (Danish)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Deutsch (German)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-de_DE" data-locale="de_DE" role="menuitem" lang="de_DE">
+                Deutsch (German)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Ελληνικά (Greek)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-el_GR" data-locale="el_GR" role="menuitem" lang="el_GR">
+                Ελληνικά (Greek)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="English (English) selected" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link--selected" data-tracking-control-name="language-selector-en_US" data-locale="en_US" role="menuitem" lang="en_US">
+                <strong>English (English)</strong>
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Español (Spanish)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-es_ES" data-locale="es_ES" role="menuitem" lang="es_ES">
+                Español (Spanish)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="فارسی (Persian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-fa_IR" data-locale="fa_IR" role="menuitem" lang="fa_IR">
+                فارسی (Persian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Suomi (Finnish)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-fi_FI" data-locale="fi_FI" role="menuitem" lang="fi_FI">
+                Suomi (Finnish)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Français (French)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-fr_FR" data-locale="fr_FR" role="menuitem" lang="fr_FR">
+                Français (French)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="हिंदी (Hindi)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-hi_IN" data-locale="hi_IN" role="menuitem" lang="hi_IN">
+                हिंदी (Hindi)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Magyar (Hungarian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-hu_HU" data-locale="hu_HU" role="menuitem" lang="hu_HU">
+                Magyar (Hungarian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Bahasa Indonesia (Indonesian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-in_ID" data-locale="in_ID" role="menuitem" lang="in_ID">
+                Bahasa Indonesia (Indonesian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Italiano (Italian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-it_IT" data-locale="it_IT" role="menuitem" lang="it_IT">
+                Italiano (Italian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="עברית (Hebrew)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-iw_IL" data-locale="iw_IL" role="menuitem" lang="iw_IL">
+                עברית (Hebrew)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="日本語 (Japanese)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-ja_JP" data-locale="ja_JP" role="menuitem" lang="ja_JP">
+                日本語 (Japanese)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="한국어 (Korean)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-ko_KR" data-locale="ko_KR" role="menuitem" lang="ko_KR">
+                한국어 (Korean)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="मराठी (Marathi)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-mr_IN" data-locale="mr_IN" role="menuitem" lang="mr_IN">
+                मराठी (Marathi)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Bahasa Malaysia (Malay)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-ms_MY" data-locale="ms_MY" role="menuitem" lang="ms_MY">
+                Bahasa Malaysia (Malay)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Nederlands (Dutch)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-nl_NL" data-locale="nl_NL" role="menuitem" lang="nl_NL">
+                Nederlands (Dutch)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Norsk (Norwegian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-no_NO" data-locale="no_NO" role="menuitem" lang="no_NO">
+                Norsk (Norwegian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="ਪੰਜਾਬੀ (Punjabi)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-pa_IN" data-locale="pa_IN" role="menuitem" lang="pa_IN">
+                ਪੰਜਾਬੀ (Punjabi)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Polski (Polish)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-pl_PL" data-locale="pl_PL" role="menuitem" lang="pl_PL">
+                Polski (Polish)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Português (Portuguese)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-pt_BR" data-locale="pt_BR" role="menuitem" lang="pt_BR">
+                Português (Portuguese)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Română (Romanian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-ro_RO" data-locale="ro_RO" role="menuitem" lang="ro_RO">
+                Română (Romanian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Русский (Russian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-ru_RU" data-locale="ru_RU" role="menuitem" lang="ru_RU">
+                Русский (Russian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Svenska (Swedish)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-sv_SE" data-locale="sv_SE" role="menuitem" lang="sv_SE">
+                Svenska (Swedish)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="తెలుగు (Telugu)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-te_IN" data-locale="te_IN" role="menuitem" lang="te_IN">
+                తెలుగు (Telugu)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="ภาษาไทย (Thai)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-th_TH" data-locale="th_TH" role="menuitem" lang="th_TH">
+                ภาษาไทย (Thai)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Tagalog (Tagalog)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-tl_PH" data-locale="tl_PH" role="menuitem" lang="tl_PH">
+                Tagalog (Tagalog)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Türkçe (Turkish)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-tr_TR" data-locale="tr_TR" role="menuitem" lang="tr_TR">
+                Türkçe (Turkish)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Українська (Ukrainian)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-uk_UA" data-locale="uk_UA" role="menuitem" lang="uk_UA">
+                Українська (Ukrainian)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="Tiếng Việt (Vietnamese)" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-vi_VN" data-locale="vi_VN" role="menuitem" lang="vi_VN">
+                Tiếng Việt (Vietnamese)
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="简体中文 (Chinese (Simplified))" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-zh_CN" data-locale="zh_CN" role="menuitem" lang="zh_CN">
+                简体中文 (Chinese (Simplified))
+            </button>
+          </li>
+          <li class="language-selector__item" role="presentation">
+            <!-- Adding aria-label to both the li and the button because screen reader focus goes to button on desktop and li on mobile-->
+            <button aria-label="正體中文 (Chinese (Traditional))" class="font-sans text-xs link block py-[5px] px-2 w-full hover:cursor-pointer hover:bg-color-action hover:text-color-text-on-dark focus:bg-color-action focus:text-color-text-on-dark
+                language-selector__link !font-regular" data-tracking-control-name="language-selector-zh_TW" data-locale="zh_TW" role="menuitem" lang="zh_TW">
+                正體中文 (Chinese (Traditional))
+            </button>
+          </li>
+<!---->      
+        </ul>
+
+          
+        <button class="language-selector__button select-none relative pr-2 font-sans text-xs font-bold text-color-text-low-emphasis hover:text-color-link-hover hover:cursor-pointer focus:text-color-link-focus focus:outline-dotted focus:outline-1" aria-expanded="false" data-tracking-control-name="footer-lang-dropdown_trigger">
+          <span class="language-selector__label-text mr-0.5 break-words">
+            Language
+          </span>
+          <icon class="language-selector__label-chevron w-2 h-2 absolute top-0 right-0" data-delayed-url="https://static.licdn.com/aero-v1/sc/h/cyolgscd0imw2ldqppkrb84vo"></icon>
+        </button>
+      
+    </div>
+  
+  
+          
+  </li>
+
+      </ul>
+
+<!---->    </footer>
+  
+      
+
+            <script src="https://static.licdn.com/aero-v1/sc/h/e69gtg8c61dzqklxridy0htl9" async></script>
+<!---->          
+          
+<!----><!---->  
+      </body>
+    </html>
+  
+  
+  

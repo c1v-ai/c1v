@@ -1,0 +1,341 @@
+{
+  "source_file": "decision-matrix-template.xlsx",
+  "sheet": "Template",
+  "purpose": "Decision matrix — compare 3 options (A/B/C) across up to 8 weighted criteria. Raw values -> normalized (0..1) -> weighted final scores with column totals. Scale-measure block at bottom for subjective criteria.",
+  "known_issues": [
+    "Rows 7 and 10 both labeled 'Target Release'. Exposed as target_release / target_release_2.",
+    "Row 12 label 'Aprovers' (typo).",
+    "Row 16 label truncated: 'Parent OKR / strategic initiativ'."
+  ],
+  "merged_ranges": [
+    "L20:N20",
+    "B35:J35",
+    "C20:E20",
+    "H20:J20"
+  ],
+  "static_text": {
+    "title": {
+      "cell": "A1",
+      "value": "Decision Matrix"
+    },
+    "section_values": {
+      "range": "C20:E20",
+      "value": "Values"
+    },
+    "section_normalized_values": {
+      "range": "H20:J20",
+      "value": "Normalized Values"
+    },
+    "section_final_scores": {
+      "range": "L20:N20",
+      "value": "Final Scores"
+    },
+    "section_notes": {
+      "cell": "O20",
+      "value": "Notes"
+    },
+    "score_totals_label": {
+      "cell": "A30",
+      "value": "Score Totals"
+    },
+    "scale_help": {
+      "cell": "A33",
+      "value": "Add your scale measure definitions here."
+    },
+    "scale_header": {
+      "range": "B35:J35",
+      "value": "Scale Measure for [add criteria name here]"
+    }
+  },
+  "fields": {
+    "project_name": {
+      "label_cell": "A2",
+      "label_literal": "Project Name",
+      "cell": "B2",
+      "type": "string"
+    },
+    "document_id": {
+      "label_cell": "A3",
+      "label_literal": "Document ID",
+      "cell": "B3",
+      "type": "string"
+    },
+    "document_type": {
+      "label_cell": "A4",
+      "label_literal": "Document Type",
+      "cell": "B4",
+      "type": "string"
+    },
+    "status": {
+      "label_cell": "A5",
+      "label_literal": "Status",
+      "cell": "B5",
+      "type": "string"
+    },
+    "last_update": {
+      "label_cell": "A6",
+      "label_literal": "Last Update",
+      "cell": "B6",
+      "type": "string"
+    },
+    "target_release": {
+      "label_cell": "A7",
+      "label_literal": "Target Release",
+      "cell": "B7",
+      "type": "string"
+    },
+    "confidentiality": {
+      "label_cell": "A8",
+      "label_literal": "Confidentiality",
+      "cell": "B8",
+      "type": "string"
+    },
+    "created_date": {
+      "label_cell": "A9",
+      "label_literal": "Created date",
+      "cell": "B9",
+      "type": "string"
+    },
+    "target_release_2": {
+      "label_cell": "A10",
+      "label_literal": "Target Release",
+      "cell": "B10",
+      "type": "string"
+    },
+    "author": {
+      "label_cell": "A11",
+      "label_literal": "Author",
+      "cell": "B11",
+      "type": "string"
+    },
+    "approvers": {
+      "label_cell": "A12",
+      "label_literal": "Aprovers",
+      "cell": "B12",
+      "type": "string"
+    },
+    "stakeholders": {
+      "label_cell": "A13",
+      "label_literal": "Stakeholders",
+      "cell": "B13",
+      "type": "string"
+    },
+    "supersedes": {
+      "label_cell": "A14",
+      "label_literal": "Supersedes / replaces",
+      "cell": "B14",
+      "type": "string"
+    },
+    "linked_ticket": {
+      "label_cell": "A15",
+      "label_literal": "Linked epic/ticket",
+      "cell": "B15",
+      "type": "string"
+    },
+    "parent_okr": {
+      "label_cell": "A16",
+      "label_literal": "Parent OKR / strategic initiativ",
+      "cell": "B16",
+      "type": "string"
+    },
+    "regulatory_refs": {
+      "label_cell": "A17",
+      "label_literal": "Regulatory refs",
+      "cell": "B17",
+      "type": "string"
+    },
+    "decision_matrix": {
+      "type": "table",
+      "header_row": 21,
+      "header_range": "A21:O21",
+      "option_count": 3,
+      "option_labels_row": 21,
+      "columns": [
+        {
+          "name": "criterion",
+          "cell_col": "A",
+          "header": "Criteria",
+          "type": "string",
+          "user_fill": true
+        },
+        {
+          "name": "value_option_a",
+          "cell_col": "C",
+          "header": "Option A (value)",
+          "type": "any",
+          "user_fill": true
+        },
+        {
+          "name": "value_option_b",
+          "cell_col": "D",
+          "header": "Option B (value)",
+          "type": "any",
+          "user_fill": true
+        },
+        {
+          "name": "value_option_c",
+          "cell_col": "E",
+          "header": "Option C (value)",
+          "type": "any",
+          "user_fill": true
+        },
+        {
+          "name": "min_value",
+          "cell_col": "F",
+          "header": "Min Value",
+          "type": "any",
+          "user_fill": true
+        },
+        {
+          "name": "max_value",
+          "cell_col": "G",
+          "header": "Max Value",
+          "type": "any",
+          "user_fill": true
+        },
+        {
+          "name": "normalized_option_a",
+          "cell_col": "H",
+          "header": "Option A (normalized)",
+          "type": "number_0_1",
+          "user_fill": true
+        },
+        {
+          "name": "normalized_option_b",
+          "cell_col": "I",
+          "header": "Option B (normalized)",
+          "type": "number_0_1",
+          "user_fill": true
+        },
+        {
+          "name": "normalized_option_c",
+          "cell_col": "J",
+          "header": "Option C (normalized)",
+          "type": "number_0_1",
+          "user_fill": true
+        },
+        {
+          "name": "weight",
+          "cell_col": "K",
+          "header": "Weight",
+          "type": "number_0_1",
+          "user_fill": true,
+          "note": "Weights across all criteria should sum to 1."
+        },
+        {
+          "name": "final_option_a",
+          "cell_col": "L",
+          "header": "Option A (final)",
+          "type": "formula",
+          "formula_pattern": "=H{row}*$K{row}",
+          "user_fill": false,
+          "note": "Formula already present. Do not overwrite — writing raw values here will break the matrix."
+        },
+        {
+          "name": "final_option_b",
+          "cell_col": "M",
+          "header": "Option B (final)",
+          "type": "formula",
+          "formula_pattern": "=I{row}*$K${row}",
+          "user_fill": false
+        },
+        {
+          "name": "final_option_c",
+          "cell_col": "N",
+          "header": "Option C (final)",
+          "type": "formula",
+          "formula_pattern": "=J{row}*$K${row}",
+          "user_fill": false
+        },
+        {
+          "name": "notes",
+          "cell_col": "O",
+          "header": "Notes",
+          "type": "string",
+          "user_fill": true
+        }
+      ],
+      "data_start_row": 22,
+      "data_end_row": 29,
+      "max_criteria": 8,
+      "data_range": "A22:O29",
+      "write_strategy": "fill_bounded_range",
+      "note": "Template has 8 pre-built rows (22–29). If more criteria are needed, insert rows above row 30 and copy formulas down.",
+      "unused_rows_rule": "If fewer than 8 criteria are used, clear ALL cells on unused rows — including columns L, M, N (the pre-seeded formulas). The template ships with space characters (' ') in H/I/J/K on unused rows, so the L=H*K formulas evaluate to #VALUE! and poison the row-30 SUMs. Write None (blank) to A,C,D,E,F,G,H,I,J,K,L,M,N,O on every unused row between the last criterion and row 29.",
+      "totals_row": {
+        "row": 30,
+        "label_cell": "A30",
+        "formulas": {
+          "H30": "=SUM(H22:H29)",
+          "I30": "=SUM(I22:I29)",
+          "J30": "=SUM(J22:J29)",
+          "L30": "=SUM(L22:L29)",
+          "M30": "=SUM(M22:M29)",
+          "N30": "=SUM(N22:N29)"
+        },
+        "user_fill": false,
+        "note": "Row of SUM formulas. Do not overwrite."
+      }
+    },
+    "scale_measure_block": {
+      "type": "scale_definition",
+      "purpose": "Define a 1–5 ordinal scale for a subjective criterion (e.g. Graphics Performance). One block per template; duplicate the block (rows 33–41) for additional subjective criteria.",
+      "heading_cell": "A33",
+      "title_range": "B35:J35",
+      "title_placeholder": "Scale Measure for [add criteria name here]",
+      "fields": {
+        "scale_criterion_name": {
+          "cell": "B35",
+          "type": "string",
+          "note": "Write to B35 (merged anchor of B35:J35). Replace '[add criteria name here]'."
+        },
+        "score_label": {
+          "cell": "B36",
+          "value": "Score",
+          "user_fill": false
+        },
+        "condition_label": {
+          "cell": "C36",
+          "value": "Scale Condition",
+          "user_fill": false
+        },
+        "score_5_condition": {
+          "cell": "C37",
+          "score": 5,
+          "type": "string"
+        },
+        "score_4_condition": {
+          "cell": "C38",
+          "score": 4,
+          "type": "string"
+        },
+        "score_3_condition": {
+          "cell": "C39",
+          "score": 3,
+          "type": "string"
+        },
+        "score_2_condition": {
+          "cell": "C40",
+          "score": 2,
+          "type": "string"
+        },
+        "score_1_condition": {
+          "cell": "C41",
+          "score": 1,
+          "type": "string"
+        }
+      }
+    }
+  },
+  "data_validations": [],
+  "write_guidance": {
+    "library": "openpyxl",
+    "formula_cells_dnd": [
+      "L22:N29",
+      "H30:J30",
+      "L30:N30"
+    ],
+    "merged_cells": "Write only to the anchor cell of any merged range (B35 for the scale title; C20/H20/L20 for section headers).",
+    "preserve_template": "Load original, save to NEW path."
+  }
+}
