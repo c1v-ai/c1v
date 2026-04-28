@@ -64,6 +64,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Exclude monitoring (Sentry tunnel route — withSentryConfig tunnelRoute),
+  // Next.js internals, and static files. Sentry events must reach the tunnel
+  // unwrapped by auth/redirect logic.
+  matcher: ['/((?!monitoring|_next/static|_next/image|favicon.ico).*)'],
   runtime: 'nodejs'
 };

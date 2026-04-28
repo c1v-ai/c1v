@@ -1,4 +1,82 @@
+---
+schema: phase-file.v1
+phase_slug: pipeline
+module: 9
+artifact_key: module_9/pipeline
+engine_story: m9-stacks-atlas
+engine_path: apps/product-helper/.planning/engines/m9-stacks-atlas.json
+fail_closed_audit: plans/v22-outputs/te1/fail-closed-audit.md#module-9-stacks-atlas
+fail_closed_registry: apps/product-helper/lib/langchain/engines/fail-closed-runner.ts
+kb_chunk_refs: []
+legacy_snapshot: apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/_legacy_2026-04-26/9-stacks-atlas/01-phase-docs/PIPELINE.md
+rewritten_at: 2026-04-27
+rewritten_by: kb-rewrite (Wave-E γ-shape, EC-V21-E.9)
+---
 # PIPELINE.md — Atlas Research Pipeline (v0.1, DRAFT)
+
+## §1 Decision context
+
+This phase contributes to **m9-stacks-atlas** decisions. Runtime resolution flows through:
+
+1. ContextResolver loads upstream artifacts + intake state.
+2. NFREngineInterpreter evaluates predicates from `apps/product-helper/.planning/engines/m9-stacks-atlas.json` against EvalContext.
+3. On match → auto-fill (clamped to `auto_fill_threshold`); on no match → fallback (§3); on still-no-match → STOP-GAP gate (§4) blocks proceed.
+
+The legacy educational body (preserved in this file under the "Educational content" footer) explains *why* this phase exists. The runtime *what* lives in the engine.json + fail-closed registry referenced below.
+
+## §2 Predicates (engine.json reference)
+
+- **Engine story:** `m9-stacks-atlas` (`apps/product-helper/.planning/engines/m9-stacks-atlas.json`)
+- **Predicate DSL evaluator:** `apps/product-helper/lib/langchain/engines/predicate-dsl.ts`
+- **Story-tree schema:** `apps/product-helper/lib/langchain/schemas/engines/story-tree.ts`
+- **Decisions consumed by this phase:** see `decisions[]` in the engine.json keyed on `target_field` containing `pipeline` or by manual mapping in the story tree.
+
+> Predicates are NOT inlined here. The engine.json is the source of truth; this markdown points at it.
+
+## §3 Fallback rules
+
+When no predicate in §2 matches:
+
+1. `searchKB` retrieves top-3 chunks scoped to `{module: 9, phase: pipeline}` (post-G8/G9 ingest).
+2. If `searchKB` confidence < 0.90 OR returns zero chunks → `surfaceGap` emits `needs_user_input` to `system-question-bridge.ts` with computed_options + math_trace.
+3. User answer re-enters the loop at ContextResolver.
+
+> Fallback contract is shared across all phase files. Per-phase override (if any) is documented in the educational body below.
+
+## §4 STOP-GAP rules (machine-readable)
+
+- **artifact_key:** `module_9/pipeline`
+- **registry:** `apps/product-helper/lib/langchain/engines/fail-closed-runner.ts` (`buildFailClosedRegistry`)
+- **schema:** `apps/product-helper/lib/langchain/schemas/engines/fail-closed.ts` (`failClosedRuleSetSchema`)
+- **audit doc (rule sources + severity):** [plans/v22-outputs/te1/fail-closed-audit.md](../../../../../../plans/v22-outputs/te1/fail-closed-audit.md#module-9-stacks-atlas)
+
+The STOP-GAP / Validation-Checklist text in the legacy educational body below has been audited by `engine-fail-closed` and converted into machine-readable rules registered under the `artifact_key` above. The runner default-FAILs if the artifact_key is queried with no rule set registered (conservative).
+
+> Default severity is `error` (proceed-blocking). Only items phrased "advisory" / "soft check" / "warning" / "will NOT fail" are downgraded to `warn`.
+
+## §5 Math derivation
+
+This phase's quantitative outputs (if any) carry `mathDerivationSchema` (or `mathDerivationMatrixSchema` for M5 sites per TC1 `tc1-wave-c-complete`). Each derivation:
+
+- references inputs by `source` (upstream artifact + field path);
+- carries `formula` (LaTeX-safe ASCII) + `units` + `computed_value`;
+- attaches `base_confidence` + `confidence_modifiers` consumed by NFREngineInterpreter step 6.
+
+> Per-decision math traces are emitted into `decision_audit` (`0011b_decision_audit.sql`) on every Scoring pass per EC-V21-E.3 (audit-writer agent).
+
+## §6 References (KB chunk IDs)
+
+- **Frontmatter `kb_chunk_refs`:** populated by the embedding pipeline (`engine-pgvector` agent, G8/G9 — `apps/product-helper/lib/langchain/engines/kb-embedder.ts`).
+- **Runtime retrieval:** `searchKB(query, top_k, { module: 9, phase: 'pipeline' })` over the `kb_chunks` table (`0011a_kb_chunks.sql`, ivfflat lists=100; HNSW upgrade gated on `>10k` rows).
+- **Provenance:** every retrieved chunk carries `{kb_source, chunk_hash, content, embedding_distance}`; rendered by `why-this-value-panel.tsx` (`provenance-ui` agent).
+
+> The `kb_chunk_refs` array in frontmatter is left empty until the embedder backfills it. The runtime path does not depend on the static array — it queries the live table.
+
+---
+
+## Educational content (legacy, preserved)
+
+> The body below is the pre-Wave-E text verbatim. It documents *why* this phase exists, the systems-engineering theory behind the prescribed steps, and the example-driven walkthroughs the LLM (and human readers) consume. The 6 sections above are the schema-first overlay locked by Wave-E γ-shape.
 
 **Status**: DRAFT by scraper · pending architect review (schema hooks) · pending curator review (downstream consumer)
 **Source of truth**: `plans/public-company-stacks-atlas.md` §6.1–6.3 and §4.3
@@ -404,3 +482,4 @@ Ruled by curator after schema rev-2:
 - [ ] Wire `scripts/atlas/verify-citations.ts` (sketch in §8.1) into CI — catches URL/SHA transcription errors at build time.
 - [ ] Optional: add conference-talk tier-E fetch path (youtube-transcript-api or whisper) to scraper v0.2 — useful for supplementary batches when blog corpus thin on a math primitive. Currently flagged as "supplementary opportunity" in per-company manifests.
 - [ ] Optional: add GitHub org config fetch path (tier F) — can corroborate backend.runtimes claims from blogs. Simple `raw.githubusercontent.com` fetches.
+

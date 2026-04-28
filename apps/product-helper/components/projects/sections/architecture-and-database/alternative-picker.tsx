@@ -21,14 +21,22 @@ import {
 } from '@/components/ui/select';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { ArchitectureAlternative } from './types';
+import { WhyThisValueButton } from '@/components/synthesis/why-this-value-button';
 
 interface Props {
   alternatives: ArchitectureAlternative[];
   selectedId: string;
   onSelect: (id: string) => void;
+  /**
+   * When provided, renders a `<WhyThisValueButton />` next to the picker
+   * label so the user can see why this alternative was chosen + override.
+   * EC-V21-E.11 — non-FROZEN attachment surface (FROZEN diagram-viewer
+   * itself is untouched; the button is rendered alongside, not inside).
+   */
+  projectId?: number;
 }
 
-export function AlternativePicker({ alternatives, selectedId, onSelect }: Props) {
+export function AlternativePicker({ alternatives, selectedId, onSelect, projectId }: Props) {
   const labelId = useId();
   const selected = alternatives.find((a) => a.id === selectedId) ?? alternatives[0];
 
@@ -64,6 +72,16 @@ export function AlternativePicker({ alternatives, selectedId, onSelect }: Props)
             ))}
           </SelectContent>
         </Select>
+        {typeof projectId === 'number' && (
+          <WhyThisValueButton
+            projectId={projectId}
+            decisionId="ARCHITECTURE_ALTERNATIVE_PICK"
+            targetField="architecture_recommendation/recommended_alternative"
+            storyId="story-architecture-pick"
+            engineVersion="v1"
+            ariaLabel="Why this architecture alternative?"
+          />
+        )}
       </div>
 
       <AlternativeSummary alt={selected} />

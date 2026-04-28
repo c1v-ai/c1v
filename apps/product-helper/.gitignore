@@ -32,6 +32,10 @@ yarn-error.log*
 .env*.local
 .env.production
 
+# Sentry
+.sentryclirc
+.env.sentry-build-plugin
+
 # Vercel
 .vercel
 
@@ -70,6 +74,9 @@ GEMINI.md
 !.planning/phases/13-Knowledge-banks-deepened/**
 # Keep macOS cruft ignored inside the re-included KB subtree
 .planning/phases/13-Knowledge-banks-deepened/**/.DS_Store
+# Wave E: engine.json story trees consumed by lib/langchain/engines/engine-loader.ts
+!.planning/engines/
+!.planning/engines/**
 claudedocs/
 CURRENT-STATE.md
 CURRENT-STATUS.md

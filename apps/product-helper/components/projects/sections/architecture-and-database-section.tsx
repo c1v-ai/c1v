@@ -134,6 +134,7 @@ export function ArchitectureAndDatabaseSection({ project, decisionNetwork }: Pro
           <ArchitectureDiagramPane
             decisionNetwork={dn}
             fallbackMermaid={fallbackArchMermaid}
+            projectId={project.id}
           />
         </TabsContent>
 

@@ -36,6 +36,8 @@ export {
   generateAcknowledgment,
   generateClarificationRequest,
 } from './generate-response';
+export { explainDecision } from './explain-decision';
+export type { ExplainDecisionInput } from './explain-decision';
 
 // ============================================================
 // Node Names (for graph construction)
@@ -52,6 +54,7 @@ export const NODE_NAMES = {
   CHECK_PRD_SPEC: 'check_prd_spec',
   GENERATE_ARTIFACT: 'generate_artifact',
   GENERATE_RESPONSE: 'generate_response',
+  EXPLAIN_DECISION: 'explain_decision',
 } as const;
 
 export type NodeName = typeof NODE_NAMES[keyof typeof NODE_NAMES];

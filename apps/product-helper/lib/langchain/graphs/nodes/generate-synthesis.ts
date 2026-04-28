@@ -1,120 +1,102 @@
 /**
- * GENERATE_synthesis node — keystone wraps `synthesis-agent.ts`
- * (architecture-recommendation; T6 keystone per audit).
+ * GENERATE_synthesis node — P10 greenfield refactor (T6 keystone).
  *
- * Builds `LoadedUpstream` from graph state instead of `loadUpstream()` (which
- * is fs-bound; see `plans/v21-outputs/ta1/agents-audit.md` line 31-36 verdict
- * — graph-node-adapter wrapper per R-v2.1.A Option C). Then invokes the
- * pure builders (`assembleArchitectureRecommendation`) to emit the keystone
- * `architecture_recommendation.v1.json` payload.
+ * Substrate-read pattern (D-V22.01 + HANDOFF-2026-04-27 Correction 1):
+ * reads state.messages + state.extractedData (substrate) + upstream artifacts
+ * via ContextResolver (G4), evaluates the `m4-synthesis-keystone` engine.json
+ * story tree, persists non-empty
+ * `synthesis.architecture-recommendation.runtime-envelope.v1` to
+ * project_artifacts(kind='recommendation_json') with status='ready'.
  *
- * Persists to `project_artifacts(kind='recommendation_json')` with the real
- * content-addressed `inputs_hash` (per EC-V21-A.12).
+ * Pre-P10 the node bailed with status='pending' when upstream
+ * (decisionNetwork + nfrs + interfaces + fmea_residual + hoq) wasn't all
+ * present. P10 closure (D-V22.01 Path B) drops that early-exit and reads
+ * directly from substrate. Upstream artifact shas remain captured when
+ * available — when they're missing, sha256Of({}) seeds the inputs_hash
+ * deterministically and the engine evaluation drives the keystone payload.
+ *
+ * Per R-v2.1.A Option C, this is a graph-node adapter, NOT an agent
+ * refactor — `assembleArchitectureRecommendation` (offline) still owns the
+ * full LLM-derived keystone narrative for self-application runs. The
+ * runtime envelope carries the deterministic engine layer.
  *
  * @module lib/langchain/graphs/nodes/generate-synthesis
  */
 
 import { IntakeState } from '../types';
-import {
-  DEFAULT_UPSTREAM_PATHS,
-  type LoadedUpstream,
-} from '../../agents/system-design/synthesis-agent';
 import { persistArtifact } from './_persist-artifact';
 import { computeInputsHash, sha256Of } from '../contracts/inputs-hash';
+import { evaluateEngineStory, type RuntimeEnvelope } from './_engine-substrate';
 
 const ARTIFACT_KIND = 'recommendation_json';
-
-/**
- * Build a `LoadedUpstream` from graph state. The agent's pure builders
- * consume this; we bypass `loadUpstream()` (fs.readFileSync) entirely.
- */
-function buildUpstreamFromState(state: IntakeState): LoadedUpstream | null {
-  const ed = state.extractedData as Record<string, unknown> | undefined;
-  if (!ed) return null;
-
-  const decisionNetwork = ed['decisionNetwork'];
-  const nfrs = ed['nfrs'];
-  const interfaceSpecs = ed['interfaces'];
-  const fmeaResidual = ed['fmeaResidual'];
-  const hoq = ed['hoq'];
-
-  if (!decisionNetwork || !nfrs || !interfaceSpecs || !fmeaResidual || !hoq) {
-    return null;
-  }
-
-  const rawBytes: Record<string, string> = {
-    decision_network: JSON.stringify(decisionNetwork),
-    nfrs: JSON.stringify(nfrs),
-    interface_specs: JSON.stringify(interfaceSpecs),
-    fmea_residual: JSON.stringify(fmeaResidual),
-    hoq: JSON.stringify(hoq),
-  };
-
-  return {
-    paths: DEFAULT_UPSTREAM_PATHS,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    decisionNetwork: decisionNetwork as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    nfrs: nfrs as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    interfaceSpecs: interfaceSpecs as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fmeaResidual: fmeaResidual as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    hoq: hoq as any,
-    rawBytes,
-  };
-}
+const STORY_ID = 'm4-synthesis-keystone';
 
 export async function generateSynthesis(
   state: IntakeState,
 ): Promise<Partial<IntakeState>> {
   console.log('[GENERATE_synthesis] entered');
 
-  const loaded = buildUpstreamFromState(state);
-  if (!loaded) {
-    console.warn('[GENERATE_synthesis] upstream incomplete; persisting pending row');
-    await persistArtifact({ projectId: state.projectId, kind: ARTIFACT_KIND, status: 'pending' });
-    return {};
-  }
+  const ed = state.extractedData as Record<string, unknown> | undefined;
 
-  // Real content-addressed inputs_hash (EC-V21-A.12) — hash the canonical
-  // JSON of intake payload + sha256 fingerprints of upstream artifacts.
+  // Capture upstream shas opportunistically; missing keys seed sha256Of({}).
+  const upstreamShas = {
+    decision_network: sha256Of(ed?.['decisionNetwork'] ?? {}),
+    nfrs: sha256Of(ed?.['nfrs'] ?? {}),
+    interface_specs: sha256Of(ed?.['interfaces'] ?? {}),
+    fmea_residual: sha256Of(ed?.['fmeaResidual'] ?? {}),
+    hoq: sha256Of(ed?.['hoq'] ?? {}),
+  };
+
   const inputsHash = computeInputsHash({
     intake: {
       projectId: state.projectId,
       projectName: state.projectName,
       projectVision: state.projectVision,
     },
-    upstreamShas: {
-      decision_network: sha256Of(loaded.decisionNetwork),
-      nfrs: sha256Of(loaded.nfrs),
-      interface_specs: sha256Of(loaded.interfaceSpecs),
-      fmea_residual: sha256Of(loaded.fmeaResidual),
-      hoq: sha256Of(loaded.hoq),
-    },
+    upstreamShas,
   });
 
   try {
-    // v2.1 Wave A — `assembleArchitectureRecommendation` requires a SynthesisPayload
-    // that's normally produced by the offline `synthesis-agent.ts` script
-    // (LLM-derived narrative content per the agent's portfolio-demo stance).
-    // The graph node ships a runtime ENVELOPE referencing the upstream sha256s
-    // + inputs_hash; full keystone payload assembly stays offline. Per
-    // R-v2.1.A Option C, this is a graph-node adapter, NOT an agent refactor.
-    const result = {
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_synthesis',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
+
+    const envelope: RuntimeEnvelope<'synthesis.architecture-recommendation'> = {
       _schema: 'synthesis.architecture-recommendation.runtime-envelope.v1',
       _output_path: `runtime://project/${state.projectId}/architecture_recommendation.v1.json`,
+      nfr_engine_contract_version: 'v1',
       project_id: state.projectId,
       project_name: state.projectName,
       synthesized_at: new Date().toISOString(),
       inputs_hash: inputsHash,
-      upstream_shas: {
-        decision_network: sha256Of(loaded.decisionNetwork),
-        nfrs: sha256Of(loaded.nfrs),
-        interface_specs: sha256Of(loaded.interfaceSpecs),
-        fmea_residual: sha256Of(loaded.fmeaResidual),
-        hoq: sha256Of(loaded.hoq),
+      engine_evaluation: evaluation,
+      payload: {
+        upstream_shas: upstreamShas,
+        keystone_decisions: Object.fromEntries(
+          evaluation.decisions.map((d) => [d.target_field, {
+            value: d.value,
+            confidence: d.final_confidence,
+            status: d.status,
+            matched_rule_id: d.matched_rule_id,
+          }]),
+        ),
       },
     };
 
@@ -122,11 +104,9 @@ export async function generateSynthesis(
       projectId: state.projectId,
       kind: ARTIFACT_KIND,
       status: 'ready',
-      result,
+      result: envelope,
       inputsHash,
     });
-
-    // Synthesis artifacts persist to project_artifacts (above), NOT extractedData.
     return {};
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'unknown';

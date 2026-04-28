@@ -66,6 +66,7 @@ export function RecommendationViewer({
       <SectionRationale
         decisions={payload.decisions}
         derivationChain={payload.derivation_chain}
+        projectId={projectId}
       />
 
       <SectionReferencesTable upstreamRefs={payload._upstream_refs} />

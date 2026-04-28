@@ -1,0 +1,129 @@
+{
+  "story_id": "m5-form-function",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "ff_persistence_layer",
+      "target_field": "form_function_map[persistence].chosen_form",
+      "inputs": [
+        { "name": "data_shape", "source": "module-1/data-flows" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "persistence_relational_high",
+            "if": { "data_shape": "relational", "scale_tier_in": ["high", "extreme"] },
+            "value": "Postgres + read-replicas + pgbouncer",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "persistence_relational_default",
+            "if": { "data_shape": "relational" },
+            "value": "Postgres (Supabase)",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "persistence_document",
+            "if": { "data_shape": "document" },
+            "value": "Postgres jsonb (Supabase) — single-store discipline",
+            "base_confidence": 0.85
+          },
+          {
+            "default": {
+              "rule_id": "persistence_default",
+              "value": "Postgres (Supabase)",
+              "base_confidence": 0.70
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "ff_compute_runtime",
+      "target_field": "form_function_map[compute].chosen_form",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" },
+        { "name": "flow_class", "source": "module-1/data-flows" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "compute_serverless_sync",
+            "if": { "deployment_target": "serverless", "flow_class": "user_facing_sync" },
+            "value": "Vercel Edge Functions",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "compute_serverless_async",
+            "if": { "deployment_target": "serverless", "flow_class": "background_async" },
+            "value": "Vercel Functions + Inngest",
+            "base_confidence": 0.90
+          },
+          {
+            "rule_id": "compute_container",
+            "if": { "deployment_target": "container" },
+            "value": "Cloud Run (gen2)",
+            "base_confidence": 0.92
+          },
+          {
+            "default": {
+              "rule_id": "compute_default",
+              "value": "Vercel Functions",
+              "base_confidence": 0.75
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": -0.10 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "ff_llm_provider",
+      "target_field": "form_function_map[llm].chosen_form",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "llm_anthropic_pii",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"], "data_sensitivity_in": ["pii", "phi"] },
+            "value": "Anthropic Claude Sonnet 4.5 (BAA-backed)",
+            "base_confidence": 0.94
+          },
+          {
+            "rule_id": "llm_anthropic_default",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": "Anthropic Claude Sonnet 4.5",
+            "base_confidence": 0.93
+          },
+          {
+            "default": {
+              "rule_id": "llm_none",
+              "value": "none",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "cross_story_agreement", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

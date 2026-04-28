@@ -1,0 +1,183 @@
+{
+  "story_id": "m4-synthesis-keystone",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "synthesis_recommended_alternative_id",
+      "target_field": "architecture_recommendation.recommended_alternative_id",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" },
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "synth_av01_serverless_ai_low",
+            "if": { "deployment_target": "serverless", "ai_workload_in": ["agent", "rag", "extraction"], "scale_tier_in": ["low", "medium"] },
+            "value": "AV.01",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "synth_av02_container_ai_high",
+            "if": { "deployment_target": "container", "scale_tier_in": ["high", "extreme"] },
+            "value": "AV.02",
+            "base_confidence": 0.88
+          },
+          {
+            "rule_id": "synth_av03_serverless_no_ai",
+            "if": { "deployment_target": "serverless" },
+            "value": "AV.03",
+            "base_confidence": 0.86
+          },
+          {
+            "default": {
+              "rule_id": "synth_av_default",
+              "value": "AV.01",
+              "base_confidence": 0.70
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "cross_story_agreement", "delta": 0.05, "cap": 0.99 },
+        { "when": "any_input_is_estimate", "delta": -0.05 },
+        { "when": "rule_default_branch", "delta": -0.15 }
+      ],
+      "auto_fill_threshold": 0.90,
+      "fallback": { "action": "surface_to_user", "question_id": "Q.M4.SYN.AV" }
+    },
+    {
+      "decision_id": "synthesis_estimated_monthly_cost_usd",
+      "target_field": "architecture_recommendation.estimated_monthly_cost_usd",
+      "inputs": [
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" },
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "synth_cost_low_no_ai",
+            "if": { "scale_tier": "low", "ai_workload": "none" },
+            "value": 50,
+            "units": "USD/month",
+            "base_confidence": 0.90
+          },
+          {
+            "rule_id": "synth_cost_medium_ai",
+            "if": { "scale_tier": "medium", "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": 320,
+            "units": "USD/month",
+            "base_confidence": 0.88
+          },
+          {
+            "rule_id": "synth_cost_high_ai",
+            "if": { "scale_tier_in": ["high", "extreme"], "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": 2400,
+            "units": "USD/month",
+            "base_confidence": 0.82
+          },
+          {
+            "default": {
+              "rule_id": "synth_cost_default",
+              "value": 200,
+              "units": "USD/month",
+              "base_confidence": 0.70
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "any_input_is_estimate", "delta": -0.10 },
+        { "when": "rule_default_branch", "delta": -0.15 }
+      ],
+      "auto_fill_threshold": 0.85
+    },
+    {
+      "decision_id": "synthesis_p95_latency_ms",
+      "target_field": "architecture_recommendation.p95_latency_ms",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" },
+        { "name": "flow_class", "source": "module-1/data-flows" },
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "synth_lat_serverless_sync_no_ai",
+            "if": { "deployment_target": "serverless", "flow_class": "user_facing_sync", "ai_workload": "none" },
+            "value": 220,
+            "units": "ms",
+            "base_confidence": 0.91
+          },
+          {
+            "rule_id": "synth_lat_serverless_sync_ai",
+            "if": { "deployment_target": "serverless", "flow_class": "user_facing_sync", "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": 2600,
+            "units": "ms",
+            "base_confidence": 0.86
+          },
+          {
+            "rule_id": "synth_lat_container_sync",
+            "if": { "deployment_target": "container", "flow_class": "user_facing_sync" },
+            "value": 180,
+            "units": "ms",
+            "base_confidence": 0.89
+          },
+          {
+            "default": {
+              "rule_id": "synth_lat_default",
+              "value": 500,
+              "units": "ms",
+              "base_confidence": 0.72
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.15 }
+      ],
+      "auto_fill_threshold": 0.85
+    },
+    {
+      "decision_id": "synthesis_availability_target",
+      "target_field": "architecture_recommendation.availability_target",
+      "inputs": [
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "synth_avail_high_pii",
+            "if": { "scale_tier_in": ["high", "extreme"], "data_sensitivity_in": ["pii", "phi", "pci"] },
+            "value": "99.95%",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "synth_avail_high_default",
+            "if": { "scale_tier_in": ["high", "extreme"] },
+            "value": "99.9%",
+            "base_confidence": 0.91
+          },
+          {
+            "default": {
+              "rule_id": "synth_avail_default",
+              "value": "99.9%",
+              "base_confidence": 0.85
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

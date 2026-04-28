@@ -1,0 +1,124 @@
+{
+  "story_id": "m8-fmea-residual",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "fmea_residual_auth_after_mitigation",
+      "target_field": "fmea_residual[FM-AUTH-001].rpn_after",
+      "inputs": [
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" },
+        { "name": "auth_form", "source": "module-5/form-function" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "fmea_resid_auth_pii_jwt_rs256",
+            "if": { "data_sensitivity_in": ["pii", "phi"], "auth_form": "JWT_RS256" },
+            "value": 80,
+            "units": "rpn",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "fmea_resid_auth_pii_jwt_hs256",
+            "if": { "data_sensitivity_in": ["pii", "phi"], "auth_form": "JWT_HS256" },
+            "value": 144,
+            "units": "rpn",
+            "base_confidence": 0.88
+          },
+          {
+            "default": {
+              "rule_id": "fmea_resid_auth_default",
+              "value": 60,
+              "units": "rpn",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "fmea_residual_data_loss_after_mitigation",
+      "target_field": "fmea_residual[FM-DATA-001].rpn_after",
+      "inputs": [
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" },
+        { "name": "persistence_form", "source": "module-5/form-function" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "fmea_resid_data_high_scale_replicas",
+            "if": { "scale_tier_in": ["high", "extreme"], "persistence_form": "PG_HA" },
+            "value": 60,
+            "units": "rpn",
+            "base_confidence": 0.91
+          },
+          {
+            "rule_id": "fmea_resid_data_supabase_pg",
+            "if": { "persistence_form": "SUPABASE_PG" },
+            "value": 90,
+            "units": "rpn",
+            "base_confidence": 0.86
+          },
+          {
+            "default": {
+              "rule_id": "fmea_resid_data_default",
+              "value": 100,
+              "units": "rpn",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "fmea_residual_llm_drift_after_mitigation",
+      "target_field": "fmea_residual[FM-LLM-001].rpn_after",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" },
+        { "name": "evals_present", "source": "module-5/form-function" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "fmea_resid_llm_with_evals",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"], "evals_present": true },
+            "value": 96,
+            "units": "rpn",
+            "base_confidence": 0.90
+          },
+          {
+            "rule_id": "fmea_resid_llm_without_evals",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": 200,
+            "units": "rpn",
+            "base_confidence": 0.85
+          },
+          {
+            "default": {
+              "rule_id": "fmea_resid_llm_none",
+              "value": 0,
+              "units": "rpn",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}
