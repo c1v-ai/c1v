@@ -35,3 +35,15 @@ export {
   type KBChunkResult,
   type SearchKBFilter,
 } from './kb-search';
+
+export {
+  ENGINE_CONTRACT_VERSION,
+  evaluateWaveE,
+  waveEEvaluator,
+  type EngineContractVersion,
+  type EngineOutputStatus,
+  type EvaluateOptions,
+  type LlmRefineArgs,
+  type LlmRefineFn,
+  type WaveEEngineOutput,
+} from './wave-e-evaluator';
