@@ -20,7 +20,12 @@
         "LANGCHAIN_CALLBACKS_BACKGROUND",
         "BASE_URL",
         "RESEND_API_KEY",
-        "USE_LANGGRAPH"
+        "USE_LANGGRAPH",
+        "OPENROUTER_API_KEY",
+        "SENTRY_DSN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_AUTH_TOKEN"
       ]
     },
     "dev": {
