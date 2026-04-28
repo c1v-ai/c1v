@@ -38,12 +38,17 @@ export type {
   UserStoryUpdate,
 } from './v2-types';
 
-// SS7 Traceback citation schema (W0A, v1 hardening sprint)
-export {
-  tracebackCitations,
-  EMBEDDING_DIMENSIONS,
-  DEFAULT_CITATION_TTL_HOURS,
-} from './traceback';
+// SS7 Traceback citation schema (W0A, v1 hardening sprint) — design hook
+// only; underlying ./traceback module never landed. Re-exports commented
+// out so `next build` (Vercel) doesn't fail type-check on a missing module.
+// Real embedding-dim constant in production use is `KB_EMBEDDING_DIMENSIONS`
+// from './kb-chunks' (line 67 below). Restore this block when the SS7 W0A
+// traceback schema actually lands.
+// export {
+//   tracebackCitations,
+//   EMBEDDING_DIMENSIONS,
+//   DEFAULT_CITATION_TTL_HOURS,
+// } from './traceback';
 
 // KB-8 Atlas entries (Module 8 — Public Stacks & Priors Atlas)
 export {
@@ -158,22 +163,26 @@ export type {
   M2RequirementsCrawleyExtensionRow,
   NewM2RequirementsCrawleyExtensionRow,
 } from './crawley';
-export type {
-  TracebackCitation,
-  NewTracebackCitation,
-} from './traceback';
-export {
-  citationEmbeddingSchema,
-  nullableCitationEmbeddingSchema,
-  citationInputSchema,
-  citationRowSchema,
-  invalidateSourceInputSchema,
-} from './traceback-validators';
-export type {
-  CitationInput,
-  CitationRow,
-  InvalidateSourceInput,
-} from './traceback-validators';
+// SS7 Traceback type/validator re-exports — same gap as above; ./traceback
+// and ./traceback-validators modules never landed. Commented out so the
+// production type-check passes. Restore alongside the line ~46 block when
+// the SS7 W0A traceback schema actually ships.
+// export type {
+//   TracebackCitation,
+//   NewTracebackCitation,
+// } from './traceback';
+// export {
+//   citationEmbeddingSchema,
+//   nullableCitationEmbeddingSchema,
+//   citationInputSchema,
+//   citationRowSchema,
+//   invalidateSourceInputSchema,
+// } from './traceback-validators';
+// export type {
+//   CitationInput,
+//   CitationRow,
+//   InvalidateSourceInput,
+// } from './traceback-validators';
 
 // Zod validators (schemas only, not types)
 export {
