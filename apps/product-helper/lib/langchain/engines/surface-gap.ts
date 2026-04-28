@@ -37,6 +37,10 @@
  */
 
 import type { ComputedOption } from './nfr-engine-interpreter';
+import type {
+  OpenQuestionEvent,
+  SurfaceOpenQuestionResult,
+} from '@/lib/chat/system-question-bridge.types';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Types
@@ -79,6 +83,40 @@ interface PendingGap {
   input: SurfaceGapInput;
   deferred: Deferred<UserAnswer>;
   createdAt: number;
+  /** v2.1 bridge pending_answer conversation_id, populated once the
+   *  bridge insert resolves. Used by `waveEReplyHandler` to map bridge
+   *  replies back to the right Deferred. */
+  bridgeConversationId?: number;
+}
+
+/**
+ * Adapter for the v2.1 system-question-bridge. Wave-E routes every
+ * `surfaceGap` call through `surfaceOpenQuestion` for DB persistence +
+ * cross-process resilience (master plan D-V21.23). OPT-IN via
+ * `setBridgeAdapter`; legacy in-memory tests pass `null` (default) so
+ * the existing surface-gap.test.ts behavior is preserved.
+ */
+export interface BridgeAdapter {
+  surfaceOpenQuestion: (
+    event: OpenQuestionEvent,
+  ) => Promise<SurfaceOpenQuestionResult>;
+}
+
+/** Multi-turn cap; spec §Guardrails. */
+export const MAX_TURNS = 5;
+
+/** Thrown when a single decision exceeds MAX_TURNS unresolved surfaces. */
+export class MaxTurnsExceededError extends Error {
+  readonly key: string;
+  readonly turns: number;
+  constructor(key: string, turns: number) {
+    super(
+      `surfaceGap: decision ${key} exceeded MAX_TURNS=${MAX_TURNS} (turn ${turns})`,
+    );
+    this.name = 'MaxTurnsExceededError';
+    this.key = key;
+    this.turns = turns;
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -140,6 +178,32 @@ export function stripGapMarker(content: string): string {
 
 const pending = new Map<string, PendingGap>();
 
+/**
+ * Per-decision turn counter. Increments on every NEW `surfaceGap` call
+ * (idempotent re-surfaces on the same live key don't burn turns); resets
+ * on `resolveGap` success. After MAX_TURNS, the next surface throws
+ * `MaxTurnsExceededError` rather than registering a Deferred.
+ */
+const turnCounts = new Map<string, number>();
+
+/**
+ * Reverse index from bridge `conversation_id` → decisionKey. Populated
+ * once the bridge insert resolves; consumed by `waveEReplyHandler` so a
+ * user reply on a `pending_answer` row settles the right Deferred.
+ */
+const bridgeConvToKey = new Map<number, string>();
+
+let bridgeAdapter: BridgeAdapter | null = null;
+
+/**
+ * Wire (or replace) the v2.1 bridge adapter. Call once at chat-route
+ * module init; integration tests inject a mock per-suite. Pass `null`
+ * to clear (test cleanup).
+ */
+export function setBridgeAdapter(adapter: BridgeAdapter | null): void {
+  bridgeAdapter = adapter;
+}
+
 export function decisionKey(args: {
   projectId: string | number;
   decisionId: string;
@@ -178,7 +242,8 @@ export function surfaceGap(input: SurfaceGapInput): SurfaceGapHandle {
   });
 
   // Idempotency: repeated call for the same key adopts the existing
-  // promise — prevents runaway agents from registering N gaps.
+  // promise — prevents runaway agents from registering N gaps. Idempotent
+  // re-surfaces don't burn turns and don't re-fire the bridge.
   const existing = pending.get(key);
   if (existing) {
     return {
@@ -188,13 +253,56 @@ export function surfaceGap(input: SurfaceGapInput): SurfaceGapHandle {
     };
   }
 
+  // Multi-turn cap (D-V21.23 §Guardrails): after MAX_TURNS unresolved
+  // surfaces of the same decision, throw rather than spin forever.
+  const nextTurn = (turnCounts.get(key) ?? 0) + 1;
+  if (nextTurn > MAX_TURNS) {
+    throw new MaxTurnsExceededError(key, nextTurn);
+  }
+  turnCounts.set(key, nextTurn);
+
   const deferred = makeDeferred<UserAnswer>();
-  pending.set(key, {
+  const gap: PendingGap = {
     key,
     input,
     deferred,
     createdAt: Date.now(),
-  });
+  };
+  pending.set(key, gap);
+
+  // Fire-and-forget bridge persistence. Adapter unset = legacy in-memory
+  // mode (existing unit tests). When wired, errors are logged but DO NOT
+  // reject the Deferred — chat-marker path still works on bridge failure.
+  if (bridgeAdapter) {
+    const projectIdNum =
+      typeof input.projectId === 'number'
+        ? input.projectId
+        : Number(input.projectId);
+    if (Number.isFinite(projectIdNum) && projectIdNum > 0) {
+      const event: OpenQuestionEvent = {
+        source: 'wave_e_engine',
+        question: input.decision.question,
+        computed_options: input.computedOptions,
+        math_trace: input.mathTrace,
+        project_id: projectIdNum,
+      };
+      bridgeAdapter
+        .surfaceOpenQuestion(event)
+        .then((res) => {
+          if (pending.get(key) === gap) {
+            gap.bridgeConversationId = res.conversation_id;
+            bridgeConvToKey.set(res.conversation_id, key);
+          }
+        })
+        .catch((err) => {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `[surface-gap] bridge.surfaceOpenQuestion failed for ${key}:`,
+            err,
+          );
+        });
+    }
+  }
 
   return {
     key,
@@ -207,6 +315,12 @@ export function resolveGap(key: string, answer: UserAnswer): boolean {
   const gap = pending.get(key);
   if (!gap) return false;
   pending.delete(key);
+  // Successful resolution clears the turn counter so a future surface
+  // for the same decision starts fresh (e.g. user revises later).
+  turnCounts.delete(key);
+  if (gap.bridgeConversationId !== undefined) {
+    bridgeConvToKey.delete(gap.bridgeConversationId);
+  }
   gap.deferred.resolve(answer);
   return true;
 }
@@ -215,8 +329,38 @@ export function rejectGap(key: string, reason: Error): boolean {
   const gap = pending.get(key);
   if (!gap) return false;
   pending.delete(key);
+  if (gap.bridgeConversationId !== undefined) {
+    bridgeConvToKey.delete(gap.bridgeConversationId);
+  }
   gap.deferred.reject(reason);
   return true;
+}
+
+/**
+ * Reply handler for `wave_e_engine`-sourced replies arriving via the v2.1
+ * bridge. Maps `pending_answer_id` → decisionKey, parses the reply
+ * against the Deferred's stashed `computedOptions`, and settles via
+ * `resolveGap`. Register once at chat-route init:
+ *
+ *   onOpenQuestionReply('wave_e_engine', waveEReplyHandler);
+ *
+ * Idempotency: bridge fires once per reply per pollReplies cycle; if the
+ * Deferred is already settled, `resolveGap` returns `false` and we no-op.
+ */
+export async function waveEReplyHandler(args: {
+  reply_conversation_id: number;
+  reply_body: string;
+  pending_answer_id: number;
+}): Promise<void> {
+  const key = bridgeConvToKey.get(args.pending_answer_id);
+  if (!key) return;
+  const gap = pending.get(key);
+  if (!gap) {
+    bridgeConvToKey.delete(args.pending_answer_id);
+    return;
+  }
+  const answer = parseGapAnswer(args.reply_body, gap.input.computedOptions);
+  resolveGap(key, answer);
 }
 
 /**
@@ -261,9 +405,17 @@ export function parseGapAnswer(
   };
 }
 
-/** @internal test-only — resets the pending-gap registry. */
+/** @internal test-only — resets all module-local state. */
 export function __resetPendingGapsForTests(): void {
   pending.clear();
+  turnCounts.clear();
+  bridgeConvToKey.clear();
+  bridgeAdapter = null;
+}
+
+/** @internal test helper — peek at the internal turn count for a key. */
+export function __getTurnCountForTests(key: string): number {
+  return turnCounts.get(key) ?? 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
