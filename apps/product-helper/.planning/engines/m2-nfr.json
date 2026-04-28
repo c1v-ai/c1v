@@ -1,0 +1,154 @@
+{
+  "story_id": "m2-nfr",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "nfr_p95_latency_target",
+      "target_field": "nfr.p95_latency_ms",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "flow_class", "source": "module-1/data-flows" },
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "nfr_lat_consumer_sync_no_ai",
+            "if": { "user_type": "consumer_app", "flow_class": "user_facing_sync", "ai_workload": "none" },
+            "value": 300,
+            "units": "ms",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "nfr_lat_consumer_sync_ai",
+            "if": { "user_type": "consumer_app", "flow_class": "user_facing_sync", "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": 3000,
+            "units": "ms",
+            "base_confidence": 0.88
+          },
+          {
+            "rule_id": "nfr_lat_enterprise_sync",
+            "if": { "user_type": "enterprise_app", "flow_class": "user_facing_sync" },
+            "value": 500,
+            "units": "ms",
+            "base_confidence": 0.91
+          },
+          {
+            "rule_id": "nfr_lat_async",
+            "if": { "flow_class": "background_async" },
+            "value": 5000,
+            "units": "ms",
+            "base_confidence": 0.85
+          },
+          {
+            "default": {
+              "rule_id": "nfr_lat_default",
+              "value": 500,
+              "units": "ms",
+              "base_confidence": 0.70
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicitly_stated_value_exists", "delta": 0.07, "cap": 0.99 },
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "any_input_is_estimate", "delta": -0.10 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90,
+      "fallback": { "action": "surface_to_user", "question_id": "Q.M2.NFR.LAT" }
+    },
+    {
+      "decision_id": "nfr_throughput_qps",
+      "target_field": "nfr.throughput_qps",
+      "inputs": [
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "nfr_qps_low",
+            "if": { "scale_tier": "low" },
+            "value": 50,
+            "units": "qps",
+            "base_confidence": 0.90
+          },
+          {
+            "rule_id": "nfr_qps_medium",
+            "if": { "scale_tier": "medium" },
+            "value": 500,
+            "units": "qps",
+            "base_confidence": 0.90
+          },
+          {
+            "rule_id": "nfr_qps_high",
+            "if": { "scale_tier": "high" },
+            "value": 5000,
+            "units": "qps",
+            "base_confidence": 0.88
+          },
+          {
+            "rule_id": "nfr_qps_extreme",
+            "if": { "scale_tier": "extreme" },
+            "value": 50000,
+            "units": "qps",
+            "base_confidence": 0.84
+          },
+          {
+            "default": {
+              "rule_id": "nfr_qps_default",
+              "value": 100,
+              "units": "qps",
+              "base_confidence": 0.72
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.07, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.15 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "nfr_availability_target",
+      "target_field": "nfr.availability_target",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "nfr_avail_enterprise_pii",
+            "if": { "user_type": "enterprise_app", "data_sensitivity_in": ["pii", "phi", "pci"] },
+            "value": "99.95%",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "nfr_avail_consumer",
+            "if": { "user_type": "consumer_app" },
+            "value": "99.9%",
+            "base_confidence": 0.92
+          },
+          {
+            "default": {
+              "rule_id": "nfr_avail_default",
+              "value": "99.5%",
+              "base_confidence": 0.80
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}
