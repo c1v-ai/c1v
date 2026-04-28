@@ -22,12 +22,17 @@ Before running the production default-flip, confirm:
       has `status: 'captured'` (NOT `gap_surfaced`). If still
       `gap_surfaced`, run the baseline-capture sub-task FIRST per the
       file's `next_action` block.
-- [ ] `@sentry/nextjs` is installed in `apps/product-helper/package.json`
-      AND `SENTRY_DSN` is set in production env. (If missing, the
-      `instrumentation.ts` Sentry block falls back to a no-op transport
-      and no `synthesis_metrics_total` events ship to Sentry — the 7-day
-      window cannot be evaluated. Coordinator must approve SDK adoption
-      before flipping the default.)
+- [x] `@sentry/nextjs` is installed in `apps/product-helper/package.json`
+      (commit `729de2c` on `wave-e/te1-sentry-sdk-adoption`, tag
+      `te1-sentry-sdk-adoption-complete`). `instrumentation.ts` refactored
+      to a static Sentry import (`86313c9`); `sentry.{client,server,edge}.config.ts`
+      + `app/global-error.tsx` shipped; `next.config.ts` wrapped with
+      `withSentryConfig` (`f54593c`); middleware matcher excludes the
+      `/monitoring` tunnel route (`db63726`).
+      **Still required for full readiness:** `SENTRY_DSN` set in
+      production env. Without it, `Sentry.init()` becomes a no-op and
+      no `synthesis_metrics_total` events ship — the 7-day window
+      cannot be evaluated.
 
 ---
 
