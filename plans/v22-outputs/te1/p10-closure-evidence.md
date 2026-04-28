@@ -188,7 +188,17 @@ Per spawn-prompt explicit out-of-scope:
 - 4 pre-v2.1 nodes (`generate_qfd` / `generate_interfaces` / `generate_ffbd` / `generate_decision_matrix`) — UNCHANGED. They already produce output today (per P10 diagnosis); their behavior and tests are untouched.
 - v2.1 contract envelope (`nfr_engine_contract_version: 'v1'`) — UNCHANGED. All 7 ready envelopes carry this pin.
 - engine.json story tree authoring — `engine-stories` shipped them; this work consumes them.
-- `writeAuditRow()` wiring into `evaluateWaveE` hot path — owned by `audit-writer` (in parallel).
+- `writeAuditRow()` wiring into `evaluateWaveE` hot path — owned by `audit-writer` (parallel; landed at commit `48108cc` on `wave-e/te1-audit-writer`).
+
+### Audit-writer forward-compatibility addendum
+
+After P10's initial green head, audit-writer wired `writeAuditRow()` into the `evaluateWaveE` hot path and made `EvaluateOptions.auditContext` REQUIRED on production callers (throws `WaveEAuditContextRequiredError` when `skipAudit !== true` and `auditContext` is absent). To avoid breakage at consolidation merge, this branch was extended with forward-compat threading:
+
+- **`_engine-substrate.ts`** declares a local `AuditContext` interface mirroring audit-writer's contract (shape verified via `git show 48108cc:apps/product-helper/lib/langchain/engines/wave-e-evaluator.ts`); `EvaluateStoryOptions` accepts `auditContext` + `skipAudit`; per-decision call composes `auditContext` with `decision.target_field` overlay; cast as `EvaluateOptions` to widen the pre-merge narrower signature without TS excess-property error.
+- **7 generate-* nodes** each supply a hardcoded `auditContext` literal (`agentId: 'generate_<node>'`, `targetArtifact: ARTIFACT_KIND`, `storyId`, `engineVersion: 'v1'`, `modelVersion: 'deterministic-rule-tree'`).
+- **Test environment auto-skip**: substrate helper defaults `skipAudit` to `true` when `process.env.NODE_ENV === 'test'` or `JEST_WORKER_ID` is set — per-node tests run without DB.
+
+Pre-merge runtime no-op (current evaluator ignores excess option fields). Post-merge enforced (auditContext consumed by writeAuditRow hot path; skipAudit gates the DB write in test paths).
 
 The "11-of-11 project_artifacts rows pending → ready" framing in master
 plan v2.1 combines this 7 (P10 closure) + 4 pre-v2.1 (already shipped).
