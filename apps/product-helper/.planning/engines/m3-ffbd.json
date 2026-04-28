@@ -1,0 +1,118 @@
+{
+  "story_id": "m3-ffbd",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "ffbd_function_authenticate",
+      "target_field": "ffbd[FN-AUTH].box_kind",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "ffbd_auth_external",
+            "if": { "user_type_in": ["consumer_app", "enterprise_app"] },
+            "value": "FN.AUTH.EXTERNAL_USER",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "ffbd_auth_internal",
+            "if": { "user_type": "internal_tool" },
+            "value": "FN.AUTH.INTERNAL_USER",
+            "base_confidence": 0.92
+          },
+          {
+            "default": {
+              "rule_id": "ffbd_auth_default",
+              "value": "FN.AUTH.EXTERNAL_USER",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "ffbd_function_persist_data",
+      "target_field": "ffbd[FN-PERSIST].box_kind",
+      "inputs": [
+        { "name": "data_shape", "source": "module-1/data-flows" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "ffbd_persist_relational",
+            "if": { "data_shape": "relational" },
+            "value": "FN.PERSIST.RELATIONAL",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "ffbd_persist_document",
+            "if": { "data_shape": "document" },
+            "value": "FN.PERSIST.DOCUMENT",
+            "base_confidence": 0.90
+          },
+          {
+            "default": {
+              "rule_id": "ffbd_persist_default",
+              "value": "FN.PERSIST.RELATIONAL",
+              "base_confidence": 0.75
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "upstream_explicit", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "ffbd_function_run_ai",
+      "target_field": "ffbd[FN-AI].box_kind",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "ffbd_ai_agent",
+            "if": { "ai_workload": "agent" },
+            "value": "FN.AI.AGENT",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "ffbd_ai_rag",
+            "if": { "ai_workload": "rag" },
+            "value": "FN.AI.RAG",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "ffbd_ai_extraction",
+            "if": { "ai_workload": "extraction" },
+            "value": "FN.AI.EXTRACTION",
+            "base_confidence": 0.92
+          },
+          {
+            "default": {
+              "rule_id": "ffbd_ai_none",
+              "value": "FN.AI.NONE",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

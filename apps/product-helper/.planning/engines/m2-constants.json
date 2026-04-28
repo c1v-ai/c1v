@@ -1,0 +1,140 @@
+{
+  "story_id": "m2-constants",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "constants_pii_retention_days",
+      "target_field": "constants.pii_retention_days",
+      "inputs": [
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" },
+        { "name": "regulatory_refs", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "const_retention_gdpr",
+            "if": { "regulatory_refs_contains": "GDPR" },
+            "value": 730,
+            "units": "days",
+            "base_confidence": 0.94
+          },
+          {
+            "rule_id": "const_retention_hipaa",
+            "if": { "regulatory_refs_contains": "HIPAA" },
+            "value": 2190,
+            "units": "days",
+            "base_confidence": 0.94
+          },
+          {
+            "rule_id": "const_retention_pii",
+            "if": { "data_sensitivity_in": ["pii", "phi"] },
+            "value": 365,
+            "units": "days",
+            "base_confidence": 0.85
+          },
+          {
+            "default": {
+              "rule_id": "const_retention_default",
+              "value": 90,
+              "units": "days",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "user_explicitly_stated_value_exists", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "constants_session_ttl_minutes",
+      "target_field": "constants.session_ttl_minutes",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "const_ttl_enterprise_pii",
+            "if": { "user_type": "enterprise_app", "data_sensitivity_in": ["pii", "phi", "pci"] },
+            "value": 30,
+            "units": "minutes",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "const_ttl_consumer",
+            "if": { "user_type": "consumer_app" },
+            "value": 1440,
+            "units": "minutes",
+            "base_confidence": 0.90
+          },
+          {
+            "default": {
+              "rule_id": "const_ttl_default",
+              "value": 60,
+              "units": "minutes",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "constants_rate_limit_per_min",
+      "target_field": "constants.rate_limit_per_min",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "const_rate_consumer_high",
+            "if": { "user_type": "consumer_app", "scale_tier_in": ["high", "extreme"] },
+            "value": 600,
+            "units": "rpm",
+            "base_confidence": 0.88
+          },
+          {
+            "rule_id": "const_rate_consumer",
+            "if": { "user_type": "consumer_app" },
+            "value": 100,
+            "units": "rpm",
+            "base_confidence": 0.91
+          },
+          {
+            "rule_id": "const_rate_enterprise",
+            "if": { "user_type": "enterprise_app" },
+            "value": 1000,
+            "units": "rpm",
+            "base_confidence": 0.89
+          },
+          {
+            "default": {
+              "rule_id": "const_rate_default",
+              "value": 60,
+              "units": "rpm",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

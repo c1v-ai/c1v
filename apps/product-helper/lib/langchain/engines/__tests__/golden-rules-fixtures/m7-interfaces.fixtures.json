@@ -1,0 +1,58 @@
+[
+  {
+    "name": "consumer + pii → OAUTH2_PKCE",
+    "decision_id": "iface_auth_protocol",
+    "rule_id": "iface_auth_oauth_pii",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "pii" },
+    "expected_output": { "value": "OAUTH2_PKCE", "matched": true }
+  },
+  {
+    "name": "consumer no pii → OAUTH2_AUTH_CODE",
+    "decision_id": "iface_auth_protocol",
+    "rule_id": "iface_auth_oauth_default",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "internal" },
+    "expected_output": { "value": "OAUTH2_AUTH_CODE", "matched": true }
+  },
+  {
+    "name": "internal_tool → API_KEY",
+    "decision_id": "iface_auth_protocol",
+    "rule_id": "iface_auth_internal",
+    "input": { "user_type": "internal_tool", "data_sensitivity": "internal" },
+    "expected_output": { "value": "API_KEY", "matched": true }
+  },
+  {
+    "name": "enterprise + phi → OAUTH2_PKCE",
+    "decision_id": "iface_auth_protocol",
+    "rule_id": "iface_auth_oauth_pii",
+    "input": { "user_type": "enterprise_app", "data_sensitivity": "phi" },
+    "expected_output": { "value": "OAUTH2_PKCE", "matched": true }
+  },
+  {
+    "name": "relational → POSTGRES_WIRE",
+    "decision_id": "iface_persistence_protocol",
+    "rule_id": "iface_persist_postgres_wire",
+    "input": { "data_shape": "relational" },
+    "expected_output": { "value": "POSTGRES_WIRE", "matched": true }
+  },
+  {
+    "name": "document → POSTGRES_WIRE",
+    "decision_id": "iface_persistence_protocol",
+    "rule_id": "iface_persist_postgres_wire",
+    "input": { "data_shape": "document" },
+    "expected_output": { "value": "POSTGRES_WIRE", "matched": true }
+  },
+  {
+    "name": "serverless → OTLP_HTTP",
+    "decision_id": "iface_telemetry_protocol",
+    "rule_id": "iface_tel_otel_serverless",
+    "input": { "deployment_target": "serverless" },
+    "expected_output": { "value": "OTLP_HTTP", "matched": true }
+  },
+  {
+    "name": "container → OTLP_GRPC",
+    "decision_id": "iface_telemetry_protocol",
+    "rule_id": "iface_tel_otel_container",
+    "input": { "deployment_target": "container" },
+    "expected_output": { "value": "OTLP_GRPC", "matched": true }
+  }
+]

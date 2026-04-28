@@ -1,0 +1,121 @@
+{
+  "story_id": "m5-form-function-morphological",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "morpho_persistence_count_alternatives",
+      "target_field": "morphological_matrix[persistence].alternative_count",
+      "inputs": [
+        { "name": "data_shape", "source": "module-1/data-flows" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "morpho_persist_relational_alts",
+            "if": { "data_shape": "relational" },
+            "value": 4,
+            "units": "alternatives",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "morpho_persist_document_alts",
+            "if": { "data_shape": "document" },
+            "value": 5,
+            "units": "alternatives",
+            "base_confidence": 0.90
+          },
+          {
+            "default": {
+              "rule_id": "morpho_persist_default",
+              "value": 3,
+              "units": "alternatives",
+              "base_confidence": 0.78
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "morpho_compute_count_alternatives",
+      "target_field": "morphological_matrix[compute].alternative_count",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "morpho_compute_serverless",
+            "if": { "deployment_target": "serverless" },
+            "value": 5,
+            "units": "alternatives",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "morpho_compute_container",
+            "if": { "deployment_target": "container" },
+            "value": 4,
+            "units": "alternatives",
+            "base_confidence": 0.91
+          },
+          {
+            "default": {
+              "rule_id": "morpho_compute_default",
+              "value": 3,
+              "units": "alternatives",
+              "base_confidence": 0.75
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "morpho_total_combinations",
+      "target_field": "morphological_matrix.total_combinations",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "morpho_total_ai_high",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"], "scale_tier_in": ["high", "extreme"] },
+            "value": 240,
+            "units": "combinations",
+            "base_confidence": 0.86
+          },
+          {
+            "rule_id": "morpho_total_ai_low",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": 80,
+            "units": "combinations",
+            "base_confidence": 0.88
+          },
+          {
+            "default": {
+              "rule_id": "morpho_total_default",
+              "value": 24,
+              "units": "combinations",
+              "base_confidence": 0.84
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.85
+    }
+  ]
+}

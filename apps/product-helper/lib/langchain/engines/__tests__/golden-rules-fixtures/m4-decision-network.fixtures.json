@@ -1,0 +1,58 @@
+[
+  {
+    "name": "relational + low scale → AV.D01.SUPABASE_PG",
+    "decision_id": "dn_core_node_persistence",
+    "rule_id": "dn_persist_pg_supabase",
+    "input": { "data_shape": "relational", "scale_tier": "low" },
+    "expected_output": { "value": "AV.D01.SUPABASE_PG", "matched": true }
+  },
+  {
+    "name": "relational + extreme scale → AV.D01.AURORA_PG",
+    "decision_id": "dn_core_node_persistence",
+    "rule_id": "dn_persist_pg_managed",
+    "input": { "data_shape": "relational", "scale_tier": "extreme" },
+    "expected_output": { "value": "AV.D01.AURORA_PG", "matched": true }
+  },
+  {
+    "name": "agent ai → AV.D02.LANGGRAPH_TS",
+    "decision_id": "dn_core_node_orchestration",
+    "rule_id": "dn_orch_langgraph",
+    "input": { "ai_workload": "agent" },
+    "expected_output": { "value": "AV.D02.LANGGRAPH_TS", "matched": true }
+  },
+  {
+    "name": "no ai → AV.D02.NONE (default)",
+    "decision_id": "dn_core_node_orchestration",
+    "rule_id": "dn_orch_none",
+    "input": { "ai_workload": "none" },
+    "expected_output": { "value": "AV.D02.NONE", "matched": false }
+  },
+  {
+    "name": "rag + low scale → AV.D03.PGVECTOR",
+    "decision_id": "dn_core_node_vector_store",
+    "rule_id": "dn_vec_pgvector",
+    "input": { "ai_workload": "rag", "scale_tier": "low" },
+    "expected_output": { "value": "AV.D03.PGVECTOR", "matched": true }
+  },
+  {
+    "name": "rag + high scale → AV.D03.PINECONE",
+    "decision_id": "dn_core_node_vector_store",
+    "rule_id": "dn_vec_pinecone",
+    "input": { "ai_workload": "rag", "scale_tier": "high" },
+    "expected_output": { "value": "AV.D03.PINECONE", "matched": true }
+  },
+  {
+    "name": "serverless → AV.D04.VERCEL",
+    "decision_id": "dn_core_node_hosting",
+    "rule_id": "dn_host_vercel",
+    "input": { "deployment_target": "serverless", "flow_class": "user_facing_sync" },
+    "expected_output": { "value": "AV.D04.VERCEL", "matched": true }
+  },
+  {
+    "name": "container → AV.D04.CLOUD_RUN",
+    "decision_id": "dn_core_node_hosting",
+    "rule_id": "dn_host_cloud_run",
+    "input": { "deployment_target": "container", "flow_class": "user_facing_sync" },
+    "expected_output": { "value": "AV.D04.CLOUD_RUN", "matched": true }
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "story_id": "m7-n2",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "n2_auth_to_api_interface",
+      "target_field": "n2_matrix[auth->api].interface_id",
+      "inputs": [
+        { "name": "user_type", "source": "module-0/intake-discriminators" },
+        { "name": "data_sensitivity", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "n2_iface_auth_api_jwt_pii",
+            "if": { "user_type_in": ["consumer_app", "enterprise_app"], "data_sensitivity_in": ["pii", "phi"] },
+            "value": "IF.AUTH.API.JWT_RS256",
+            "base_confidence": 0.94
+          },
+          {
+            "rule_id": "n2_iface_auth_api_jwt_hs",
+            "if": { "user_type_in": ["consumer_app", "enterprise_app"] },
+            "value": "IF.AUTH.API.JWT_HS256",
+            "base_confidence": 0.91
+          },
+          {
+            "default": {
+              "rule_id": "n2_iface_auth_api_default",
+              "value": "IF.AUTH.API.JWT_HS256",
+              "base_confidence": 0.75
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "regulatory_override", "delta": 0.05, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "n2_api_to_persistence_interface",
+      "target_field": "n2_matrix[api->persistence].interface_id",
+      "inputs": [
+        { "name": "data_shape", "source": "module-1/data-flows" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "n2_iface_drizzle_pg",
+            "if": { "data_shape_in": ["relational", "document"] },
+            "value": "IF.API.PERSIST.DRIZZLE_PG",
+            "base_confidence": 0.93
+          },
+          {
+            "default": {
+              "rule_id": "n2_iface_persist_default",
+              "value": "IF.API.PERSIST.DRIZZLE_PG",
+              "base_confidence": 0.80
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "upstream_explicit", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "n2_api_to_llm_interface",
+      "target_field": "n2_matrix[api->llm].interface_id",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "n2_iface_anthropic_sdk",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": "IF.API.LLM.ANTHROPIC_SDK",
+            "base_confidence": 0.94
+          },
+          {
+            "default": {
+              "rule_id": "n2_iface_llm_none",
+              "value": "IF.API.LLM.NONE",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "n2_api_to_telemetry_interface",
+      "target_field": "n2_matrix[api->telemetry].interface_id",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "n2_iface_telemetry_otel",
+            "if": { "deployment_target": "serverless" },
+            "value": "IF.API.TEL.OTEL_HTTP",
+            "base_confidence": 0.91
+          },
+          {
+            "default": {
+              "rule_id": "n2_iface_telemetry_sentry",
+              "value": "IF.API.TEL.SENTRY_SDK",
+              "base_confidence": 0.85
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

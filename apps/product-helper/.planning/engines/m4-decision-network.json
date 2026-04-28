@@ -1,0 +1,145 @@
+{
+  "story_id": "m4-decision-network",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "decision_id": "dn_core_node_persistence",
+      "target_field": "decision_network[D-01].chosen_alternative",
+      "inputs": [
+        { "name": "data_shape", "source": "module-1/data-flows" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "dn_persist_pg_supabase",
+            "if": { "data_shape_in": ["relational", "document"], "scale_tier_in": ["low", "medium"] },
+            "value": "AV.D01.SUPABASE_PG",
+            "base_confidence": 0.93
+          },
+          {
+            "rule_id": "dn_persist_pg_managed",
+            "if": { "data_shape": "relational", "scale_tier_in": ["high", "extreme"] },
+            "value": "AV.D01.AURORA_PG",
+            "base_confidence": 0.88
+          },
+          {
+            "default": {
+              "rule_id": "dn_persist_default",
+              "value": "AV.D01.SUPABASE_PG",
+              "base_confidence": 0.70
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 },
+        { "when": "any_input_is_estimate", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "dn_core_node_orchestration",
+      "target_field": "decision_network[D-02].chosen_alternative",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "dn_orch_langgraph",
+            "if": { "ai_workload_in": ["agent", "rag", "extraction"] },
+            "value": "AV.D02.LANGGRAPH_TS",
+            "base_confidence": 0.94
+          },
+          {
+            "default": {
+              "rule_id": "dn_orch_none",
+              "value": "AV.D02.NONE",
+              "base_confidence": 0.95
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "user_explicit", "delta": 0.04, "cap": 0.99 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "dn_core_node_vector_store",
+      "target_field": "decision_network[D-03].chosen_alternative",
+      "inputs": [
+        { "name": "ai_workload", "source": "module-0/intake-discriminators" },
+        { "name": "scale_tier", "source": "module-0/intake-discriminators" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "dn_vec_pgvector",
+            "if": { "ai_workload": "rag", "scale_tier_in": ["low", "medium"] },
+            "value": "AV.D03.PGVECTOR",
+            "base_confidence": 0.92
+          },
+          {
+            "rule_id": "dn_vec_pinecone",
+            "if": { "ai_workload": "rag", "scale_tier_in": ["high", "extreme"] },
+            "value": "AV.D03.PINECONE",
+            "base_confidence": 0.85
+          },
+          {
+            "default": {
+              "rule_id": "dn_vec_none",
+              "value": "AV.D03.NONE",
+              "base_confidence": 0.93
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "cross_story_agreement", "delta": 0.04, "cap": 0.99 },
+        { "when": "rule_default_branch", "delta": -0.05 }
+      ],
+      "auto_fill_threshold": 0.90
+    },
+    {
+      "decision_id": "dn_core_node_hosting",
+      "target_field": "decision_network[D-04].chosen_alternative",
+      "inputs": [
+        { "name": "deployment_target", "source": "module-0/intake-discriminators" },
+        { "name": "flow_class", "source": "module-1/data-flows" }
+      ],
+      "function": {
+        "type": "decision_tree",
+        "rules": [
+          {
+            "rule_id": "dn_host_vercel",
+            "if": { "deployment_target": "serverless" },
+            "value": "AV.D04.VERCEL",
+            "base_confidence": 0.94
+          },
+          {
+            "rule_id": "dn_host_cloud_run",
+            "if": { "deployment_target": "container" },
+            "value": "AV.D04.CLOUD_RUN",
+            "base_confidence": 0.92
+          },
+          {
+            "default": {
+              "rule_id": "dn_host_default",
+              "value": "AV.D04.VERCEL",
+              "base_confidence": 0.72
+            }
+          }
+        ]
+      },
+      "confidence_modifiers": [
+        { "when": "rule_default_branch", "delta": -0.10 }
+      ],
+      "auto_fill_threshold": 0.90
+    }
+  ]
+}

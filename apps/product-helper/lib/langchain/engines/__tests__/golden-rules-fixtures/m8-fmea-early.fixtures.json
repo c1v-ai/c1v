@@ -1,0 +1,58 @@
+[
+  {
+    "name": "pii → critical RPN 432",
+    "decision_id": "fmea_early_auth_failure",
+    "rule_id": "fmea_auth_critical",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "pii" },
+    "expected_output": { "value": 432, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "consumer non-sensitive → RPN 280",
+    "decision_id": "fmea_early_auth_failure",
+    "rule_id": "fmea_auth_consumer",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "internal" },
+    "expected_output": { "value": 280, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "internal_tool → RPN 180 (default)",
+    "decision_id": "fmea_early_auth_failure",
+    "rule_id": "fmea_auth_default",
+    "input": { "user_type": "internal_tool", "data_sensitivity": "internal" },
+    "expected_output": { "value": 180, "units": "rpn", "matched": false }
+  },
+  {
+    "name": "extreme scale → RPN 360",
+    "decision_id": "fmea_early_data_loss",
+    "rule_id": "fmea_data_loss_high_scale",
+    "input": { "data_shape": "relational", "scale_tier": "extreme" },
+    "expected_output": { "value": 360, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "relational + low scale → RPN 240",
+    "decision_id": "fmea_early_data_loss",
+    "rule_id": "fmea_data_loss_relational",
+    "input": { "data_shape": "relational", "scale_tier": "low" },
+    "expected_output": { "value": 240, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "agent → RPN 320",
+    "decision_id": "fmea_early_llm_drift",
+    "rule_id": "fmea_llm_agent_drift",
+    "input": { "ai_workload": "agent" },
+    "expected_output": { "value": 320, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "rag → RPN 240",
+    "decision_id": "fmea_early_llm_drift",
+    "rule_id": "fmea_llm_rag_drift",
+    "input": { "ai_workload": "rag" },
+    "expected_output": { "value": 240, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "no ai → RPN 0 (default)",
+    "decision_id": "fmea_early_llm_drift",
+    "rule_id": "fmea_llm_none",
+    "input": { "ai_workload": "none" },
+    "expected_output": { "value": 0, "units": "rpn", "matched": false }
+  }
+]
