@@ -42,6 +42,12 @@ import {
   type EngineOutput,
   type EvaluationSignals,
 } from './nfr-engine-interpreter';
+import {
+  auditInputFromEngineOutput,
+  writeAuditRow,
+  type EngineOutputShape,
+  type WriteAuditRowResult,
+} from './audit-writer';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Contract pin (FROZEN per Wave A↔E handshake, v2.1 lines 498–504)
@@ -103,16 +109,75 @@ const stubLlmRefine: LlmRefineFn = async ({ candidate }) => ({
 // Public evaluate
 // ─────────────────────────────────────────────────────────────────────────
 
+/**
+ * Caller-supplied context the audit row needs but `EngineOutput` doesn't
+ * carry (the interpreter doesn't know who's writing, where the answer
+ * lands, or which model produced it). Passed through `auditInputFromEngineOutput`
+ * to `writeAuditRow` synchronously after every evaluation when
+ * `skipAudit !== true`.
+ *
+ * `modelVersion` defaults to `'deterministic-rule-tree'` for pure-engine
+ * paths; `engine-prod-swap` overrides on llm_refine paths.
+ *
+ * `ragAttempted` defaults to `false`; set `true` (with `kbChunkIds` array)
+ * when ContextResolver invoked RAG. CHECK constraint forbids non-empty
+ * `kbChunkIds` with `ragAttempted=false`.
+ */
+export interface AuditContext {
+  projectId: number;
+  agentId: string;
+  targetArtifact: string;
+  storyId: string;
+  engineVersion: string;
+  modelVersion?: string;
+  ragAttempted?: boolean;
+  kbChunkIds?: string[];
+  userOverrideable?: boolean;
+}
+
 export interface EvaluateOptions {
   /** Inject a real LLM-refine path (default: stubLlmRefine). */
   llmRefine?: LlmRefineFn;
   /**
-   * Reserved for `audit-writer` to wire `writeAuditRow()` into the hot
-   * path. The wrapper is audit-agnostic in this module — auditing is
-   * applied by the caller around `evaluateWaveE()` per audit-writer's
-   * delivered API.
+   * Skip the synchronous `writeAuditRow()` call. Default `false` —
+   * production callers MUST audit. Tests that don't have a DB pass `true`.
+   * When `false` (or omitted), `auditContext` is REQUIRED — the wrapper
+   * throws a typed error if absent.
    */
   skipAudit?: boolean;
+  /**
+   * Caller-supplied audit context. REQUIRED when `skipAudit !== true`.
+   * The wrapper composes this with the interpreter output via
+   * `auditInputFromEngineOutput()` before calling `writeAuditRow()`.
+   */
+  auditContext?: AuditContext;
+}
+
+/** Thrown when `evaluateWaveE` is called with audit on but no context. */
+export class WaveEAuditContextRequiredError extends Error {
+  constructor() {
+    super(
+      'evaluateWaveE: auditContext is required when skipAudit !== true. ' +
+        'Pass { skipAudit: true } in tests, or supply auditContext in production.',
+    );
+    this.name = 'WaveEAuditContextRequiredError';
+  }
+}
+
+/** Thrown when `writeAuditRow()` fails inside the hot path. The hash chain
+ *  is the tamper-detection contract — degrading silently breaks it. */
+export class WaveEAuditWriteError extends Error {
+  readonly cause: unknown;
+  constructor(cause: unknown) {
+    const causeMsg =
+      cause instanceof Error ? cause.message : String(cause);
+    super(
+      `evaluateWaveE: writeAuditRow() failed inside the evaluation hot path: ${causeMsg}. ` +
+        'The hash chain is the tamper-detection contract; this is not a recoverable state.',
+    );
+    this.name = 'WaveEAuditWriteError';
+    this.cause = cause;
+  }
 }
 
 /**
@@ -120,6 +185,13 @@ export interface EvaluateOptions {
  * Wave-E 2-band routing + LLM-refine hook + contract envelope.
  *
  * Always returns a typed `WaveEEngineOutput`. Never throws on confidence.
+ *
+ * Audit side-effect (synchronous, in the hot path):
+ *   When `options.skipAudit !== true`, after the final output is computed
+ *   and BEFORE returning to the caller, the wrapper composes
+ *   `auditInputFromEngineOutput()` and calls `writeAuditRow()` against the
+ *   `decision_audit` table. Hash-chain compute failures throw
+ *   `WaveEAuditWriteError` — the chain is the tamper-detection contract.
  */
 export async function evaluateWaveE(
   decision: DecisionRef & { llm_assist?: boolean },
@@ -128,6 +200,11 @@ export async function evaluateWaveE(
   options: EvaluateOptions = {},
 ): Promise<WaveEEngineOutput> {
   const llmRefine = options.llmRefine ?? stubLlmRefine;
+  const skipAudit = options.skipAudit === true;
+
+  if (!skipAudit && !options.auditContext) {
+    throw new WaveEAuditContextRequiredError();
+  }
 
   const interp = new NFREngineInterpreter();
   const base = interp.evaluateRule(decision, inputs, signals);
@@ -140,22 +217,54 @@ export async function evaluateWaveE(
 
   const c = base.final_confidence;
 
+  let finalOut: WaveEEngineOutput;
   if (c >= AUTO_FILL_THRESHOLD) {
-    return { ...enriched, status: 'ready' };
+    finalOut = { ...enriched, status: 'ready' };
+  } else if (c >= REFINE_THRESHOLD && decision.llm_assist === true) {
+    finalOut = await llmRefine({ decision, inputs, signals, candidate: enriched });
+  } else {
+    // Surface to user — preserve plural's computed_options for the chat-bridge.
+    finalOut = {
+      ...enriched,
+      status: 'needs_user_input',
+      auto_filled: false,
+      needs_user_input: true,
+      value: null,
+    };
   }
 
-  if (c >= REFINE_THRESHOLD && decision.llm_assist === true) {
-    return await llmRefine({ decision, inputs, signals, candidate: enriched });
+  if (!skipAudit && options.auditContext) {
+    await runAuditWrite(finalOut, options.auditContext);
   }
 
-  // Surface to user — preserve plural's computed_options for the chat-bridge.
-  return {
-    ...enriched,
-    status: 'needs_user_input',
-    auto_filled: false,
-    needs_user_input: true,
-    value: null,
-  };
+  return finalOut;
+}
+
+async function runAuditWrite(
+  out: WaveEEngineOutput,
+  ctx: AuditContext,
+): Promise<WriteAuditRowResult> {
+  try {
+    // EngineOutputShape's `modifiers_applied` and `computed_options` are typed
+    // as Array<Record<string, unknown>> (a structural supertype), while
+    // EngineOutput uses concrete AppliedModifier[] / ComputedOption[]. The
+    // shapes are runtime-equivalent — cast through unknown to satisfy TS.
+    const auditInput = auditInputFromEngineOutput({
+      projectId: ctx.projectId,
+      agentId: ctx.agentId,
+      targetArtifact: ctx.targetArtifact,
+      storyId: ctx.storyId,
+      engineVersion: ctx.engineVersion,
+      modelVersion: ctx.modelVersion,
+      ragAttempted: ctx.ragAttempted,
+      kbChunkIds: ctx.kbChunkIds,
+      userOverrideable: ctx.userOverrideable,
+      output: out as unknown as EngineOutputShape,
+    });
+    return await writeAuditRow(auditInput);
+  } catch (err) {
+    throw new WaveEAuditWriteError(err);
+  }
 }
 
 /**
