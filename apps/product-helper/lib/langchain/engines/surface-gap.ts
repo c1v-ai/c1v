@@ -37,6 +37,10 @@
  */
 
 import type { ComputedOption } from './nfr-engine-interpreter';
+import type {
+  OpenQuestionEvent,
+  SurfaceOpenQuestionResult,
+} from '@/lib/chat/system-question-bridge.types';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Types
@@ -79,6 +83,40 @@ interface PendingGap {
   input: SurfaceGapInput;
   deferred: Deferred<UserAnswer>;
   createdAt: number;
+  /** v2.1 bridge pending_answer conversation_id, populated once the
+   *  bridge insert resolves. Used by the wave_e reply handler to map
+   *  bridge replies back to the right Deferred. */
+  bridgeConversationId?: number;
+}
+
+/**
+ * Adapter for the v2.1 system-question-bridge. Wave-E routes every
+ * `surfaceGap` call through `surfaceOpenQuestion` for DB persistence +
+ * cross-process resilience (per master plan D-V21.23).
+ *
+ * Adapter is OPT-IN via `setBridgeAdapter`. When unset, `surfaceGap`
+ * remains an in-memory-only Deferred — preserves existing
+ * `__tests__/surface-gap.test.ts` behaviour without modification.
+ */
+export interface BridgeAdapter {
+  surfaceOpenQuestion: (event: OpenQuestionEvent) => Promise<SurfaceOpenQuestionResult>;
+}
+
+/** Multi-turn cap; spec §Guardrails. */
+export const MAX_TURNS = 5;
+
+/** Thrown when a single decision exceeds MAX_TURNS unresolved surfaces. */
+export class MaxTurnsExceededError extends Error {
+  readonly key: string;
+  readonly turns: number;
+  constructor(key: string, turns: number) {
+    super(
+      `surfaceGap: decision ${key} exceeded MAX_TURNS=${MAX_TURNS} (turn ${turns})`,
+    );
+    this.name = 'MaxTurnsExceededError';
+    this.key = key;
+    this.turns = turns;
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -139,6 +177,37 @@ export function stripGapMarker(content: string): string {
 // ──────────────────────────────────────────────────────────────────────────
 
 const pending = new Map<string, PendingGap>();
+
+/**
+ * Per-decision turn counter. Increments on every `surfaceGap` call for the
+ * same key; resets on `resolveGap` success. After MAX_TURNS, the next
+ * surface throws `MaxTurnsExceededError` rather than registering a Deferred.
+ */
+const turnCounts = new Map<string, number>();
+
+/**
+ * Reverse index from bridge `conversation_id` → decisionKey. Populated when
+ * the bridge insert resolves; consumed by the wave_e reply handler so a
+ * user reply on a pending_answer row can settle the right Deferred.
+ */
+const bridgeConvToKey = new Map<number, string>();
+
+let bridgeAdapter: BridgeAdapter | null = null;
+
+/**
+ * Wire (or replace) the v2.1 bridge adapter. Call once at chat-route
+ * module init in production; tests inject a mock per-suite.
+ *
+ * Pass `null` to clear (test cleanup).
+ */
+export function setBridgeAdapter(adapter: BridgeAdapter | null): void {
+  bridgeAdapter = adapter;
+}
+
+/** @internal test helper — peek at internal turn count for a key. */
+export function __getTurnCountForTests(key: string): number {
+  return turnCounts.get(key) ?? 0;
+}
 
 export function decisionKey(args: {
   projectId: string | number;
