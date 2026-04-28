@@ -39,13 +39,26 @@ export async function generateDataFlows(
   });
 
   try {
-    const evaluation = await evaluateEngineStory(STORY_ID, {
-      projectId: state.projectId,
-      messages: state.messages,
-      extractedData: ed,
-      projectName: state.projectName,
-      projectVision: state.projectVision,
-    });
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_data_flows',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
 
     const envelope: RuntimeEnvelope<'data_flows'> = {
       _schema: 'data_flows.runtime-envelope.v1',
