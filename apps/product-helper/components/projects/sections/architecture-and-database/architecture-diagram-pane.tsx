@@ -17,6 +17,12 @@ interface Props {
   decisionNetwork: DecisionNetworkLike | null;
   /** Fallback Mermaid (legacy `class_diagram`-style) when no alternatives exist. */
   fallbackMermaid?: string;
+  /**
+   * Project id required by the `<WhyThisValueButton />` rendered inside
+   * the alternative-picker. Optional so legacy callers without provenance
+   * UI still type-check.
+   */
+  projectId?: number;
 }
 
 function pickAlternatives(dn: DecisionNetworkLike | null): ArchitectureAlternative[] {
@@ -31,7 +37,7 @@ function pickDefault(alts: ArchitectureAlternative[]): string | undefined {
   return (recommended ?? alts[0])?.id;
 }
 
-export function ArchitectureDiagramPane({ decisionNetwork, fallbackMermaid }: Props) {
+export function ArchitectureDiagramPane({ decisionNetwork, fallbackMermaid, projectId }: Props) {
   const alternatives = useMemo(() => pickAlternatives(decisionNetwork), [decisionNetwork]);
   const [selectedId, setSelectedId] = useState<string | undefined>(pickDefault(alternatives));
 
@@ -70,6 +76,7 @@ export function ArchitectureDiagramPane({ decisionNetwork, fallbackMermaid }: Pr
           alternatives={alternatives}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          projectId={projectId}
         />
       )}
 
