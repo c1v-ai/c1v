@@ -13,7 +13,7 @@ v2.2 ships **3 streams** carried forward from v2.1 plus the post-v2.1 backlog. v
 | Stream | Source in v2.1 | Status entering v2.2 |
 |---|---|---|
 | **Wave C** — Crawley schema closeout + eval harness + methodology page | v2.1 §Wave C (lines 362–400) | Locked spec; not started |
-| **Wave E** — KB runtime architecture rewrite (deterministic-rule-tree-first NFR engine + pgvector + decision_audit + multi-turn gap-fill + "why this value?" UI) | v2.1 §Wave E (lines 439–523) + [`plans/kb-runtime-architecture.md`](kb-runtime-architecture.md) | Locked spec; day-0 reconciliation partially done (path rewrite committed 2026-04-25 per EC-V21-E.0(i)) |
+| **Wave E** — KB runtime architecture rewrite (deterministic-rule-tree-first NFR engine + pgvector + decision_audit + multi-turn gap-fill + "why this value?" UI) + P10 closure (greenfield generator refactor) | v2.1 §Wave E (lines 439–523) + [`plans/kb-runtime-architecture.md`](kb-runtime-architecture.md) | Locked spec; Day-0 inventory complete 2026-04-26; **fix-up sweep applied 2026-04-27** per [`HANDOFF-2026-04-27-v2.2-fixup.md`](HANDOFF-2026-04-27-v2.2-fixup.md) (P10 absorbed as Path B; +EC-V21-E.14; baseline window v2.1.1-aware; provenance-UI pins v2.1.1 surfaces; schema extensions reconciled with TC1 shipped schemas) |
 | **Pre-Wave-E Inventory** | v2.1 §Pre-Wave-E (lines 428–437) | Day-0 research blocker for Wave E |
 | **Post-v2.1 backlog** | [`plans/post-v2.1-followups.md`](post-v2.1-followups.md) | P2 (>200 LOC fs-side-effects refactors), P3 (TD1 fixture-vs-live drift placeholder), P5 (stranded `kb-upgrade-v2/` partial trees) |
 
@@ -36,6 +36,7 @@ These were locked in v2.1's decision table but deferred for execution. v2.2 hono
 | **D-V21.21** | Embedding model | OpenAI `text-embedding-3-small` (1536 dim) via `EMBEDDINGS_API_KEY` | v2.1 line 233 |
 | **D-V21.22** | RAG scope (Wave E v1) | KB chunks only; broaden to chat history + upstream artifacts in a future cycle | v2.1 line 234 |
 | **D-V21.23** | Gap-surface UI | Reuse existing `components/chat/` — `surface-gap.ts` producer routes through Wave A's `lib/chat/system-question-bridge.ts` (shared bridge already shipped in v2.1) | v2.1 line 235 |
+| **D-V22.01** | P10 disposition (post-v2.1.1) | Path B (greenfield generator refactor) absorbed into Wave E. NOT v2.1.2 fast-follow. The 7 NEW v2.1 LangGraph nodes drop their `if (!stub) return pending` branch and read directly from intake + upstream artifacts (substrate-read pattern per [`methodology-rosetta.md`](methodology-rosetta.md) §9). Cleaner architecture, single portfolio narrative, +5 days to Wave E vs +1-2 weeks for split-track Path A. | David ruling 2026-04-27 19:51 EDT per [`HANDOFF-2026-04-27-v2.2-fixup.md`](HANDOFF-2026-04-27-v2.2-fixup.md) Correction 1. |
 
 ---
 
@@ -106,7 +107,8 @@ Inherited ECs:
 - **EC-V21-E.10** KB rewrite δ complete: duplicate cross-cutting KBs deleted (delegated to T9 if not already done) + 5 schema extensions landed.
 - **EC-V21-E.11** KB rewrite ε complete: LangGraph nodes for "why this value?" provenance UI shipped — every auto-filled NFR/constant exposes the matched rule + math trace + override-history button.
 - **EC-V21-E.12** M2 NFR + constants generation switches from LLM-only to engine-first in production; `GENERATE_nfr` and `GENERATE_constants` route through `nfrEngineInterpreter.evaluate(...)`.
-- **EC-V21-E.13** Per-decision LLM call rate drops ≥ 60% on M2 (heuristic auto-fill carries most decisions; LLM-refine fires only on `final_confidence < 0.90`).
+- **EC-V21-E.13** Per-decision LLM call rate drops ≥ 60% on M2 (heuristic auto-fill carries most decisions; LLM-refine fires only on `final_confidence < 0.90`). Baseline is **post-v2.1.1, pre-engine-swap** (window starts 2026-04-27 v2.1.1 ship; `impl=llm-only` covers the M2 NFR/constants RE-WIRE path through `GENERATE_nfr`/`GENERATE_constants` AND the 4 pre-v2.1 nodes producing output today). The 7 NEW v2.1 nodes refactored under EC-V21-E.14 are NOT part of this baseline (they had ZERO output pre-Wave-E — separately gated below).
+- **EC-V21-E.14** P10 closure: live-project click-through produces 11-of-11 `project_artifacts` rows in `ready` within the 30s circuit-breaker per artifact. The 7 NEW v2.1 LangGraph nodes (`generate_data_flows`, `generate_form_function`, `generate_decision_network`, `generate_n2`, `generate_fmea_early`, `generate_fmea_residual`, `generate_synthesis`) refactored from re-validators (consume stub) to greenfield generators (read intake + upstream artifacts directly). Aligns with [`methodology-rosetta.md`](methodology-rosetta.md) §9 substrate-vs-feeder pattern; resolves P10 from [`post-v2.1-followups.md`](post-v2.1-followups.md) as Path B (NOT separate v2.1.2 track). Owner: NEW `agent-greenfield-refactor` (per [`HANDOFF-2026-04-27-v2.2-fixup.md`](HANDOFF-2026-04-27-v2.2-fixup.md) §"Edit 1.4").
 
 **Wave E cost lever:** −$240/mo on M2 LLM (engine heuristic auto-fill drops LLM call rate ≥ 60% on the M2 slice) + $1/mo pgvector storage + $5/mo OpenAI embeddings = net −$234/mo per v2.1 cost table (line 546). Combined with Wave B's −$277/mo, this is the path to the AV.01 $320/mo portfolio target.
 
@@ -130,7 +132,7 @@ Wave C and Wave E are **independent** (no shared files; Wave C touches schemas +
 
 1. **Day 0** — Inventory pass (above). ~2 hours.
 2. **Wave C first** (smaller surface, ~5-7 days) — locks the typed-schema discipline; clears v2.1 P9 (methodology page); LangSmith dataset fixtures become a Wave-E quality gate.
-3. **Wave E second** (~10-15 days) — consumes Wave C's typed schemas where applicable; LangSmith eval harness from Wave C measures Wave E's per-rule confidence drift.
+3. **Wave E second** (~12-17 days post-fix-up: original ~7-10d + ~5d for P10 absorption per [`HANDOFF-2026-04-27-v2.2-fixup.md`](HANDOFF-2026-04-27-v2.2-fixup.md) Correction 1) — consumes Wave C's typed schemas where applicable; LangSmith eval harness from Wave C measures Wave E's per-rule confidence drift; new `agent-greenfield-refactor` agent owns the 7-node P10 closure (EC-V21-E.14).
 4. **Post-v2.1 housekeeping** — P2/P3/P5 fold in opportunistically as touched files surface.
 
 Parallel sequencing is fine if owner has 2 streams; the contract pin (v2.1 lines 498–504) prevents drift between them.
