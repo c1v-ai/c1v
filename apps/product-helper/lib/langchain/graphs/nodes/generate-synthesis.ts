@@ -57,13 +57,26 @@ export async function generateSynthesis(
   });
 
   try {
-    const evaluation = await evaluateEngineStory(STORY_ID, {
-      projectId: state.projectId,
-      messages: state.messages,
-      extractedData: ed,
-      projectName: state.projectName,
-      projectVision: state.projectVision,
-    });
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_synthesis',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
 
     const envelope: RuntimeEnvelope<'synthesis.architecture-recommendation'> = {
       _schema: 'synthesis.architecture-recommendation.runtime-envelope.v1',
