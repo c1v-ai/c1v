@@ -1,0 +1,14 @@
+{
+  "baseline_window": "post-v2.1.1, pre-engine-swap; 2026-04-27 to <deploy-date>",
+  "baseline_framing": "impl=llm-only covers (a) M2 NFR/constants RE-WIRE path through GENERATE_nfr/GENERATE_constants pre-engine-first AND (b) the 4 pre-v2.1 nodes producing output today (qfd/interfaces/ffbd/decision-matrix). The 7 NEW v2.1 nodes refactored under EC-V21-E.14 are NOT part of this baseline.",
+  "counter": "synthesis_metrics_total",
+  "label": "module=m2,impl=llm-only",
+  "total_calls": null,
+  "projects_observed": null,
+  "captured_at": "2026-04-27T00:00:00Z",
+  "captured_by": "engine-core",
+  "status": "gap_surfaced",
+  "gap_reason": "Live Sentry/LangSmith scrape tooling is not yet wired in this environment. Findings: (1) `synthesis_metrics_total{module=\"m2\",impl=\"llm-only\"}` is named in the v2.1 spec but does not appear as a literal in any source file under apps/product-helper/ (grep returns 0 hits). (2) The Sentry transport in lib/observability/synthesis-metrics.ts is pluggable but has no production wiring shipped (`setSentryTransport` is never called at boot; default no-op transport is active). (3) SENTRY_AUTH_TOKEN and LANGCHAIN_API_KEY are unset in the engine-core agent's env. (4) Per dispatch instructions, fabricating baseline numbers is forbidden — DO NOT FABRICATE.",
+  "next_action": "engine-prod-swap (or whichever Wave E agent owns production observability wiring) must (a) wire `setSentryTransport` at boot with `@sentry/nextjs`, (b) emit `synthesis_metrics_total{module=\"m2\",impl=\"llm-only\"}` from GENERATE_nfr/GENERATE_constants on the LLM-only path, (c) accumulate ≥48h of post-v2.1.1 production traffic, (d) re-scrape and overwrite this file with `total_calls` + `projects_observed` populated and `status: \"captured\"`. qa-e-verifier's EC-V21-E.13 check should treat `status: \"gap_surfaced\"` as deferred-not-failed for the engine-core handoff but blocking for engine-prod-swap closeout.",
+  "schema_version": "v1"
+}
