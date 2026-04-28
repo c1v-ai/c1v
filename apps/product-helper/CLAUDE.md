@@ -119,6 +119,23 @@ Vercel-side kickoff + status surface for the Cloud Run sidecar (`services/python
 
 **Manifest contract version:** if you change the `/artifacts/manifest` response shape, follow the bump rules in `plans/v21-outputs/ta3/manifest-contract.md` §2 — TA2's download dropdown pins to `v1` and breaks loudly on a `v2` shape change.
 
+### Crawley Typed Schemas (Wave C, v2.2 — tag `tc1-wave-c-complete` @ `f5992639`)
+
+Eleven Zod schemas at `lib/langchain/schemas/{module-2,module-3,module-4,module-5}/` that gate Crawley-discipline phase artifacts. Source-of-truth: `plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md`.
+
+- **10 phase artifacts** + **1 matrix keystone** primitive (`mathDerivationMatrixSchema` at `module-5/_matrix.ts`, sibling type to scalar `mathDerivationSchema`). Per REQUIREMENTS-crawley §5 locality rule, the keystone stays M5-local until a 3rd non-M5 site emerges (Option Y).
+- **Schema map:** see `plans/v22-outputs/tc1/schemas-shipped.md` for the 11-row schema-id ↔ source-file ↔ Crawley-chapter ↔ test-coverage table.
+- **Registry:** `CRAWLEY_SCHEMAS` (10 phase artifacts) + `CRAWLEY_MATRIX_KEYSTONE` (1 primitive) exports from `lib/langchain/schemas/index.ts`. Gated by `lib/langchain/schemas/__tests__/registry-no-dupes.test.ts` (no duplicate `schemaId`s, no duplicate `sourcePath`s, keystone separate from phase set).
+- **Drift policy:** quarterly snapshot via `apps/product-helper/scripts/quarterly-drift-check.ts` (cron `0 0 1 */3 *` per `.github/workflows/quarterly-drift-check.yml`). Non-zero exit opens an issue tagged `@team-c1v`.
+- **Eval gate:** LangSmith project `c1v-v2-eval`; 300 graded examples (30/agent × 10 v2 agents) at `apps/product-helper/lib/eval/datasets/<agent>.jsonl`. Harness at `apps/product-helper/lib/eval/v2-eval-harness.ts` falls back to fixture-replay when `LANGCHAIN_API_KEY` is unset.
+- **Runbook:** operator guide for adding/extending schemas at `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/_dev-runbooks/crawley-schema-runbook.md`.
+
+**Schema-barrel shadowing (known drift):** the legacy `lib/langchain/schemas.ts` file shadows the new `lib/langchain/schemas/index.ts` for `'../schemas'` imports under bundler resolution. Reach the new barrel via explicit subpath, e.g. `import { CRAWLEY_SCHEMAS } from '@/lib/langchain/schemas/index'`. Cleanup deferred (optional).
+
+**Agent-emitter sites NOT YET refactored:** the 10 matrix sites (`po_array_derivation`, 9 × `full_dsm_block_derivations`) are gated at the schema-author level only. Agent emitters (`form-function-agent.ts`, etc.) still emit pre-Crawley shapes; migration to populate the new matrix-derivation fields is deferred to v2.2 Wave D / agent-rewrite. The schema gate already rejects future emissions that omit or mis-type these fields.
+
+**postgres-js jsonb gotcha:** when persisting Zod-validated artifact JSON to a `jsonb` column via `postgres-js`, bind the JS object directly (the driver serializes). Do NOT do `JSON.stringify(obj)::jsonb` — it yields jsonb-of-string and breaks `jsonb_typeof = 'object'` constraint checks. See runbook §6.
+
 ## Conventions
 
 - **API routes:** `app/api/[domain]/[id]/route.ts` pattern
