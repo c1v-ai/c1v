@@ -37,13 +37,26 @@ export async function generateDecisionNetwork(
   });
 
   try {
-    const evaluation = await evaluateEngineStory(STORY_ID, {
-      projectId: state.projectId,
-      messages: state.messages,
-      extractedData: ed,
-      projectName: state.projectName,
-      projectVision: state.projectVision,
-    });
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_decision_network',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
 
     const envelope: RuntimeEnvelope<'decision_network'> = {
       _schema: 'decision_network.runtime-envelope.v1',
