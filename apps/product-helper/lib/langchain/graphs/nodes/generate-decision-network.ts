@@ -1,48 +1,102 @@
 /**
- * GENERATE_decision_network node — sibling to existing `generate_decision_matrix`.
+ * GENERATE_decision_network node — P10 greenfield refactor (M4).
  *
- * Per master plan v2.1 §Wave A coexistence rule (D-V21.25 / handoff Issue 4):
- * Decision Matrix (Cornell weighted-scoring view) and Decision Network
- * (Crawley DN-graph view) are SIBLINGS. Both run on every synthesis. This
- * node writes `kind='decision_network_v1'`; the existing node continues to
- * write `kind='decision_matrix_v1'`.
+ * Substrate-read pattern (D-V22.01 + HANDOFF-2026-04-27 Correction 1):
+ * reads state.messages + state.extractedData (substrate) + upstream artifacts
+ * via ContextResolver (G4), evaluates the `m4-decision-network` engine.json
+ * story tree, persists non-empty `decision_network.runtime-envelope.v1` to
+ * project_artifacts(kind='decision_network_v1') with status='ready'.
  *
- * `decision-net-agent.ts` exports utilities (no `runDecisionNetAgent`); the
- * node validates a stub from state via `validateDecisionNetworkArtifact` to
- * lock the contract. Live LLM path is the agent's portfolio-demo stance —
- * out of scope for v2.1.
+ * Sibling to `generate_decision_matrix` per D-V21.25 (Cornell + Crawley both
+ * run on every synthesis).
  *
  * @module lib/langchain/graphs/nodes/generate-decision-network
  */
 
 import { IntakeState } from '../types';
-import { validateDecisionNetworkArtifact } from '../../agents/system-design/decision-net-agent';
 import { persistArtifact } from './_persist-artifact';
+import { computeInputsHash, sha256Of } from '../contracts/inputs-hash';
+import { evaluateEngineStory, type RuntimeEnvelope } from './_engine-substrate';
 
 const ARTIFACT_KIND = 'decision_network_v1';
+const STORY_ID = 'm4-decision-network';
 
 export async function generateDecisionNetwork(
   state: IntakeState,
 ): Promise<Partial<IntakeState>> {
   console.log('[GENERATE_decision_network] entered');
-  const ed = state.extractedData as Record<string, unknown> | undefined;
-  const stub = ed?.['decisionNetwork'];
 
-  if (!stub) {
-    console.warn('[GENERATE_decision_network] no upstream stub; persisting pending row');
-    await persistArtifact({ projectId: state.projectId, kind: ARTIFACT_KIND, status: 'pending' });
-    return {};
-  }
+  const ed = state.extractedData as Record<string, unknown> | undefined;
+  const inputsHash = computeInputsHash({
+    intake: {
+      projectId: state.projectId,
+      projectName: state.projectName,
+      projectVision: state.projectVision,
+    },
+    upstreamShas: { extractedData: sha256Of(ed ?? {}) },
+  });
 
   try {
-    const result = validateDecisionNetworkArtifact(stub);
-    await persistArtifact({ projectId: state.projectId, kind: ARTIFACT_KIND, status: 'ready', result });
-    // Synthesis artifacts persist to project_artifacts (above), NOT extractedData.
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_decision_network',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
+
+    const envelope: RuntimeEnvelope<'decision_network'> = {
+      _schema: 'decision_network.runtime-envelope.v1',
+      _output_path: `runtime://project/${state.projectId}/decision_network.v1.json`,
+      nfr_engine_contract_version: 'v1',
+      project_id: state.projectId,
+      project_name: state.projectName,
+      synthesized_at: new Date().toISOString(),
+      inputs_hash: inputsHash,
+      engine_evaluation: evaluation,
+      payload: {
+        decision_node_assignments: Object.fromEntries(
+          evaluation.decisions.map((d) => [d.target_field, {
+            value: d.value,
+            confidence: d.final_confidence,
+            status: d.status,
+            matched_rule_id: d.matched_rule_id,
+          }]),
+        ),
+      },
+    };
+
+    await persistArtifact({
+      projectId: state.projectId,
+      kind: ARTIFACT_KIND,
+      status: 'ready',
+      result: envelope,
+      inputsHash,
+    });
     return {};
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'unknown';
     console.error('[GENERATE_decision_network] failed:', reason);
-    await persistArtifact({ projectId: state.projectId, kind: ARTIFACT_KIND, status: 'failed', failureReason: reason });
+    await persistArtifact({
+      projectId: state.projectId,
+      kind: ARTIFACT_KIND,
+      status: 'failed',
+      failureReason: reason,
+      inputsHash,
+    });
     return { error: `generate_decision_network: ${reason}` };
   }
 }
