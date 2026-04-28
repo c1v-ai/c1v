@@ -1,0 +1,58 @@
+[
+  {
+    "name": "consumer + sync + no ai → 300ms",
+    "decision_id": "nfr_p95_latency_target",
+    "rule_id": "nfr_lat_consumer_sync_no_ai",
+    "input": { "user_type": "consumer_app", "flow_class": "user_facing_sync", "ai_workload": "none" },
+    "expected_output": { "value": 300, "units": "ms", "matched": true }
+  },
+  {
+    "name": "consumer + sync + ai → 3000ms",
+    "decision_id": "nfr_p95_latency_target",
+    "rule_id": "nfr_lat_consumer_sync_ai",
+    "input": { "user_type": "consumer_app", "flow_class": "user_facing_sync", "ai_workload": "agent" },
+    "expected_output": { "value": 3000, "units": "ms", "matched": true }
+  },
+  {
+    "name": "enterprise + sync → 500ms",
+    "decision_id": "nfr_p95_latency_target",
+    "rule_id": "nfr_lat_enterprise_sync",
+    "input": { "user_type": "enterprise_app", "flow_class": "user_facing_sync", "ai_workload": "none" },
+    "expected_output": { "value": 500, "units": "ms", "matched": true }
+  },
+  {
+    "name": "background_async → 5000ms",
+    "decision_id": "nfr_p95_latency_target",
+    "rule_id": "nfr_lat_async",
+    "input": { "user_type": "consumer_app", "flow_class": "background_async", "ai_workload": "none" },
+    "expected_output": { "value": 5000, "units": "ms", "matched": true }
+  },
+  {
+    "name": "low scale → 50 qps",
+    "decision_id": "nfr_throughput_qps",
+    "rule_id": "nfr_qps_low",
+    "input": { "scale_tier": "low" },
+    "expected_output": { "value": 50, "units": "qps", "matched": true }
+  },
+  {
+    "name": "extreme scale → 50000 qps",
+    "decision_id": "nfr_throughput_qps",
+    "rule_id": "nfr_qps_extreme",
+    "input": { "scale_tier": "extreme" },
+    "expected_output": { "value": 50000, "units": "qps", "matched": true }
+  },
+  {
+    "name": "enterprise + pii → 99.95%",
+    "decision_id": "nfr_availability_target",
+    "rule_id": "nfr_avail_enterprise_pii",
+    "input": { "user_type": "enterprise_app", "data_sensitivity": "pii" },
+    "expected_output": { "value": "99.95%", "matched": true }
+  },
+  {
+    "name": "consumer → 99.9%",
+    "decision_id": "nfr_availability_target",
+    "rule_id": "nfr_avail_consumer",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "internal" },
+    "expected_output": { "value": "99.9%", "matched": true }
+  }
+]

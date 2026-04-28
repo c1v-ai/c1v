@@ -1,0 +1,58 @@
+[
+  {
+    "name": "GDPR → 730 days",
+    "decision_id": "constants_pii_retention_days",
+    "rule_id": "const_retention_gdpr",
+    "input": { "data_sensitivity": "pii", "regulatory_refs": ["GDPR"] },
+    "expected_output": { "value": 730, "units": "days", "matched": true }
+  },
+  {
+    "name": "HIPAA → 2190 days",
+    "decision_id": "constants_pii_retention_days",
+    "rule_id": "const_retention_hipaa",
+    "input": { "data_sensitivity": "phi", "regulatory_refs": ["HIPAA"] },
+    "expected_output": { "value": 2190, "units": "days", "matched": true }
+  },
+  {
+    "name": "pii no regulatory → 365 days",
+    "decision_id": "constants_pii_retention_days",
+    "rule_id": "const_retention_pii",
+    "input": { "data_sensitivity": "pii", "regulatory_refs": [] },
+    "expected_output": { "value": 365, "units": "days", "matched": true }
+  },
+  {
+    "name": "no pii → 90 days (default)",
+    "decision_id": "constants_pii_retention_days",
+    "rule_id": "const_retention_default",
+    "input": { "data_sensitivity": "internal", "regulatory_refs": [] },
+    "expected_output": { "value": 90, "units": "days", "matched": false }
+  },
+  {
+    "name": "enterprise + pii → 30 min TTL",
+    "decision_id": "constants_session_ttl_minutes",
+    "rule_id": "const_ttl_enterprise_pii",
+    "input": { "user_type": "enterprise_app", "data_sensitivity": "pii" },
+    "expected_output": { "value": 30, "units": "minutes", "matched": true }
+  },
+  {
+    "name": "consumer → 1440 min TTL",
+    "decision_id": "constants_session_ttl_minutes",
+    "rule_id": "const_ttl_consumer",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "internal" },
+    "expected_output": { "value": 1440, "units": "minutes", "matched": true }
+  },
+  {
+    "name": "consumer + high scale → 600 rpm",
+    "decision_id": "constants_rate_limit_per_min",
+    "rule_id": "const_rate_consumer_high",
+    "input": { "user_type": "consumer_app", "scale_tier": "high" },
+    "expected_output": { "value": 600, "units": "rpm", "matched": true }
+  },
+  {
+    "name": "enterprise → 1000 rpm",
+    "decision_id": "constants_rate_limit_per_min",
+    "rule_id": "const_rate_enterprise",
+    "input": { "user_type": "enterprise_app", "scale_tier": "medium" },
+    "expected_output": { "value": 1000, "units": "rpm", "matched": true }
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "relational → 4 alternatives",
+    "decision_id": "morpho_persistence_count_alternatives",
+    "rule_id": "morpho_persist_relational_alts",
+    "input": { "data_shape": "relational" },
+    "expected_output": { "value": 4, "units": "alternatives", "matched": true }
+  },
+  {
+    "name": "document → 5 alternatives",
+    "decision_id": "morpho_persistence_count_alternatives",
+    "rule_id": "morpho_persist_document_alts",
+    "input": { "data_shape": "document" },
+    "expected_output": { "value": 5, "units": "alternatives", "matched": true }
+  },
+  {
+    "name": "graph → 3 alternatives (default)",
+    "decision_id": "morpho_persistence_count_alternatives",
+    "rule_id": "morpho_persist_default",
+    "input": { "data_shape": "graph" },
+    "expected_output": { "value": 3, "units": "alternatives", "matched": false }
+  },
+  {
+    "name": "serverless → 5 compute alternatives",
+    "decision_id": "morpho_compute_count_alternatives",
+    "rule_id": "morpho_compute_serverless",
+    "input": { "deployment_target": "serverless" },
+    "expected_output": { "value": 5, "units": "alternatives", "matched": true }
+  },
+  {
+    "name": "container → 4 compute alternatives",
+    "decision_id": "morpho_compute_count_alternatives",
+    "rule_id": "morpho_compute_container",
+    "input": { "deployment_target": "container" },
+    "expected_output": { "value": 4, "units": "alternatives", "matched": true }
+  },
+  {
+    "name": "ai + extreme → 240 combinations",
+    "decision_id": "morpho_total_combinations",
+    "rule_id": "morpho_total_ai_high",
+    "input": { "ai_workload": "agent", "scale_tier": "extreme" },
+    "expected_output": { "value": 240, "units": "combinations", "matched": true }
+  },
+  {
+    "name": "ai + medium → 80 combinations",
+    "decision_id": "morpho_total_combinations",
+    "rule_id": "morpho_total_ai_low",
+    "input": { "ai_workload": "rag", "scale_tier": "medium" },
+    "expected_output": { "value": 80, "units": "combinations", "matched": true }
+  },
+  {
+    "name": "no ai → 24 combinations (default)",
+    "decision_id": "morpho_total_combinations",
+    "rule_id": "morpho_total_default",
+    "input": { "ai_workload": "none", "scale_tier": "low" },
+    "expected_output": { "value": 24, "units": "combinations", "matched": false }
+  }
+]

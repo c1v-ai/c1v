@@ -1,0 +1,58 @@
+[
+  {
+    "name": "consumer + sync → latency priority 5",
+    "decision_id": "qfd_pc_latency_priority",
+    "rule_id": "qfd_lat_consumer_sync_high",
+    "input": { "user_type": "consumer_app", "flow_class": "user_facing_sync" },
+    "expected_output": { "value": 5, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "enterprise + sync → latency priority 4",
+    "decision_id": "qfd_pc_latency_priority",
+    "rule_id": "qfd_lat_enterprise_sync",
+    "input": { "user_type": "enterprise_app", "flow_class": "user_facing_sync" },
+    "expected_output": { "value": 4, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "async → latency priority 2",
+    "decision_id": "qfd_pc_latency_priority",
+    "rule_id": "qfd_lat_async",
+    "input": { "user_type": "consumer_app", "flow_class": "background_async" },
+    "expected_output": { "value": 2, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "HIPAA → security 5",
+    "decision_id": "qfd_pc_security_priority",
+    "rule_id": "qfd_sec_regulated",
+    "input": { "data_sensitivity": "phi", "regulatory_refs": ["HIPAA"] },
+    "expected_output": { "value": 5, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "PCI-DSS → security 5",
+    "decision_id": "qfd_pc_security_priority",
+    "rule_id": "qfd_sec_pci",
+    "input": { "data_sensitivity": "pci", "regulatory_refs": ["PCI-DSS"] },
+    "expected_output": { "value": 5, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "pii no regulatory → security 4",
+    "decision_id": "qfd_pc_security_priority",
+    "rule_id": "qfd_sec_pii",
+    "input": { "data_sensitivity": "pii", "regulatory_refs": [] },
+    "expected_output": { "value": 4, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "low scale → cost 4",
+    "decision_id": "qfd_pc_cost_priority",
+    "rule_id": "qfd_cost_low_scale",
+    "input": { "scale_tier": "low", "user_type": "consumer_app" },
+    "expected_output": { "value": 4, "units": "priority_1to5", "matched": true }
+  },
+  {
+    "name": "enterprise + extreme → cost 2",
+    "decision_id": "qfd_pc_cost_priority",
+    "rule_id": "qfd_cost_enterprise_high",
+    "input": { "scale_tier": "extreme", "user_type": "enterprise_app" },
+    "expected_output": { "value": 2, "units": "priority_1to5", "matched": true }
+  }
+]

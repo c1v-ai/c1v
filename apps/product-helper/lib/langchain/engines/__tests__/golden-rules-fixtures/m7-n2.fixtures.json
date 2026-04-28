@@ -1,0 +1,58 @@
+[
+  {
+    "name": "consumer + pii → JWT_RS256",
+    "decision_id": "n2_auth_to_api_interface",
+    "rule_id": "n2_iface_auth_api_jwt_pii",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "pii" },
+    "expected_output": { "value": "IF.AUTH.API.JWT_RS256", "matched": true }
+  },
+  {
+    "name": "consumer + internal → JWT_HS256",
+    "decision_id": "n2_auth_to_api_interface",
+    "rule_id": "n2_iface_auth_api_jwt_hs",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "internal" },
+    "expected_output": { "value": "IF.AUTH.API.JWT_HS256", "matched": true }
+  },
+  {
+    "name": "internal_tool → JWT_HS256 (default)",
+    "decision_id": "n2_auth_to_api_interface",
+    "rule_id": "n2_iface_auth_api_default",
+    "input": { "user_type": "internal_tool", "data_sensitivity": "internal" },
+    "expected_output": { "value": "IF.AUTH.API.JWT_HS256", "matched": false }
+  },
+  {
+    "name": "relational data → DRIZZLE_PG",
+    "decision_id": "n2_api_to_persistence_interface",
+    "rule_id": "n2_iface_drizzle_pg",
+    "input": { "data_shape": "relational" },
+    "expected_output": { "value": "IF.API.PERSIST.DRIZZLE_PG", "matched": true }
+  },
+  {
+    "name": "agent ai → ANTHROPIC_SDK",
+    "decision_id": "n2_api_to_llm_interface",
+    "rule_id": "n2_iface_anthropic_sdk",
+    "input": { "ai_workload": "agent" },
+    "expected_output": { "value": "IF.API.LLM.ANTHROPIC_SDK", "matched": true }
+  },
+  {
+    "name": "no ai → IF.API.LLM.NONE (default)",
+    "decision_id": "n2_api_to_llm_interface",
+    "rule_id": "n2_iface_llm_none",
+    "input": { "ai_workload": "none" },
+    "expected_output": { "value": "IF.API.LLM.NONE", "matched": false }
+  },
+  {
+    "name": "serverless → OTEL_HTTP",
+    "decision_id": "n2_api_to_telemetry_interface",
+    "rule_id": "n2_iface_telemetry_otel",
+    "input": { "deployment_target": "serverless" },
+    "expected_output": { "value": "IF.API.TEL.OTEL_HTTP", "matched": true }
+  },
+  {
+    "name": "container → SENTRY_SDK (default)",
+    "decision_id": "n2_api_to_telemetry_interface",
+    "rule_id": "n2_iface_telemetry_sentry",
+    "input": { "deployment_target": "container" },
+    "expected_output": { "value": "IF.API.TEL.SENTRY_SDK", "matched": false }
+  }
+]
