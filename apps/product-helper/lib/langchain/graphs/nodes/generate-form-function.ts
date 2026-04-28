@@ -34,13 +34,26 @@ export async function generateFormFunction(
   });
 
   try {
-    const evaluation = await evaluateEngineStory(STORY_ID, {
-      projectId: state.projectId,
-      messages: state.messages,
-      extractedData: ed,
-      projectName: state.projectName,
-      projectVision: state.projectVision,
-    });
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_form_function',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
 
     const envelope: RuntimeEnvelope<'form_function_map'> = {
       _schema: 'form_function_map.runtime-envelope.v1',
