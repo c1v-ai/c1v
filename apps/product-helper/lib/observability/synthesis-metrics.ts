@@ -372,6 +372,69 @@ export function recordNodeEnd(ev: GraphNodeEvent & { latency_ms: number; success
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// synthesis_metrics_total — Wave-E LLM-call-rate counter
+//
+// Per the EC-V21-E.13 baseline-capture contract, GENERATE_nfr +
+// GENERATE_constants emit one increment per call labeled by impl:
+//   - `impl="llm-only"`     → v2.1 path (LLM agent invokes the model)
+//   - `impl="engine-first"` → v2.2 path (deterministic engine; only routes
+//                              to LLM on the 0.60–0.90 refine band when
+//                              `decision.llm_assist === true`)
+//
+// post-deploy 7-day measurement window: aggregate the labelled counts and
+// compare engine-first vs llm-only baseline; ≥60% drop is the gate.
+// ─────────────────────────────────────────────────────────────────────────
+
+export type SynthesisMetricsImpl = 'llm-only' | 'engine-first';
+export type SynthesisMetricsModule = 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8';
+
+export interface SynthesisMetricsTotalEvent {
+  module: SynthesisMetricsModule;
+  impl: SynthesisMetricsImpl;
+  /** True when this call actually hit the LLM (llm-only always true; engine-first true only on refine-band). */
+  llm_invoked: boolean;
+  project_id?: number;
+}
+
+interface SynthesisMetricsCounter {
+  total: number;
+  llm_invoked: number;
+}
+
+const _synthesisMetricsTotal = new Map<string, SynthesisMetricsCounter>();
+
+function synthesisMetricsKey(module: SynthesisMetricsModule, impl: SynthesisMetricsImpl): string {
+  return `${module}::${impl}`;
+}
+
+export function recordSynthesisMetricsTotal(ev: SynthesisMetricsTotalEvent): void {
+  const key = synthesisMetricsKey(ev.module, ev.impl);
+  const cur = _synthesisMetricsTotal.get(key) ?? { total: 0, llm_invoked: 0 };
+  cur.total += 1;
+  if (ev.llm_invoked) cur.llm_invoked += 1;
+  _synthesisMetricsTotal.set(key, cur);
+
+  if (!_transport) return;
+  _transport.captureMessage('synthesis_metrics_total', {
+    level: 'info',
+    tags: {
+      module: ev.module,
+      impl: ev.impl,
+      llm_invoked: String(ev.llm_invoked),
+    },
+    extra: { project_id: ev.project_id },
+  });
+}
+
+export function getSynthesisMetricsTotal(): Record<string, SynthesisMetricsCounter> {
+  return Object.fromEntries(_synthesisMetricsTotal);
+}
+
+export function resetSynthesisMetricsTotal(): void {
+  _synthesisMetricsTotal.clear();
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // withAgentMetrics — wrap an agent entry-point with timing + cost capture
 // ─────────────────────────────────────────────────────────────────────────
 
