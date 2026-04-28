@@ -72,30 +72,88 @@ ee27e48  feat(te1/provenance-ui): add WhyThisValuePanel — 5-section side-panel
 
 ---
 
-## Append-row override pattern (architectural correction surfaced)
+## Append-row override pattern (LOCKED — Option A, team-lead confirmed 2026-04-27)
 
-The deliverable spec stated:
-> override-form.tsx writes to `decision_audit.override_history` JSONB array via TA1's `queries.ts` pattern
+**Status:** Confirmed by team-lead Bond 2026-04-27 post-blocker-surface. The original spec wording — *"writes to `decision_audit.override_history` JSONB array via TA1's queries.ts pattern"* — was authored before the FROZEN audit-table contract was fully understood. Pattern (A) is what the table is designed for and what the F8 tamper-evident contract requires.
 
-But the on-disk schema disagrees:
-- `0011b_decision_audit.sql` line 119: `REVOKE UPDATE, DELETE, TRUNCATE ON TABLE "decision_audit" FROM PUBLIC;`
-- `0011b_decision_audit.sql` line 168: `-- Deliberately NO UPDATE policy.`
-- `lib/db/schema/decision-audit.ts` docstring: *"Append-only enforced at DB level: RLS grants INSERT/SELECT only; no UPDATE/DELETE policies exist"*
-- runtime peer 2026-04-22 contract: rows form a `(project_id, target_field)` hash chain — tampering breaks the chain
+### The contract collision (why Option A is the only legal path)
+
+The deliverable spec literally said: *"writes to `decision_audit.override_history` JSONB array via TA1's `queries.ts` pattern."* The on-disk schema disagrees at three levels:
+
+| Source | Line | Text |
+|---|---|---|
+| `apps/product-helper/lib/db/migrations/0011b_decision_audit.sql` | 119 | `REVOKE UPDATE, DELETE, TRUNCATE ON TABLE "decision_audit" FROM PUBLIC;` |
+| `apps/product-helper/lib/db/migrations/0011b_decision_audit.sql` | 168 | `-- Deliberately NO UPDATE policy.` |
+| `apps/product-helper/lib/db/schema/decision-audit.ts` | (docstring) | *"Append-only enforced at DB level: RLS grants INSERT/SELECT only; no UPDATE/DELETE policies exist, and the GRANT set excludes UPDATE/DELETE from the app role."* |
+
+Plus the F8 contract from `plans/reviews/c1v-MIT-Crawley-Cornell/security-review.md` (Finding F8 — incident-response completeness): every audit row must be *reproducible* and *tamper-evident*. The `(project_id, target_field)` hash chain (`hash_chain_prev = SHA-256(prev_row.canonical_bytes)`) is what makes tampering detectable. Mutating prior-row state breaks the chain — a downstream replay verifier would correctly flag a mutated row as tampered.
 
 UPDATE is the architectural mistake the audit-table design explicitly rejects. Implementing literally as spec'd would have either:
-1. Required removing the REVOKE — breaking the F8 audit guarantee (security-review hard requirement); or
-2. Bypassed the REVOKE via service role — defeating the point of REVOKE.
 
-**Implemented (Pattern A):** an override = a NEW `decision_audit` row with `agent_id='user'`, `auto_filled=false`, `value=<new>`, `math_trace='User override: <rationale>'`. The hash chain extends naturally onto the prior row in the `(project_id, target_field)` stream. The "override history" UI section is a chronological scan of all rows in that stream — **not** a JSONB-array UPDATE on a single row.
+1. Required removing the REVOKE — **breaking the F8 audit guarantee** (security-review hard requirement); or
+2. Bypassed the REVOKE via service role — **defeating the point of REVOKE.**
 
-This interpretation:
-- Honors the F8 incident-response completeness contract.
-- Honors the append-only enforcement.
-- Reuses the existing `writeAuditRow()` writer (no new helper needed).
-- Renders override history as a clean SELECT instead of nested-JSONB parsing.
+### The chosen pattern
 
-Surfaced to team-lead 2026-04-27 23:24 EDT (SendMessage); proceeding under (A) absent counter-direction. If the team prefers (B), the `decision_audit` table contract needs an explicit unfreeze + new ADR.
+**Pattern (A) — append-row.** A manual user override = a NEW `decision_audit` row with:
+
+| Column | Value |
+|---|---|
+| `agent_id` | `'user'` (constant `USER_OVERRIDE_AGENT_ID` in `app/api/decision-audit/[projectId]/[targetField]/override/route.ts`) |
+| `model_version` | `'user-override'` (constant `USER_OVERRIDE_MODEL_VERSION`) |
+| `auto_filled` | `false` |
+| `needs_user_input` | `false` |
+| `computed_options` | `null` (per invariant #3 — non-null iff needs_user_input=true) |
+| `value` | new value (Zod-parsed `z.unknown()` from request body) |
+| `units` | inherited from prior row |
+| `decision_id` / `target_field` / `target_artifact` | inherited from prior row |
+| `story_id` / `engine_version` | from request body or fall back to prior row |
+| `math_trace` | `` `User override: ${rationale}` `` — rationale carried in math_trace so replay sees it without a separate column |
+| `base_confidence` / `final_confidence` | `1` (user is canonical for their own decisions) |
+| `inputs_used` / `modifiers_applied` / `missing_inputs` | empty (no inference path; user owns the choice) |
+| `rag_attempted` / `kb_chunk_ids` | `false` / `[]` (RAG not re-attempted on user-override; per invariant kb_chunk_ids must be empty when rag_attempted=false) |
+| `user_overrideable` | inherited from prior row |
+| `hash_chain_prev` | computed by `writeAuditRow()` as `canonicalHash(prior_row)` — chain extends naturally |
+
+### Side-panel "Override history" section
+
+A chronological SELECT, not JSONB parsing:
+
+```sql
+SELECT * FROM decision_audit
+WHERE project_id = $1 AND target_field = $2
+ORDER BY evaluated_at ASC, id ASC
+```
+
+Implemented at `apps/product-helper/lib/db/decision-audit-queries.ts:getDecisionAuditStream`; consumed by the explain endpoint at `apps/product-helper/app/api/decision-audit/[projectId]/[targetField]/explain/route.ts`. The UI then renders one row per stream entry with `(timestamp, agent_id, value, units, auto_filled?, rationale)` columns — `rationale` is read from `math_trace` for `auto_filled=false` rows (the `'User override: <rationale>'` prefix is the contract).
+
+### Why this preserves every guarantee
+
+| Guarantee | How (A) honors it |
+|---|---|
+| F8 incident-response completeness | Every row carries `model_version`, `kb_chunk_ids`, `agent_id`, `evaluated_at`. The 2 caller-supplied constants (`USER_OVERRIDE_AGENT_ID`, `USER_OVERRIDE_MODEL_VERSION`) make user-override rows distinguishable for replay. |
+| Append-only enforcement | No UPDATE issued. Every override is an INSERT, identical write path to engine-emitted rows. |
+| Hash chain integrity | `writeAuditRow()` reads the most recent row in the `(project_id, target_field)` stream, hashes it via `canonicalHash`, sets it as `hash_chain_prev` on the new row. Identical mechanism to engine writes. |
+| RLS / tenant isolation | The override route gate-checks `project.team_id == session.team_id` BEFORE calling `writeAuditRow()`. The `decision_audit_tenant_select` RLS policy provides defense-in-depth. |
+| Invariant #1 (autoFilled XOR needsUserInput) | Override rows: `autoFilled=false, needsUserInput=false` — both false is legal. |
+| Invariant #3 (computed_options non-null iff needs_user_input) | Override rows pass `computed_options: null` + `needs_user_input: false` — Zod superRefine accepts. |
+| Invariant: kb_chunk_ids empty when rag_attempted=false | Override rows pass `rag_attempted: false` + `kb_chunk_ids: []`. |
+
+### Cross-refs (for qa-e-verifier + downstream-agent inheritance)
+
+- Spec collision surfaced: SendMessage to team-lead 2026-04-27 23:24 EDT.
+- Spec resolution: SendMessage from team-lead 2026-04-27 — *"Option A confirmed (append-row)."*
+- DB contract:
+  - `apps/product-helper/lib/db/migrations/0011b_decision_audit.sql:119` (REVOKE UPDATE)
+  - `apps/product-helper/lib/db/migrations/0011b_decision_audit.sql:168` ("Deliberately NO UPDATE policy.")
+- Schema contract: `apps/product-helper/lib/db/schema/decision-audit.ts` (module docstring)
+- F8 audit contract: `plans/reviews/c1v-MIT-Crawley-Cornell/security-review.md` Finding F8 (incident-response completeness via `model_version` + `kb_chunk_ids` + `agent_id` + `hash_chain_prev`)
+- Writer reused: `apps/product-helper/lib/langchain/engines/audit-writer.ts:writeAuditRow` (canonicalization, hash chain, Zod boundary)
+- Override route: `apps/product-helper/app/api/decision-audit/[projectId]/[targetField]/override/route.ts`
+- Explain route + history scan: `apps/product-helper/app/api/decision-audit/[projectId]/[targetField]/explain/route.ts`
+- Stream helper: `apps/product-helper/lib/db/decision-audit-queries.ts:getDecisionAuditStream`
+
+**Downstream agents inherit this interpretation** — any future feature that wants to mutate a `decision_audit` row (audit-purge, GDPR-erasure, value-correction, etc.) MUST go through the append-row path. The REVOKE + F8 contract is the load-bearing constraint, not the spec wording.
 
 ---
 
