@@ -80,14 +80,7 @@ function gateC0(): void {
   if (!dirExists(m5Dir)) failures.push(`module-5/ folder missing`);
   if (dirExists(legacyDir)) failures.push(`legacy module-5-form-function/ still present`);
 
-  // Baseline tsc errors check — count + path verification (line numbers may shift).
-  const expected = [
-    'lib/db/schema/index.ts',
-    'lib/langchain/engines/artifact-reader.ts',
-    'lib/langchain/engines/context-resolver.ts',
-    'lib/langchain/engines/engine-loader.ts',
-    'scripts/atlas/validate-entries.ts',
-  ];
+  // Baseline tsc errors check — expect 0 (all baseline errors suppressed).
   let tscOut = '';
   try {
     execFileSync('npx', ['tsc', '--noEmit', '--project', 'tsconfig.json'], {
@@ -98,21 +91,8 @@ function gateC0(): void {
     tscOut = (e as { stdout?: Buffer }).stdout?.toString() ?? '';
   }
   const errLines = tscOut.split('\n').filter(l => /error TS\d+/.test(l));
-  if (errLines.length !== 9) {
-    failures.push(`tsc baseline error count = ${errLines.length}, expected 9`);
-  }
-  for (const path of expected) {
-    if (!errLines.some(l => l.includes(path))) {
-      failures.push(`tsc baseline missing expected path: ${path}`);
-    }
-  }
-  // Sanity: no NEW errors introduced from outside the baseline list.
-  const baselineRe = /^(lib\/db\/schema\/index\.ts|lib\/langchain\/engines\/(artifact-reader|context-resolver|engine-loader)\.ts|scripts\/atlas\/validate-entries\.ts)/;
-  for (const line of errLines) {
-    const file = line.split('(')[0];
-    if (!baselineRe.test(file)) {
-      failures.push(`unexpected NEW tsc error in: ${file}`);
-    }
+  if (errLines.length !== 0) {
+    failures.push(`tsc baseline error count = ${errLines.length}, expected 0. Errors: ${errLines.slice(0, 3).join('; ')}${errLines.length > 3 ? `; … +${errLines.length - 3} more` : ''}`);
   }
 
   // Schema registry no-dupes — load barrel, assert CRAWLEY_SCHEMAS unique schemaIds.
