@@ -1,0 +1,58 @@
+[
+  {
+    "name": "pii + JWT_RS256 → RPN 80",
+    "decision_id": "fmea_residual_auth_after_mitigation",
+    "rule_id": "fmea_resid_auth_pii_jwt_rs256",
+    "input": { "data_sensitivity": "pii", "auth_form": "JWT_RS256" },
+    "expected_output": { "value": 80, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "phi + JWT_HS256 → RPN 144",
+    "decision_id": "fmea_residual_auth_after_mitigation",
+    "rule_id": "fmea_resid_auth_pii_jwt_hs256",
+    "input": { "data_sensitivity": "phi", "auth_form": "JWT_HS256" },
+    "expected_output": { "value": 144, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "internal → RPN 60 (default)",
+    "decision_id": "fmea_residual_auth_after_mitigation",
+    "rule_id": "fmea_resid_auth_default",
+    "input": { "data_sensitivity": "internal", "auth_form": "JWT_HS256" },
+    "expected_output": { "value": 60, "units": "rpn", "matched": false }
+  },
+  {
+    "name": "extreme scale + PG_HA → RPN 60",
+    "decision_id": "fmea_residual_data_loss_after_mitigation",
+    "rule_id": "fmea_resid_data_high_scale_replicas",
+    "input": { "scale_tier": "extreme", "persistence_form": "PG_HA" },
+    "expected_output": { "value": 60, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "Supabase PG → RPN 90",
+    "decision_id": "fmea_residual_data_loss_after_mitigation",
+    "rule_id": "fmea_resid_data_supabase_pg",
+    "input": { "scale_tier": "medium", "persistence_form": "SUPABASE_PG" },
+    "expected_output": { "value": 90, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "agent + evals → RPN 96",
+    "decision_id": "fmea_residual_llm_drift_after_mitigation",
+    "rule_id": "fmea_resid_llm_with_evals",
+    "input": { "ai_workload": "agent", "evals_present": true },
+    "expected_output": { "value": 96, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "rag without evals → RPN 200",
+    "decision_id": "fmea_residual_llm_drift_after_mitigation",
+    "rule_id": "fmea_resid_llm_without_evals",
+    "input": { "ai_workload": "rag", "evals_present": false },
+    "expected_output": { "value": 200, "units": "rpn", "matched": true }
+  },
+  {
+    "name": "no ai → RPN 0 (default)",
+    "decision_id": "fmea_residual_llm_drift_after_mitigation",
+    "rule_id": "fmea_resid_llm_none",
+    "input": { "ai_workload": "none", "evals_present": false },
+    "expected_output": { "value": 0, "units": "rpn", "matched": false }
+  }
+]

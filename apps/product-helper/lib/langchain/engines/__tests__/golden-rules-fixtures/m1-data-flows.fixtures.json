@@ -1,0 +1,58 @@
+[
+  {
+    "name": "consumer_app + pii → DF.AUTH.SENSITIVE",
+    "decision_id": "df_user_auth_flow",
+    "rule_id": "auth_pii_path",
+    "input": { "user_type": "consumer_app", "data_sensitivity": "pii" },
+    "expected_output": { "value": "DF.AUTH.SENSITIVE", "matched": true }
+  },
+  {
+    "name": "enterprise_app + phi → DF.AUTH.SENSITIVE",
+    "decision_id": "df_user_auth_flow",
+    "rule_id": "auth_pii_path",
+    "input": { "user_type": "enterprise_app", "data_sensitivity": "phi" },
+    "expected_output": { "value": "DF.AUTH.SENSITIVE", "matched": true }
+  },
+  {
+    "name": "internal_tool → DF.AUTH.INTERNAL",
+    "decision_id": "df_user_auth_flow",
+    "rule_id": "auth_internal",
+    "input": { "user_type": "internal_tool", "data_sensitivity": "internal" },
+    "expected_output": { "value": "DF.AUTH.INTERNAL", "matched": true }
+  },
+  {
+    "name": "subscription + PCI-DSS → DF.PAY.PCI_SCOPE",
+    "decision_id": "df_payment_flow",
+    "rule_id": "payment_pci",
+    "input": { "monetization": "subscription", "regulatory_refs": ["PCI-DSS"] },
+    "expected_output": { "value": "DF.PAY.PCI_SCOPE", "matched": true }
+  },
+  {
+    "name": "transactional + no PCI → DF.PAY.STRIPE_DELEGATED",
+    "decision_id": "df_payment_flow",
+    "rule_id": "payment_no_pci",
+    "input": { "monetization": "transactional", "regulatory_refs": [] },
+    "expected_output": { "value": "DF.PAY.STRIPE_DELEGATED", "matched": true }
+  },
+  {
+    "name": "free + no monetization → DF.PAY.NONE (default)",
+    "decision_id": "df_payment_flow",
+    "rule_id": "payment_none",
+    "input": { "monetization": "free", "regulatory_refs": [] },
+    "expected_output": { "value": "DF.PAY.NONE", "matched": false }
+  },
+  {
+    "name": "extreme scale → DF.TELEMETRY.SAMPLED",
+    "decision_id": "df_telemetry_flow",
+    "rule_id": "telemetry_high_scale",
+    "input": { "deployment_target": "container", "scale_tier": "extreme" },
+    "expected_output": { "value": "DF.TELEMETRY.SAMPLED", "matched": true }
+  },
+  {
+    "name": "serverless + low scale → DF.TELEMETRY.OTEL",
+    "decision_id": "df_telemetry_flow",
+    "rule_id": "telemetry_serverless",
+    "input": { "deployment_target": "serverless", "scale_tier": "low" },
+    "expected_output": { "value": "DF.TELEMETRY.OTEL", "matched": true }
+  }
+]
