@@ -18,7 +18,7 @@
     "decision_id": "synthesis_recommended_alternative_id",
     "rule_id": "synth_av03_serverless_no_ai",
     "input": { "deployment_target": "serverless", "ai_workload": "none", "scale_tier": "low" },
-    "expected_output": { "value": "AV.03", "matched": false }
+    "expected_output": { "value": "AV.03", "matched": true }
   },
   {
     "name": "low scale + no ai → $50/mo",
