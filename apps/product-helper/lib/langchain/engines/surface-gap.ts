@@ -29,13 +29,6 @@
  *   - `parseGapAnswer(rawUserContent, pendingOptions)` parses a user reply
  *     into a `UserAnswer`. Pure.
  *
- * v2.2 Wave-E (D-V21.23): every `surfaceGap` ALSO routes through the
- * shared v2.1 bridge `lib/chat/system-question-bridge.ts` for DB
- * persistence + cross-process resilience. Bridge wiring is OPT-IN via
- * `setBridgeAdapter` so legacy in-memory tests keep working without
- * touching a database. The chat route registers the real bridge at
- * module init; integration tests inject a mock per-suite.
- *
  * This module owns NO react/ui code. Chat renderer strips the marker;
  * a sibling component renders the option buttons + math trace from the
  * decoded payload.
@@ -49,7 +42,9 @@ import type {
   SurfaceOpenQuestionResult,
 } from '@/lib/chat/system-question-bridge.types';
 
-// Types ────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// Types
+// ──────────────────────────────────────────────────────────────────────────
 
 export interface SurfaceGapDecision {
   decision_id: string;
@@ -89,15 +84,17 @@ interface PendingGap {
   deferred: Deferred<UserAnswer>;
   createdAt: number;
   /** v2.1 bridge pending_answer conversation_id, populated once the
-   *  bridge insert resolves. Used by the wave_e reply handler to map
-   *  bridge replies back to the right Deferred. */
+   *  bridge insert resolves. Used by `waveEReplyHandler` to map bridge
+   *  replies back to the right Deferred. */
   bridgeConversationId?: number;
 }
 
 /**
  * Adapter for the v2.1 system-question-bridge. Wave-E routes every
  * `surfaceGap` call through `surfaceOpenQuestion` for DB persistence +
- * cross-process resilience (master plan D-V21.23).
+ * cross-process resilience (master plan D-V21.23). OPT-IN via
+ * `setBridgeAdapter`; legacy in-memory tests pass `null` (default) so
+ * the existing surface-gap.test.ts behavior is preserved.
  */
 export interface BridgeAdapter {
   surfaceOpenQuestion: (
@@ -122,7 +119,10 @@ export class MaxTurnsExceededError extends Error {
   }
 }
 
-// Content marker — embedded in assistant messages ─────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// Content marker — on-the-wire shape embedded in assistant messages.
+// Matches the existing `<!--status:...-->` convention.
+// ──────────────────────────────────────────────────────────────────────────
 
 const MARKER_OPEN = '<!--c1v-gap:';
 const MARKER_CLOSE = '-->';
@@ -136,6 +136,7 @@ export interface GapMarkerPayload {
 }
 
 export function encodeGapMarker(payload: GapMarkerPayload): string {
+  // Base64 of JSON — keeps the marker single-line and HTML-safe.
   const json = JSON.stringify(payload);
   const b64 =
     typeof btoa === 'function'
@@ -171,7 +172,9 @@ export function stripGapMarker(content: string): string {
   return content.replace(re, '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-// Registry — module-local maps ─────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// Registry — module-local map of pending gaps.
+// ──────────────────────────────────────────────────────────────────────────
 
 const pending = new Map<string, PendingGap>();
 
@@ -194,7 +197,8 @@ let bridgeAdapter: BridgeAdapter | null = null;
 
 /**
  * Wire (or replace) the v2.1 bridge adapter. Call once at chat-route
- * module init; tests inject a mock per-suite. Pass `null` to clear.
+ * module init; integration tests inject a mock per-suite. Pass `null`
+ * to clear (test cleanup).
  */
 export function setBridgeAdapter(adapter: BridgeAdapter | null): void {
   bridgeAdapter = adapter;
@@ -249,7 +253,8 @@ export function surfaceGap(input: SurfaceGapInput): SurfaceGapHandle {
     };
   }
 
-  // Multi-turn cap (D-V21.23 §Guardrails).
+  // Multi-turn cap (D-V21.23 §Guardrails): after MAX_TURNS unresolved
+  // surfaces of the same decision, throw rather than spin forever.
   const nextTurn = (turnCounts.get(key) ?? 0) + 1;
   if (nextTurn > MAX_TURNS) {
     throw new MaxTurnsExceededError(key, nextTurn);
@@ -338,6 +343,9 @@ export function rejectGap(key: string, reason: Error): boolean {
  * `resolveGap`. Register once at chat-route init:
  *
  *   onOpenQuestionReply('wave_e_engine', waveEReplyHandler);
+ *
+ * Idempotency: bridge fires once per reply per pollReplies cycle; if the
+ * Deferred is already settled, `resolveGap` returns `false` and we no-op.
  */
 export async function waveEReplyHandler(args: {
   reply_conversation_id: number;
@@ -410,7 +418,9 @@ export function __getTurnCountForTests(key: string): number {
   return turnCounts.get(key) ?? 0;
 }
 
-// Helpers ──────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// Helpers
+// ──────────────────────────────────────────────────────────────────────────
 
 function makeDeferred<T>(): Deferred<T> {
   let resolve!: (v: T) => void;
@@ -446,6 +456,8 @@ function buildAssistantContent(input: SurfaceGapInput): string {
     '_Reply with `/option 1`, `/option 2`, or `/option 3` to pick — or send your own value._',
   ].join('\n');
 
+  // Marker trails the body so markdown renders cleanly even if the
+  // component's strip step fails.
   return `${body}\n\n${marker}`;
 }
 
@@ -462,6 +474,8 @@ function isGapPayload(v: unknown): v is GapMarkerPayload {
 }
 
 function coerceFreeText(s: string): number | string {
+  // Pure number → typed number. Anything else stays a string; caller's
+  // engine validates against the target_field schema.
   if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
   return s;
 }
