@@ -39,13 +39,26 @@ export async function generateFmeaResidual(
   });
 
   try {
-    const evaluation = await evaluateEngineStory(STORY_ID, {
-      projectId: state.projectId,
-      messages: state.messages,
-      extractedData: ed,
-      projectName: state.projectName,
-      projectVision: state.projectVision,
-    });
+    const evaluation = await evaluateEngineStory(
+      STORY_ID,
+      {
+        projectId: state.projectId,
+        messages: state.messages,
+        extractedData: ed,
+        projectName: state.projectName,
+        projectVision: state.projectVision,
+      },
+      {
+        auditContext: {
+          projectId: state.projectId,
+          agentId: 'generate_fmea_residual',
+          targetArtifact: ARTIFACT_KIND,
+          storyId: STORY_ID,
+          engineVersion: 'v1',
+          modelVersion: 'deterministic-rule-tree',
+        },
+      },
+    );
 
     const envelope: RuntimeEnvelope<'fmea_residual'> = {
       _schema: 'fmea_residual.runtime-envelope.v1',
