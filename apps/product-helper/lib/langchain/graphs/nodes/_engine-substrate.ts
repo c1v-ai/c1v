@@ -38,6 +38,7 @@ import type { BaseMessage } from '@langchain/core/messages';
 import { loadEngine, EngineNotFoundError } from '../../engines/engine-loader';
 import {
   evaluateWaveE,
+  type EvaluateOptions,
   type WaveEEngineOutput,
 } from '../../engines/wave-e-evaluator';
 import {
@@ -50,6 +51,36 @@ import type {
   EngineInputs,
   EvaluationSignals,
 } from '../../engines/nfr-engine-interpreter';
+
+/**
+ * Forward-compatible mirror of audit-writer's `AuditContext`.
+ *
+ * `audit-writer` (commit `48108cc` on `wave-e/te1-audit-writer`) added
+ * `EvaluateOptions.auditContext` and made it REQUIRED on production
+ * callers (throws `WaveEAuditContextRequiredError` when `skipAudit !== true`
+ * and `auditContext` is absent). At consolidation merge our 7 P10 nodes
+ * MUST already supply this field — the substrate helper threads it through.
+ *
+ * Pre-merge this interface is local; post-merge it's structurally identical
+ * to `audit-writer`'s exported type. The cast at the call site bridges
+ * the narrower `EvaluateOptions` on this branch (no `auditContext` field
+ * yet) to the post-merge widened shape — TypeScript's structural typing
+ * makes this a no-op at runtime.
+ *
+ * Shape source: `git show 48108cc:apps/product-helper/lib/langchain/engines/wave-e-evaluator.ts`
+ * (interface AuditContext, ~line 117).
+ */
+export interface AuditContext {
+  projectId: number;
+  agentId: string;
+  targetArtifact: string;
+  storyId: string;
+  engineVersion: string;
+  modelVersion?: string;
+  ragAttempted?: boolean;
+  kbChunkIds?: string[];
+  userOverrideable?: boolean;
+}
 
 export interface SubstrateInputs {
   /** Project id flows directly into ContextResolver for tenant-scoped artifact reads. */
@@ -130,6 +161,16 @@ export interface EvaluateStoryOptions {
   contextResolver?: ContextResolver;
   /** Per-decision evaluation signals (regulatory_override, user_explicit, etc). */
   evaluationSignals?: EvaluationSignals;
+  /**
+   * Audit-row provenance context. REQUIRED in production paths post-
+   * audit-writer-merge (else evaluateWaveE throws WaveEAuditContextRequiredError).
+   * The substrate helper accepts a base context per node; the per-decision
+   * `targetArtifact` is overlaid from the engine output's `target_field`
+   * inside the loop, so callers don't need to interpolate per decision.
+   */
+  auditContext?: AuditContext;
+  /** Skip the synchronous writeAuditRow() call. Tests pass true; production omits. */
+  skipAudit?: boolean;
 }
 
 /**
@@ -187,9 +228,35 @@ export async function evaluateEngineStory(
       inputs = signals as EngineInputs;
     }
 
+    // Compose per-decision EvaluateOptions. Pre-merge `EvaluateOptions` doesn't
+    // declare `auditContext`; the cast widens the literal to the post-merge
+    // shape so the field rides through unchanged. Runtime no-op on this branch
+    // (current evaluator ignores excess fields); enforced post-merge.
+    //
+    // skipAudit defaults: tests (NODE_ENV=test or JEST_WORKER_ID set) opt out
+    // of the synchronous writeAuditRow side-effect post-merge — there's no DB
+    // available in the per-node mocked-persistArtifact pattern. Production
+    // paths leave `options.skipAudit` undefined and audit fires.
+    const isTestEnv = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
+    const skipAudit = options.skipAudit ?? isTestEnv;
+
+    const perDecisionOptions: EvaluateOptions = {
+      skipAudit,
+      ...(options.auditContext
+        ? {
+            auditContext: {
+              ...options.auditContext,
+              targetArtifact: decision.target_field || options.auditContext.targetArtifact,
+              storyId: options.auditContext.storyId || doc.story_id,
+              engineVersion: options.auditContext.engineVersion || doc.version,
+            },
+          }
+        : {}),
+    } as EvaluateOptions;
+
     let out: WaveEEngineOutput;
     try {
-      out = await evaluateWaveE(decision as DecisionRef, inputs, evalSignals);
+      out = await evaluateWaveE(decision as DecisionRef, inputs, evalSignals, perDecisionOptions);
     } catch (err) {
       errors.push(`evaluate:${decision.decision_id}:${err instanceof Error ? err.message : 'unknown'}`);
       continue;
