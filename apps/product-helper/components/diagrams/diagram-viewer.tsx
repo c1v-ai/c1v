@@ -318,6 +318,80 @@ export function DiagramViewer({
     }
   };
 
+  const handleExportPptx = async () => {
+    try {
+      const svg = containerRef.current?.querySelector('svg');
+      if (!svg) {
+        toast.error('No diagram to export');
+        return;
+      }
+
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('image load failed'));
+        img.src = svgUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      const w = img.width || 800;
+      const h = img.height || 600;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        URL.revokeObjectURL(svgUrl);
+        toast.error('PPTX export failed');
+        return;
+      }
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(svgUrl);
+
+      const base64 = canvas.toDataURL('image/png').split(',')[1];
+      const pptxModule = await import('pptxgenjs');
+      const PptxGenJS = (pptxModule as { default: new () => unknown }).default;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pptx = new PptxGenJS() as any;
+      const slide = pptx.addSlide();
+      if (title) {
+        slide.addText(title, { x: 0.5, y: 0.2, fontSize: 18, bold: true });
+      }
+      slide.addImage({
+        data: `image/png;base64,${base64}`,
+        x: 0.5,
+        y: title ? 0.8 : 0.5,
+        w: 9,
+        h: 6,
+      });
+      await pptx.writeFile({ fileName: `${type}-diagram.pptx` });
+      toast.success('Diagram exported as PPTX');
+    } catch (err) {
+      console.error('PPTX export error:', err);
+      toast.error('PPTX export failed');
+    }
+  };
+
+  const handleExportMermaid = () => {
+    try {
+      const blob = new Blob([syntax], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${type}-diagram.mmd`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Mermaid source exported');
+    } catch {
+      toast.error('Export failed');
+    }
+  };
+
   if (error) {
     return (
       <Card className={className}>
@@ -415,6 +489,14 @@ export function DiagramViewer({
             <Button variant="outline" size="sm" onClick={() => handleExport('png')} title="Export PNG">
               <Download className="h-4 w-4 mr-1" />
               PNG
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportPptx} title="Export PPTX">
+              <Download className="h-4 w-4 mr-1" />
+              PPTX
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportMermaid} title="Export Mermaid source">
+              <Download className="h-4 w-4 mr-1" />
+              MMD
             </Button>
           </div>
         </div>
