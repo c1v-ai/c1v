@@ -2,6 +2,11 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
+import { getSignedUrl } from '@/lib/storage/supabase-storage';
+import {
+  DecisionNetworkViewer,
+  type DecisionNetworkData,
+} from '@/components/system-design/decision-network-viewer';
 
 function SectionSkeleton() {
   return (
@@ -33,22 +38,26 @@ async function DecisionNetworkContent({ projectId }: { projectId: number }) {
   if (!project) notFound();
 
   const artifacts = await getProjectArtifacts(projectId);
-  const ready = artifacts.some(
+  const row = artifacts.find(
     (a) =>
       a.artifactKind === 'decision_network_v1' && a.synthesisStatus === 'ready',
   );
 
-  if (!ready) {
-    return <EmptyState />;
+  if (!row?.storagePath) return <EmptyState />;
+
+  let data: DecisionNetworkData | null = null;
+  try {
+    const cache = new Map<string, string>();
+    const url = await getSignedUrl(row.storagePath, undefined, cache);
+    const res = await fetch(url, { cache: 'no-store' });
+    if (res.ok) data = (await res.json()) as DecisionNetworkData;
+  } catch {
+    /* fall through to empty state */
   }
 
-  // The DecisionNetworkViewer is owned by the `architecture-and-database`
-  // agent (merged Architecture & Database section).
-  return (
-    <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-      Decision network is ready. The interactive viewer is being prepared.
-    </div>
-  );
+  if (!data) return <EmptyState />;
+
+  return <DecisionNetworkViewer data={data} />;
 }
 
 interface PageProps {
