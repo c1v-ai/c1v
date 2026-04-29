@@ -2,6 +2,11 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
+import { getSignedUrl } from '@/lib/storage/supabase-storage';
+import {
+  FormFunctionMapViewer,
+  type FormFunctionMapData,
+} from '@/components/system-design/form-function-map-viewer';
 
 function SectionSkeleton() {
   return (
@@ -34,21 +39,27 @@ async function FormFunctionMapContent({ projectId }: { projectId: number }) {
   if (!project) notFound();
 
   const artifacts = await getProjectArtifacts(projectId);
-  const ready = artifacts.some(
+  const row = artifacts.find(
     (a) =>
       a.artifactKind === 'form_function_map_v1' &&
       a.synthesisStatus === 'ready',
   );
 
-  if (!ready) {
-    return <EmptyState />;
+  if (!row?.storagePath) return <EmptyState />;
+
+  let data: FormFunctionMapData | null = null;
+  try {
+    const cache = new Map<string, string>();
+    const url = await getSignedUrl(row.storagePath, undefined, cache);
+    const res = await fetch(url, { cache: 'no-store' });
+    if (res.ok) data = (await res.json()) as FormFunctionMapData;
+  } catch {
+    /* fall through to empty state */
   }
 
-  return (
-    <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-      Form-function map is ready. The interactive viewer is being prepared.
-    </div>
-  );
+  if (!data) return <EmptyState />;
+
+  return <FormFunctionMapViewer data={data} />;
 }
 
 interface PageProps {
