@@ -22,6 +22,11 @@ import {
   AlertTriangle,
   Target,
   Sparkles,
+  Layers3,
+  Network,
+  FlaskConical,
+  GitFork,
+  HelpCircle,
 } from 'lucide-react';
 import { ExplorerNode } from './explorer-node';
 import type { ExplorerData } from '@/lib/db/queries/explorer';
@@ -60,7 +65,7 @@ function loadExpandedState(projectId: number): Record<string, boolean> {
     // Ignore parse errors
   }
   // Default: all groups expanded
-  return { requirements: true, backend: true };
+  return { requirements: true, backend: true, 'system-design': true };
 }
 
 function saveExpandedState(
@@ -80,6 +85,7 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     requirements: true,
     backend: true,
+    'system-design': true,
   });
 
   // Load persisted expansion state on mount
@@ -221,6 +227,82 @@ export function ExplorerTree({ projectId, data, filter }: ExplorerTreeProps) {
             href: `${basePath}/backend/guidelines`,
             hasData: data.hasData.hasGuidelines,
             reviewStatus: reviewStatusOf('guidelines'),
+          },
+        ],
+      },
+      {
+        id: 'system-design',
+        label: 'System Design',
+        icon: Layers3,
+        children: [
+          {
+            id: 'ffbd',
+            label: 'FFBD',
+            icon: GitFork,
+            href: `${basePath}/system-design/ffbd`,
+            hasData: data.hasData.hasFfbd,
+          },
+          {
+            id: 'decision-matrix',
+            label: 'Decision Matrix',
+            icon: LayoutDashboard,
+            href: `${basePath}/system-design/decision-matrix`,
+            hasData: data.hasData.hasDecisionMatrix,
+          },
+          {
+            id: 'interfaces',
+            label: 'Interfaces',
+            icon: Network,
+            href: `${basePath}/system-design/interfaces`,
+            hasData: data.hasData.hasInterfaces,
+          },
+          {
+            id: 'qfd',
+            label: 'House of Quality',
+            icon: Target,
+            href: `${basePath}/system-design/qfd`,
+            hasData: data.hasData.hasHoq,
+          },
+          {
+            id: 'fmea',
+            label: 'FMEA',
+            icon: FlaskConical,
+            href: `${basePath}/system-design/fmea`,
+            hasData: data.hasData.hasFmea,
+          },
+          {
+            id: 'data-flows',
+            label: 'Data Flows',
+            icon: GitBranch,
+            href: `${basePath}/requirements/data-flows`,
+            hasData: data.hasData.hasDataFlows,
+          },
+          {
+            id: 'decision-network',
+            label: 'Decision Network',
+            icon: Network,
+            href: `${basePath}/system-design/decision-network`,
+            hasData: data.hasData.hasDecisionNetwork,
+          },
+          {
+            id: 'form-function-map',
+            label: 'Form-Function Map',
+            icon: Layers3,
+            href: `${basePath}/system-design/form-function-map`,
+            hasData: data.hasData.hasFormFunctionMap,
+          },
+          {
+            id: 'synthesis',
+            label: 'Architecture Rec.',
+            icon: Sparkles,
+            href: `${basePath}/synthesis`,
+            hasData: data.hasData.hasSynthesisRecommendation,
+          },
+          {
+            id: 'open-questions',
+            label: 'Open Questions',
+            icon: HelpCircle,
+            href: `${basePath}/requirements/open-questions`,
           },
         ],
       },

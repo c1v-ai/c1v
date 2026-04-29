@@ -17,6 +17,11 @@ import {
   Target,
   BarChart3,
   Shield,
+  FlaskConical,
+  Network,
+  GitBranch,
+  Sparkles,
+  Layers3,
 } from 'lucide-react';
 import { useProjectChat } from '@/components/project/project-chat-provider';
 
@@ -81,6 +86,18 @@ const backendItems: PipelineItem[] = [
   { name: 'API Specification', dataKey: 'hasApiSpec', href: '/backend/api-spec', icon: Code },
   { name: 'Infrastructure', dataKey: 'hasInfrastructure', href: '/backend/infrastructure', icon: Cloud },
   { name: 'Coding Guidelines', dataKey: 'hasGuidelines', href: '/backend/guidelines', icon: FileText },
+];
+
+const systemDesignItems: PipelineItem[] = [
+  { name: 'FFBD', dataKey: 'hasFfbd', href: '/system-design/ffbd', icon: Network },
+  { name: 'Decision Matrix', dataKey: 'hasDecisionMatrix', href: '/system-design/decision-matrix', icon: BarChart3 },
+  { name: 'Interfaces', dataKey: 'hasInterfaces', href: '/system-design/interfaces', icon: Network },
+  { name: 'House of Quality', dataKey: 'hasHoq', href: '/system-design/qfd', icon: Target },
+  { name: 'FMEA', dataKey: 'hasFmea', href: '/system-design/fmea', icon: FlaskConical },
+  { name: 'Data Flows', dataKey: 'hasDataFlows', href: '/requirements/data-flows', icon: GitBranch },
+  { name: 'Decision Network', dataKey: 'hasDecisionNetwork', href: '/system-design/decision-network', icon: Network },
+  { name: 'Form-Function Map', dataKey: 'hasFormFunctionMap', href: '/system-design/form-function-map', icon: Layers3 },
+  { name: 'Architecture Rec.', dataKey: 'hasSynthesisRecommendation', href: '/synthesis', icon: Sparkles },
 ];
 
 function StatusIcon({ ready, isGenerating }: { ready: boolean; isGenerating: boolean }) {
@@ -166,6 +183,13 @@ export function ArtifactPipeline({ projectId }: { projectId: number }) {
           <PipelineGroup
             title="Backend"
             items={backendItems}
+            projectId={projectId}
+            hasData={data?.hasData}
+            isGenerating={isLoading}
+          />
+          <PipelineGroup
+            title="System Design"
+            items={systemDesignItems}
             projectId={projectId}
             hasData={data?.hasData}
             isGenerating={isLoading}
