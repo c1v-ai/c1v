@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
+import { DataFlowsViewer } from '@/components/requirements/data-flows-viewer';
+import type { DataFlows } from '@/lib/langchain/schemas/module-1/phase-2-5-data-flows';
 
 function SectionSkeleton() {
   return (
@@ -31,23 +33,28 @@ async function DataFlowsContent({ projectId }: { projectId: number }) {
   if (!project) notFound();
 
   const artifacts = await getProjectArtifacts(projectId);
-  const ready = artifacts.some(
+  const artifactReady = artifacts.some(
     (a) => a.artifactKind === 'data_flows_v1' && a.synthesisStatus === 'ready',
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const legacy = (project as any).projectData?.intakeState?.extractedData?.dataFlows ?? null;
+  const legacy = (project as any).projectData?.intakeState?.extractedData
+    ?.dataFlows as DataFlows | null | undefined;
 
-  if (!ready && !legacy) {
+  if (!artifactReady && !legacy) {
     return <EmptyState />;
   }
 
-  // Real DataFlowsViewer is owned by the `interfaces-and-archive-pages` agent.
-  return (
-    <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-      Data flow inventory is ready. The interactive viewer is being prepared.
-    </div>
-  );
+  if (!legacy) {
+    return (
+      <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+        Data flow inventory is ready. Download the artifact from the synthesis
+        page or open Artifact Pipeline to view the JSON output.
+      </div>
+    );
+  }
+
+  return <DataFlowsViewer dataFlows={legacy} />;
 }
 
 interface PageProps {
