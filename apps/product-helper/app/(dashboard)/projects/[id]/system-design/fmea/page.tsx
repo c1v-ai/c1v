@@ -2,7 +2,13 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
+import { getSignedUrl } from '@/lib/storage/supabase-storage';
 import { FMEAViewer } from '@/components/system-design/fmea-viewer';
+import { DownloadDropdown } from '@/components/synthesis/download-dropdown';
+import type { DownloadDropdownArtifact } from '@/components/synthesis/download-dropdown';
+
+const FMEA_ARTIFACT_KINDS = ['fmea_early_xlsx', 'fmea_residual_xlsx'];
+type ArtifactRow = Awaited<ReturnType<typeof getProjectArtifacts>>[number];
 
 function SectionSkeleton() {
   return (
@@ -30,13 +36,46 @@ function EmptyState() {
   );
 }
 
-async function FMEAContent({ projectId }: { projectId: number }) {
+async function buildFmeaDownloadArtifactsFromRows(
+  rows: ArtifactRow[],
+): Promise<DownloadDropdownArtifact[]> {
+  const cache = new Map<string, string>();
+  const entries: DownloadDropdownArtifact[] = [];
+  for (const row of rows) {
+    if (!FMEA_ARTIFACT_KINDS.includes(row.artifactKind)) continue;
+    let signedUrl: string | null = null;
+    if (row.synthesisStatus === 'ready' && row.storagePath) {
+      try {
+        signedUrl = await getSignedUrl(row.storagePath, undefined, cache);
+      } catch {
+        signedUrl = null;
+      }
+    }
+    entries.push({
+      kind: row.artifactKind,
+      status: row.synthesisStatus,
+      format: row.format,
+      signed_url: signedUrl,
+      sha256: row.sha256,
+      synthesized_at:
+        row.synthesizedAt instanceof Date
+          ? row.synthesizedAt.toISOString()
+          : (row.synthesizedAt as string | null),
+    });
+  }
+  return entries;
+}
+
+async function FMEAContent({
+  projectId,
+  artifacts,
+}: {
+  projectId: number;
+  artifacts: ArtifactRow[];
+}) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
 
-  // v2.1 (D-V21.17): prefer per-tenant artifacts from project_artifacts.
-  // No fallback to a canned exemplar.
-  const artifacts = await getProjectArtifacts(projectId);
   const earlyReady = artifacts.some(
     (a) => a.artifactKind === 'fmea_early_xlsx' && a.synthesisStatus === 'ready',
   );
@@ -44,9 +83,6 @@ async function FMEAContent({ projectId }: { projectId: number }) {
     (a) => a.artifactKind === 'fmea_residual_xlsx' && a.synthesisStatus === 'ready',
   );
 
-  // Back-compat: legacy intake captured FMEA on `extractedData` before
-  // synthesis-stage artifacts moved to project_artifacts. NOT canned data —
-  // it's the tenant's own pre-v2.1 capture.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extracted = (project as any).projectData?.intakeState?.extractedData;
   const legacyEarly = extracted?.fmeaEarly ?? null;
@@ -80,14 +116,26 @@ export default async function FMEAPage({ params }: PageProps) {
   const projectId = parseInt(id, 10);
   if (isNaN(projectId)) notFound();
 
+  const artifacts = await getProjectArtifacts(projectId);
+  const downloadArtifacts = await buildFmeaDownloadArtifactsFromRows(artifacts);
+
   return (
     <section className="flex-1 p-4 pb-20 md:pb-8 lg:p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">
-          Failure Mode &amp; Effects Analysis
-        </h1>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-foreground">
+            Failure Mode &amp; Effects Analysis
+          </h1>
+          {downloadArtifacts.length > 0 && (
+            <DownloadDropdown
+              artifacts={downloadArtifacts}
+              manifestContractVersion="v1"
+              projectId={projectId}
+            />
+          )}
+        </div>
         <Suspense fallback={<SectionSkeleton />}>
-          <FMEAContent projectId={projectId} />
+          <FMEAContent projectId={projectId} artifacts={artifacts} />
         </Suspense>
       </div>
     </section>
