@@ -23,6 +23,31 @@ const nextConfig: NextConfig = {
     '@langchain/textsplitters',
     '@langchain/openai',
   ],
+  // pptxgenjs declares `browser` stubs for `node:fs` etc., but Next.js webpack
+  // doesn't auto-resolve `node:` protocol prefixes. Use IgnorePlugin to skip
+  // any `node:` import in client bundles — pptxgenjs's browser code paths never
+  // touch them at runtime (the export is invoked behind a click handler in a
+  // 'use client' component).
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...(config.resolve.fallback ?? {}),
+        fs: false,
+        https: false,
+        os: false,
+        path: false,
+        stream: false,
+        zlib: false,
+      };
+      config.plugins = config.plugins ?? [];
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^node:/,
+        }),
+      );
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
