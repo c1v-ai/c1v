@@ -1,6 +1,10 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
+import {
+  OpenQuestionsViewer,
+  type OpenQuestionsLedger,
+} from '@/components/requirements/open-questions-viewer';
 
 function SectionSkeleton() {
   return (
@@ -11,34 +15,6 @@ function SectionSkeleton() {
   );
 }
 
-function EmptyState() {
-  return (
-    <div className="rounded-lg border bg-card p-12 text-center">
-      <div className="mx-auto max-w-md space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">Open Questions</h2>
-        <p className="text-sm text-muted-foreground">
-          The system hasn&apos;t emitted any open questions yet. As Deep
-          Synthesis runs, M2 NFR clarifications, QFD disambiguations, and FMEA
-          risk follow-ups will appear here.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-interface OpenQuestionEntry {
-  id?: string;
-  question?: string;
-  source?: string;
-  status?: 'open' | 'resolved' | 'deferred';
-}
-
-interface OpenQuestionsLedger {
-  requirements?: OpenQuestionEntry[];
-  qfdResolved?: OpenQuestionEntry[];
-  riskResolved?: OpenQuestionEntry[];
-}
-
 async function OpenQuestionsContent({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
@@ -46,29 +22,10 @@ async function OpenQuestionsContent({ projectId }: { projectId: number }) {
   // Ledger keys per system-question-bridge contract (TA1):
   // extractedData.openQuestions.{requirements | qfdResolved | riskResolved}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ledger: OpenQuestionsLedger | undefined = (project as any).projectData
-    ?.intakeState?.extractedData?.openQuestions;
+  const ledger: OpenQuestionsLedger | undefined | null = (project as any)
+    .projectData?.intakeState?.extractedData?.openQuestions;
 
-  const total =
-    (ledger?.requirements?.length ?? 0) +
-    (ledger?.qfdResolved?.length ?? 0) +
-    (ledger?.riskResolved?.length ?? 0);
-
-  if (total === 0) {
-    return <EmptyState />;
-  }
-
-  // Real OpenQuestionsViewer is owned by the `interfaces-and-archive-pages`
-  // agent (collapsible accordion, deep-links to chat thread).
-  return (
-    <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-      <p>
-        {total} open question{total === 1 ? '' : 's'} have been emitted across
-        requirements, QFD, and risk sources. The interactive viewer is being
-        prepared.
-      </p>
-    </div>
-  );
+  return <OpenQuestionsViewer projectId={projectId} ledger={ledger} />;
 }
 
 interface PageProps {
