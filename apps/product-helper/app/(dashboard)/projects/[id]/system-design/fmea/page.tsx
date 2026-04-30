@@ -5,10 +5,42 @@ import { getProjectArtifacts } from '@/lib/db/queries';
 import { getSignedUrl } from '@/lib/storage/supabase-storage';
 import { FMEAViewer } from '@/components/system-design/fmea-viewer';
 import { DownloadDropdown } from '@/components/synthesis/download-dropdown';
+import { DataExportMenu } from '@/components/system-design/data-export-menu';
 import type { DownloadDropdownArtifact } from '@/components/synthesis/download-dropdown';
+import type { FMEARow, FMEAInstance } from '@/components/system-design/fmea-viewer';
 
 const FMEA_ARTIFACT_KINDS = ['fmea_early_xlsx', 'fmea_residual_xlsx'];
 type ArtifactRow = Awaited<ReturnType<typeof getProjectArtifacts>>[number];
+
+function rowsFromInstance(
+  instance: FMEAInstance | null | undefined,
+  variant: 'early' | 'residual',
+): Array<Record<string, unknown>> {
+  if (!instance) return [];
+  const t = instance.fmea_table;
+  let rows: FMEARow[] = [];
+  if (Array.isArray(t)) rows = t;
+  else if (t && Array.isArray(t.rows)) rows = t.rows;
+
+  // Some intake captures land under `failure_modes` instead of `fmea_table`.
+  if (rows.length === 0 && Array.isArray((instance as { failure_modes?: unknown }).failure_modes)) {
+    rows = (instance as { failure_modes: FMEARow[] }).failure_modes;
+  }
+
+  return rows.map((r) => ({
+    variant,
+    id: r.id ?? '',
+    function: r.function ?? '',
+    failure_mode: r.failure_mode ?? r.failureMode ?? '',
+    cause: r.cause ?? '',
+    effect: r.effect ?? '',
+    severity: r.severity ?? '',
+    occurrence: r.occurrence ?? '',
+    detection: r.detection ?? '',
+    rpn: r.rpn ?? '',
+    mitigation: r.mitigation ?? '',
+  }));
+}
 
 function SectionSkeleton() {
   return (
@@ -118,6 +150,16 @@ export default async function FMEAPage({ params }: PageProps) {
 
   const artifacts = await getProjectArtifacts(projectId);
   const downloadArtifacts = await buildFmeaDownloadArtifactsFromRows(artifacts);
+  const project = await getProjectById(projectId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const extracted = (project as any)?.projectData?.intakeState?.extractedData;
+  const legacyEarly = (extracted?.fmeaEarly ?? null) as FMEAInstance | null;
+  const legacyResidual = (extracted?.fmeaResidual ?? null) as FMEAInstance | null;
+  const legacyRows = [
+    ...rowsFromInstance(legacyEarly, 'early'),
+    ...rowsFromInstance(legacyResidual, 'residual'),
+  ];
+  const hasSidecarReady = downloadArtifacts.some((a) => a.status === 'ready');
 
   return (
     <section className="flex-1 p-4 pb-20 md:pb-8 lg:p-8 overflow-y-auto">
@@ -126,13 +168,29 @@ export default async function FMEAPage({ params }: PageProps) {
           <h1 className="text-2xl font-bold text-foreground">
             Failure Mode &amp; Effects Analysis
           </h1>
-          {downloadArtifacts.length > 0 && (
-            <DownloadDropdown
-              artifacts={downloadArtifacts}
-              manifestContractVersion="v1"
-              projectId={projectId}
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {downloadArtifacts.length > 0 && (
+              <DownloadDropdown
+                artifacts={downloadArtifacts}
+                manifestContractVersion="v1"
+                projectId={projectId}
+              />
+            )}
+            {legacyRows.length > 0 && (
+              <DataExportMenu
+                data={{ early: legacyEarly, residual: legacyResidual }}
+                rows={legacyRows}
+                filename="fmea"
+                title="FMEA — Failure Modes"
+                hint={
+                  hasSidecarReady
+                    ? 'Quick export from intake data. For canonical XLSX use Downloads.'
+                    : 'Exporting from intake-stage data. Run synthesis for canonical XLSX.'
+                }
+                label={hasSidecarReady ? 'Quick export' : 'Export'}
+              />
+            )}
+          </div>
         </div>
         <Suspense fallback={<SectionSkeleton />}>
           <FMEAContent projectId={projectId} artifacts={artifacts} />

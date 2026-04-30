@@ -3,10 +3,20 @@ import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
 import { getSignedUrl } from '@/lib/storage/supabase-storage';
+import { DownloadDropdown } from '@/components/synthesis/download-dropdown';
+import { DataExportMenu } from '@/components/system-design/data-export-menu';
+import { buildDownloadArtifacts } from '@/lib/synthesis/build-download-artifacts';
 import {
   FormFunctionMapViewer,
   type FormFunctionMapData,
 } from '@/components/system-design/form-function-map-viewer';
+
+const FFM_KINDS = [
+  'form_function_map_v1',
+  'form_function_map_xlsx',
+  'form_function_map_svg',
+  'form_function_map_mmd',
+] as const;
 
 function SectionSkeleton() {
   return (
@@ -62,6 +72,57 @@ async function FormFunctionMapContent({ projectId }: { projectId: number }) {
   return <FormFunctionMapViewer data={data} />;
 }
 
+function projectFfmRows(
+  data: FormFunctionMapData,
+): Array<Record<string, unknown>> {
+  const cells = data.phase_3_concept_mapping_matrix?.cells ?? [];
+  return cells.map((c) => ({
+    function_id: c.function_id,
+    form_id: c.form_id,
+    score: c.score ?? '',
+    interaction_type: c.interaction_type ?? '',
+  }));
+}
+
+async function FormFunctionMapHeaderActions({ projectId }: { projectId: number }) {
+  const sidecarArtifacts = await buildDownloadArtifacts(projectId, FFM_KINDS);
+
+  let jsonPayload: FormFunctionMapData | null = null;
+  const jsonRow = sidecarArtifacts.find(
+    (a) => a.kind === 'form_function_map_v1' && a.status === 'ready' && a.signed_url,
+  );
+  if (jsonRow?.signed_url) {
+    try {
+      const res = await fetch(jsonRow.signed_url, { cache: 'no-store' });
+      if (res.ok) jsonPayload = (await res.json()) as FormFunctionMapData;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {sidecarArtifacts.length > 0 && (
+        <DownloadDropdown
+          artifacts={sidecarArtifacts}
+          manifestContractVersion="v1"
+          projectId={projectId}
+        />
+      )}
+      {jsonPayload && (
+        <DataExportMenu
+          data={jsonPayload}
+          rows={projectFfmRows(jsonPayload)}
+          filename="form-function-map"
+          title="Form-Function Map"
+          hint="Quick export from canonical JSON. For canonical XLSX/SVG/MMD use Downloads."
+          label="Quick export"
+        />
+      )}
+    </div>
+  );
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -74,9 +135,14 @@ export default async function FormFunctionMapPage({ params }: PageProps) {
   return (
     <section className="flex-1 p-4 pb-20 md:pb-8 lg:p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">
-          Form-Function Map
-        </h1>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-foreground">
+            Form-Function Map
+          </h1>
+          <Suspense fallback={null}>
+            <FormFunctionMapHeaderActions projectId={projectId} />
+          </Suspense>
+        </div>
         <Suspense fallback={<SectionSkeleton />}>
           <FormFunctionMapContent projectId={projectId} />
         </Suspense>

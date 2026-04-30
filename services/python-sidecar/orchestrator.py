@@ -114,6 +114,57 @@ ARTIFACT_REGISTRY: dict[str, dict[str, str]] = {
         "ext": "xlsx",
         "format": "xlsx",
     },
+    # ── Wave-E UI export gap (2026-04-29) ───────────────────────────────
+    # Optional artifact kinds. The Vercel pre-create on synthesis kickoff
+    # does NOT include these in EXPECTED_ARTIFACT_KINDS — they're added on
+    # demand by the sidecar when the generator produces them. UI surfacing
+    # via DownloadDropdown picks them up automatically.
+    #
+    # gen-n2.py: pptx target is explicitly NOT implemented; do not add
+    # n2_matrix_pptx until gen-n2.py emits it. xlsx is supported via the
+    # legacy n2_from_json.py adapter the migrator wraps.
+    "n2_matrix_xlsx": {
+        "generator": "gen-n2.py",
+        "target": "xlsx",
+        "schema_ref": "n2-matrix.schema.json",
+        "ext": "xlsx",
+        "format": "xlsx",
+    },
+    "decision_network_xlsx": {
+        "generator": "gen-decision-net.py",
+        "target": "xlsx",
+        "schema_ref": "decision-network.stub.schema.json",
+        "ext": "xlsx",
+        "format": "xlsx",
+    },
+    "decision_network_svg": {
+        "generator": "gen-decision-net.py",
+        "target": "svg",
+        "schema_ref": "decision-network.stub.schema.json",
+        "ext": "svg",
+        "format": "svg",
+    },
+    "form_function_map_xlsx": {
+        "generator": "gen-form-function.py",
+        "target": "xlsx",
+        "schema_ref": "form-function-map.stub.schema.json",
+        "ext": "xlsx",
+        "format": "xlsx",
+    },
+    "form_function_map_svg": {
+        "generator": "gen-form-function.py",
+        "target": "svg",
+        "schema_ref": "form-function-map.stub.schema.json",
+        "ext": "svg",
+        "format": "svg",
+    },
+    "form_function_map_mmd": {
+        "generator": "gen-form-function.py",
+        "target": "mmd",
+        "schema_ref": "form-function-map.stub.schema.json",
+        "ext": "mmd",
+        "format": "mmd",
+    },
 }
 
 
