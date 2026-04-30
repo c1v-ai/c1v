@@ -20,7 +20,18 @@
         "LANGCHAIN_CALLBACKS_BACKGROUND",
         "BASE_URL",
         "RESEND_API_KEY",
-        "USE_LANGGRAPH"
+        "USE_LANGGRAPH",
+        "OPENROUTER_API_KEY",
+        "OPENROUTER_BASE_URL",
+        "QA_JUDGE_MODEL",
+        "QA_OPENROUTER_REFERER",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "PYTHON_SIDECAR_URL",
+        "RENDER_SIDECAR_URL"
       ]
     },
     "dev": {
