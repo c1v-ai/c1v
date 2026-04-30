@@ -151,6 +151,14 @@ export function DownloadDropdown({
               );
             }
 
+            if (artifact.status === 'ready' && !artifact.signed_url) {
+              return (
+                <DropdownMenuItem key={artifact.kind} disabled>
+                  {label} — file unavailable
+                </DropdownMenuItem>
+              );
+            }
+
             if (artifact.status === 'pending') {
               return (
                 <DropdownMenuItem key={artifact.kind} disabled>

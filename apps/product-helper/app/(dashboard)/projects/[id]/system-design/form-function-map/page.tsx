@@ -44,6 +44,22 @@ function EmptyState() {
   );
 }
 
+function StorageUnavailableState() {
+  return (
+    <div className="rounded-lg border bg-card p-12 text-center">
+      <div className="mx-auto max-w-md space-y-3">
+        <h2 className="text-lg font-semibold text-foreground">
+          Form-Function Map
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Synthesis completed but the artifact file was not saved. Re-run
+          synthesis to regenerate.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 async function FormFunctionMapContent({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
@@ -55,7 +71,8 @@ async function FormFunctionMapContent({ projectId }: { projectId: number }) {
       a.synthesisStatus === 'ready',
   );
 
-  if (!row?.storagePath) return <EmptyState />;
+  if (!row) return <EmptyState />;
+  if (!row.storagePath) return <StorageUnavailableState />;
 
   let data: FormFunctionMapData | null = null;
   try {

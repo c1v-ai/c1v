@@ -98,6 +98,20 @@ async function buildFmeaDownloadArtifactsFromRows(
   return entries;
 }
 
+async function fetchV1Json<T>(
+  storagePath: string,
+  cache: Map<string, string>,
+): Promise<T | null> {
+  try {
+    const url = await getSignedUrl(storagePath, undefined, cache);
+    const res = await fetch(url, { cache: 'no-store' });
+    if (res.ok) return (await res.json()) as T;
+  } catch {
+    /* ignore — fall back to legacy */
+  }
+  return null;
+}
+
 async function FMEAContent({
   projectId,
   artifacts,
@@ -108,22 +122,31 @@ async function FMEAContent({
   const project = await getProjectById(projectId);
   if (!project) notFound();
 
-  const earlyReady = artifacts.some(
-    (a) => a.artifactKind === 'fmea_early_xlsx' && a.synthesisStatus === 'ready',
-  );
-  const residualReady = artifacts.some(
-    (a) => a.artifactKind === 'fmea_residual_xlsx' && a.synthesisStatus === 'ready',
-  );
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extracted = (project as any).projectData?.intakeState?.extractedData;
-  const legacyEarly = extracted?.fmeaEarly ?? null;
-  const legacyResidual = extracted?.fmeaResidual ?? null;
+  const legacyEarly = (extracted?.fmeaEarly ?? null) as FMEAInstance | null;
+  const legacyResidual = (extracted?.fmeaResidual ?? null) as FMEAInstance | null;
 
-  const hasArtifact = earlyReady || residualReady;
-  const hasLegacy = !!(legacyEarly || legacyResidual);
+  // Primary: V1 JSON artifacts from project_artifacts (synthesis output).
+  const cache = new Map<string, string>();
+  const earlyV1Row = artifacts.find(
+    (a) => a.artifactKind === 'fmea_early_v1' && a.synthesisStatus === 'ready' && a.storagePath,
+  );
+  const residualV1Row = artifacts.find(
+    (a) => a.artifactKind === 'fmea_residual_v1' && a.synthesisStatus === 'ready' && a.storagePath,
+  );
+  const earlyV1 = earlyV1Row
+    ? await fetchV1Json<FMEAInstance>(earlyV1Row.storagePath!, cache)
+    : null;
+  const residualV1 = residualV1Row
+    ? await fetchV1Json<FMEAInstance>(residualV1Row.storagePath!, cache)
+    : null;
 
-  if (!hasArtifact && !hasLegacy) {
+  // Fallback to legacy extractedData when V1 is absent.
+  const early = earlyV1 ?? legacyEarly;
+  const residual = residualV1 ?? legacyResidual;
+
+  if (!early && !residual) {
     return <EmptyState />;
   }
 
@@ -132,8 +155,8 @@ async function FMEAContent({
 
   return (
     <FMEAViewer
-      early={legacyEarly}
-      residual={legacyResidual}
+      early={early}
+      residual={residual}
       artifactUrlFor={artifactUrlFor}
     />
   );

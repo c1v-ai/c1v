@@ -41,6 +41,8 @@ export type FMEARow = {
 
 export interface FMEAInstance {
   fmea_table?: { rows?: FMEARow[]; [k: string]: unknown } | FMEARow[];
+  /** Canonical module-8.fmea-early.v1 field (alternative to fmea_table). */
+  failure_modes?: FMEARow[];
   rating_scales?: Record<string, unknown>;
   stoplight_charts?: Record<string, unknown>;
   /** Optional path to an SVG file produced by gen-fmea. */
@@ -61,16 +63,25 @@ interface FMEAViewerProps {
 function extractRows(instance: FMEAInstance | null | undefined): FMEARow[] {
   if (!instance) return [];
   const t = instance.fmea_table;
-  if (!t) return [];
-  if (Array.isArray(t)) return t;
-  if (Array.isArray(t.rows)) return t.rows;
+  if (t) {
+    if (Array.isArray(t)) return t;
+    if (Array.isArray(t.rows)) return t.rows;
+  }
+  // Canonical module-8.fmea-early.v1 uses failure_modes instead of fmea_table
+  if (Array.isArray(instance.failure_modes)) return instance.failure_modes;
   return [];
 }
 
-function rpnClass(rpn: number | undefined): string {
+function rpnClass(row: FMEARow): string {
+  const cat = (row as { criticality_category?: string }).criticality_category;
+  if (cat === 'high') return 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-300';
+  if (cat === 'medium') return 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
+  if (cat === 'low') return 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300';
+  // Numeric RPN fallback (1–1000 scale)
+  const rpn = row.rpn;
   if (typeof rpn !== 'number' || Number.isNaN(rpn)) return '';
-  if (rpn >= 80) return 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-300';
-  if (rpn >= 40) return 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
+  if (rpn >= 200) return 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-300';
+  if (rpn >= 100) return 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
   return 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300';
 }
 
@@ -125,7 +136,7 @@ function FMEATable({ rows }: { rows: FMEARow[] }) {
                 <td
                   className={cn(
                     'border px-2 py-1 text-center font-semibold',
-                    rpnClass(row.rpn as number | undefined)
+                    rpnClass(row)
                   )}
                 >
                   {row.rpn ?? ''}
