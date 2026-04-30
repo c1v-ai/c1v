@@ -614,8 +614,10 @@ export function computeArtifactReadiness(data: ExtractionResult): ArtifactReadin
   const hasEntities = data.dataEntities.length >= 1;
 
   return {
-    // Context Diagram: system name (always have) + 1 actor + external defined
-    context_diagram: hasMinActors && hasExternal,
+    // Context Diagram: actors required; external_systems optional ("1+ or none" per spec).
+    // hasExternal gate is removed — extraction never writes 'none_confirmed' when the
+    // user hasn't mentioned any, causing a liveness deadlock where the KB re-asks forever.
+    context_diagram: hasMinActors,
 
     // Use Case Diagram: 2+ actors + 3+ use cases linked
     use_case_diagram: hasTwoActors && hasMinUseCases,
