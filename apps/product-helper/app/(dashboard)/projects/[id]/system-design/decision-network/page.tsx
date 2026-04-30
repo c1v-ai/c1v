@@ -42,6 +42,22 @@ function EmptyState() {
   );
 }
 
+function StorageUnavailableState() {
+  return (
+    <div className="rounded-lg border bg-card p-12 text-center">
+      <div className="mx-auto max-w-md space-y-3">
+        <h2 className="text-lg font-semibold text-foreground">
+          Decision Network
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Synthesis completed but the artifact file was not saved. Re-run
+          synthesis to regenerate.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function normalizeDecisionNetworkData(raw: DecisionNetworkData): DecisionNetworkData {
   const extended = raw as DecisionNetworkData & {
     phases?: {
@@ -111,7 +127,8 @@ async function DecisionNetworkContent({ projectId }: { projectId: number }) {
       a.artifactKind === 'decision_network_v1' && a.synthesisStatus === 'ready',
   );
 
-  if (!row?.storagePath) return <EmptyState />;
+  if (!row) return <EmptyState />;
+  if (!row.storagePath) return <StorageUnavailableState />;
 
   let data: DecisionNetworkData | null = null;
   try {

@@ -75,7 +75,8 @@ async function dispatchSidecarDerivatives(args: {
   const derivativeKinds = SIDECAR_DERIVATIVES[args.sourceKind] ?? [];
   if (derivativeKinds.length === 0) return;
 
-  const sidecarBase = process.env.RENDER_SIDECAR_URL;
+  const sidecarBase =
+    process.env.RENDER_SIDECAR_URL ?? process.env.PYTHON_SIDECAR_URL;
   if (!sidecarBase) {
     return;
   }
