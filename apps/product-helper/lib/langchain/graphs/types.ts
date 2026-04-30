@@ -614,8 +614,9 @@ export function computeArtifactReadiness(data: ExtractionResult): ArtifactReadin
   const hasEntities = data.dataEntities.length >= 1;
 
   return {
-    // Context Diagram: system name (always have) + 1 actor + external defined
-    context_diagram: hasMinActors && hasExternal,
+    // Context Diagram: 1+ actor required; external systems are optional ("1+ or none")
+    // and should not block phase progress when the system is standalone.
+    context_diagram: hasMinActors,
 
     // Use Case Diagram: 2+ actors + 3+ use cases linked
     use_case_diagram: hasTwoActors && hasMinUseCases,

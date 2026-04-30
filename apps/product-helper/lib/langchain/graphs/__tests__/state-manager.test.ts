@@ -145,10 +145,10 @@ describe('computeArtifactReadiness', () => {
       expect(readiness.context_diagram).toBe(false);
     });
 
-    it('returns false when actor but no external systems', () => {
+    it('returns true when actor exists even with no external systems', () => {
       const data = createMinimalExtraction();
       const readiness = computeArtifactReadiness(data);
-      expect(readiness.context_diagram).toBe(false);
+      expect(readiness.context_diagram).toBe(true);
     });
 
     it('returns true when 1+ actor and external systems defined', () => {
