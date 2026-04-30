@@ -42,6 +42,65 @@ function EmptyState() {
   );
 }
 
+function normalizeDecisionNetworkData(raw: DecisionNetworkData): DecisionNetworkData {
+  const extended = raw as DecisionNetworkData & {
+    phases?: {
+      phase_14_decision_nodes?: {
+        decision_nodes?: Array<{
+          id: string;
+          title?: string;
+          question?: string;
+          alternatives?: Array<{ id: string; name?: string; label?: string }>;
+          utility_vector?: {
+            values?: Array<{ alternative_id: string; utility?: number }>;
+          };
+        }>;
+      };
+      phase_16_pareto_frontier?: {
+        architecture_vectors?: Array<{
+          id: string;
+          utility_total?: number;
+          on_frontier?: boolean;
+          choices?: Array<{ decision_node_id: string; alternative_id: string }>;
+        }>;
+      };
+    };
+  };
+
+  if (raw.decision_nodes || raw.pareto_alternatives) return raw;
+
+  const phase14 = extended.phases?.phase_14_decision_nodes;
+  const phase16 = extended.phases?.phase_16_pareto_frontier;
+
+  return {
+    system_name: raw.system_name,
+    decision_nodes: phase14?.decision_nodes?.map((node) => {
+      const utilities = new Map(
+        node.utility_vector?.values?.map((v) => [v.alternative_id, v.utility]) ?? [],
+      );
+      const alternatives =
+        node.alternatives?.map((alt) => ({
+          id: alt.id,
+          label: alt.name ?? alt.label ?? alt.id,
+        })) ?? [];
+      const winning = [...alternatives]
+        .sort(
+          (a, b) =>
+            (utilities.get(b.id) ?? Number.NEGATIVE_INFINITY) -
+            (utilities.get(a.id) ?? Number.NEGATIVE_INFINITY),
+        )[0];
+
+      return {
+        id: node.id,
+        label: node.title ?? node.question ?? node.id,
+        alternatives,
+        winning_alternative: winning,
+      };
+    }),
+    pareto_alternatives: phase16?.architecture_vectors,
+  };
+}
+
 async function DecisionNetworkContent({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
@@ -59,7 +118,7 @@ async function DecisionNetworkContent({ projectId }: { projectId: number }) {
     const cache = new Map<string, string>();
     const url = await getSignedUrl(row.storagePath, undefined, cache);
     const res = await fetch(url, { cache: 'no-store' });
-    if (res.ok) data = (await res.json()) as DecisionNetworkData;
+    if (res.ok) data = normalizeDecisionNetworkData((await res.json()) as DecisionNetworkData);
   } catch {
     /* fall through to empty state */
   }
@@ -99,7 +158,11 @@ async function DecisionNetworkHeaderActions({ projectId }: { projectId: number }
   if (jsonRow?.signed_url) {
     try {
       const res = await fetch(jsonRow.signed_url, { cache: 'no-store' });
-      if (res.ok) jsonPayload = (await res.json()) as DecisionNetworkData;
+      if (res.ok) {
+        jsonPayload = normalizeDecisionNetworkData(
+          (await res.json()) as DecisionNetworkData,
+        );
+      }
     } catch {
       /* ignore */
     }

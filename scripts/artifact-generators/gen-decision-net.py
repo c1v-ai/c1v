@@ -165,8 +165,9 @@ def _svg_dag(instance: dict, out_path: Path, warnings: list[str]) -> bool:
             linewidths=2.5, node_size=1800, ax=ax,
         )
     labels = {n: (data.get("label") or n)[:24] for n, data in g.nodes(data=True)}
-    nx.draw_networkx_labels(g, pos, labels=labels, font_size=7, ax=ax,
-                            **_default_font_kwargs())
+    nx.draw_networkx_labels(
+        g, pos, labels=labels, font_size=7, ax=ax, font_family="DejaVu Sans"
+    )
     ax.set_title("Decision Network (DAG)", **_default_font_kwargs())
     ax.set_axis_off()
     _save_svg(fig, out_path)

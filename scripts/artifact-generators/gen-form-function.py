@@ -126,7 +126,9 @@ def _svg_bipartite(instance: dict, out_path: Path, warnings: list[str]) -> bool:
     nx.draw_networkx_nodes(g, pos, nodelist=fm_nodes, node_color="#FBFCFC",
                            edgecolors="#0B2C29", node_size=1200, ax=ax)
     labels = {n: (d.get("label") or n)[:22] for n, d in g.nodes(data=True)}
-    nx.draw_networkx_labels(g, pos, labels=labels, font_size=7, ax=ax, **_FONT)
+    nx.draw_networkx_labels(
+        g, pos, labels=labels, font_size=7, ax=ax, font_family="DejaVu Sans"
+    )
     ax.set_title("Function ↔ Form (edge width = quality)", **_FONT)
     ax.set_axis_off()
     _save_svg(fig, out_path)
