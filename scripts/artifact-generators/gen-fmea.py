@@ -205,6 +205,104 @@ def _residual_to_legacy_bundle(residual: dict, options: dict) -> dict:
     }
 
 
+def _early_to_table(early: dict) -> dict:
+    rows = []
+    for fm in early["failure_modes"]:
+        mitigations = "; ".join(
+            f"[{m.get('id', '?')}] {m.get('summary', '')}"
+            for m in fm.get("candidate_mitigation", [])
+        )
+        target = fm["target_ref"]
+        rows.append({
+            "failure_mode_id": fm["id"],
+            "subsystem": f"{target['kind']}:{target['ref']}",
+            "failure_mode": fm["failure_mode"],
+            "failure_effects": [fm["potential_effect"]],
+            "possible_cause": fm["potential_cause"],
+            "mmmme": "Method",
+            "interface_ref": target["ref"] if target["kind"] == "interface" else "",
+            "severity": fm["severity"],
+            "likelihood": fm["likelihood"],
+            "rpn": fm["rpn"],
+            "risk_criticality": fm["criticality_category"],
+            "corrective_action": mitigations,
+            "adjusted_severity": fm["severity"],
+            "adjusted_likelihood": fm["likelihood"],
+            "adjusted_rpn": fm["rpn"],
+            "adjusted_criticality": fm["criticality_category"],
+            "corrective_action_effort": "option",
+            "detectability": fm["detectability"],
+            "troubleshooting": fm.get("notes", ""),
+        })
+    return {
+        "_schema": "fmea_master_table.v1",
+        "_module": "Module 8 — FMEA-early",
+        "_produced_date": early.get("produced_at", "")[:10],
+        "_calibration_reference": "module-8.fmea-early.v1 → adapted for legacy renderer",
+        "_column_order": _RESIDUAL_COL_ORDER,
+        "_row_count": len(rows),
+        "_failure_mode_count": len(rows),
+        "_subsystem_count": len({r["subsystem"] for r in rows}),
+        "rows": rows,
+    }
+
+
+def _early_to_stoplight(early: dict) -> dict:
+    matrix = {f"L{i}": {f"S{j}": 0 for j in range(1, 5)} for i in range(1, 6)}
+    crit_buckets: dict[str, list[str]] = {
+        "HIGH": [], "MEDIUM HIGH": [], "MEDIUM": [], "MEDIUM LOW": [], "LOW": [],
+    }
+    for fm in early["failure_modes"]:
+        s, l = fm["severity"], fm["likelihood"]
+        matrix[f"L{l}"][f"S{s}"] += 1
+        crit_buckets.setdefault(fm["criticality_category"], []).append(fm["id"])
+    crit_totals = {
+        cat: {
+            "rpn_range": rng,
+            "count": len(crit_buckets[cat]),
+            "rows": crit_buckets[cat],
+        }
+        for cat, rng in [
+            ("HIGH", "15-20"),
+            ("MEDIUM HIGH", "9-14"),
+            ("MEDIUM", "5-8"),
+            ("MEDIUM LOW", "3-4"),
+            ("LOW", "1-2"),
+        ]
+    }
+    snapshot = {
+        "description": "Early FMEA risk distribution before committed mitigations.",
+        "matrix": matrix,
+        "criticality_totals": crit_totals,
+        "sum_check": len(early["failure_modes"]),
+    }
+    return {
+        "_schema": "fmea_stoplight_charts.v1",
+        "_module": "Module 8 — FMEA-early",
+        "_produced_date": early.get("produced_at", "")[:10],
+        "_source_table": "fmea_early.v1.json",
+        "_total_cause_rows": len(early["failure_modes"]),
+        "_matrix_convention": "y = Likelihood (1..5, bottom-to-top), x = Severity (1..4)",
+        "before_corrective_actions": snapshot,
+        "after_corrective_actions": snapshot,
+    }
+
+
+def _early_to_legacy_bundle(early: dict, options: dict) -> dict:
+    rating_scales = options.get("ratingScales")
+    if rating_scales is None:
+        if not RATING_SCALES_FALLBACK.exists():
+            raise FileNotFoundError(
+                f"variant='early' needs options.ratingScales or {RATING_SCALES_FALLBACK}"
+            )
+        rating_scales = json.loads(RATING_SCALES_FALLBACK.read_text(encoding="utf-8"))
+    return {
+        "fmea_table": _early_to_table(early),
+        "rating_scales": rating_scales,
+        "stoplight_charts": _early_to_stoplight(early),
+    }
+
+
 def render(instance, output_dir: Path, targets, options, warnings):
     if not LEGACY_XLSX.exists() or not LEGACY_STOPLIGHTS.exists():
         raise FileNotFoundError(
@@ -220,6 +318,8 @@ def render(instance, output_dir: Path, targets, options, warnings):
                 f"gen-fmea variant='residual' expects _schema=module-8.fmea-residual.v1, got {instance.get('_schema')!r}"
             )
         instance = _residual_to_legacy_bundle(instance, options or {})
+    elif instance.get("_schema") == "module-8.fmea-early.v1":
+        instance = _early_to_legacy_bundle(instance, options or {})
 
     with tempfile.TemporaryDirectory(prefix="gen-fmea-") as tmp:
         tmp_path = Path(tmp)
