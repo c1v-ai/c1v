@@ -1,9 +1,5 @@
 import { readFileSync } from 'fs';
-// @ts-expect-error -- js-yaml not in package.json; script is dead code.
-// Restore by adding `js-yaml` + `@types/js-yaml` to devDependencies if/when
-// this validator gets reactivated. Suppression keeps `next build` lint pass
-// green; runtime invocation via `pnpm tsx` would fail on missing module.
-import { load, JSON_SCHEMA } from 'js-yaml';
+import { parse } from 'yaml';
 import { companyAtlasEntrySchema } from '../../lib/langchain/schemas/atlas/entry';
 
 const paths = process.argv.slice(2);
@@ -16,7 +12,7 @@ for (const p of paths) {
     failed++;
     continue;
   }
-  const data = load(m[1], { schema: JSON_SCHEMA });
+  const data = parse(m[1]);
   const r = companyAtlasEntrySchema.safeParse(data);
   if (r.success) {
     console.log(`${p}: CLEAN`);
