@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { load, JSON_SCHEMA } from 'js-yaml';
+import { parse } from 'yaml';
 import { companyAtlasEntrySchema } from '../../lib/langchain/schemas/atlas/entry';
 
 const paths = process.argv.slice(2);
@@ -12,7 +12,7 @@ for (const p of paths) {
     failed++;
     continue;
   }
-  const data = load(m[1], { schema: JSON_SCHEMA });
+  const data = parse(m[1]);
   const r = companyAtlasEntrySchema.safeParse(data);
   if (r.success) {
     console.log(`${p}: CLEAN`);
