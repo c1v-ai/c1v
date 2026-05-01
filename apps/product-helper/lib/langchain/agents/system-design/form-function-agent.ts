@@ -27,7 +27,7 @@
  * @module lib/langchain/agents/system-design/form-function-agent
  */
 
-import type { ChatAnthropic } from '@langchain/anthropic';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import {
   formFunctionMapV1Schema,
@@ -69,7 +69,7 @@ export function deriveRedundancyRequiredFunctions(fmea: FmeaEarly): Map<string, 
 
 export async function runFormFunctionAgent(
   input: FormFunctionAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FormFunctionMapV1 } = {},
+  opts: { llm?: BaseChatModel; stub?: FormFunctionMapV1 } = {},
 ): Promise<FormFunctionMapV1> {
   return withAgentMetrics({ agent: 'form-function' }, () =>
     runFormFunctionAgentInner(input, opts),
@@ -78,7 +78,7 @@ export async function runFormFunctionAgent(
 
 async function runFormFunctionAgentInner(
   input: FormFunctionAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FormFunctionMapV1 } = {},
+  opts: { llm?: BaseChatModel; stub?: FormFunctionMapV1 } = {},
 ): Promise<FormFunctionMapV1> {
   if (!opts.stub) {
     throw new Error('runFormFunctionAgent: live LLM path not implemented; pass opts.stub.');

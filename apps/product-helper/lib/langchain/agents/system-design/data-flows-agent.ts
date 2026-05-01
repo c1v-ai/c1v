@@ -12,7 +12,7 @@
  * @module lib/langchain/agents/system-design/data-flows-agent
  */
 
-import { ChatAnthropic } from '@langchain/anthropic';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import {
   dataFlowsSchema,
@@ -30,14 +30,14 @@ export interface DataFlowsAgentInput {
 
 export async function runDataFlowsAgent(
   input: DataFlowsAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: DataFlows } = {},
+  opts: { llm?: BaseChatModel; stub?: DataFlows } = {},
 ): Promise<DataFlows> {
   return withAgentMetrics({ agent: 'synthesis' }, () => runDataFlowsAgentInner(input, opts));
 }
 
 async function runDataFlowsAgentInner(
   input: DataFlowsAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: DataFlows } = {},
+  opts: { llm?: BaseChatModel; stub?: DataFlows } = {},
 ): Promise<DataFlows> {
   if (opts.stub) {
     return dataFlowsSchema.parse(opts.stub);

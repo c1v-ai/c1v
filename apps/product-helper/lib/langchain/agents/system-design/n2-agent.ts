@@ -10,7 +10,7 @@
  * @module lib/langchain/agents/system-design/n2-agent
  */
 
-import { ChatAnthropic } from '@langchain/anthropic';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import { n2MatrixSchema, type N2Matrix } from '@/lib/langchain/schemas/module-7-interfaces/n2-matrix';
 import type { FfbdV1 } from '@/lib/langchain/schemas/module-3/ffbd-v1';
@@ -27,7 +27,7 @@ export interface N2AgentInput {
 
 export async function runN2Agent(
   input: N2AgentInput,
-  opts: { llm?: ChatAnthropic; stub?: N2Matrix } = {},
+  opts: { llm?: BaseChatModel; stub?: N2Matrix } = {},
 ): Promise<N2Matrix> {
   // n2 is M7.a — folded into 'synthesis' bucket alongside ffbd.
   return withAgentMetrics({ agent: 'synthesis' }, () => runN2AgentInner(input, opts));
@@ -35,7 +35,7 @@ export async function runN2Agent(
 
 async function runN2AgentInner(
   input: N2AgentInput,
-  opts: { llm?: ChatAnthropic; stub?: N2Matrix } = {},
+  opts: { llm?: BaseChatModel; stub?: N2Matrix } = {},
 ): Promise<N2Matrix> {
   if (opts.stub) {
     const parsed = n2MatrixSchema.parse(opts.stub);

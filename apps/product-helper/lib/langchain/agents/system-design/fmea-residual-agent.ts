@@ -22,7 +22,7 @@
  * @module lib/langchain/agents/system-design/fmea-residual-agent
  */
 
-import type { ChatAnthropic } from '@langchain/anthropic';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import {
   fmeaResidualSchema,
@@ -140,7 +140,7 @@ export function summarizeResidual(
 
 export async function runFmeaResidualAgent(
   input: FmeaResidualAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FmeaResidual } = {},
+  opts: { llm?: BaseChatModel; stub?: FmeaResidual } = {},
 ): Promise<FmeaResidual> {
   return withAgentMetrics({ agent: 'fmea-residual' }, () =>
     runFmeaResidualAgentInner(input, opts),
@@ -149,7 +149,7 @@ export async function runFmeaResidualAgent(
 
 async function runFmeaResidualAgentInner(
   input: FmeaResidualAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FmeaResidual } = {},
+  opts: { llm?: BaseChatModel; stub?: FmeaResidual } = {},
 ): Promise<FmeaResidual> {
   if (!opts.stub) {
     throw new Error('runFmeaResidualAgent: live LLM path not implemented; pass opts.stub.');
