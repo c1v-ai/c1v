@@ -1,60 +1,155 @@
 /* =========================================================
-   c1v Brand System — Figma Design Tokens
-   Fonts: Space Grotesk (headings), Consolas (body)
-   Palette: Firefly, Porcelain, Tangerine, Danube
-   Source: Figma file g5lP1TizFUIvqb86hsAjaL
+   c1v Brand System — Canonical Light + Dark Theme
+   Codified 2026-05-01 per David's spec:
+
+   LIGHT THEME:
+     • Background:  Porcelain #fbfcfc
+     • Body text:   Firefly Darker #061818
+     • Heading text: Firefly Darker #061818
+     • CTA:         Danube #5998C5
+     • CTA hover:   Danube Light #8ab6d6
+     • Shading:     Tangerine Lighter #fce8cc
+
+   DARK THEME:
+     • Background:  Firefly Darker #041110
+     • Body text:   Porcelain #fbfcfc
+     • Heading text: Porcelain #fbfcfc
+     • CTA:         Danube Light #8ab6d6
+     • CTA hover:   Danube #5998C5
+     • Shading:     Tangerine Lighter #fce8cc
+
+   Fonts: Space Grotesk (headings), Consolas (body — pending Roboto swap)
+   Source: Webflow file `davids-marvelous-site-6e4eea` (Variables panel)
+
+   ⚠️ Ramp hex values below are HSL-derived defaults. The base colors
+       (Firefly, Porcelain, Tangerine, Danube) are confirmed against
+       Figma `g5lP1TizFUIvqb86hsAjaL`. Other ramp steps (Lightest /
+       Light / Lighter / Dark / Darker / Darkest) should be replaced
+       with the exact Webflow Variables values when exported.
    ========================================================= */
 
 :root {
-  /* Fonts — 2-font system: Space Grotesk headings, Consolas body */
+  /* ─── Fonts ─── */
   --font-heading: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
   --font-body: Consolas, monospace;
 
-  /* Button shadows — defined here, referenced by components via var() */
+  /* ─── Button shadows (Figma) ─── */
   --shadow-button-primary: 0px 1px 2px rgba(13,13,13,0.05), inset 0px 32px 24px rgba(255,255,255,0.05), inset 0px 2px 1px rgba(255,255,255,0.25), inset 0px 0px 0px 1px rgba(13,13,13,0.15), inset 0px -2px 1px rgba(0,0,0,0.2);
   --shadow-button-secondary: 0px 1px 2px rgba(13,13,13,0.05), inset 0px 0px 0px 1px rgba(13,13,13,0.05), inset 0px -2px 1px rgba(13,13,13,0.05);
 
-  /* Figma Color Palette */
-  --color-firefly: #0B2C29;
-  --color-porcelain: #FBFCFC;
-  --color-tangerine: #F18F01;
-  --color-tangerine-light: #FDF3E5;
-  --color-danube: #5998C5;
+  /* =========================================================
+     PRIMITIVES — Brand Color Ramps (5 families × 7 steps)
+     Step naming follows Webflow Variables: Lightest → Darkest.
+     Bases (no suffix) are Figma-confirmed; ramp steps are
+     HSL-derived defaults pending Webflow export.
+     ========================================================= */
 
-  /* Semantic tokens — Light mode (c1v- prefix avoids shadcn HSL var collisions) */
-  --bg-primary: var(--color-porcelain);
-  --bg-secondary: #FFFFFF;
-  --text-primary: #0B2C29;
-  --c1v-accent: var(--color-tangerine);
-  --text-muted: rgba(13, 13, 13, 0.6);
-  --c1v-border: rgba(13, 13, 13, 0.15);
-  --c1v-shadow: 0 1px 2px rgba(13, 13, 13, 0.05);
+  /* ─── Firefly (HSL 174.5°, 60%, 11%) ─── */
+  --color-firefly-lightest: #EAF1F0;   /* L94 — pale teal-tint */
+  --color-firefly-light:    #98C9C5;   /* L70 — light teal     */
+  --color-firefly-lighter:  #34A296;   /* L40 — medium teal    */
+  --color-firefly:          #0B2C29;   /* L11 — base (Figma)   */
+  --color-firefly-dark:     #082020;   /* L8                   */
+  --color-firefly-darker:   #061818;   /* L6                   */
+  --color-firefly-darkest:  #041110;   /* dark theme bg (canonical)  */
+
+  /* ─── Porcelain (HSL 180°, 14%, 99%) ─── */
+  --color-porcelain-lightest: #FFFFFF; /* L100                  */
+  --color-porcelain-light:    #FBFCFC; /* L99 — same as base    */
+  --color-porcelain-lighter:  #F5F7F7; /* L97                   */
+  --color-porcelain:          #FBFCFC; /* base (Figma)          */
+  --color-porcelain-dark:     #ECEEEE; /* L93                   */
+  --color-porcelain-darker:   #DEE2E2; /* L88                   */
+  --color-porcelain-darkest:  #C5CBCB; /* L78                   */
+
+  /* ─── Tangerine (HSL 35°, 99%, 47%) ─── */
+  --color-tangerine-lightest: #FEF1DD; /* L95 — used for shading */
+  --color-tangerine-light:    #FDF3E5; /* legacy alias (kept for back-compat) */
+  --color-tangerine-lighter:  #fce8cc; /* shading canonical      */
+  --color-tangerine:          #F18F01; /* L47 — base (Figma)    */
+  --color-tangerine-dark:     #BD7100; /* L37                   */
+  --color-tangerine-darker:   #8A5300; /* L27                   */
+  --color-tangerine-darkest:  #573500; /* L17                   */
+
+  /* ─── Danube (HSL 205°, 48%, 56%) — PRIMARY CTA COLOR ─── */
+  --color-danube-lightest: #DCEAF3;    /* L92                   */
+  --color-danube-light:    #8ab6d6;    /* canonical Danube Light */
+  --color-danube-lighter:  #91BAD5;    /* L67                   */
+  --color-danube:          #5998C5;    /* L56 — base (Figma)    */
+  --color-danube-dark:     #3F7DA8;    /* L46                   */
+  --color-danube-darker:   #2F6182;    /* L36                   */
+  --color-danube-darkest:  #21455D;    /* L26                   */
+
+  /* ─── Neutral (HSL 0°, 0%) ─── */
+  --color-neutral-lightest: #FFFFFF;
+  --color-neutral-light:    #F2F2F2;
+  --color-neutral-lighter:  #D9D9D9;
+  --color-neutral:          #888888;
+  --color-neutral-dark:     #404040;
+  --color-neutral-darker:   #1A1A1A;
+  --color-neutral-darkest:  #0D0D0D;
+
+  /* =========================================================
+     SEMANTIC TOKENS — LIGHT THEME (default)
+     Per David's spec: Porcelain bg / Firefly Darker text /
+     Danube CTA / Tangerine Lightest shading.
+     ========================================================= */
+
+  --bg-primary:    var(--color-porcelain);
+  --bg-secondary:  var(--color-porcelain-lighter);
+  --bg-shading:    var(--color-tangerine-lighter);     /* badges, highlights, subtle accent backgrounds */
+
+  --text-primary:  var(--color-firefly-darker);       /* body text */
+  --text-heading:  var(--color-firefly-darker);       /* H1-H6 */
+  --text-muted:    rgba(13, 13, 13, 0.6);
+  --text-onCTA:    #FFFFFF;                           /* text on Danube */
+
+  --cta-primary:        var(--color-danube);
+  --cta-primary-hover:  var(--color-danube-light);
+  --cta-primary-active: var(--color-danube-darker);
+
+  --c1v-accent:    var(--color-danube);               /* CTA = accent (David override 2026-05-01) */
+  --c1v-border:    rgba(13, 13, 13, 0.15);
+  --c1v-shadow:    0 1px 2px rgba(13, 13, 13, 0.05);
 
   /* Radius tokens from Figma */
-  --radius: 12px;
-  --radius-button: 12px;
-  --radius-input: 12px;
-  --radius-card: 12px;
-  --radius-tag: 6px;
+  --radius:           12px;
+  --radius-button:    12px;
+  --radius-input:     12px;
+  --radius-card:      12px;
+  --radius-tag:       6px;
   --radius-tab-container: 10px;
-  --radius-tab-active: 8px;
-  --radius-checkbox: 4px;
-  --radius-radio: 100px;
-  --radius-toggle: 500px;
+  --radius-tab-active:    8px;
+  --radius-checkbox:  4px;
+  --radius-radio:     100px;
+  --radius-toggle:    500px;
 }
 
-/* Dark theme - uses .dark class (Tailwind convention) */
+/* =========================================================
+   SEMANTIC TOKENS — DARK THEME
+   Per David's spec: Firefly Darker bg (#041110) / Porcelain text /
+   Danube Light CTA / Tangerine Lighter shading.
+   ========================================================= */
 .dark {
-  --bg-primary: var(--color-firefly);
-  --bg-secondary: var(--color-firefly);
-  --text-primary: #FFFFFF;
-  --c1v-accent: var(--color-tangerine);
-  --text-muted: rgba(255, 255, 255, 0.6);
-  --c1v-border: rgba(255, 255, 255, 0.2);
-  --c1v-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --bg-primary:    var(--color-firefly-darkest);
+  --bg-secondary:  var(--color-firefly-darker);
+  --bg-shading:    var(--color-tangerine-lighter);     /* shading is theme-invariant per David */
+
+  --text-primary:  var(--color-porcelain);            /* body text */
+  --text-heading:  var(--color-porcelain);            /* H1-H6 */
+  --text-muted:    rgba(255, 255, 255, 0.6);
+  --text-onCTA:    #FFFFFF;
+
+  --cta-primary:        var(--color-danube-light);
+  --cta-primary-hover:  var(--color-danube);
+  --cta-primary-active: var(--color-danube-lighter);
+
+  --c1v-accent:    var(--color-danube-light);
+  --c1v-border:    rgba(255, 255, 255, 0.2);
+  --c1v-shadow:    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Global defaults */
+/* ─── Global element defaults ─── */
 html, body {
   height: 100%;
 }
@@ -69,15 +164,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings */
 h1, h2, h3, h4, h5, h6,
 .heading, .title {
   font-family: var(--font-heading);
+  color: var(--text-heading);
   letter-spacing: -0.01em;
   margin: 0 0 0.6rem 0;
 }
 
-/* Common UI surfaces */
 .card, .panel, .surface {
   background: var(--bg-secondary);
   border: 1px solid var(--c1v-border);
@@ -85,7 +179,6 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: var(--c1v-shadow);
 }
 
-/* Links — no global color override; components use Tailwind classes */
 a {
   text-decoration: none;
 }
@@ -102,27 +195,21 @@ input, textarea, select {
   border-radius: calc(var(--radius) - 2px);
   padding: 10px 12px;
   outline: none;
+  font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
 input::placeholder, textarea::placeholder {
   color: var(--text-muted);
 }
 
-/* Utility */
-.muted { color: var(--text-muted); }
-
-/* Mobile-optimized form inputs */
-input, textarea, select {
-  font-size: 16px; /* Prevents iOS zoom on focus */
-}
-
 @media (max-width: 767px) {
   input, textarea, select {
-    padding: 12px 14px; /* Larger touch targets on mobile */
+    padding: 12px 14px;
   }
-
   button, .btn, .button {
-    min-height: 44px; /* Touch target minimum */
+    min-height: 44px;
     padding: 12px 16px;
   }
 }
+
+.muted { color: var(--text-muted); }
