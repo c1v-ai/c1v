@@ -19,7 +19,6 @@ import { useRouter } from 'next/navigation';
 import { User, TeamDataWithMembers } from '@/lib/db/schema';
 import useSWR, { mutate } from 'swr';
 import { BottomNav } from '@/components/navigation/bottom-nav';
-import { MobileMenu } from '@/components/navigation/mobile-menu';
 import { useAppKeyboardShortcuts } from '@/lib/hooks/use-keyboard-shortcuts';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -150,9 +149,7 @@ function Header() {
   return (
     <header className="border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        {/* Mobile menu button - only visible on mobile */}
         <div className="flex items-center gap-2">
-          {user && <MobileMenu />}
           <Link href="/" className="flex items-center">
             <CircleIcon className="h-6 w-6 text-primary" />
             <span className="ml-2 text-xl font-semibold text-foreground">Product Helper</span>
