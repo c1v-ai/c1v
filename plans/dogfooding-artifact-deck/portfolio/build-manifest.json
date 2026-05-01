@@ -1,0 +1,92 @@
+{
+  "started_at": "2026-05-01T06:15:32.935122+00:00",
+  "finished_at": "2026-05-01T06:15:45.535473+00:00",
+  "total_elapsed_s": 12.33,
+  "output_dir": "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio",
+  "master_pptx": {
+    "path": "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.pptx",
+    "size_bytes": 504244,
+    "slide_count": 63
+  },
+  "master_xlsx": {
+    "path": "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.xlsx",
+    "size_bytes": 159542,
+    "sheet_count": 58
+  },
+  "stages": [
+    {
+      "stage": "flat-tables",
+      "cmd": [
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/.venv/bin/python",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-self-app-flat-tables.py",
+        "--output-dir",
+        "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.32
+    },
+    {
+      "stage": "data-slides",
+      "cmd": [
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/.venv/bin/python",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-self-app-data-slides.py",
+        "--output-dir",
+        "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.26
+    },
+    {
+      "stage": "m2-ucbd-pptx",
+      "cmd": [
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/.venv/bin/python",
+        "/Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/2-dev-sys-reqs-for-kb-llm-software/generate_ucbd_pptx.py",
+        "--project",
+        "/Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-2-requirements",
+        "--output",
+        "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/M2-UCBDs.pptx"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.26
+    },
+    {
+      "stage": "synthesis",
+      "cmd": [
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/.venv/bin/python",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-self-app-synthesis.py",
+        "--input",
+        "/Users/davidancor/Projects/c1v/.planning/runs/self-application/synthesis/architecture_recommendation.v1.json",
+        "--output-dir",
+        "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio"
+      ],
+      "returncode": 0,
+      "elapsed_s": 7.95
+    },
+    {
+      "stage": "assemble-master-pptx",
+      "cmd": [
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/.venv/bin/python",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/assemble-master-pptx.py",
+        "--manifest",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/master-deck.manifest.json",
+        "--output",
+        "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.pptx"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.43
+    },
+    {
+      "stage": "assemble-master-xlsx",
+      "cmd": [
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/.venv/bin/python",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/assemble-master-xlsx.py",
+        "--manifest",
+        "/Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/master-workbook.manifest.json",
+        "--output",
+        "/Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.xlsx"
+      ],
+      "returncode": 0,
+      "elapsed_s": 3.1
+    }
+  ]
+}
