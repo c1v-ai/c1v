@@ -42,7 +42,9 @@
     },
     {
       "name": "Synthesis — Architecture Recommendation",
-      "sources": []
+      "sources": [
+        "plans/dogfooding-artifact-deck/portfolio/synthesis.pptx"
+      ]
     }
   ]
 }

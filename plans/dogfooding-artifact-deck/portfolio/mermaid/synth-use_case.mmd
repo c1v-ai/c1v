@@ -1,0 +1,7 @@
+flowchart TB
+    actor((Founder))
+    actor --> UC1[Submit idea]
+    actor --> UC2[Approve spec]
+    actor --> UC3[Download CLI bundle]
+    UC1 --> UC4[c1v: generate spec]
+    UC2 --> UC5[c1v: emit signed bundle]

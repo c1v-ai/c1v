@@ -1,0 +1,7 @@
+flowchart LR
+    Founder([Founder]) -- intake messages --> c1v[c1v Platform]
+    c1v -- spec emit --> CLI{{CLI Bundle}}
+    c1v -- recommendations --> ProdSys[(Customer Prod System)]
+    ProdSys -- metrics --> c1v
+    Anthropic[(Anthropic API)] -- LLM completions --> c1v
+    Supabase[(Supabase pgvector)] -- retrieval --> c1v

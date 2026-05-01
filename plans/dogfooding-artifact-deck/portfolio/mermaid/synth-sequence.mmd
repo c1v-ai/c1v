@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant F as Founder
+    participant UI as Next.js (Vercel)
+    participant LG as LangGraph orch
+    participant LLM as Anthropic Sonnet 4.5
+    participant PG as pgvector
+    F->>UI: submit idea
+    UI->>LG: AuthenticatedSession (IF.01, p95 500ms)
+    LG->>PG: retrieve KB chunks (IF.02, p95 600ms)
+    PG-->>LG: chunks
+    LG->>LLM: spec gen with grounded context (IF.03, p95 1200ms)
+    LLM-->>LG: draft spec
+    LG->>UI: spec stream (IF.04, p95 300ms)
+    UI-->>F: spec ready (sum 2600ms <= 3000ms NFR)
