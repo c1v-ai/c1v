@@ -1,0 +1,11 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - services/python-sidecar/Dockerfile
+      - -t
+      - us-central1-docker.pkg.dev/c1v-prd/c1v/python-sidecar:latest
+      - .
+images:
+  - us-central1-docker.pkg.dev/c1v-prd/c1v/python-sidecar:latest

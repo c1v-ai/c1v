@@ -106,11 +106,14 @@ export default defineConfig({
     },
   ],
 
-  // Start dev server for tests
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  // Start dev server for tests — skip when BASE_URL points at a remote deploy
+  webServer:
+    process.env.BASE_URL && !/localhost|127\.0\.0\.1/.test(process.env.BASE_URL)
+      ? undefined
+      : {
+          command: 'npm run dev',
+          url: 'http://localhost:3000',
+          reuseExistingServer: !process.env.CI,
+          timeout: 120000,
+        },
 })

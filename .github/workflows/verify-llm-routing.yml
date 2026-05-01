@@ -1,0 +1,51 @@
+name: Verify LLM Routing
+
+# Enforces post-2026-04-30 OpenRouter-only routing. See
+# scripts/verify-llm-routing.ts for the rationale + allowlist.
+#
+# Security: the only `${{ ... }}` interpolations below are
+# `github.workflow` and `github.ref` inside the concurrency key, both of
+# which are GitHub-controlled and safe. No untrusted user input
+# (issue titles, PR bodies, commit messages, branch names) is ever
+# interpolated into a `run:` command.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/product-helper/app/**'
+      - 'apps/product-helper/lib/**'
+      - 'apps/product-helper/scripts/**'
+      - 'scripts/verify-llm-routing.ts'
+      - '.github/workflows/verify-llm-routing.yml'
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: All Anthropic access routes through OpenRouter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run verifier
+        working-directory: apps/product-helper
+        run: pnpm tsx ../../scripts/verify-llm-routing.ts
