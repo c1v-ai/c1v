@@ -30,9 +30,8 @@
  *
  * Run from apps/product-helper:
  *   POSTGRES_URL=stub AUTH_SECRET=stubstubstubstubstubstubstubstubstub \
- *   ANTHROPIC_API_KEY=sk-ant-stub STRIPE_SECRET_KEY=sk_test_stub \
- *   STRIPE_WEBHOOK_SECRET=whsec_stub OPENROUTER_API_KEY=stub \
- *   BASE_URL=http://localhost:3000 \
+ *   STRIPE_SECRET_KEY=sk_test_stub STRIPE_WEBHOOK_SECRET=whsec_stub \
+ *   OPENROUTER_API_KEY=sk-or-stub BASE_URL=http://localhost:3000 \
  *   pnpm tsx scripts/verify-t7.ts
  */
 
