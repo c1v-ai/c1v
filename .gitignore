@@ -101,3 +101,22 @@ _sandbox/
 # Python venvs (artifact-generators local env)
 .venv/
 **/.venv/
+                                                 
+# personal / editor                                                                                                               
+.obsidian/
+restored/                                                                                                                         
+Users/                                         
+                                                                                                                                    
+# plans noise                                  
+plans/Untitled                          
+plans/airbnb.pdf
+plans/telehealth-informed-consent.pdf                                                                                             
+plans/_recovered/
+  plans/.sessions/                                                                                                                  
+                                                 
+# docs/guides KB folders
+docs/guides/4-assess-software-performance-kb/                                                                                     
+docs/guides/5-HoQ_for_software_sys_design/  
+docs/guides/6-software-define-interface-LLM-kb/                                                                                   
+docs/guides/7-identify-evaluate-risk-software/ 
+
