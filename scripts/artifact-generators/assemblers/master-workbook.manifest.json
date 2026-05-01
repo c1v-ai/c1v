@@ -1,0 +1,48 @@
+{
+  "title": "c1v Self-Application — Workbook",
+  "subtitle": "Per-module matrix artifacts from the dogfooding run (M1 → M8 + Synthesis)",
+  "sections": [
+    {
+      "name": "M6 — House of Quality (kb-upgrade-v2)",
+      "tag": "M6_QFD_v2",
+      "sources": [
+        "system-design/kb-upgrade-v2/module-6-qfd/c1v_QFD.xlsx"
+      ]
+    },
+    {
+      "name": "M6 — House of Quality (self-app run)",
+      "tag": "M6_HoQ_run",
+      "sources": [
+        ".planning/runs/self-application/module-6/hoq.v1.xlsx"
+      ]
+    },
+    {
+      "name": "M7 — N-Squared Interface Chart",
+      "tag": "M7_N2",
+      "sources": [
+        "system-design/kb-upgrade-v2/module-7-interfaces/n2_chart.xlsx"
+      ]
+    },
+    {
+      "name": "M7 — Interface Matrix",
+      "tag": "M7_IF",
+      "sources": [
+        "system-design/kb-upgrade-v2/module-7-interfaces/interface_matrix.xlsx"
+      ]
+    },
+    {
+      "name": "M8 — FMEA Table (early)",
+      "tag": "M8_FMEA_early",
+      "sources": [
+        "system-design/kb-upgrade-v2/module-8-risk/fmea_table.xlsx"
+      ]
+    },
+    {
+      "name": "M8 — FMEA Residual",
+      "tag": "M8_FMEA_residual",
+      "sources": [
+        "system-design/kb-upgrade-v2/module-8-risk/fmea_residual.v1.xlsx"
+      ]
+    }
+  ]
+}

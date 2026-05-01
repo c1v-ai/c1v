@@ -1,0 +1,48 @@
+{
+  "title": "c1v Self-Application",
+  "subtitle": "Dogfooding the Methodology — M1 → M8 + Synthesis",
+  "sections": [
+    {
+      "name": "M1 — Defining Scope",
+      "sources": []
+    },
+    {
+      "name": "M2 — Requirements",
+      "sources": [
+        "plans/dogfooding-artifact-deck/portfolio/M2-UCBDs.pptx"
+      ]
+    },
+    {
+      "name": "M3 — Functional Flow Block Diagram",
+      "sources": []
+    },
+    {
+      "name": "M4 — Decision Network",
+      "sources": []
+    },
+    {
+      "name": "M5 — Form / Function",
+      "sources": []
+    },
+    {
+      "name": "M6 — House of Quality (QFD)",
+      "sources": []
+    },
+    {
+      "name": "M7 — Interfaces (N2 + Sequence + DFD)",
+      "sources": [
+        "system-design/kb-upgrade-v2/module-7-interfaces/n2_chart.pptx",
+        "system-design/kb-upgrade-v2/module-7-interfaces/data_flow_diagram.pptx",
+        "system-design/kb-upgrade-v2/module-7-interfaces/sequence_diagrams.pptx"
+      ]
+    },
+    {
+      "name": "M8 — Risk / FMEA",
+      "sources": []
+    },
+    {
+      "name": "Synthesis — Architecture Recommendation",
+      "sources": []
+    }
+  ]
+}
