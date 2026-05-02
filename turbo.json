@@ -25,8 +25,14 @@
         "SENTRY_DSN",
         "SENTRY_ORG",
         "SENTRY_PROJECT",
-        "SENTRY_AUTH_TOKEN"
+        "SENTRY_AUTH_TOKEN",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "PYTHON_SIDECAR_URL"
       ]
+    },
+    "type-check": {
+      "dependsOn": ["^type-check"],
+      "outputs": []
     },
     "dev": {
       "cache": false,
