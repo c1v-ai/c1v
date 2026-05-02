@@ -61,6 +61,7 @@ const BUCKET_META: Array<{
 
 const SOURCE_LABEL: Record<OpenQuestionSource, string> = {
   m2_nfr: 'M2 NFR',
+  m2_constants: 'M2 Constants',
   m6_qfd: 'M6 QFD',
   m8_residual: 'M8 Risk',
   wave_e_engine: 'Engine',

@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 export const openQuestionSourceSchema = z.enum([
   'm2_nfr',
+  'm2_constants',
   'm6_qfd',
   'm8_residual',
   'wave_e_engine',
@@ -28,6 +29,7 @@ export type OpenQuestionSource = z.infer<typeof openQuestionSourceSchema>;
  */
 export const SOURCE_TO_BUCKET = {
   m2_nfr: 'requirements',
+  m2_constants: 'requirements',
   m6_qfd: 'qfdResolved',
   m8_residual: 'riskResolved',
   wave_e_engine: 'requirements',
