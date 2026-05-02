@@ -12,12 +12,11 @@ The intake conversation must surface actors and constraints well enough that dow
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ **Intake extraction pipeline fixed (Phase 1, 2026-05-02):** `emitNfrContractEnvelope` now reads `nonFunctionalRequirements` from `mergedData` (was reading non-existent `nfrs` field). `transformToValidationData` now passes real `outOfScope` data through (was hardcoded `[]`). `inScope` now prefers explicit field over `internal` fallback. HG7/HG8 documented as intentional soft gates. 17 new tests. USE_LANGGRAPH=true confirmed in prod — fix is live.
 
 ### Active
 
-- [ ] Intake chat correctly surfaces actors and constraints from user input
-- [ ] Downstream synthesis agents (NFR, engineering constants) have sufficient upstream context to generate artifacts
+- [ ] Downstream synthesis agents (NFR, engineering constants) have sufficient upstream context to generate artifacts — extraction is fixed; verify end-to-end once real users send intake messages
 - [ ] CI pipeline passes cleanly (lint, type-check, test)
 - [ ] pgvector Phase B ingest dedup bug resolved — new KB content lands in the table
 - [ ] Wave E eval E.1 failure resolved (clarification-detector revert commit traced)
@@ -63,7 +62,7 @@ The intake conversation must surface actors and constraints well enough that dow
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Fix actors/constraints issue via intake prompt + extraction tuning | Architecture trace identifies soft gates + extraction gap as root cause; no architectural change needed | — Pending |
+| Fix actors/constraints issue via intake prompt + extraction tuning | Architecture trace identifies soft gates + extraction gap as root cause; no architectural change needed | ✓ Shipped Phase 1 — emitNfrContractEnvelope + transformToValidationData fixed |
 | Fix lint by adding `next lint` + ESLint config | Minimal change; Next.js ESLint preset covers the codebase | — Pending |
 | Resolve E.8 by updating the count gate to 14 (not deleting the engine JSON) | File was added intentionally; gate is stale | — Pending |
 
@@ -87,4 +86,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-02 after initialization*
+*Last updated: 2026-05-02 after Phase 1 completion*

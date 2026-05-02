@@ -68,10 +68,11 @@
 1. Read `.planning/ROADMAP.md` for phase structure.
 2. Read `.planning/REQUIREMENTS.md` for REQ-IDs.
 3. Read this file for current position.
-4. Run `/gsd-plan-phase 1` to begin Phase 1 planning (Intake Extraction Fix is the priority — it's the MAIN ISSUE per PROJECT.md).
+4. Phase 1 is complete — run `/gsd-execute-phase 2` (Observability Wiring) or `/gsd-execute-phase 3` (pgvector Ingest Recovery, independent).
+5. Phase 1 work is on branch `fix/intake-extraction-nfr-outofscope` — open a PR before starting Phase 2.
 
 **Last session summary:**
-Executed plan 01-01 (TDD RED scaffold). Created 3 test files: extract-data.test.ts (2 RED/2 GREEN — INTK-01/04 bug assertions), check-prd-spec.test.ts (4 RED — no export yet, INTK-03), crawley-gate-check.test.ts (2 GREEN — Hypothesis B false, INTK-02). All committed individually. SUMMARY at .planning/phases/01-intake-synthesis-diagnose-fix/01-01-SUMMARY.md.
+Phase 1 fully executed (5/5 plans, 3 waves). Fixed `emitNfrContractEnvelope` in `extract-data.ts` to read `nonFunctionalRequirements` instead of `nfrs`. Fixed `transformToValidationData` in `check-prd-spec.ts` — exported, `outOfScope` no longer hardcoded, `inScope` prefers explicit field. Added INTK-04 deferred comments to HG7/HG8 in `validator.ts`. 17 new tests (TDD RED/GREEN + smoke replay). Verification: CONDITIONAL PASS (constants Wave E and LangSmith harness deferred). Branch: `fix/intake-extraction-nfr-outofscope`.
 
 ---
 *State initialized: 2026-05-02*
