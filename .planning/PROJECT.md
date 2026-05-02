@@ -2,7 +2,7 @@
 
 ## What This Is
 
-c1v (`prd.c1v.ai`) is an AI-native product requirements and system-design tool that guides users through a 6-step methodology (Context Diagram → Use Case Diagram → Scope Tree → UCBD → Functional Requirements → SysML Activity Diagram) via a conversational intake, then auto-generates 14 structured artifacts. v2.2.1 is live with no users/traffic. This project is the QA pass to make it ready for real users.
+c1v (`prd.c1v.ai`) is an AI-native product requirements and systems-engineering tool. It guides users through a 6-step conversational intake methodology (Context Diagram → Use Case Diagram → Scope Tree → UCBD → Functional Requirements → SysML Activity Diagram), then automatically generates 14 structured artifacts across two phases: Phase 1 produces the 6 core KB artifacts from conversation; Phase 2 auto-triggers generation of an FFBD, Decision Network, Form Function Map, House of Quality (QFD), FMEA (Early + Residual), N2 Matrix, and Interfaces Diagram. Finally, a synthesis step runs system-design math against an Atlas of public company data (Anthropic, Supabase, LangChain, Vercel empirical priors) to produce a ranked architecture recommendation with Pareto alternatives and cost/latency/availability projections. v2.2.1 is live with no users/traffic. This project is the QA pass to make it ready for real users.
 
 ## Core Value
 
