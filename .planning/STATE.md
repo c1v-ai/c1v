@@ -1,6 +1,6 @@
 # State: c1v v2.2.1+ QA
 
-**Last updated:** 2026-05-02 (Phase 1 planned)
+**Last updated:** 2026-05-02 (Phase 1 plan 01-01 complete)
 
 ## Project Reference
 
@@ -11,13 +11,13 @@
 ## Current Position
 
 - **Milestone:** v2.2.1+ QA pass (pre-traffic hardening)
-- **Phase:** 1 (Intake Extraction Fix) — Planned, ready to execute
-- **Plan:** 5 plans across 3 waves (next step: `/gsd-execute-phase 1`)
+- **Phase:** 1 (Intake Extraction Fix) — In progress
+- **Plan:** 5 plans across 3 waves (completed: 01-01 TDD RED scaffold)
 - **Status:** Plans verified; USE_LANGGRAPH=true confirmed in prod (PATH-A)
-- **Progress:** 0/3 phases complete (Phase 1: 0/5 plans executed)
+- **Progress:** 0/3 phases complete (Phase 1: 1/5 plans executed)
 
 ```
-[░░░░░░░░░░] 0%   Phase 1
+[█░░░░░░░░░] 20%  Phase 1 (1/5 plans)
 [░░░░░░░░░░] 0%   Phase 2
 [░░░░░░░░░░] 0%   Phase 3
 ```
@@ -42,6 +42,8 @@
 - Phase 2 is Observability Wiring (setSentryTransport + counter emission + baseline capture).
 - Resolve E.8 by updating count gate to 14 (deferred; not in this milestone).
 - v1 scope is 3 phases / 9 REQs; everything else is v2 deferred.
+- TDD test public API (extractData) to cover private emitNfrContractEnvelope — avoids export churn.
+- crawley-gate-check uses filesystem scan (no dynamic imports) to avoid triggering env validator in production modules.
 
 ### Open TODOs (across phases)
 - Phase 1: locate the actual extraction-agent prompt (`lib/langchain/agents/extraction-agent.ts` or where the extract_data logic lives) and `transformToValidationData` mapping in `check-prd-spec.ts`.
@@ -69,7 +71,7 @@
 4. Run `/gsd-plan-phase 1` to begin Phase 1 planning (Intake Extraction Fix is the priority — it's the MAIN ISSUE per PROJECT.md).
 
 **Last session summary:**
-Initialized `.planning/` artifacts (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md) for the v2.2.1+ QA pass. Defined 9 v1 requirements across 3 phases: intake extraction fix / observability wiring / pgvector ingest recovery. ESLint handled by CODEDEV (removed from manual scope). Coverage 9/9. No code changes yet.
+Executed plan 01-01 (TDD RED scaffold). Created 3 test files: extract-data.test.ts (2 RED/2 GREEN — INTK-01/04 bug assertions), check-prd-spec.test.ts (4 RED — no export yet, INTK-03), crawley-gate-check.test.ts (2 GREEN — Hypothesis B false, INTK-02). All committed individually. SUMMARY at .planning/phases/01-intake-synthesis-diagnose-fix/01-01-SUMMARY.md.
 
 ---
 *State initialized: 2026-05-02*
