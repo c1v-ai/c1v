@@ -56,6 +56,12 @@ drizzle/*.sql
 .cleo/
 # Use contents-only form (.planning/*) so git can descend for re-include exceptions.
 .planning/*
+# Exception: root-level GSD project docs (PROJECT.md, config.json, REQUIREMENTS.md, ROADMAP.md, STATE.md)
+!/.planning/PROJECT.md
+!/.planning/config.json
+!/.planning/REQUIREMENTS.md
+!/.planning/ROADMAP.md
+!/.planning/STATE.md
 # Exception: deepened KBs are load-bearing content, not scratch (apps/product-helper)
 !/apps/product-helper/.planning/phases/
 /apps/product-helper/.planning/phases/*
