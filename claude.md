@@ -1,7 +1,3 @@
-<!-- CLEO:START -->
-@.cleo/templates/AGENT-INJECTION.md
-<!-- CLEO:END -->
-
 # c1v Monorepo
 
 ## Quick Start
@@ -14,6 +10,13 @@ cd apps/product-helper && POSTGRES_URL=stub AUTH_SECRET=stub ANTHROPIC_API_KEY=s
   STRIPE_SECRET_KEY=stub STRIPE_WEBHOOK_SECRET=stub BASE_URL=http://localhost:3000 \
   npx jest
 ```
+
+## Project Conventions
+
+- **Two `.planning/` directories exist** — root `.planning/` is the active GSD workspace (current milestone); `apps/product-helper/.planning/` is the legacy v2 milestone. GSD commands run from the repo root use the root `.planning/`. Always verify which is active before running `/gsd-execute-phase` or `/gsd-progress`.
+- **Root `.planning/phases/` is gitignored** — use `git add -f <path>` for all planning doc commits (SUMMARY.md, VERIFICATION.md, DIAGNOSIS.md, etc.). Root `.planning/ROADMAP.md` and `.planning/STATE.md` are whitelisted and commit normally.
+- **emitOne null-path checks `=== null/undefined`, not falsiness** — empty arrays `[]` are truthy and bypass the null-path in `extract-data.ts`. Coerce empty arrays to `null` explicitly (e.g., `arr?.length ? arr : null`) when passing results to `emitOne`.
+- **tsx module-mutation mocking is unreliable under esbuild ESM** — use Jest for smoke replays and unit tests; do not rely on `(mod as any).fn = ...` monkey-patching in `.ts` scripts run via `pnpm tsx`.
 
 ## Current Reality (2026-04-24)
 
