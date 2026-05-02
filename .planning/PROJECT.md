@@ -57,7 +57,6 @@ The intake conversation must surface actors and constraints well enough that dow
 
 - **Tech:** Next.js 15, LangChain.js + LangGraph, Anthropic Claude (via OpenRouter), PostgreSQL + Drizzle ORM, Supabase — no stack changes
 - **UI Freeze:** System-design viewers, diagram viewer, artifact pipeline are frozen — no edits to those components
-- **No migration of agent emitters yet:** Crawley Zod schemas gated at schema-author level; agent emitters still emit pre-Crawley shapes (deferred to future wave)
 - **Deployment:** Vercel (orchestration) + Cloud Run (sidecar rendering) — boundary locked per D-V21.24
 
 ## Key Decisions
