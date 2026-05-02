@@ -186,7 +186,7 @@ export async function checkPRDSpec(
  * @param state - Current intake state
  * @returns ProjectValidationData for the validator
  */
-function transformToValidationData(state: IntakeState): ProjectValidationData {
+export function transformToValidationData(state: IntakeState): ProjectValidationData {
   const { extractedData, projectId, projectName, projectVision, completeness } = state;
 
   return {
@@ -219,8 +219,8 @@ function transformToValidationData(state: IntakeState): ProjectValidationData {
     systemBoundaries: {
       internal: extractedData.systemBoundaries.internal,
       external: extractedData.systemBoundaries.external,
-      inScope: extractedData.systemBoundaries.internal, // Map internal to inScope
-      outOfScope: [], // TODO(T090): Track out-of-scope separately in extractedData
+      inScope: extractedData.systemBoundaries.inScope ?? extractedData.systemBoundaries.internal,
+      outOfScope: extractedData.systemBoundaries.outOfScope ?? [],
     },
 
     // Map data entities
