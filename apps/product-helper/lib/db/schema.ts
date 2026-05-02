@@ -535,19 +535,10 @@ export enum ConversationRole {
   SYSTEM = 'system',
 }
 
-// SS7 Traceback citation store (W0A). Re-exported here so the Drizzle
-// client (`lib/db/drizzle.ts`, which imports `* as schema from './schema'`)
-// exposes `db.query.tracebackCitations` without every caller reaching into
-// `lib/db/schema/traceback.ts`.
-export {
-  tracebackCitations,
-  EMBEDDING_DIMENSIONS,
-  DEFAULT_CITATION_TTL_HOURS,
-} from './schema/traceback';
-export type {
-  TracebackCitation,
-  NewTracebackCitation,
-} from './schema/traceback';
+// SS7 Traceback citation store (W0A) re-exports REMOVED 2026-05-02 —
+// stash-recovery shipped the re-exports without the underlying
+// `lib/db/schema/traceback.ts` module. Restore both together when
+// the traceback schema lands. Tracked in plans/post-v2.1-followups.md.
 
 // RAG chunk store — re-exported for `db.query.kbChunks`.
 export { kbChunks, KB_EMBEDDING_DIMENSIONS } from './schema/kb-chunks';

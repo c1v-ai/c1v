@@ -26,7 +26,8 @@
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
     "schemas:generate": "npx tsx lib/langchain/schemas/generate-all.ts",
-    "or": "tsx scripts/or.ts"
+    "or": "tsx scripts/or.ts",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@dbml/core": "^7.1.1",
