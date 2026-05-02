@@ -29,6 +29,7 @@ const SCALE_CITATION_A = {
   publish_date: '2025-01-31',
   retrieved_at: '2026-04-21',
   sha256: VALID_SHA,
+  bytes_integrity: 'clean' as const,
   corroborated_by: [],
 };
 
@@ -39,6 +40,7 @@ const BLOG_CITATION_B = {
   publish_date: '2025-06-15',
   retrieved_at: '2026-04-21',
   sha256: ALT_SHA,
+  bytes_integrity: 'clean' as const,
   corroborated_by: [],
 };
 
@@ -192,6 +194,7 @@ const openai: CompanyAtlasEntry = {
       publish_date: '2025-10-01',
       retrieved_at: '2026-04-21',
       sha256: VALID_SHA,
+      bytes_integrity: 'clean',
       corroborated_by: [],
     },
   },
@@ -208,6 +211,7 @@ const openai: CompanyAtlasEntry = {
       publish_date: '2025-12-01',
       retrieved_at: '2026-04-21',
       sha256: ALT_SHA,
+      bytes_integrity: 'clean',
       corroborated_by: [
         {
           source_url: 'https://www.bloomberg.com/news/openai-revenue',
@@ -243,6 +247,7 @@ const openai: CompanyAtlasEntry = {
         publish_date: '2025-09-01',
         retrieved_at: '2026-04-21',
         sha256: VALID_SHA,
+        bytes_integrity: "clean",
         corroborated_by: [],
       },
       confidence: 0.75,
@@ -264,6 +269,7 @@ const openai: CompanyAtlasEntry = {
         publish_date: '2025-08-15',
         retrieved_at: '2026-04-21',
         sha256: ALT_SHA,
+        bytes_integrity: "clean",
         corroborated_by: [],
       },
       confidence: 0.9,
@@ -286,6 +292,7 @@ const openai: CompanyAtlasEntry = {
         publish_date: '2026-01-01',
         retrieved_at: '2026-04-21',
         sha256: VALID_SHA,
+        bytes_integrity: "clean",
         corroborated_by: [],
       },
       confidence: 0.99,
@@ -357,6 +364,7 @@ describe('companyAtlasEntrySchema', () => {
           publish_date: '2025-01-01',
           retrieved_at: '2026-04-21',
           sha256: VALID_SHA,
+          bytes_integrity: "clean",
           corroborated_by: [],
         },
       ],
@@ -597,6 +605,7 @@ describe('companyAtlasEntrySchema', () => {
             publish_date: '2025-11-20',
             retrieved_at: '2026-04-22',
             sha256: VALID_SHA,
+            bytes_integrity: "clean",
             corroborated_by: [],
           },
           confidence: 0.95,
@@ -626,6 +635,7 @@ describe('companyAtlasEntrySchema', () => {
             publish_date: '2025-05-01',
             retrieved_at: '2026-04-22',
             sha256: ALT_SHA,
+            bytes_integrity: "clean",
             corroborated_by: [],
           },
           confidence: 0.3,
@@ -697,6 +707,7 @@ describe('companyAtlasEntrySchema', () => {
             publish_date: '2025-10-01',
             retrieved_at: '2026-04-22',
             sha256: VALID_SHA,
+            bytes_integrity: "clean",
             corroborated_by: [],
           },
           confidence: 0.85,
@@ -725,6 +736,7 @@ describe('companyAtlasEntrySchema', () => {
             publish_date: '2025-10-01',
             retrieved_at: '2026-04-22',
             sha256: VALID_SHA,
+            bytes_integrity: "clean",
             corroborated_by: [],
           },
           confidence: 0.8,
@@ -848,6 +860,37 @@ describe('companyAtlasEntrySchema', () => {
     expect(() => companyAtlasEntrySchema.parse(fine)).not.toThrow();
   });
 
+  it('bytes_integrity=webfetch_only_no_raw_html REQUIRES content_sha256 (#39 stripe)', () => {
+    const broken: CompanyAtlasEntry = {
+      ...netflix,
+      scale: {
+        ...netflix.scale,
+        citation: {
+          ...netflix.scale.citation,
+          bytes_integrity: 'webfetch_only_no_raw_html',
+        },
+      },
+    };
+    expect(() => companyAtlasEntrySchema.parse(broken)).toThrow(
+      /content_sha256 is REQUIRED/,
+    );
+  });
+
+  it('bytes_integrity=webfetch_only_no_raw_html accepted WITH content_sha256 (#39 stripe)', () => {
+    const fine: CompanyAtlasEntry = {
+      ...netflix,
+      scale: {
+        ...netflix.scale,
+        citation: {
+          ...netflix.scale.citation,
+          bytes_integrity: 'webfetch_only_no_raw_html',
+          content_sha256: ALT_SHA,
+        },
+      },
+    };
+    expect(() => companyAtlasEntrySchema.parse(fine)).not.toThrow();
+  });
+
   it('duplicate anchors within throughput_priors are rejected', () => {
     const tp = {
       anchor: 'peak_rpm',
@@ -859,6 +902,7 @@ describe('companyAtlasEntrySchema', () => {
         publish_date: '2025-11-20',
         retrieved_at: '2026-04-22',
         sha256: VALID_SHA,
+        bytes_integrity: "clean",
         corroborated_by: [],
       },
       confidence: 0.9,

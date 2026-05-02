@@ -56,7 +56,7 @@ export async function generateClaudeMd(options: ClaudeMdGeneratorOptions): Promi
   sections.push('## MCP Integration');
   sections.push('');
   sections.push('```bash');
-  sections.push(`claude mcp add ${slugify(project.name)} ${baseUrl}/api/mcp/${projectId} --key YOUR_API_KEY`);
+  sections.push(`claude mcp add ${slugify(project.name)} ${baseUrl}/api/mcp/${projectId} --transport http --header "Authorization: Bearer YOUR_API_KEY"`);
   sections.push('```');
   sections.push('');
   sections.push('Use `get_prd`, `get_database_schema`, `get_tech_stack`, and `get_coding_context` for project context.');
