@@ -32,13 +32,12 @@ The `extract_data` node doesn't correctly populate `actors` and `systemBoundarie
 The 11 Crawley Zod schemas gate Phase 2 artifact emissions. Agent emitters (`form-function-agent.ts`, etc.) still output pre-Crawley shapes missing the matrix derivation fields (`po_array_derivation`, `full_dsm_block_derivations`). If the schema gate fires before `persistArtifact`, Phase 2 artifacts silently fail to persist — leaving downstream synthesis with no upstream artifact data.
 - Evidence: CLAUDE.md states "the schema gate already rejects future emissions that omit or mis-type these fields." `persistArtifact` is wrapped in try/catch and never throws, which could mask this failure silently.
 
-**Hypothesis C — Production `kb_chunks` empty, KB question generator ungrounded:**
-The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.ts` — the LLM signal for `kbStepConfidence` draws from KB content to ask domain-grounded questions. If production `kb_chunks` is empty (Phase B ingest was a 0/3289 no-op on 2026-04-24), the intake questions are ungrounded, extraction is thin, and downstream synthesis has nothing to work with.
-- Evidence: Phase B ingest returned 0/3289 inserts due to `kb_source + chunk_hash` unique constraint collision. Production Supabase (`yxginqyxtysjdkeymnon`) `kb_chunks` count is likely 0. The 4,990 real embeddings are local only.
-- Fastest to confirm: `SELECT count(*) FROM kb_chunks` on production takes 30 seconds.
+**Hypothesis C — Production `kb_chunks` empty, KB question generator ungrounded: ✓ CONFIRMED**
+The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.ts` — the LLM signal for `kbStepConfidence` draws from KB content to ask domain-grounded questions. Production `kb_chunks` is empty (confirmed). Phase B ingest was a 0/3289 no-op on 2026-04-24 due to `kb_source + chunk_hash` unique constraint collision. Intake questions are running without knowledge bank grounding. The 4,990 real embeddings exist in local Supabase only.
+- **Status: Confirmed.** Not yet confirmed as the *sole* cause — A and B may also be contributing independently. Fixing C (Phase 3) is a prerequisite before validating whether A/B remain live issues.
 
 **Diagnosis steps (must happen first):**
-1. **Check prod `kb_chunks` row count immediately** — if 0, Hypothesis C is confirmed and ingest must run before further diagnosis is meaningful.
+1. ~~Check prod `kb_chunks` row count~~ — **Hypothesis C already confirmed (prod KB is empty).** Phase 3 (pgvector ingest fix) must ship before A/B diagnosis is meaningful — with no KB, the system can't ground intake questions regardless of extraction logic.
 2. Locate where the Crawley Zod schema validation fires relative to `persistArtifact` — is it inside the generator node, before or after persistence?
 3. Check `project_artifacts` table for a real project: do Phase 2 artifacts have `status = 'succeeded'` or `'failed'`? Are the rows even being created?
 4. Inspect LangSmith eval dataset (`apps/product-helper/__tests__/v2.2/`) — do failing cases have empty Phase 2 artifact rows, or is failure in Phase 1 extraction?
@@ -99,7 +98,7 @@ The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.
 
 ### Phase 3: pgvector Phase B Ingest Recovery
 **Goal:** The root cause of the `kb_source + chunk_hash` unique-constraint collision in `ingest-kbs.ts` is diagnosed and fixed, ingest is re-run successfully, and production `kb_chunks` actually contains real embeddings (not just local Supabase).
-**Depends on:** Nothing (diagnostic + DB op; independent of Phase 1 and Phase 2)
+**Depends on:** Nothing to start — but Phase 1 Hypothesis A/B diagnosis should not be considered conclusive until this phase ships. Prod KB empty (confirmed) means intake has been running without KB grounding; fixing A/B without fixing C won't fully resolve the core issue.
 **Requirements:** VEC-01, VEC-02, VEC-03
 **Success Criteria** (what must be TRUE):
   1. The dedup-key collision root cause is documented in writing (which records collide on `kb_source + chunk_hash`, why, and what the correct dedup key is).
