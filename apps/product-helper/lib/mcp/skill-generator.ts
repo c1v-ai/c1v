@@ -38,7 +38,6 @@ const TOOL_DESCRIPTIONS: ToolDescription[] = [
   // Unique tools
   { name: 'get_validation_status', description: 'Get PRD-SPEC validation score and gate status', category: 'unique' },
   { name: 'get_gsd_phases', description: 'Get GSD phase information for project planning', category: 'unique' },
-  { name: 'get_cleo_tasks', description: 'Get CLEO task management integration data', category: 'unique' },
   { name: 'invoke_agent', description: 'Invoke a specialized agent for specific tasks', category: 'unique' },
   { name: 'ask_question', description: 'Ask a question about the project to get AI-powered answers', category: 'unique' },
   { name: 'search_context', description: 'Search project context for relevant information', category: 'unique' },

@@ -1,7 +1,3 @@
-<!-- CLEO:START -->
-@.cleo/templates/AGENT-INJECTION.md
-<!-- CLEO:END -->
-
 # Product Helper
 
 AI-native PRD generation tool that teaches systems engineering methodology while guiding users through professional requirements creation.
