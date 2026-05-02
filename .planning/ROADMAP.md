@@ -11,42 +11,55 @@ The intake conversation must surface actors and constraints well enough that dow
 
 ## Phases
 
-- [ ] **Phase 1: Intake Extraction Fix** — `extract_data` reliably populates `actors` + `outOfScope`, unblocking downstream NFR/constants synthesis
+- [ ] **Phase 1: Intake / Synthesis Context — Diagnose & Fix** — trace whether Crawley schema gate or extraction pipeline is blocking NFR/constants synthesis, then fix
 - [ ] **Phase 2: Observability Wiring** — `setSentryTransport` called at boot, counter emitting on LLM-only path, baseline captured
 - [ ] **Phase 3: pgvector Phase B Ingest Recovery** — dedup-key collision diagnosed, ingest re-runs, prod `kb_chunks` populated
 
 ## Phase Details
 
-### Phase 1: Intake Extraction Fix
-**Goal:** The LangGraph intake extraction pipeline reliably surfaces `actors` and `systemBoundaries.outOfScope` from natural-language conversation, so downstream synthesis agents (NFR derivation, engineering constants) receive enough structured upstream context to produce non-trivial output instead of "I don't have enough upstream context."
-**Depends on:** Nothing (independent QA fix on the core product path)
+### Phase 1: Intake / Synthesis Context — Diagnose & Fix
+**Goal:** Determine the actual root cause of the "I don't have enough upstream context" failure seen in NFR derivation and engineering constants synthesis, then fix it. Two competing hypotheses must be investigated before any code is written.
+**Depends on:** Nothing (highest priority — core product promise)
 **Requirements:** INTK-01, INTK-02, INTK-03
 
-**Root Causes (from architecture trace):**
+**Two Competing Hypotheses — must be traced before fixing:**
 
-1. **`outOfScope` never populated** — `check-prd-spec.ts:224` has `outOfScope: []` hardcoded in `transformToValidationData`. The field is typed in `ProjectValidationData.systemBoundaries.outOfScope` but the extraction pipeline never writes to it. HG1 can't verify the out-of-scope boundary. `inScope` and `internal` are mapped to the same array (double-counted).
+**Hypothesis A — Extraction pipeline gap:**
+The `extract_data` node doesn't correctly populate `actors` and `systemBoundaries.outOfScope` from conversation. Downstream synthesis agents receive a sparse `extractedData` blob and correctly report insufficient context.
+- Evidence: `check-prd-spec.ts:224` has `outOfScope: []` hardcoded; `inScope`/`internal` are double-counted; HG7/HG8 are regex no-ops that always pass, allowing advancement without real constraint data.
 
-2. **HG7 + HG8 soft gates are regex no-ops** — HG7 (success criteria) and HG8 (constraints) run regex against the `vision` string. Any reasonable project description passes them. They always contribute `passed: true` to the score, artificially inflating `overallScore` and allowing the system to reach synthesis without real constraint data. The `overallScore` denominator includes their sub-checks, which never fail.
+**Hypothesis B — Crawley Zod schema gate silently blocking Phase 2 artifacts:**
+The 11 Crawley Zod schemas gate Phase 2 artifact emissions. Agent emitters (`form-function-agent.ts`, etc.) still output pre-Crawley shapes that are missing the matrix derivation fields (`po_array_derivation`, `full_dsm_block_derivations`). If the schema gate fires before `persistArtifact`, Phase 2 artifacts silently fail to persist — leaving downstream synthesis with no upstream artifact data.
+- Evidence: CLAUDE.md states "the schema gate already rejects future emissions that omit or mis-type these fields." `persistArtifact` is wrapped in try/catch and never throws, which could mask this failure silently.
 
-3. **`kbStepConfidence` floor is 0 for Steps 3-6** — `calculateStepConfidence` in `kb-question-generator.ts` has no cases for `ffbd`, `decision-matrix`, `qfd-house-of-quality`, or `interfaces` — falls through to `default: return 0`. For Phase 2 (Steps 3-6), the KB confidence override gate relies on LLM-only signal with no deterministic floor, making it unreliable.
+**Diagnosis steps (must happen first):**
+1. Locate where the Crawley Zod schema validation fires relative to `persistArtifact` — is it inside the generator node, before or after persistence?
+2. Check `project_artifacts` table for a real project: do Phase 2 artifacts have `status = 'succeeded'` or `'failed'`? Are the rows even being created?
+3. Inspect LangSmith eval dataset (`apps/product-helper/__tests__/v2.2/`) — do the failing cases have empty Phase 2 artifact rows, or is the failure happening in Phase 1 extraction?
+4. Grep for where `CRAWLEY_SCHEMAS` / `CRAWLEY_MATRIX_KEYSTONE` are actually called/parsed in the generator nodes to find the validation boundary.
 
-4. **Downstream synthesis context gap** — NFR derivation and engineering-constants agents receive the `extractedData` blob. If `actors` is sparse/empty and `systemBoundaries.outOfScope` is always empty, those agents correctly report "insufficient upstream context." The fix is upstream (make extraction richer), not in the synthesis agents themselves.
+**Known contributing issues (regardless of root cause):**
+- `outOfScope: []` hardcoded in `transformToValidationData` (`check-prd-spec.ts:224`)
+- HG7 + HG8 are regex no-ops on `vision` string — always `passed: true`
+- `kbStepConfidence` returns `0` for all Steps 3-6 (no deterministic floor)
 
-**Files to touch:**
-| File | Change |
-|------|--------|
-| `lib/langchain/graphs/nodes/check-prd-spec.ts` | Fix `transformToValidationData` to map `outOfScope` from extracted data; decouple `inScope`/`internal` double-count |
-| `lib/validation/validator.ts` | Harden HG7 + HG8 to check actual `extractedData` constraint/criteria fields, not regex on `vision` string |
-| `lib/langchain/agents/intake/kb-question-generator.ts` | Add `calculateStepConfidence` cases for `ffbd`, `decision-matrix`, `qfd-house-of-quality`, `interfaces` (deterministic floor for Steps 3-6) |
-| `lib/langchain/agents/extraction-agent.ts` (or equivalent) | Ensure extraction prompt explicitly asks for out-of-scope items and maps them to `systemBoundaries.outOfScope` |
-| `apps/product-helper/__tests__/v2.2/` | LangSmith eval dataset — use as regression baseline |
+**Files to investigate:**
+| File | What to check |
+|------|---------------|
+| `lib/langchain/schemas/index.ts` | Where CRAWLEY_SCHEMAS is exported; who imports it |
+| `lib/langchain/graphs/nodes/generate-form-function.ts` (and sibling generators) | Does the node call Zod parse/safeParse on output before `persistArtifact`? |
+| `lib/langchain/graphs/nodes/_persist-artifact.ts` | Does it validate against Crawley schemas, or is validation upstream? |
+| `lib/langchain/graphs/nodes/check-prd-spec.ts` | `transformToValidationData` — `outOfScope: []` hardcode, `inScope`/`internal` double-count |
+| `lib/validation/validator.ts` | HG7/HG8 regex no-ops |
+| `lib/langchain/agents/intake/kb-question-generator.ts` | `calculateStepConfidence` — missing Steps 3-6 cases |
+| `apps/product-helper/__tests__/v2.2/` | LangSmith eval dataset — failing case shapes |
 
 **Success Criteria** (what must be TRUE):
-  1. After a representative intake conversation that mentions multiple actor roles, `extractedData.actors` in the persisted project state contains those actor entries (not empty, not single-element placeholder).
-  2. After a representative intake conversation that mentions explicit out-of-scope items (e.g. "we won't handle X"), `extractedData.systemBoundaries.outOfScope` is populated with those items (currently always empty).
-  3. The LangSmith eval dataset at `apps/product-helper/__tests__/v2.2/` shows the NFR synthesis agent and engineering-constants synthesis agent producing structured output (≥1 NFR / ≥1 constant) on test projects, no "insufficient upstream context" rejection.
-  4. `transformToValidationData` in `lib/langchain/graphs/nodes/check-prd-spec.ts` carries `actors` + `outOfScope` through to the validator without being lost in the mapping.
-  5. The fix is verifiable by re-running an existing failing case from the LangSmith dataset and observing the synthesis output flip from "insufficient context" to substantive content.
+  1. Root cause is documented in writing: which hypothesis (A, B, or both) is confirmed, with evidence from code + DB state.
+  2. After a representative intake conversation mentioning multiple actor roles, `extractedData.actors` is non-empty.
+  3. After a conversation mentioning explicit out-of-scope items, `extractedData.systemBoundaries.outOfScope` is populated.
+  4. Phase 2 artifact rows in `project_artifacts` show `status = 'succeeded'` (not silently missing or failed).
+  5. LangSmith eval dataset shows NFR synthesis + engineering-constants agents producing ≥1 result — no "insufficient upstream context" on the representative test set.
 **Plans:** TBD
 **UI hint:** no
 

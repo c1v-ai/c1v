@@ -5,11 +5,12 @@
 
 ## v1 Requirements
 
-### Intake / LLM Quality
+### Intake / Synthesis Context
 
-- [ ] **INTK-01**: Extraction pipeline (`extract_data` node) correctly populates `extractedData.actors` from user conversation input
-- [ ] **INTK-02**: Extraction pipeline correctly populates `extractedData.systemBoundaries.outOfScope` from user conversation input (currently always empty despite being typed in `ProjectValidationData`)
-- [ ] **INTK-03**: Downstream synthesis agents (NFR derivation, engineering constants) receive structured `actors` and `systemBoundaries` from `extractedData` and produce non-trivial output (not "I don't have enough upstream context")
+- [ ] **INTK-01**: Root cause of "insufficient upstream context" failure diagnosed — either Crawley Zod schema gate silently blocking Phase 2 artifact persistence, extraction pipeline not capturing actors/constraints, or both
+- [ ] **INTK-02**: Phase 2 artifact rows in `project_artifacts` show `status = 'succeeded'` — Crawley schema gate not silently rejecting emissions from agent emitters (or emitters migrated to Crawley shapes if that is the cause)
+- [ ] **INTK-03**: `extractedData.actors` non-empty after intake conversation with multiple actor mentions; `extractedData.systemBoundaries.outOfScope` populated when conversation supplies out-of-scope items
+- [ ] **INTK-04**: Downstream synthesis agents (NFR derivation, engineering constants) produce structured output (≥1 NFR / ≥1 constant) on the LangSmith eval dataset — no "insufficient upstream context" rejections
 
 ### Observability Wiring
 
@@ -65,6 +66,7 @@
 | INTK-01 | Phase 1 | Pending |
 | INTK-02 | Phase 1 | Pending |
 | INTK-03 | Phase 1 | Pending |
+| INTK-04 | Phase 1 | Pending |
 | OBS-01 | Phase 2 | Pending |
 | OBS-02 | Phase 2 | Pending |
 | OBS-03 | Phase 2 | Pending |
@@ -73,8 +75,8 @@
 | VEC-03 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 9 total
-- Mapped to phases: 9
+- v1 requirements: 10 total
+- Mapped to phases: 10
 - Unmapped: 0 ✓
 
 ---
