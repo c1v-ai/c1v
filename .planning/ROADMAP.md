@@ -22,21 +22,27 @@ The intake conversation must surface actors and constraints well enough that dow
 **Depends on:** Nothing (highest priority — core product promise)
 **Requirements:** INTK-01, INTK-02, INTK-03
 
-**Two Competing Hypotheses — must be traced before fixing:**
+**Three Competing Hypotheses — must be traced before fixing:**
 
 **Hypothesis A — Extraction pipeline gap:**
 The `extract_data` node doesn't correctly populate `actors` and `systemBoundaries.outOfScope` from conversation. Downstream synthesis agents receive a sparse `extractedData` blob and correctly report insufficient context.
 - Evidence: `check-prd-spec.ts:224` has `outOfScope: []` hardcoded; `inScope`/`internal` are double-counted; HG7/HG8 are regex no-ops that always pass, allowing advancement without real constraint data.
 
 **Hypothesis B — Crawley Zod schema gate silently blocking Phase 2 artifacts:**
-The 11 Crawley Zod schemas gate Phase 2 artifact emissions. Agent emitters (`form-function-agent.ts`, etc.) still output pre-Crawley shapes that are missing the matrix derivation fields (`po_array_derivation`, `full_dsm_block_derivations`). If the schema gate fires before `persistArtifact`, Phase 2 artifacts silently fail to persist — leaving downstream synthesis with no upstream artifact data.
+The 11 Crawley Zod schemas gate Phase 2 artifact emissions. Agent emitters (`form-function-agent.ts`, etc.) still output pre-Crawley shapes missing the matrix derivation fields (`po_array_derivation`, `full_dsm_block_derivations`). If the schema gate fires before `persistArtifact`, Phase 2 artifacts silently fail to persist — leaving downstream synthesis with no upstream artifact data.
 - Evidence: CLAUDE.md states "the schema gate already rejects future emissions that omit or mis-type these fields." `persistArtifact` is wrapped in try/catch and never throws, which could mask this failure silently.
 
+**Hypothesis C — Production `kb_chunks` empty, KB question generator ungrounded:**
+The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.ts` — the LLM signal for `kbStepConfidence` draws from KB content to ask domain-grounded questions. If production `kb_chunks` is empty (Phase B ingest was a 0/3289 no-op on 2026-04-24), the intake questions are ungrounded, extraction is thin, and downstream synthesis has nothing to work with.
+- Evidence: Phase B ingest returned 0/3289 inserts due to `kb_source + chunk_hash` unique constraint collision. Production Supabase (`yxginqyxtysjdkeymnon`) `kb_chunks` count is likely 0. The 4,990 real embeddings are local only.
+- Fastest to confirm: `SELECT count(*) FROM kb_chunks` on production takes 30 seconds.
+
 **Diagnosis steps (must happen first):**
-1. Locate where the Crawley Zod schema validation fires relative to `persistArtifact` — is it inside the generator node, before or after persistence?
-2. Check `project_artifacts` table for a real project: do Phase 2 artifacts have `status = 'succeeded'` or `'failed'`? Are the rows even being created?
-3. Inspect LangSmith eval dataset (`apps/product-helper/__tests__/v2.2/`) — do the failing cases have empty Phase 2 artifact rows, or is the failure happening in Phase 1 extraction?
-4. Grep for where `CRAWLEY_SCHEMAS` / `CRAWLEY_MATRIX_KEYSTONE` are actually called/parsed in the generator nodes to find the validation boundary.
+1. **Check prod `kb_chunks` row count immediately** — if 0, Hypothesis C is confirmed and ingest must run before further diagnosis is meaningful.
+2. Locate where the Crawley Zod schema validation fires relative to `persistArtifact` — is it inside the generator node, before or after persistence?
+3. Check `project_artifacts` table for a real project: do Phase 2 artifacts have `status = 'succeeded'` or `'failed'`? Are the rows even being created?
+4. Inspect LangSmith eval dataset (`apps/product-helper/__tests__/v2.2/`) — do failing cases have empty Phase 2 artifact rows, or is failure in Phase 1 extraction?
+5. Grep for where `CRAWLEY_SCHEMAS` / `CRAWLEY_MATRIX_KEYSTONE` are actually called/parsed in the generator nodes.
 
 **Known contributing issues (regardless of root cause):**
 - `outOfScope: []` hardcoded in `transformToValidationData` (`check-prd-spec.ts:224`)
@@ -46,6 +52,7 @@ The 11 Crawley Zod schemas gate Phase 2 artifact emissions. Agent emitters (`for
 **Files to investigate:**
 | File | What to check |
 |------|---------------|
+| Prod Supabase `kb_chunks` table | `SELECT count(*) FROM kb_chunks` — confirm whether Hypothesis C is live |
 | `lib/langchain/schemas/index.ts` | Where CRAWLEY_SCHEMAS is exported; who imports it |
 | `lib/langchain/graphs/nodes/generate-form-function.ts` (and sibling generators) | Does the node call Zod parse/safeParse on output before `persistArtifact`? |
 | `lib/langchain/graphs/nodes/_persist-artifact.ts` | Does it validate against Crawley schemas, or is validation upstream? |
