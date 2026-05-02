@@ -11,7 +11,7 @@ The intake conversation must surface actors and constraints well enough that dow
 
 ## Phases
 
-- [ ] **Phase 1: Intake / Synthesis Context — Diagnose & Fix** — trace whether Crawley schema gate or extraction pipeline is blocking NFR/constants synthesis, then fix
+- [x] **Phase 1: Intake / Synthesis Context — Diagnose & Fix** — trace whether Crawley schema gate or extraction pipeline is blocking NFR/constants synthesis, then fix ✓ 2026-05-02
 - [ ] **Phase 2: Observability Wiring** — `setSentryTransport` called at boot, counter emitting on LLM-only path, baseline captured
 - [ ] **Phase 3: pgvector Phase B Ingest Recovery** — dedup-key collision diagnosed, ingest re-runs, prod `kb_chunks` populated
 

@@ -1,6 +1,6 @@
 # State: c1v v2.2.1+ QA
 
-**Last updated:** 2026-05-02 (Phase 1 plan 01-01 complete)
+**Last updated:** 2026-05-02 (Phase 1 complete)
 
 ## Project Reference
 
@@ -11,13 +11,13 @@
 ## Current Position
 
 - **Milestone:** v2.2.1+ QA pass (pre-traffic hardening)
-- **Phase:** 1 (Intake Extraction Fix) — In progress
-- **Plan:** 5 plans across 3 waves (completed: 01-01 TDD RED scaffold)
-- **Status:** Plans verified; USE_LANGGRAPH=true confirmed in prod (PATH-A)
-- **Progress:** 0/3 phases complete (Phase 1: 1/5 plans executed)
+- **Phase:** 2 (Observability Wiring) — Not started
+- **Plan:** —
+- **Status:** Phase 1 complete (CONDITIONAL PASS). Ready for Phase 2.
+- **Progress:** 1/3 phases complete
 
 ```
-[█░░░░░░░░░] 20%  Phase 1 (1/5 plans)
+[██████████] 100% Phase 1 ✓ (5/5 plans, CONDITIONAL PASS)
 [░░░░░░░░░░] 0%   Phase 2
 [░░░░░░░░░░] 0%   Phase 3
 ```
