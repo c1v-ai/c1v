@@ -86,7 +86,7 @@ export async function generateSkillMd(options: SkillGeneratorOptions): Promise<s
   sections.push('Add this project as an MCP server in Claude Code:');
   sections.push('');
   sections.push('```bash');
-  sections.push(`claude mcp add ${slugify(project.name)} ${baseUrl}/api/mcp/${projectId} --key YOUR_API_KEY`);
+  sections.push(`claude mcp add ${slugify(project.name)} ${baseUrl}/api/mcp/${projectId} --transport http --header "Authorization: Bearer YOUR_API_KEY"`);
   sections.push('```');
   sections.push('');
 

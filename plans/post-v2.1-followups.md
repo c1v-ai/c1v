@@ -92,6 +92,27 @@
 - **v2.2 process change:** every team in v2.2 spawn-prompts must explicitly own AT LEAST ONE bridge to ANOTHER team. TC1↔TE1 bridges: typed schemas + LangSmith dataset → both owned by `eval-harness` (TC1) on the producer side and `engine-stories` / `engine-prod-swap` (TE1) on the consumer side. Add a §"Cross-team bridges" subsection to v2.2 spawn-prompts before dispatch.
 - **Status:** OPEN process learning; mitigation lands in v2.1.1 hotfix branch (Playwright EC-V21-A.1+) AND in v2.2 spawn-prompts pre-dispatch (cross-team bridges subsection).
 
+## P10 — 7 NEW v2.1 LangGraph nodes are no-ops for live runtime projects (NEW 2026-04-26)
+
+- **Source:** Surfaced during P9-mitigation e2e authoring on 2026-04-26 by inspecting project=119 post-click-through. Every one of the 7 NEW v2.1 nodes (`generate_data_flows`, `generate_form_function`, `generate_decision_network`, `generate_n2`, `generate_fmea_early`, `generate_fmea_residual`, `generate_synthesis`) gates on `state.extractedData['<kind>']` already existing as a "stub". For self-application fixtures the stubs come from the build scripts; for live runtime projects **no upstream populates them**, so all 7 nodes hit the `if (!stub)` branch and persist `pending` forever.
+- **Code evidence:** `apps/product-helper/lib/langchain/graphs/nodes/generate-data-flows.ts:29-33`:
+  ```ts
+  const stub = ed?.['dataFlows'];
+  if (!stub) {
+    console.warn('[GENERATE_data_flows] no upstream stub; persisting pending row');
+    await persistArtifact({ ..., status: 'pending' });
+    return {};
+  }
+  ```
+  Same pattern in 6 sibling node files (`generate-form-function.ts`, `generate-decision-network.ts`, `generate-n2.ts`, `generate-fmea-early.ts`, `generate-fmea-residual.ts`, `generate-synthesis.ts`).
+- **Impact:** For any live-runtime project, the synthesis flow leaves 7 `project_artifacts` rows in `synthesis_status='pending'` indefinitely. The synthesis page never flips to RecommendationViewer — it stays in pending-mode UI forever. EC-V21-A.1 was satisfied because the verifier wrote fixture rows directly into the table, bypassing the live no-stub path.
+- **Mitigation contract for v2.1.1 e2e:** the P9-mitigation Playwright spec (`tests/e2e/synthesis-clickthrough.spec.ts`) is **P10-aware** — it asserts the trigger wire is alive (POST → 202 → pending UI → status route reachable) and explicitly captures the 7 stuck-pending rows as EXPECTED state, not as a failure. The evidence file at `plans/v211-outputs/th1/e2e-evidence.md` documents this with the literal substrings `4 ready` (pre-v2.1 nodes proof-of-life) and `7 stuck-pending` (P10-blocked nodes).
+- **Resolution path (out of scope for v2.1.1):**
+  1. Either (a) populate upstream stubs from intake state — requires a new pre-synthesis bridge node (`extract-stubs-from-intake`) that walks `extractedData` and emits the 7 stubs from M0–M2 data, OR (b) drop the no-stub gate and let each agent run from minimal seed input.
+  2. Wire the LLM mocks in `tests/e2e/fixtures/synthesis-mocks.ts` once stubs flow — the e2e currently disables mocks because the no-stub branch short-circuits before any LLM call.
+- **Owner:** v2.1.2 / v2.2 Wave-A completion — `langgraph-wirer` agent.
+- **Status:** OPEN; v2.1.1 hotfix knowingly ships with P10 unresolved. P9-mitigation e2e is P10-aware, so the click-through wire IS verified end-to-end despite the stuck rows.
+
 ## P6 — Prompt-caching not propagating through `ChatAnthropic.bindTools()` (NEW 2026-04-26)
 
 - **Source:** Surfaced 2026-04-26 in [`plans/wave-e-day-0-inventory.md`](wave-e-day-0-inventory.md) Task 4 bonus finding; live preflight log [`v21-outputs/td1/preflight-log-live.md`](v21-outputs/td1/preflight-log-live.md) line 81.
@@ -147,6 +168,37 @@
 - **Risk:** A future contributor doing repo-wide content-search may edit the partial copies thinking they're canonical, when content has drifted from `system-design/`. Already happened once (the 2026-04-25 lock).
 - **Options for v2.2:** (a) `rm -rf plans/kb-upgrade-v2/ .claude/plans/kb-upgrade-v2/` (simplest; the symlink `.claude/plans → ../plans` collapses both with one delete), or (b) replace each partial tree with a single-line README pointing at `system-design/kb-upgrade-v2/`.
 - **Status:** Pending v2.2 dispatch. Non-blocking for v2.1 ship.
+
+## P5 — Spawn-prompts spec defect: parallel-teams pattern incompatible with TeamCreate runtime
+
+- **Source:** Discovered 2026-04-25 22:08 EDT during live Wave-1 dispatch. The spawn-prompts file `.claude/plans/team-spawn-prompts-v2.1.md` §"Dispatch order (canonical, copy-paste sequence)" instructs Bond to fire 4× `TeamCreate` + 21× `Agent` in ONE coordinator message ("Dispatch Wave 1 (4 teams, 21 agents — single message)"). Live dispatch hit the actual TeamCreate runtime constraint: **"A leader can only manage one team at a time. Use TeamDelete to end the current team before creating a new one."** Result: TA3 (`c1v-cloudrun-sidecar`) created and 4 agents spawned successfully; TA1 + TA2 + TD1 TeamCreate calls returned `Already leading team`; the 17 downstream Agent calls failed with `Team does not exist`.
+- **Workaround applied (v2.1):** Sequential team dispatch via TeamCreate / TeamDelete cycle. Wave-A teams fire one-at-a-time: TA3 ships first (already in flight 2026-04-25 22:05 EDT), tag → TeamDelete → TA1 fires → tag → TeamDelete → TA2 fires → tag → TeamDelete → TD1 fires. Wave-B (TB1) gates on all four Wave-A tags as designed. Calendar slip: ~13-20 days vs the planned 8-12 (5-8 day delta). Within `David's "moving forward regardless of cost"` framing.
+- **v2.2 resolution path — pick during v2.2 scope discussion:**
+  - **(a) Sequential team dispatch via TeamCreate/TeamDelete cycle** (current v2.1 workaround formalized as the official pattern). Simplest. Loses parallelism budget.
+  - **(b) Sub-coordinator pattern** — Bond spawns 4 child coordinator agents, each owning one team. Restores parallelism. Adds a coordination layer; needs verification that nested team-leadership works under the runtime.
+  - **(c) Single-team-per-wave with all agents flat under one team_name** — e.g. one team `c1v-wave-a` with 21 agents directly. Loses the per-team verifier-tag granularity; tag matrix collapses to one wave-level tag. Simplest within the constraint but throws away the team-as-coordination-unit pattern.
+- **Acceptance criterion:** v2.2 spawn-prompts file MUST replace the parallel-teams §"Dispatch order" section with the chosen pattern, AND include a smoke test: a single `TeamCreate` call followed by an immediate second `TeamCreate` call in the same message that DOES NOT fail (or, for option (a), an explicit comment that the second `TeamCreate` is expected to fail and is sequenced via `TeamDelete` polling).
+
+## P6 — TA3 `synthesize-credits.test.ts` jest types regression
+
+- **Source:** Live diagnostic surfaced 2026-04-25 22:11 EDT during TA3 dispatch. `synthesize-credits.test.ts` has 10 TypeScript errors `Cannot find name 'jest'` (lines 7-34) — `synthesis-api-routes` agent shipped a test file using `jest` global without the types installed/configured.
+- **Resolution path:** TA3.verifier should catch this when it runs (jest test must compile + run). If not caught at verification, TA3.docs flags as a TODO. Likely fix: add `import { jest } from '@jest/globals'` OR ensure `@types/jest` is in tsconfig types array.
+- **Status:** RESOLVED 2026-04-25 22:18 EDT. Root cause was IDE language-server lag, not real tsc failures. synthesis-api-routes' commit `6f73976` (jest-globals destructured imports + indirect-string route imports for `[id]` dynamic segments) made tests robust to single-file `tsc` invocations. Verifier confirmed `npx tsc --noEmit -p tsconfig.json` exits 0; my false-positive escalation was withdrawn. Captured as reinforcement in `feedback_tsc_over_ide_diagnostics.md` (T3 Wave-1 → TA3 Wave-A). The pattern (`@jest/globals` + indirect-route-import) should be the canonical convention for new test files; consider codifying in `apps/product-helper/__tests__/README.md` if not already there.
+
+## P7 — Secondary migration-number collisions (non-blocking, surfaced by TA1.migrations-and-agent-audit)
+
+- **Source:** TA1 EC-V21-A.0 audit 2026-04-25 22:31 EDT. While reconciling the 0011 collision, the audit agent identified two additional pre-existing same-number pairs:
+  - `apps/product-helper/lib/db/migrations/0004_elite_naoko.sql` + `0004_v2_data_model_depth.sql`
+  - `apps/product-helper/lib/db/migrations/0007_lively_selene.sql` + `0007_add_project_metadata.sql`
+- **Why non-blocking now:** drizzle journal only tracks through 0007; 0008+ apply order is filesystem-driven. The 0004/0007 collisions are cosmetic at this point — both members of each pair already applied in production; rename would require coordinated production migration. Renaming retroactively would diverge journal state from disk state.
+- **Resolution path (v2.2 day-0):** decide whether to (a) leave as-is (tolerated cosmetic; document in CLAUDE.md migration policy section), (b) rename both pairs in a single migration-housekeeping commit alongside a journal-update SQL, or (c) merge each pair logically (low risk but requires per-pair review).
+- **Acceptance criterion:** v2.2 either picks (a) and adds an ADR, or picks (b)/(c) and ships the rename+journal commit before Wave E day-0. Either way, verifier can grep for duplicate migration numbers as a CI check going forward.
+
+## P8 — `apps/product-helper/CLAUDE.md` lacks `kb-upgrade-v2` row
+
+- **Source:** TA1 EC-V21-A.0 audit 2026-04-25 22:31 EDT. The TA1 spec at line 119 said the path-claim row to fix lives in `apps/product-helper/CLAUDE.md`. Disk verification showed the row actually lives in **root** `/Users/davidancor/Projects/c1v/CLAUDE.md` line 550 — `apps/product-helper/CLAUDE.md` has no `kb-upgrade-v2` reference at all.
+- **Resolution path:** spawn-prompts spec correction for v2.2 — when documenting "edit CLAUDE.md" deliverables, specify which CLAUDE.md (root vs app-level). The repo has at least 3 CLAUDE.md files: root, `apps/product-helper/`, and `apps/c1v-identity/`.
+- **Acceptance criterion:** v2.2 spawn-prompts file references the specific CLAUDE.md path on every "edit CLAUDE.md" deliverable.
 
 ---
 

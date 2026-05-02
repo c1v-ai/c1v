@@ -1,0 +1,6 @@
+classDiagram
+    class Project { id project_name created_at }
+    class Spec { id project_id status emitted_at }
+    class Recommendation { id spec_id text citations[] }
+    Project "1" --> "*" Spec
+    Spec "1" --> "*" Recommendation

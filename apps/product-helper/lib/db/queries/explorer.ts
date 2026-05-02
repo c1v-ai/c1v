@@ -7,6 +7,7 @@ import {
   userStories,
   conversations,
 } from '@/lib/db/schema';
+import { projectArtifacts } from '@/lib/db/schema/project-artifacts';
 
 export type ExplorerData = {
   project: {
@@ -43,6 +44,13 @@ export type ExplorerData = {
     hasDecisionMatrix: boolean;
     hasQfd: boolean;
     hasInterfaces: boolean;
+    // Synthesis-gated (project_artifacts)
+    hasFmea: boolean;
+    hasDataFlows: boolean;
+    hasDecisionNetwork: boolean;
+    hasFormFunctionMap: boolean;
+    hasSynthesisRecommendation: boolean;
+    hasHoq: boolean;
   };
 };
 
@@ -54,8 +62,14 @@ export async function getExplorerData(
   projectId: number
 ): Promise<ExplorerData | null> {
   // Run queries in parallel to avoid async waterfalls
-  const [projectResult, dataResult, artifactCountResult, storyCountResult, conversationCountResult] =
-    await Promise.all([
+  const [
+    projectResult,
+    dataResult,
+    artifactCountResult,
+    storyCountResult,
+    conversationCountResult,
+    synthesisRows,
+  ] = await Promise.all([
       db.query.projects.findFirst({
         where: eq(projects.id, projectId),
         columns: {
@@ -97,6 +111,16 @@ export async function getExplorerData(
         .select({ value: count() })
         .from(conversations)
         .where(eq(conversations.projectId, projectId)),
+      // Synthesis artifacts: drives sidebar status for FMEA/Decision Network/etc.
+      // Use db.select() — projectArtifacts has no Drizzle relations registered
+      // so db.query.projectArtifacts.* would throw at runtime.
+      db
+        .select({
+          artifactKind: projectArtifacts.artifactKind,
+          synthesisStatus: projectArtifacts.synthesisStatus,
+        })
+        .from(projectArtifacts)
+        .where(eq(projectArtifacts.projectId, projectId)),
     ]);
 
   if (!projectResult) {
@@ -170,6 +194,12 @@ export async function getExplorerData(
   const intakeState = asRecord(dataResult?.intakeState);
   const extractedData = asRecord(intakeState?.extractedData);
 
+  // Synthesis flags from project_artifacts
+  const synthReady = (kind: string): boolean =>
+    synthesisRows.some(
+      (r) => r.artifactKind === kind && r.synthesisStatus === 'ready',
+    );
+
   return {
     project: {
       id: projectResult.id,
@@ -205,6 +235,14 @@ export async function getExplorerData(
       hasDecisionMatrix: hasJsonbData(extractedData?.decisionMatrix),
       hasQfd: hasJsonbData(extractedData?.qfd),
       hasInterfaces: hasJsonbData(extractedData?.interfaces),
+      // Synthesis-gated items (project_artifacts)
+      hasFmea: synthReady('fmea_early_xlsx') || synthReady('fmea_residual_xlsx'),
+      hasDataFlows:
+        hasJsonbData(extractedData?.dataFlows) || synthReady('data_flows_v1'),
+      hasDecisionNetwork: synthReady('decision_network_v1'),
+      hasFormFunctionMap: synthReady('form_function_map_v1'),
+      hasSynthesisRecommendation: synthReady('recommendation_json'),
+      hasHoq: hasJsonbData(extractedData?.qfd) || synthReady('hoq_xlsx'),
     },
   };
 }

@@ -2,7 +2,45 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
+import { getSignedUrl } from '@/lib/storage/supabase-storage';
 import { FMEAViewer } from '@/components/system-design/fmea-viewer';
+import { DownloadDropdown } from '@/components/synthesis/download-dropdown';
+import { DataExportMenu } from '@/components/system-design/data-export-menu';
+import type { DownloadDropdownArtifact } from '@/components/synthesis/download-dropdown';
+import type { FMEARow, FMEAInstance } from '@/components/system-design/fmea-viewer';
+
+const FMEA_ARTIFACT_KINDS = ['fmea_early_xlsx', 'fmea_residual_xlsx'];
+type ArtifactRow = Awaited<ReturnType<typeof getProjectArtifacts>>[number];
+
+function rowsFromInstance(
+  instance: FMEAInstance | null | undefined,
+  variant: 'early' | 'residual',
+): Array<Record<string, unknown>> {
+  if (!instance) return [];
+  const t = instance.fmea_table;
+  let rows: FMEARow[] = [];
+  if (Array.isArray(t)) rows = t;
+  else if (t && Array.isArray(t.rows)) rows = t.rows;
+
+  // Some intake captures land under `failure_modes` instead of `fmea_table`.
+  if (rows.length === 0 && Array.isArray((instance as { failure_modes?: unknown }).failure_modes)) {
+    rows = (instance as { failure_modes: FMEARow[] }).failure_modes;
+  }
+
+  return rows.map((r) => ({
+    variant,
+    id: r.id ?? '',
+    function: r.function ?? '',
+    failure_mode: r.failure_mode ?? r.failureMode ?? '',
+    cause: r.cause ?? '',
+    effect: r.effect ?? '',
+    severity: r.severity ?? '',
+    occurrence: r.occurrence ?? '',
+    detection: r.detection ?? '',
+    rpn: r.rpn ?? '',
+    mitigation: r.mitigation ?? '',
+  }));
+}
 
 function SectionSkeleton() {
   return (
@@ -30,32 +68,85 @@ function EmptyState() {
   );
 }
 
-async function FMEAContent({ projectId }: { projectId: number }) {
+async function buildFmeaDownloadArtifactsFromRows(
+  rows: ArtifactRow[],
+): Promise<DownloadDropdownArtifact[]> {
+  const cache = new Map<string, string>();
+  const entries: DownloadDropdownArtifact[] = [];
+  for (const row of rows) {
+    if (!FMEA_ARTIFACT_KINDS.includes(row.artifactKind)) continue;
+    let signedUrl: string | null = null;
+    if (row.synthesisStatus === 'ready' && row.storagePath) {
+      try {
+        signedUrl = await getSignedUrl(row.storagePath, undefined, cache);
+      } catch {
+        signedUrl = null;
+      }
+    }
+    entries.push({
+      kind: row.artifactKind,
+      status: row.synthesisStatus,
+      format: row.format,
+      signed_url: signedUrl,
+      sha256: row.sha256,
+      synthesized_at:
+        row.synthesizedAt instanceof Date
+          ? row.synthesizedAt.toISOString()
+          : (row.synthesizedAt as string | null),
+    });
+  }
+  return entries;
+}
+
+async function fetchV1Json<T>(
+  storagePath: string,
+  cache: Map<string, string>,
+): Promise<T | null> {
+  try {
+    const url = await getSignedUrl(storagePath, undefined, cache);
+    const res = await fetch(url, { cache: 'no-store' });
+    if (res.ok) return (await res.json()) as T;
+  } catch {
+    /* ignore — fall back to legacy */
+  }
+  return null;
+}
+
+async function FMEAContent({
+  projectId,
+  artifacts,
+}: {
+  projectId: number;
+  artifacts: ArtifactRow[];
+}) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
 
-  // v2.1 (D-V21.17): prefer per-tenant artifacts from project_artifacts.
-  // No fallback to a canned exemplar.
-  const artifacts = await getProjectArtifacts(projectId);
-  const earlyReady = artifacts.some(
-    (a) => a.artifactKind === 'fmea_early_xlsx' && a.synthesisStatus === 'ready',
-  );
-  const residualReady = artifacts.some(
-    (a) => a.artifactKind === 'fmea_residual_xlsx' && a.synthesisStatus === 'ready',
-  );
-
-  // Back-compat: legacy intake captured FMEA on `extractedData` before
-  // synthesis-stage artifacts moved to project_artifacts. NOT canned data —
-  // it's the tenant's own pre-v2.1 capture.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extracted = (project as any).projectData?.intakeState?.extractedData;
-  const legacyEarly = extracted?.fmeaEarly ?? null;
-  const legacyResidual = extracted?.fmeaResidual ?? null;
+  const legacyEarly = (extracted?.fmeaEarly ?? null) as FMEAInstance | null;
+  const legacyResidual = (extracted?.fmeaResidual ?? null) as FMEAInstance | null;
 
-  const hasArtifact = earlyReady || residualReady;
-  const hasLegacy = !!(legacyEarly || legacyResidual);
+  // Primary: V1 JSON artifacts from project_artifacts (synthesis output).
+  const cache = new Map<string, string>();
+  const earlyV1Row = artifacts.find(
+    (a) => a.artifactKind === 'fmea_early_v1' && a.synthesisStatus === 'ready' && a.storagePath,
+  );
+  const residualV1Row = artifacts.find(
+    (a) => a.artifactKind === 'fmea_residual_v1' && a.synthesisStatus === 'ready' && a.storagePath,
+  );
+  const earlyV1 = earlyV1Row
+    ? await fetchV1Json<FMEAInstance>(earlyV1Row.storagePath!, cache)
+    : null;
+  const residualV1 = residualV1Row
+    ? await fetchV1Json<FMEAInstance>(residualV1Row.storagePath!, cache)
+    : null;
 
-  if (!hasArtifact && !hasLegacy) {
+  // Fallback to legacy extractedData when V1 is absent.
+  const early = earlyV1 ?? legacyEarly;
+  const residual = residualV1 ?? legacyResidual;
+
+  if (!early && !residual) {
     return <EmptyState />;
   }
 
@@ -64,8 +155,8 @@ async function FMEAContent({ projectId }: { projectId: number }) {
 
   return (
     <FMEAViewer
-      early={legacyEarly}
-      residual={legacyResidual}
+      early={early}
+      residual={residual}
       artifactUrlFor={artifactUrlFor}
     />
   );
@@ -80,14 +171,52 @@ export default async function FMEAPage({ params }: PageProps) {
   const projectId = parseInt(id, 10);
   if (isNaN(projectId)) notFound();
 
+  const artifacts = await getProjectArtifacts(projectId);
+  const downloadArtifacts = await buildFmeaDownloadArtifactsFromRows(artifacts);
+  const project = await getProjectById(projectId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const extracted = (project as any)?.projectData?.intakeState?.extractedData;
+  const legacyEarly = (extracted?.fmeaEarly ?? null) as FMEAInstance | null;
+  const legacyResidual = (extracted?.fmeaResidual ?? null) as FMEAInstance | null;
+  const legacyRows = [
+    ...rowsFromInstance(legacyEarly, 'early'),
+    ...rowsFromInstance(legacyResidual, 'residual'),
+  ];
+  const hasSidecarReady = downloadArtifacts.some((a) => a.status === 'ready');
+
   return (
     <section className="flex-1 p-4 pb-20 md:pb-8 lg:p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">
-          Failure Mode &amp; Effects Analysis
-        </h1>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-foreground">
+            Failure Mode &amp; Effects Analysis
+          </h1>
+          <div className="flex items-center gap-2">
+            {downloadArtifacts.length > 0 && (
+              <DownloadDropdown
+                artifacts={downloadArtifacts}
+                manifestContractVersion="v1"
+                projectId={projectId}
+              />
+            )}
+            {legacyRows.length > 0 && (
+              <DataExportMenu
+                data={{ early: legacyEarly, residual: legacyResidual }}
+                rows={legacyRows}
+                filename="fmea"
+                title="FMEA — Failure Modes"
+                hint={
+                  hasSidecarReady
+                    ? 'Quick export from intake data. For canonical XLSX use Downloads.'
+                    : 'Exporting from intake-stage data. Run synthesis for canonical XLSX.'
+                }
+                label={hasSidecarReady ? 'Quick export' : 'Export'}
+              />
+            )}
+          </div>
+        </div>
         <Suspense fallback={<SectionSkeleton />}>
-          <FMEAContent projectId={projectId} />
+          <FMEAContent projectId={projectId} artifacts={artifacts} />
         </Suspense>
       </div>
     </section>

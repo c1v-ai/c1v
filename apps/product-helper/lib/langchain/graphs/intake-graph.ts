@@ -746,7 +746,10 @@ export async function* streamIntakeGraph(
 
   // Use LangGraph's streaming capability
   const stream = await graph.stream(state, {
-    recursionLimit: 50,
+    // 50 is too low for multi-artifact intake flows — each artifact generation
+    // consumes ~5 nodes; 8 artifact phases × 5 + overhead = ~60 minimum.
+    // 150 gives headroom without masking genuine infinite loops.
+    recursionLimit: 150,
   });
 
   for await (const chunk of stream) {

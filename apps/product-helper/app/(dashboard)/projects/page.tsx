@@ -58,19 +58,19 @@ async function ProjectsList() {
 
 export default function ProjectsPage() {
   return (
-    <section className="flex-1 p-4 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
+    <section className="flex-1 p-4 lg:p-8 relative">
+      <div className="mb-6 sm:mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">
             Projects
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage your Product Requirements Documents
           </p>
         </div>
         <Button
           asChild
-          className="bg-accent text-accent-foreground hover:bg-accent/90"
+          className="hidden sm:inline-flex bg-accent text-accent-foreground hover:bg-accent/90"
         >
           <Link href="/home">
             <FolderPlus className="mr-2 h-4 w-4" />
@@ -82,6 +82,15 @@ export default function ProjectsPage() {
       <Suspense fallback={<ProjectsListSkeleton />}>
         <ProjectsList />
       </Suspense>
+
+      {/* Mobile-only FAB — sits above 64px BottomNav with safe-area + 16px gap */}
+      <Link
+        href="/home"
+        aria-label="New Project"
+        className="sm:hidden fixed right-4 z-40 flex items-center justify-center h-14 w-14 rounded-full shadow-lg bg-accent text-accent-foreground hover:bg-accent/90 transition-all active:scale-95 touch-manipulation bottom-[calc(5rem+env(safe-area-inset-bottom))]"
+      >
+        <FolderPlus className="h-6 w-6" />
+      </Link>
     </section>
   );
 }

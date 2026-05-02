@@ -1,0 +1,9 @@
+flowchart TB
+    DN01[DN.01 LLM Provider] -.winner.-> A1[Claude Sonnet 4.5]
+    DN02[DN.02 Vector Store] -.winner.-> A2[pgvector]
+    DN03[DN.03 Orchestration] -.winner.-> A3[LangGraph]
+    DN04[DN.04 Deployment] -.winner.-> A4[Vercel]
+    A1 --> AV01{{AV.01 Recommended Architecture}}
+    A2 --> AV01
+    A3 --> AV01
+    A4 --> AV01

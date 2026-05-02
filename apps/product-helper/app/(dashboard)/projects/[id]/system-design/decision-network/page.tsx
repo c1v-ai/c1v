@@ -2,6 +2,20 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getProjectById } from '@/app/actions/projects';
 import { getProjectArtifacts } from '@/lib/db/queries';
+import { getSignedUrl } from '@/lib/storage/supabase-storage';
+import { DownloadDropdown } from '@/components/synthesis/download-dropdown';
+import { DataExportMenu } from '@/components/system-design/data-export-menu';
+import { buildDownloadArtifacts } from '@/lib/synthesis/build-download-artifacts';
+import {
+  DecisionNetworkViewer,
+  type DecisionNetworkData,
+} from '@/components/system-design/decision-network-viewer';
+
+const DECISION_NETWORK_KINDS = [
+  'decision_network_v1',
+  'decision_network_xlsx',
+  'decision_network_svg',
+] as const;
 
 function SectionSkeleton() {
   return (
@@ -28,25 +42,168 @@ function EmptyState() {
   );
 }
 
+function StorageUnavailableState() {
+  return (
+    <div className="rounded-lg border bg-card p-12 text-center">
+      <div className="mx-auto max-w-md space-y-3">
+        <h2 className="text-lg font-semibold text-foreground">
+          Decision Network
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Synthesis completed but the artifact file was not saved. Re-run
+          synthesis to regenerate.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function normalizeDecisionNetworkData(raw: DecisionNetworkData): DecisionNetworkData {
+  const extended = raw as DecisionNetworkData & {
+    phases?: {
+      phase_14_decision_nodes?: {
+        decision_nodes?: Array<{
+          id: string;
+          title?: string;
+          question?: string;
+          alternatives?: Array<{ id: string; name?: string; label?: string }>;
+          utility_vector?: {
+            values?: Array<{ alternative_id: string; utility?: number }>;
+          };
+        }>;
+      };
+      phase_16_pareto_frontier?: {
+        architecture_vectors?: Array<{
+          id: string;
+          utility_total?: number;
+          on_frontier?: boolean;
+          choices?: Array<{ decision_node_id: string; alternative_id: string }>;
+        }>;
+      };
+    };
+  };
+
+  if (raw.decision_nodes || raw.pareto_alternatives) return raw;
+
+  const phase14 = extended.phases?.phase_14_decision_nodes;
+  const phase16 = extended.phases?.phase_16_pareto_frontier;
+
+  return {
+    system_name: raw.system_name,
+    decision_nodes: phase14?.decision_nodes?.map((node) => {
+      const utilities = new Map(
+        node.utility_vector?.values?.map((v) => [v.alternative_id, v.utility]) ?? [],
+      );
+      const alternatives =
+        node.alternatives?.map((alt) => ({
+          id: alt.id,
+          label: alt.name ?? alt.label ?? alt.id,
+        })) ?? [];
+      const winning = [...alternatives]
+        .sort(
+          (a, b) =>
+            (utilities.get(b.id) ?? Number.NEGATIVE_INFINITY) -
+            (utilities.get(a.id) ?? Number.NEGATIVE_INFINITY),
+        )[0];
+
+      return {
+        id: node.id,
+        label: node.title ?? node.question ?? node.id,
+        alternatives,
+        winning_alternative: winning,
+      };
+    }),
+    pareto_alternatives: phase16?.architecture_vectors,
+  };
+}
+
 async function DecisionNetworkContent({ projectId }: { projectId: number }) {
   const project = await getProjectById(projectId);
   if (!project) notFound();
 
   const artifacts = await getProjectArtifacts(projectId);
-  const ready = artifacts.some(
+  const row = artifacts.find(
     (a) =>
       a.artifactKind === 'decision_network_v1' && a.synthesisStatus === 'ready',
   );
 
-  if (!ready) {
-    return <EmptyState />;
+  if (!row) return <EmptyState />;
+  if (!row.storagePath) return <StorageUnavailableState />;
+
+  let data: DecisionNetworkData | null = null;
+  try {
+    const cache = new Map<string, string>();
+    const url = await getSignedUrl(row.storagePath, undefined, cache);
+    const res = await fetch(url, { cache: 'no-store' });
+    if (res.ok) data = normalizeDecisionNetworkData((await res.json()) as DecisionNetworkData);
+  } catch {
+    /* fall through to empty state */
   }
 
-  // The DecisionNetworkViewer is owned by the `architecture-and-database`
-  // agent (merged Architecture & Database section).
+  if (!data) return <EmptyState />;
+
+  return <DecisionNetworkViewer data={data} />;
+}
+
+function projectDnRows(
+  data: DecisionNetworkData,
+): Array<Record<string, unknown>> {
+  const rows: Array<Record<string, unknown>> = [];
+  for (const node of data.decision_nodes ?? []) {
+    rows.push({
+      decision_id: node.id,
+      decision: node.label,
+      winning_alternative: node.winning_alternative?.label ?? '',
+      winning_rationale: node.winning_alternative?.rationale ?? '',
+      alternatives_count: node.alternatives?.length ?? 0,
+    });
+  }
+  return rows;
+}
+
+async function DecisionNetworkHeaderActions({ projectId }: { projectId: number }) {
+  const sidecarArtifacts = await buildDownloadArtifacts(
+    projectId,
+    DECISION_NETWORK_KINDS,
+  );
+
+  // Try to also surface a quick-export from the rendered JSON if available.
+  let jsonPayload: DecisionNetworkData | null = null;
+  const jsonRow = sidecarArtifacts.find(
+    (a) => a.kind === 'decision_network_v1' && a.status === 'ready' && a.signed_url,
+  );
+  if (jsonRow?.signed_url) {
+    try {
+      const res = await fetch(jsonRow.signed_url, { cache: 'no-store' });
+      if (res.ok) {
+        jsonPayload = normalizeDecisionNetworkData(
+          (await res.json()) as DecisionNetworkData,
+        );
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
-    <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-      Decision network is ready. The interactive viewer is being prepared.
+    <div className="flex items-center gap-2">
+      {sidecarArtifacts.length > 0 && (
+        <DownloadDropdown
+          artifacts={sidecarArtifacts}
+          manifestContractVersion="v1"
+          projectId={projectId}
+        />
+      )}
+      {jsonPayload && (
+        <DataExportMenu
+          data={jsonPayload}
+          rows={projectDnRows(jsonPayload)}
+          filename="decision-network"
+          title="Decision Network"
+          hint="Quick export from canonical JSON. For canonical XLSX/SVG use Downloads."
+          label="Quick export"
+        />
+      )}
     </div>
   );
 }
@@ -63,9 +220,14 @@ export default async function DecisionNetworkPage({ params }: PageProps) {
   return (
     <section className="flex-1 p-4 pb-20 md:pb-8 lg:p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">
-          Decision Network
-        </h1>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-foreground">
+            Decision Network
+          </h1>
+          <Suspense fallback={null}>
+            <DecisionNetworkHeaderActions projectId={projectId} />
+          </Suspense>
+        </div>
         <Suspense fallback={<SectionSkeleton />}>
           <DecisionNetworkContent projectId={projectId} />
         </Suspense>

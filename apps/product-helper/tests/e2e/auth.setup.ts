@@ -21,10 +21,9 @@ setup('authenticate', async ({ page }) => {
   await page.locator('#password').fill(TEST_USER.password);
   await page.locator('button[type="submit"]').click();
 
-  // Wait for redirect to authenticated area. Use 'commit' since the
-  // projects page may have server-side errors that prevent full load —
-  // we only need the URL to change to confirm auth succeeded.
-  await page.waitForURL('**/projects**', {
+  // Wait for redirect to ANY authenticated area — prod redirects to /home,
+  // some envs redirect to /projects. Accept either.
+  await page.waitForURL(/\/(home|projects)/, {
     timeout: 60000,
     waitUntil: 'commit',
   });

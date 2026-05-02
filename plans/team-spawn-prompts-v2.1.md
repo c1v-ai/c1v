@@ -17,12 +17,12 @@
 | # | Team slug | Wave | Agents | Lead subagent_type | Spawn prompt |
 |---|---|---|---|---|---|
 | TA1 | `c1v-runtime-wiring` | A | 6 | backend-architect | **This doc §TA1** |
-| TA2 | `c1v-synthesis-ui` | A | 6 | ui-ux-engineer | **This doc §TA2** |
+| TA2 | `c1v-synthesis-ui` | A | 7 | ui-ux-engineer | **This doc §TA2** |
 | TA3 | `c1v-cloudrun-sidecar` | A | 4 | devops-engineer | **This doc §TA3** |
 | TB1 | `c1v-hardening` | B | 5 | cache-engineer | **This doc §TB1** |
 | TD1 | `c1v-apispec-iter3` | D | 4 | langchain-engineer | **This doc §TD1** |
 
-**Total: 5 teams, 25 agents, 2 dispatch waves.**
+**Total: 5 teams, 26 agents, 2 dispatch waves.** (TA2 grew 6→7 agents 2026-04-25 21:55 EDT for EC-V21-A.16 empty-state work via dedicated `empty-section-state` agent.)
 
 Per-team role coverage (mandated):
 - **QA / verifier (every team):** `qa-engineer` agent gates that team's exit criteria from v2.1 and tags `t<slug>-wave-<N>-complete` on green. Non-fix verifier — log failures, surface, do NOT auto-fix.
@@ -32,7 +32,7 @@ Per-team subagent_type composition:
 | Team | Backend | DB | LangChain | UI/UX | Data-viz | DevOps | Cache | Obs | QA | Docs | **Total** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | TA1 | 1 | 1 | 2 | — | — | — | — | — | 1 | 1 | **6** |
-| TA2 | — | — | — | 3 | 1 | — | — | — | 1 | 1 | **6** |
+| TA2 | — | — | — | 4 | 1 | — | — | — | 1 | 1 | **7** |
 | TA3 | 1 | — | — | — | — | 1 | — | — | 1 | 1 | **4** |
 | TB1 | 1 | — | — | — | — | — | 1 | 1 | 1 | 1 | **5** |
 | TD1 | 1 | — | 1 | — | — | — | — | — | 1 | 1 | **4** |
@@ -57,7 +57,7 @@ Per-team subagent_type composition:
 
 ## TA1 — c1v-runtime-wiring (Wave A)
 
-**Scope:** Per-tenant LangGraph wiring of the 6 already-shipped T4b/T5/T6 agents into runtime nodes (D-V21.01 A2 TS-native). New `project_artifacts` Drizzle table with RLS from day-one (D-V21.04). EC-V21-A.0 preflight: 0011 migration collision reconciliation + agent fs-side-effects audit + canonical `intake-graph.ts` path verification + canonical `METHODOLOGY-CORRECTION.md` path resolution. Open-question chat-bridge transport (`lib/chat/system-question-bridge.ts`) + M2 NFR / hoq / fmea-residual emitter extensions per EC-V21-A.4. Atlas runtime ingest fix (`scripts/ingest-kbs.ts` path correction + Phase B re-run unblock) per EC-V21-A.8. Wave A ↔ Wave E contract pin (`nfr_engine_contract_version: 'v1'` envelope on `GENERATE_nfr` / `GENERATE_constants` outputs).
+**Scope:** Per-tenant LangGraph wiring of the 9 already-shipped agents into runtime nodes (D-V21.01 A2 TS-native) per master plan v2.1 §Wave A *Agent ↔ graph-node mapping* table (6 system-design agents — decision-net / form-function / hoq / fmea-early / fmea-residual / interface-specs — + 2 nav-route fillers — data-flows / n2 — + 1 keystone — architecture-recommendation). New `project_artifacts` Drizzle table with RLS from day-one (D-V21.04). EC-V21-A.0 preflight: 0011 migration collision reconciliation + agent fs-side-effects audit + canonical `intake-graph.ts` path verification + canonical `METHODOLOGY-CORRECTION.md` path resolution. Open-question chat-bridge transport (`lib/chat/system-question-bridge.ts`) + M2 NFR / hoq / fmea-residual emitter extensions per EC-V21-A.4. Atlas runtime ingest fix (`scripts/ingest-kbs.ts` path correction + Phase B re-run unblock) per EC-V21-A.8. Wave A ↔ Wave E contract pin (`nfr_engine_contract_version: 'v1'` envelope on `GENERATE_nfr` / `GENERATE_constants` outputs).
 
 **Dependencies:** No external HARD-DEP. Internal sequencing: `migrations-and-agent-audit` agent runs FIRST and blocks all other TA1 agents until EC-V21-A.0 closes. Other TA1 agents then run in parallel.
 
@@ -69,7 +69,7 @@ Per-team subagent_type composition:
 TeamCreate({
   team_name: "c1v-runtime-wiring",
   agent_type: "tech-lead",
-  description: "Wire the 6 already-shipped v2 system-design agents (decision-net, form-function, hoq, fmea-early, fmea-residual, interface-specs) + arch-recommendation-agent into the runtime LangGraph as new GENERATE_* nodes. Ship project_artifacts table + RLS. Build the system-question-bridge transport so M2/M6/M8 open-question emitters land in chat. Pin the Wave A ↔ Wave E handshake so v2.2 can swap NFR-engine internals without a re-edit.",
+  description: "Wire the 9 already-shipped v2 agents (6 system-design — decision-net, form-function, hoq, fmea-early, fmea-residual, interface-specs — + data-flows-agent + n2-agent + architecture-recommendation-agent) into the runtime LangGraph per master plan v2.1 §Wave A *Agent ↔ graph-node mapping* table — net 7 NEW nodes + 2 RE-WIRE of existing internals. Ship project_artifacts table + RLS. Build the system-question-bridge transport so M2/M6/M8 open-question emitters land in chat. Pin the Wave A ↔ Wave E handshake so v2.2 can swap NFR-engine internals without a re-edit.",
   context: {
     authoritative_spec: "plans/c1v-MIT-Crawley-Cornell.v2.1.md §Wave A — Per-tenant runtime wiring + §Decisions D-V21.01/.04/.13/.18-.23 + §Wave E Contract pin",
     upstream_artifacts_already_shipped: [
@@ -79,7 +79,9 @@ TeamCreate({
       "apps/product-helper/lib/langchain/agents/system-design/fmea-early-agent.ts (T4a — fmea_early.v1)",
       "apps/product-helper/lib/langchain/agents/system-design/fmea-residual-agent.ts (T6 — fmea_residual.v1)",
       "apps/product-helper/lib/langchain/agents/system-design/interface-specs-agent.ts (T4b — interface_specs.v1)",
-      "apps/product-helper/lib/langchain/agents/architecture-recommendation-agent.ts (T6 — architecture_recommendation.v1; 644 LOC)"
+      "apps/product-helper/lib/langchain/agents/system-design/data-flows-agent.ts (M1 phase-2.5 — data_flows.v1; required for End State Data Flows nav route per master plan v2.1 line 257)",
+      "apps/product-helper/lib/langchain/agents/system-design/n2-agent.ts (M7.a — n2_matrix.v1; required for EC-V21-A.5 N2 promotion per master plan v2.1 line 258)",
+      "apps/product-helper/lib/langchain/agents/architecture-recommendation-agent.ts (T6 keystone — architecture_recommendation.v1; 644 LOC; canonical synthesizer — synthesis-agent.ts is OUT-OF-SCOPE per master plan v2.1 line 262)"
     ],
     canonical_paths_to_verify: {
       langgraph: "apps/product-helper/lib/langchain/graphs/intake-graph.ts (NOT lib/langgraph/intake-graph.ts — that path does NOT exist; v2.1 critique iter-1 finding)",
@@ -180,7 +182,7 @@ Agent({
     "EVERY GENERATE_* node MUST persist its output to project_artifacts via TA1's `upsertArtifactStatus` query — no fs.writeFile to disk in the runtime path.",
     "GENERATE_nfr + GENERATE_constants envelope: contract version is the canonical handshake. v2.2's Wave E producer fills the same envelope with engine-first internals; if v2.1 emits a different shape than the contract pin spec, the v2.2 re-edit is forced (and the version flag must bump to 'v2').",
     "Open-question failure path: when a node would otherwise throw on missing/low-confidence data, emit the `{ status: 'needs_user_input', ... }` shape and route via system-question-bridge.ts (built by `open-questions-emitter` agent). This is the failure semantics half of the contract pin.",
-    "Test fixtures committed at apps/product-helper/__tests__/fixtures/intake-graph/ — at minimum: (a) one happy-path fixture (full intake → all 7 nodes succeed → synthesis emits), (b) one needs_user_input fixture (M2 NFR encounters low-confidence decision → contract-pin failure path fires → chat-bridge invoked), (c) one fs-side-effect regression fixture (asserts no fs.writeFile in runtime path).",
+    "Test fixtures committed at apps/product-helper/__tests__/fixtures/intake-graph/ — at minimum: (a) one happy-path fixture (full intake → all 9 graph-node touches per disposition table — 7 NEW + 2 RE-WIRE — succeed and persist; synthesis emits), (b) one needs_user_input fixture (M2 NFR encounters low-confidence decision → contract-pin failure path fires → chat-bridge invoked), (c) one fs-side-effect regression fixture (asserts no fs.writeFile in runtime path).",
     "Commits: one per logical layer — agent-signature-adapter, contract-pin-spec, graph-node-additions, persistence-via-queries, tests."
   ]
 })
@@ -222,7 +224,7 @@ Agent({
   deliverables: [
     "apps/product-helper/scripts/verify-ta1.ts — TA1-specific verifier (CI-reusable). Asserts: (a) migrations apply in deterministic order, (b) lib/langchain/graphs/intake-graph.ts is the canonical path (grep returns 0 hits for lib/langgraph/intake-graph.ts), (c) project_artifacts table exists + RLS active, (d) chat-bridge insert latency p95 < 2s on 100 synthetic emissions, (e) inputs_hash deterministic across two identical-input runs, (f) GENERATE_nfr/GENERATE_constants outputs match contract-pin Zod envelope, (g) atlas kb_chunks row count > 0 (only if re-ingest landed; SKIP-with-fail-forward if blocked)",
     "plans/v21-outputs/ta1/verification-report.md — per-EC PASS/FAIL with evidence (commit SHA, log excerpt, query result)",
-    "Integration test: spawn fixture project → trigger GENERATE_synthesis chain → assert all 7 GENERATE_* nodes complete + persist to project_artifacts + (in failure-path fixture) OpenQuestion fires + chat thread receives row",
+    "Integration test: spawn fixture project → trigger GENERATE_synthesis chain → assert all 9 graph-node touches per disposition table (7 NEW + 2 RE-WIRE) complete + persist to project_artifacts + (in failure-path fixture) OpenQuestion fires + chat thread receives row",
     "git tag `ta1-wave-a-complete` only if every EC green AND contract-pin envelope verified"
   ],
   guardrails: [
@@ -291,7 +293,7 @@ TeamCreate({
 })
 ```
 
-### Step 2: Spawn 6 teammates (parallel — all 4 producer agents independent; verifier blocks on producers; docs blocks on verifier)
+### Step 2: Spawn 7 teammates (parallel — all 5 producer agents independent; verifier blocks on producers; docs blocks on verifier)
 
 ```
 Agent({
@@ -311,13 +313,13 @@ Agent({
     "apps/product-helper/components/synthesis/section-figures.tsx — Mermaid blocks rendered via existing components/diagrams/diagram-viewer.tsx (FROZEN — import only, do NOT modify). Reads architecture_recommendation.embedded_artifacts[].content where format='mermaid'.",
     "apps/product-helper/components/synthesis/provenance-accordion.tsx — Show JSON / Mermaid source / Derivation chain disclosures (Dimension L). Reads architecture_recommendation.{inputs_hash, synthesized_at, next_steps[], full_payload}.",
     "apps/product-helper/components/synthesis/download-dropdown.tsx — Wired to /api/projects/[id]/artifacts/manifest (TA3 owns the route). Renders: JSON / HTML / PDF / PPTX / Bundle ZIP. Each entry → signed-URL download. Loading state during sidecar gen. Per-artifact retry button on synthesis_status='failed' (Wave B owns the retry handler; v2.1 v.1 of this dropdown shows the button as disabled with 'available in v2.1 Wave B' tooltip — OR ships disabled and TB1 enables. Pick one — recommend ship enabled with stub action that toasts 'Wave B'.).",
-    "apps/product-helper/components/synthesis/empty-state.tsx — Pre-synthesis CTA to /generate per D-V21.17. NO canned data. Methodology pillar tiles (5 tiles, blurred/grayed) with copy 'Your project hasn't been synthesized yet. Run Deep Synthesis to populate.' Honors the keystone-teaching surface for reviewer-recruiters per critique iter-1 Vision feedback.",
+    "apps/product-helper/components/synthesis/empty-state.tsx — Pre-synthesis CTA to /synthesis per D-V21.17. NO canned data. **PER EC-V21-A.16 LOCK (2026-04-25 21:21 EDT, master plan critique iter-2 Issue 14):** the synthesis page's empty state composes the unified `<EmptySectionState>` shared component (built by `empty-section-state` agent below — see new agent assignment) for each of its 5 sub-sections (recommendation / decision-network / fmea / qfd / architecture-and-database). NO blurred-tile-grid pattern (the iter-1 'methodology pillar tiles' recommendation was REJECTED in iter-2 in favor of per-section consistency, informed by project=32 UI review showing populated pages are section-specific — matrix/cards/tables/diagrams). This component is a thin wrapper that maps the synthesis page's 5 sub-sections to the right `<EmptySectionState>` instances + an over-arching CTA banner. Methodology copy (1 line per sub-section) is generic — no exemplar values like 'AV.01' / 'Sonnet 4.5' / 'pgvector' leak.",
     "apps/product-helper/__tests__/synthesis/recommendation-viewer.test.tsx — 5-section render + downloads visible + empty state pre-synthesis (per D-V21.17, NO canned data renders) + dark-mode parity"
   ],
   guardrails: [
     "DO NOT modify components/diagrams/diagram-viewer.tsx — frozen per UI freeze.",
     "Brand tokens ONLY from app/theme.css + app/globals.css — NO new color hex values. Tangerine accent for callout border = use existing token.",
-    "Empty state per D-V21.17: zero canned-c1v data leaks. Fixture test asserts no 'AV.01' / 'Sonnet 4.5' / 'pgvector' strings present in the empty state output.",
+    "Empty state per D-V21.17 + EC-V21-A.16 (locked 2026-04-25 21:21 EDT): zero canned-c1v data leaks; pattern = unified per-section `<EmptySectionState>` (NOT a blurred 5-pillar tile grid — iter-2 reject). Fixture test asserts no 'AV.01' / 'Sonnet 4.5' / 'pgvector' / 'Vercel' strings present in the empty state output. Coordinate with new sibling agent `empty-section-state` below — that agent owns the shared component; this agent consumes it.",
     "Section components are layout-only — no data fetching inside (parent server component does it). Easier to test + clearer responsibility.",
     "Download dropdown stub-toast for retry is FINE for v2.1 — TB1 wires the live retry. Mark with `// TODO(TB1): wire retry endpoint` comment.",
     "Commits: one per sub-component or tight cluster (e.g. all 6 section-*.tsx in one commit if they're co-developed; recommend: one commit per component for clean review)."
@@ -404,19 +406,46 @@ Agent({
 })
 
 Agent({
+  name: "empty-section-state",
+  subagent_type: "ui-ux-engineer",
+  team: "c1v-synthesis-ui",
+  goal: "Build the shared `<EmptySectionState>` component + apply it across all 13 section components + 5 system-design viewer wrappers + the synthesis page's 5 sub-sections, per EC-V21-A.16 (locked 2026-04-25 21:21 EDT, master plan critique iter-2 Issue 14). Replaces the current inconsistent failure modes: 13 red `[INSUFFICIENT (found:X, all:Y)]` rows on `/system-design/interfaces` Sequence Diagrams tab, raw-Mermaid-source-as-text on `/backend/infrastructure` Activity Diagram card, bare entity-table dump on `/requirements/architecture` when no ER diagram exists yet. Honors D-V21.17 (no canned data — methodology copy is generic). FROZEN viewers (decision-matrix-viewer / ffbd-viewer / qfd-viewer / interfaces-viewer / diagram-viewer) honor this via WRAPPER component, NOT via internal edit.",
+  inline_skills: ["react-best-practices", "code-quality"],
+  deliverables: [
+    "apps/product-helper/components/projects/sections/empty-section-state.tsx — shared component. Props: `{ sectionName: string; methodologyCopy: string; ctaLabel?: string; ctaHref?: string; icon?: ReactNode }`. Pattern (locked): section icon + '<sectionName> not generated yet' headline + 1-line methodology copy + `[Run Deep Synthesis →]` CTA (default href: `/projects/[id]/synthesis`). Uses brand tokens only (Firefly/Porcelain/Tangerine/Danube via app/theme.css + app/globals.css). Dark-mode parity. WCAG 2.1 AA: keyboard-accessible CTA, ARIA labels.",
+    "apps/product-helper/components/projects/sections/empty-section-state.config.ts — methodology copy catalog. Object keyed on section name → 1-line copy. Examples: `{ qfd: 'Run Deep Synthesis to map customer needs to engineering characteristics with weighted correlations and a roof correlation matrix', fmea: 'Run Deep Synthesis to identify failure modes, score severity/occurrence/detection, and surface mitigations', decisionNetwork: 'Run Deep Synthesis to evaluate architecture alternatives across the Pareto frontier and surface the recommended winner', ... }` — copy is generic; NO exemplar values like 'AV.01' / 'Sonnet 4.5' / 'pgvector' / 'Vercel'.",
+    "apps/product-helper/components/projects/sections/{problem-statement,goals-metrics,user-stories,system-overview,non-functional-requirements,architecture,schema,api-spec,infrastructure,coding-guidelines,...}-section.tsx — EDIT each to render `<EmptySectionState sectionName=... methodologyCopy={EMPTY_SECTION_COPY[...]} />` when underlying data is missing OR `synthesis_status !== 'ready'`. Replaces ad-hoc empty branches today. ~13 section files touched.",
+    "apps/product-helper/components/system-design/{decision-matrix,ffbd,qfd,interfaces,diagram}-viewer-empty-wrapper.tsx — 5 NEW sibling wrapper components, ONE per FROZEN viewer. Pattern: `if (data missing) return <EmptySectionState ... />; else return <FrozenViewer .../>`. Page-level consumers swap from importing the FROZEN viewer directly to importing the wrapper. FROZEN viewers stay byte-identical (handoff Issue 8 + EC-V21-A.10).",
+    "apps/product-helper/app/(dashboard)/projects/[id]/system-design/{ffbd,decision-matrix,qfd,interfaces,fmea}/page.tsx — EDIT each page.tsx to swap the direct FROZEN-viewer import for the new `*-viewer-empty-wrapper.tsx` import. Pure import path swap; no logic change in the page.",
+    "Coordinate with `synthesis-viewer` agent: the synthesis page's `empty-state.tsx` composes 5 instances of `<EmptySectionState>` (one per sub-section: recommendation / decision-network / fmea / qfd / architecture-and-database). DO NOT duplicate the component there.",
+    "apps/product-helper/components/projects/sections/__tests__/empty-section-state.test.tsx — render with sample props (light + dark mode), CTA href correct, axe-core WCAG 2.1 AA pass, regex sweep on rendered output asserts no canned-c1v strings.",
+    "apps/product-helper/__tests__/empty-state-coverage.test.ts — meta-test: assert all 13 section components import `<EmptySectionState>`; assert 5 viewer-wrappers exist; assert synthesis page's empty-state composes 5 instances."
+  ],
+  guardrails: [
+    "DO NOT modify the 5 FROZEN viewers (decision-matrix-viewer.tsx / ffbd-viewer.tsx / qfd-viewer.tsx / interfaces-viewer.tsx / diagram-viewer.tsx) — wrap via sibling component only.",
+    "Methodology copy is GENERIC — no exemplar values like 'AV.01' / 'Sonnet 4.5' / 'pgvector' / 'Vercel' / 'LangGraph' leak. Verifier regex-sweeps for these.",
+    "Brand tokens ONLY — same rule as `synthesis-viewer` agent.",
+    "FROZEN convention is sacred: `git diff` of the 5 FROZEN files = empty by tag time.",
+    "Per-pixel sign-off: David reviews the empty-state pattern across one populated + one empty page (light + dark) before merge; the cross-page consistency is part of EC-V21-A.16's spirit.",
+    "Coordinate with `synthesis-viewer` (consumes the shared component) and `nav-and-pages` (FMEA page-level swap). Name-block on `synthesis-viewer` so the shared component lands first; `nav-and-pages` rebases the FMEA import path swap after this agent's commit lands.",
+    "Commits: shared component + copy catalog (cluster), 13-section import sweep (cluster), 5 viewer wrappers + page imports (cluster), tests."
+  ]
+})
+
+Agent({
   name: "verifier",
   subagent_type: "qa-engineer",
   team: "c1v-synthesis-ui",
-  goal: "Verify TA2 exit criteria from v2.1 Wave A: EC-V21-A.3 (FMEA route surfaces in nav + reads from project_artifacts), EC-V21-A.5 (N2 promoted to first sub-tab), EC-V21-A.6 (Architecture & Database is interactive — alternative-picker + DBML approval gate), EC-V21-A.9 (Bundle ZIP downloads from Connections), EC-V21-A.10 (shadcn-styled + brand-token compliant + dark-mode parity), EC-V21-A.11 (visual approach uses current style + reuses components — no novel tokens, no Figma blocker).",
+  goal: "Verify TA2 exit criteria from v2.1 Wave A: EC-V21-A.3 (FMEA route surfaces in nav + reads from project_artifacts), EC-V21-A.5 (N2 promoted to first sub-tab), EC-V21-A.6 (Architecture & Database is interactive — alternative-picker + DBML approval gate), EC-V21-A.9 (Bundle ZIP downloads from Connections), EC-V21-A.10 (shadcn-styled + brand-token compliant + dark-mode parity), EC-V21-A.11 (visual approach uses current style + reuses components — no novel tokens, no Figma blocker), **EC-V21-A.16** (empty-state-as-teaching-surface — unified `<EmptySectionState>` adopted across all 13 section components + 5 system-design viewer wrappers + synthesis page sub-sections; zero canned-c1v string leaks; locked 2026-04-25 21:21 EDT per master-plan critique iter-2 Issue 14).",
   inline_skills: ["testing-strategies"],
   deliverables: [
-    "apps/product-helper/scripts/verify-ta2.ts — TA2-specific verifier. Asserts: (a) every new component imports brand tokens from app/theme.css or app/globals.css (NO inline hex values), (b) dark-mode parity test renders each component in light + dark, (c) no FROZEN file (decision-matrix-viewer, ffbd-viewer, qfd-viewer, interfaces-viewer, diagram-viewer) was modified, (d) nav-config back-compat: legacy `extractedData.diagrams.infrastructure` projects still navigable, (e) FMEA page reads from project_artifacts when present, empty-state otherwise, (f) D-V21.17 empty-state has zero canned-c1v strings (regex sweep for 'AV.01', 'Sonnet 4.5', 'pgvector', etc.), (g) Bundle ZIP under 50MB on fixture project, (h) accessibility (axe-core sweep) on synthesis page + open-questions archive — WCAG 2.1 AA",
+    "apps/product-helper/scripts/verify-ta2.ts — TA2-specific verifier. Asserts: (a) every new component imports brand tokens from app/theme.css or app/globals.css (NO inline hex values), (b) dark-mode parity test renders each component in light + dark, (c) no FROZEN file (decision-matrix-viewer, ffbd-viewer, qfd-viewer, interfaces-viewer, diagram-viewer) was modified, (d) nav-config back-compat: legacy `extractedData.diagrams.infrastructure` projects still navigable, (e) FMEA page reads from project_artifacts when present, empty-state otherwise, (f) D-V21.17 + EC-V21-A.16 empty-state: zero canned-c1v strings (regex sweep for 'AV.01', 'Sonnet 4.5', 'pgvector', 'Vercel'), (g) `<EmptySectionState>` adopted across all 13 section components in `components/projects/sections/` (grep import path), (h) `<EmptySectionState>` wrapper present for the 5 system-design viewers (FROZEN viewers honor via wrapper, NOT internal edit), (i) synthesis page's 5 sub-sections each render `<EmptySectionState>` pre-synthesis, (j) Bundle ZIP under 50MB on fixture project, (k) accessibility (axe-core sweep) on synthesis page + open-questions archive + a representative empty-state — WCAG 2.1 AA",
     "plans/v21-outputs/ta2/verification-report.md — per-EC PASS/FAIL with screenshot evidence (dark-mode parity, brand-token compliance) + axe-core report",
     "Visual regression: Playwright snapshot of synthesis page (populated + empty), Architecture & Database section, open-questions archive, interfaces N2 tab",
     "git tag `ta2-wave-a-complete` only if every EC green AND no FROZEN file modified AND axe-core WCAG 2.1 AA pass"
   ],
   guardrails: [
-    "Depend on synthesis-viewer + nav-and-pages + architecture-and-database + interfaces-and-archive-pages (block on names).",
+    "Depend on synthesis-viewer + nav-and-pages + architecture-and-database + interfaces-and-archive-pages + empty-section-state (block on names).",
     "Non-fix verifier.",
     "FROZEN-file modification = automatic FAIL on the 5-file list (decision-matrix-viewer, ffbd-viewer, qfd-viewer, interfaces-viewer, diagram-viewer). DO NOT include fmea-viewer.tsx in the auto-FAIL set — it's MODIFIABLE-IN-V21 per handoff Issue 8 (TA2.nav-and-pages edits its data wire). Run `git diff --name-only` against the 5-file FROZEN list before tag.",
     "Brand-token compliance (handoff Issue 10 — positive allowlist): run `rg -n '#[0-9A-Fa-f]{6}' --type ts --type tsx <diff-paths>`. ALLOWED hits: file ∈ {app/theme.css, app/globals.css}, OR enclosed in /* */ or // comment, OR in *.test.{ts,tsx} fixture string. FAIL on any hit outside the allowlist.",
@@ -453,11 +482,11 @@ Agent({
 
 ## TA3 — c1v-cloudrun-sidecar (Wave A)
 
-**Scope:** Python sidecar for long-running synthesis pipeline (D-V21.02 hybrid) — orchestrator.py + Dockerfile + Cloud Run config + `mmdc` Mermaid PNG pre-render dependency. Runs the canonical Python generators (`gen-arch-recommendation.py`, `gen-qfd.py`, `gen-fmea.py`, etc.) that produced the c1v self-application — same code path produces every tenant project. weasyprint for PDF (D-V21.05) + python-pptx for PPTX (D-V21.06) + Supabase Storage signed URLs (D-V21.08). Three API routes: POST /synthesize (deducts 1000 credits per D-V21.10, fires Cloud Run, returns 202), GET /synthesize/status (polls per-artifact synthesis_status), POST /api/projects/[id]/artifacts/manifest extension (extends existing route with PDF/PPTX/Bundle URLs from project_artifacts). BullMQ deferred per D-V21 — Cloud Run hosts the long pipeline, Vercel triggers + polls.
+**Scope:** Python sidecar for **per-artifact rendering only** per **D-V21.24** (locked 2026-04-25 19:50 EDT) — orchestrator.py + Dockerfile + Cloud Run config + `mmdc` Mermaid PNG pre-render dependency. **Vercel hosts the LangGraph orchestration (TA1's intake-graph.ts) and runs all LLM calls; Cloud Run sidecar receives `POST /run-render` with `{project_id, artifact_kind, agent_output_payload}` per-artifact and renders via canonical Python generators (`gen-arch-recommendation.py`, `gen-qfd.py`, `gen-fmea.py`, etc. under `scripts/artifact-generators/`).** Same generator code path produces every tenant project. weasyprint for PDF (D-V21.05) + python-pptx for PPTX (D-V21.06) + Supabase Storage signed URLs (D-V21.08). Three API routes: POST /synthesize (deducts 1000 credits per D-V21.10, kicks off the Vercel-side LangGraph asynchronously, returns 202 immediately — does NOT itself fire Cloud Run; the LangGraph's GENERATE_* nodes individually POST /run-render per artifact as their outputs complete), GET /synthesize/status (polls per-artifact synthesis_status from project_artifacts), /api/projects/[id]/artifacts/manifest extension (extends existing route with PDF/PPTX/Bundle URLs from project_artifacts). BullMQ deferred — Vercel async kick-off + per-artifact Cloud Run renders is the v2.1 transport.
 
 **Dependencies:** SOFT-depends on TA1's project_artifacts table (writes synthesis_status from sidecar; queries from API routes). Coordinated via name-based blocking inside Wave A.
 
-**Honors:** D-V21.02, D-V21.05, D-V21.06, D-V21.07, D-V21.08, D-V21.10, R-V21.02 (Mermaid PNG pre-render), R-V21.12 (cold-start warm-up).
+**Honors:** D-V21.02, D-V21.05, D-V21.06, D-V21.07, D-V21.08, D-V21.10, **D-V21.24** (Vercel ↔ Cloud Run boundary lock — sidecar is render-only), R-V21.02 (Mermaid PNG pre-render), R-V21.12 (cold-start warm-up).
 
 ### Step 1: Create the team
 
@@ -465,7 +494,7 @@ Agent({
 TeamCreate({
   team_name: "c1v-cloudrun-sidecar",
   agent_type: "tech-lead",
-  description: "Build the Python sidecar that hosts the long-running per-tenant synthesis pipeline + the Vercel trigger/poll routes. Run the canonical Python artifact generators (`gen-arch-recommendation.py`, `gen-qfd.py`, `gen-fmea.py`, etc.) that produced the c1v self-application — same code path produces every tenant project. weasyprint + python-pptx + mmdc + Supabase Storage signed URLs.",
+  description: "Build the Python sidecar (per-artifact rendering only per D-V21.24 — Vercel hosts LangGraph + LLM calls; sidecar receives POST /run-render per artifact) + the Vercel trigger/poll routes. Run the canonical Python artifact generators (`gen-arch-recommendation.py`, `gen-qfd.py`, `gen-fmea.py`, etc.) that produced the c1v self-application — same code path produces every tenant project. weasyprint + python-pptx + mmdc + Supabase Storage signed URLs.",
   context: {
     authoritative_spec: "plans/c1v-MIT-Crawley-Cornell.v2.1.md §Wave A — Files added (services/python-sidecar/*, app/api/projects/[id]/synthesize/*, /export/bundle, manifest extension) + §Decisions D-V21.02/.05/.06/.07/.08/.10/.24 (D-V21.24 = Vercel ↔ Cloud Run boundary lock; sidecar = render-only; LangGraph stays on Vercel)",
     canonical_python_generators: "scripts/artifact-generators/ — 13 Python generators shipped by T10 in v2 (9 migrated + 4 new Crawley). gen-arch-recommendation.py renders the html standalone + pdf + json-enriched; gen-qfd.py renders the HoQ xlsx; gen-fmea.py renders early/residual xlsx with stoplight. The sidecar invokes these generators directly.",
@@ -497,7 +526,7 @@ Agent({
     "services/python-sidecar/scripts/render-mermaid.sh — `mmdc` invocation per diagram type; called from the sidecar before weasyprint hits raw `<div class='mermaid'>` (avoids R-V21.02 silent-PNG-loss).",
     "services/python-sidecar/cloud-run.yaml (or terraform) — Cloud Run service config: cpu=2, memory=4Gi, timeout=900s, max-instances=10, concurrency=1 (since the pipeline is per-tenant and bursty). IAM: invoker role for the Vercel service account.",
     "services/python-sidecar/warm-up.yaml (or scripts/warmup.ts) — Cloud Scheduler cron pings /healthz every 5 min to keep min-instance hot. Cold-start p95 target < 15s.",
-    "services/python-sidecar/__tests__/orchestrator.test.py — fixture-replay: stub project intake → all 7 artifact families render + project_artifacts rows write + synthesis_status='ready' on each",
+    "services/python-sidecar/__tests__/orchestrator.test.py — fixture-replay (per D-V21.24 input shape): for each of the 7 artifact families, POST /run-render with a stub `{project_id, artifact_kind, agent_output_payload}` payload (NOT raw project intake — agent outputs are pre-computed by Vercel-side LangGraph in production); assert generator invokes correctly, project_artifacts row writes with synthesis_status='ready', sha256 + storage_path populated. Per-artifact failure path (broken generator) writes status='failed' + failure_reason without halting the test fixture for other artifact families.",
     "services/python-sidecar/.env.example — required env vars (SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY for sidecar-side LLM if applicable, etc.)",
     "infra/docker/python-sidecar.Dockerfile (or apps/web reference) — same as services/python-sidecar/Dockerfile; pick one canonical home (recommend services/python-sidecar/Dockerfile)"
   ],
@@ -515,10 +544,10 @@ Agent({
   name: "synthesis-api-routes",
   subagent_type: "backend-architect",
   team: "c1v-cloudrun-sidecar",
-  goal: "Build the Vercel-side API routes that trigger + poll the Cloud Run sidecar + extend the existing manifest endpoint. POST /api/projects/[id]/synthesize fires Cloud Run + deducts 1000 credits per D-V21.10 + returns 202 Accepted. GET /api/projects/[id]/synthesize/status returns per-artifact synthesis_status from project_artifacts. /api/projects/[id]/artifacts/manifest extends to include PDF + PPTX + Bundle ZIP signed URLs.",
+  goal: "Build the Vercel-side API routes that kick off the Vercel-side LangGraph + poll project_artifacts + extend the existing manifest endpoint. Per **D-V21.24**: POST /api/projects/[id]/synthesize deducts 1000 credits (D-V21.10), pre-creates 'pending' rows in project_artifacts for the 7 known artifact kinds, and kicks off the Vercel-side LangGraph (TA1's intake-graph.ts) asynchronously — does NOT itself POST anything to Cloud Run. The LangGraph's GENERATE_* nodes are responsible for firing `POST /run-render` per artifact as their outputs complete (TA1 owns that integration). Returns 202 with status_url. GET /api/projects/[id]/synthesize/status returns per-artifact synthesis_status from project_artifacts. /api/projects/[id]/artifacts/manifest extends to include PDF + PPTX + Bundle ZIP signed URLs.",
   inline_skills: ["api-design", "security-patterns", "code-quality"],
   deliverables: [
-    "apps/product-helper/app/api/projects/[id]/synthesize/route.ts — POST handler. Pre-checks: user owns project (auth middleware); user has ≥ 1000 credits (calls existing checkAndDeductCredits per credit-system pattern in CLAUDE.md `Credit System`); free-tier hard-cap (Wave-B owns the 1/mo limit; v2.1 Wave A may pre-stub the check OR defer); pre-creates 'pending' rows in project_artifacts for the 7 known artifact kinds (idempotent on duplicate POST). POSTs {project_id, intake_payload} to Cloud Run sidecar (invoker IAM via Google service account). Returns 202 with {synthesis_id, expected_artifacts, status_url}.",
+    "apps/product-helper/app/api/projects/[id]/synthesize/route.ts — POST handler. Pre-checks: user owns project (auth middleware); user has ≥ 1000 credits (calls existing checkAndDeductCredits per credit-system pattern in CLAUDE.md `Credit System`); free-tier hard-cap pre-stub (TA3 ships log_only default per Issue 12+16 lock below); pre-creates 'pending' rows in project_artifacts for the 7 known artifact kinds (idempotent on duplicate POST). **Kicks off the Vercel-side LangGraph asynchronously per D-V21.24** — does NOT POST to Cloud Run. Mechanism: invoke the intake-graph (TA1's wired graph) via a fire-and-forget pattern (Vercel `waitUntil()` for short pipelines, or push to a Vercel-compatible async queue/QStash if intake exceeds Vercel function ceiling — coordinator-time decision; TA1's langgraph-wirer + TA3 align on the dispatch mechanism before merge). LangGraph's GENERATE_* nodes individually fire `POST /run-render` to Cloud Run sidecar with `{project_id, artifact_kind, agent_output_payload}` (TA1 owns the per-node integration; TA3 owns sidecar invoker IAM via Google service account). Returns 202 with {synthesis_id, expected_artifacts, status_url}.",
     "apps/product-helper/app/api/projects/[id]/synthesize/status/route.ts — GET handler. Reads project_artifacts via getProjectArtifacts(projectId); returns per-artifact synthesis_status + signed_url (when ready) + failure_reason (when failed). UI polls every 3s until all artifacts ready or terminal-failure.",
     "apps/product-helper/app/api/projects/[id]/artifacts/manifest/route.ts — EDIT existing route. Extend response to include PDF, PPTX, Bundle ZIP URLs (today returns JSON + HTML + Mermaid only). Each URL = signed Supabase Storage URL with 30-day TTL.",
     "apps/product-helper/lib/storage/supabase-storage.ts (NEW or extend existing) — helper: getSignedUrl(storage_path, ttl_seconds) using Supabase service-role client. Caches signed URLs in-memory per request to avoid re-signing on repeated reads.",
@@ -587,11 +616,11 @@ Agent({
 
 ## TB1 — c1v-hardening (Wave B)
 
-**Scope:** Make per-tenant gen affordable + reliable + observable per v2.1 Wave B. Cache (`inputs_hash` cache hit > 30%), lazy-gen (defer 4-of-7 artifacts to first viewer hit), tier gating (Free=1/mo, Plus∞), circuit breaker (30s timeout → per-artifact retry CTA, NO canned fall-back), Sentry observability (latency p95, token cost/day, failure rate per agent). Cost ceiling: ≤ $500/mo at 100 DAU baseline (down from Wave-A unoptimized $924/mo).
+**Scope:** Make per-tenant gen reliable + observable + scalable per v2.1 Wave B. Cache (`inputs_hash` cache hit > 30%), lazy-gen (defer 4-of-7 artifacts to first viewer hit), tier gating (Free=1/mo, Plus∞ — product-shape, not cost-control), circuit breaker (30s timeout → per-artifact retry CTA, NO canned fall-back), Sentry observability (latency p95, token cost/day, failure rate per agent — instrumented for visibility, NOT for ship-blocking). **Cost is NOT a v2.1 ship-blocker** per David 2026-04-25 21:09 EDT: "we are moving forward regardless of cost." Cache + lazy-gen ship for performance + scale; observability ships for debuggability; tier gating ships for product shape.
 
 **Dependencies:** HARD-DEP on `ta1-wave-a-complete` + `ta2-wave-a-complete` + `ta3-wave-a-complete` (Wave-A gate). TD1's `td1-wave-d-complete` is NOT a TB1 gate — Wave D ships independently.
 
-**Honors:** D-V21.10 (credit gating), R-V21.05 (cost overshoot mitigation), R-V21.11 (UX cliff via lazy-gen), R-V21.12 (cold-start), EC-V21-B.1-.6.
+**Honors:** D-V21.10 (credit gating), ~~R-V21.05~~ (declassified 2026-04-25 21:09 EDT — cost no longer a blocker), R-V21.11 (UX cliff via lazy-gen), R-V21.12 (cold-start), EC-V21-B.1-.5 (B.6 reframed to instrumentation-only).
 
 ### Step 1: Create the team
 
@@ -599,9 +628,9 @@ Agent({
 TeamCreate({
   team_name: "c1v-hardening",
   agent_type: "tech-lead",
-  description: "Harden the v2.1 Wave-A per-tenant synthesis pipeline. Cache + lazy-gen + tier gating + circuit breaker + Sentry. Bring monthly burn from ~$924/mo (Wave-A unoptimized) to ≤ $500/mo at 100 DAU baseline. Per-artifact retry on sidecar timeout (no canned fall-back).",
+  description: "Harden the v2.1 Wave-A per-tenant synthesis pipeline. Cache + lazy-gen + tier gating + circuit breaker + Sentry — for reliability, scale, and observability. NOT for cost control (cost-as-blocker DECLASSIFIED 2026-04-25 21:09 EDT per David: 'we are moving forward regardless of cost'). Per-artifact retry on sidecar timeout (no canned fall-back).",
   context: {
-    authoritative_spec: "plans/c1v-MIT-Crawley-Cornell.v2.1.md §Wave B — Hardening + cost optimization + §Decisions D-V21.10 + §Risks R-V21.05/.11/.12 + §Exit Criteria EC-V21-B.1-.6",
+    authoritative_spec: "plans/c1v-MIT-Crawley-Cornell.v2.1.md §Wave B — Hardening + observability (cost-as-blocker DECLASSIFIED 2026-04-25 21:09 EDT per David) + §Decisions D-V21.10 + §Risks R-V21.11/.12 (R-V21.05 declassified) + §Exit Criteria EC-V21-B.1-.5 (B.6 reframed to instrumentation-only)",
     wave_a_artifacts_to_consume: [
       "apps/product-helper/lib/db/schema/project-artifacts.ts (TA1) — cache lookup keyed on inputs_hash",
       "apps/product-helper/lib/langchain/graphs/intake-graph.ts (TA1) — gate GENERATE_* nodes behind cache + tier check",
@@ -674,22 +703,22 @@ Agent({
   name: "observability",
   subagent_type: "observability-engineer",
   team: "c1v-hardening",
-  goal: "Sentry instrumentation for the 6 v2 agents (decision-net, form-function, hoq, fmea-early, fmea-residual, interface-specs) + the synthesizer. Per EC-V21-B.5: latency p95, token cost/day, failure rate live in Sentry dashboard. Per EC-V21-B.6: operating cost ≤ $500/mo at 100 DAU baseline (down from $924/mo Wave-A unoptimized).",
+  goal: "Sentry instrumentation for the 6 v2 agents (decision-net, form-function, hoq, fmea-early, fmea-residual, interface-specs) + the synthesizer. Per EC-V21-B.5: latency p95, token cost/day, failure rate live in Sentry dashboard. Per EC-V21-B.6 (reframed 2026-04-25 21:09 EDT): cost telemetry instrumented + dashboard live for visibility — NOT a ship-blocker (cost-as-blocker declassified per David: 'we are moving forward regardless of cost'). Token-cost tracking continues for debuggability + future v2.2 lever; no $/mo gate.",
   inline_skills: ["code-quality"],
   deliverables: [
     "apps/product-helper/lib/observability/synthesis-metrics.ts — Sentry + structured-log instrumentation: per-agent counters (latency p50/p95/p99, prompt_tokens, completion_tokens, cost_usd, success/failure), per-route counters (synthesize POST count, status GET count, manifest GET count), system metrics (Cloud Run cold-starts, cache hit rate, deferred artifacts gen-on-view count).",
     "apps/product-helper/lib/langchain/agents/system-design/*-agent.ts — EDIT each (decision-net, form-function, hoq, fmea-early, fmea-residual, interface-specs) + architecture-recommendation-agent.ts to wrap LLM calls in synthesis-metrics — capture model, prompt_tokens, completion_tokens, cost_usd, latency.",
     "apps/product-helper/lib/langchain/graphs/intake-graph.ts — EDIT to emit per-node start/end + cache_hit/miss events to synthesis-metrics.",
-    "Sentry dashboards (config-as-code or YAML in plans/v21-outputs/tb1/sentry-dashboards/): one panel per agent (latency p95, daily cost, failure rate) + a top-line cost dashboard (monthly burn vs $500 budget).",
+    "Sentry dashboards (config-as-code or YAML in plans/v21-outputs/tb1/sentry-dashboards/): one panel per agent (latency p95, daily cost, failure rate) + a top-line cost telemetry dashboard (monthly burn — informational, no budget gate).",
     "apps/product-helper/__tests__/observability/synthesis-metrics.test.ts — instrumentation fires on every agent invocation; counters increment correctly; Sentry transport is mocked (no real Sentry traffic in tests)",
-    "plans/v21-outputs/tb1/cost-budget-runbook.md — operator runbook: where to find the cost dashboard, alert thresholds (e.g. monthly cost > $400 sends Slack), how to drill into a per-agent overrun"
+    "plans/v21-outputs/tb1/cost-telemetry-runbook.md — operator runbook: where to find the cost dashboard, how to drill into a per-agent token spend, how to tie cost spikes back to specific failing agents. NO alert thresholds in v2.1 (cost-as-blocker declassified per David); future v2.2 may add alerts when the heuristic-engine cost lever lands."
   ],
   guardrails: [
     "HARD-DEP on `ta1-wave-a-complete` (intake-graph + agents must exist).",
     "DO NOT instrument the FROZEN UI components — only the LangGraph + agents + API routes.",
     "Cost capture: token usage from each LLM call (Anthropic SDK provides usage block); convert to USD via per-model rate table; aggregate per agent per day in Sentry.",
     "Sentry sampling: 100% on errors; 10% sampling on success (cost mgmt for Sentry itself).",
-    "Cost-budget runbook: include explicit alert thresholds and the on-call escalation path.",
+    "Cost telemetry runbook is INFORMATIONAL ONLY — NO alert thresholds in v2.1 (cost-as-blocker DECLASSIFIED 2026-04-25 21:09 EDT per David: 'we are moving forward regardless of cost'). The runbook documents where to find the cost dashboard + how to drill into per-agent spend, NOT alert/escalation thresholds. Future v2.2 may add alerts when the heuristic-engine cost lever lands.",
     "Commits: synthesis-metrics core + per-agent wrapping + intake-graph events + Sentry dashboards + tests + runbook."
   ]
 })
@@ -698,13 +727,13 @@ Agent({
   name: "verifier",
   subagent_type: "qa-engineer",
   team: "c1v-hardening",
-  goal: "Verify TB1 exit criteria from v2.1 Wave B: EC-V21-B.1 (cache hit-rate > 30% on 10×5 synthetic load test), EC-V21-B.2 (lazy-gen reduces post-intake p95 by ≥ 50% on deferred subset), EC-V21-B.3 (Free hard-capped at 1/mo + Plus unlimited), EC-V21-B.4 (sidecar circuit-breaker trips at 30s timeout with per-artifact retry CTA, NO canned fall-back), EC-V21-B.5 (Sentry dashboard live for 6 v2 agents), EC-V21-B.6 (operating cost ≤ $500/mo at 100 DAU baseline).",
+  goal: "Verify TB1 exit criteria from v2.1 Wave B: EC-V21-B.1 (cache hit-rate > 30% on 10×5 synthetic load test), EC-V21-B.2 (lazy-gen reduces post-intake p95 by ≥ 50% on deferred subset), EC-V21-B.3 (Free hard-capped at 1/mo + Plus unlimited), EC-V21-B.4 (sidecar circuit-breaker trips at 30s timeout with per-artifact retry CTA, NO canned fall-back), EC-V21-B.5 (Sentry dashboard live for 6 v2 agents), EC-V21-B.6 (cost telemetry instrumentation present + dashboard live — NOT a $/mo gate; cost-as-blocker declassified per David 2026-04-25 21:09 EDT).",
   inline_skills: ["testing-strategies"],
   deliverables: [
-    "apps/product-helper/scripts/verify-tb1.ts — TB1-specific verifier. Asserts: (a) synthetic load test 10 projects × 5 re-runs achieves cache-hit-rate > 30%, (b) lazy-gen post-intake p95 measured against the 4 deferred artifacts shows ≥ 50% drop vs Wave-A baseline, (c) Free tier hard-capped at 1 synthesis/mo (test: Free user runs 1, second attempt 402), (d) Plus unlimited (test: Plus user runs 5 in succession), (e) sidecar circuit-breaker fires at 30s (test: sidecar mock that hangs; assert project_artifacts row hits 'failed' at 30s ± 1s; assert UI download-dropdown shows retry CTA), (f) Sentry dashboards exist + populate (sample 7 agent panels), (g) cost calculation against synthetic load shows ≤ $500/mo at 100 DAU",
-    "plans/v21-outputs/tb1/verification-report.md — per-EC PASS/FAIL with cost-projection math, cache-hit histogram, latency drop measurement",
-    "Synthetic load test: 100 DAU × 30 days simulated; capture aggregate cost; verify ≤ $500/mo",
-    "git tag `tb1-wave-b-complete` only if every EC green AND cost projection ≤ $500/mo"
+    "apps/product-helper/scripts/verify-tb1.ts — TB1-specific verifier. Asserts: (a) synthetic load test 10 projects × 5 re-runs achieves cache-hit-rate > 30%, (b) lazy-gen post-intake p95 measured against the 4 deferred artifacts shows ≥ 50% drop vs Wave-A baseline, (c) Free tier hard-capped at 1 synthesis/mo (test: Free user runs 1, second attempt 402), (d) Plus unlimited (test: Plus user runs 5 in succession), (e) sidecar circuit-breaker fires at 30s (test: sidecar mock that hangs; assert project_artifacts row hits 'failed' at 30s ± 1s; assert UI download-dropdown shows retry CTA), (f) Sentry dashboards exist + populate (sample 7 agent panels), (g) cost telemetry instrumented — load-test-tb1.ts produces a monthly-burn projection, captured in the verification report for visibility; NO $/mo pass/fail threshold (cost-as-blocker declassified per David 2026-04-25 21:09 EDT)",
+    "plans/v21-outputs/tb1/verification-report.md — per-EC PASS/FAIL with cost-projection math (informational), cache-hit histogram, latency drop measurement",
+    "Synthetic load test: 100 DAU × 30 days simulated; capture aggregate cost projection (informational; no gate)",
+    "git tag `tb1-wave-b-complete` only if every EC green (B.6 = telemetry instrumented + dashboard live; NO $/mo cost gate)"
   ],
   guardrails: [
     "Depend on cache-and-lazy-gen + tier-and-circuit-breaker + observability (block on names).",
@@ -727,7 +756,7 @@ Agent({
     "apps/product-helper/lib/billing/synthesis-tier.ts — JSDoc + a top-of-file Tier matrix (Free/Plus rules, hard-caps, plan upgrade flow).",
     "apps/product-helper/lib/jobs/circuit-breaker.ts — JSDoc with the 30s timeout rule, retry semantics, NO-canned-fall-back pillar reference.",
     "apps/product-helper/lib/observability/synthesis-metrics.ts — JSDoc with the metrics catalog + Sentry dashboard URLs (TB1 captures from Sentry config).",
-    "apps/product-helper/CLAUDE.md — Update `Deployed Features` with v2.1 Wave-B entry: `Synthesis Hardening (v2.1 Wave B) — inputs_hash cache (≥30% hit), lazy-gen (defer 4-of-7 artifacts), tier gating (Free 1/mo, Plus∞), circuit-breaker (30s timeout → per-artifact retry, no canned fall-back), Sentry per-agent observability. Cost ≤ $500/mo at 100 DAU.`",
+    "apps/product-helper/CLAUDE.md — Update `Deployed Features` with v2.1 Wave-B entry: `Synthesis Hardening (v2.1 Wave B) — inputs_hash cache (≥30% hit), lazy-gen (defer 4-of-7 artifacts), tier gating (Free 1/mo, Plus∞ — product shape), circuit-breaker (30s timeout → per-artifact retry, no canned fall-back), Sentry per-agent observability + cost telemetry (informational, no $/mo gate per David's 2026-04-25 cost-as-blocker declassification).`",
     "plans/v2-release-notes.md — APPEND a v2.1 summary block per EC-V21.6: what shipped (Waves A + B + D), what was deferred (Waves C + E to v2.2), the portfolio artifact path (architecture_recommendation.v1.json + per-tenant equivalents), per-EC commit SHAs, cost figures, latency figures.",
     "plans/c1v-MIT-Crawley-Cornell.v2.1.md — flip DRAFT → SHIPPED per EC-V21.5; append a CLOSEOUT section listing per-EC commit SHAs across TA1/TA2/TA3/TB1/TD1; archive the DEFERRED-TO-V2.2 sections by adding a one-line forward-pointer to plans/c1v-MIT-Crawley-Cornell.v2.2.md.",
     "plans/post-v2-followups.md — EDIT per EC-V21.7: close items shipped in v2.1 (P1 synthesis invisible, P2 FMEA orphaned, P3 Interfaces partial, P4 Diagrams disconnect, P5 Open Questions, P6 PPTX + XLSX, P8 iter-3, P10 stale CLAUDE.md path); leave open items deferred to v2.2 (P7 Crawley schemas, P9 methodology drift); add new follow-ups discovered during v2.1 (e.g. atlas re-ingest dedup-bug if SKIP-with-fail-forward landed).",
@@ -789,7 +818,7 @@ Agent({
     "plans/v21-outputs/td1/preflight-log-live.md — Step 2 live re-run against Anthropic API (production model ID + temp + maxTokens) for the same project=33 input. Captured stop_reason + usage. ~$0.20 cost is trivial vs mis-branching cost (handoff Issue 18).",
     "plans/v21-outputs/td1/preflight-log.md (= the REVIEW.md cited in EC-V21-D.1) — Steps 3-4 reconciliation. If fixture and live agree: proceed with shared branch decision. If divergent: pick LIVE branch decision (production = reality) and document the divergence as known fixture-vs-live drift carried into v2.2 follow-ups. Captured branch decision (max_tokens/tool_use vs end_turn) + rationale.",
     "apps/product-helper/lib/langchain/schemas/api-spec/stage1-operation.ts — Zod schema for stage-1 emission. Default: { path, method, description, auth, tags, operationId } (≤ 8 scalar keys). Conditional trim: if preflight branch = 'end_turn', shrink to { path, method, operationId } only.",
-    "apps/product-helper/lib/langchain/agents/api-spec-agent.ts — EDIT to add stage-1 emission path. createClaudeAgent(stage1OperationSchema, ...) returns flat list. Original line:71 apiSpecificationSchema preserved for output validation only (D-4 lands later).",
+    "apps/product-helper/lib/langchain/agents/api-spec-agent.ts — EDIT to add stage-1 emission path. createClaudeAgent(stage1OperationSchema, ...) returns flat list. Existing apiSpecificationSchema at line 127 (NOT line 71 — line 71 is jsonSchemaSchema, the embedded bloat source per P8; handoff Issue 17) preserved for output validation only (D-4 lands later).",
     "apps/product-helper/__tests__/fixtures/api-spec/project-33-input.json — captured production project=33 input fixture per EC-V21-D.4.",
     "apps/product-helper/__tests__/api-spec-agent.stage1.test.ts — fixture-replay: project=33 input → stage-1 emits all expected operations (no auth-only truncation) + stop_reason='end_turn' (or 'max_tokens' depending on branch); regression-pinned"
   ],
@@ -895,19 +924,19 @@ Same mechanism as v2 §14.3 (per-team verifier tags + Bond polls). v2.1-specific
 
 **Mechanism:** All `TeamCreate` + `Agent` calls for a single dispatch wave fire in ONE coordinator message to maximize parallelism. v2 dropped the prior 2-min stagger; v2.1 inherits.
 
-### Dispatch Wave 1 (4 teams, 20 agents — single message)
+### Dispatch Wave 1 (4 teams, 21 agents — single message)
 
 ```
 # One coordinator message contains:
 TeamCreate(c1v-runtime-wiring)     + 6× Agent  # TA1
-TeamCreate(c1v-synthesis-ui)       + 6× Agent  # TA2
+TeamCreate(c1v-synthesis-ui)       + 7× Agent  # TA2 (5 producers — incl. empty-section-state for EC-V21-A.16 — + verifier + docs)
 TeamCreate(c1v-cloudrun-sidecar)   + 4× Agent  # TA3
 TeamCreate(c1v-apispec-iter3)      + 4× Agent  # TD1
 ```
 
 Internal sequencing within teams:
 - TA1: `migrations-and-agent-audit` BLOCKS the other 5 TA1 agents (EC-V21-A.0 preflight is sequential).
-- TA2: all 4 producer agents parallel; verifier blocks on producers; docs blocks on verifier.
+- TA2: 5 producer agents parallel (synthesis-viewer / nav-and-pages / architecture-and-database / interfaces-and-archive-pages / empty-section-state); name-blocks: synthesis-viewer ships shared empty-state composer AFTER empty-section-state lands the shared component; nav-and-pages rebases FMEA page-import swap AFTER empty-section-state's page-imports cluster lands. verifier blocks on producers; docs blocks on verifier.
 - TA3: 2 producer agents parallel; verifier + docs after.
 - TD1: `preflight-and-stage1-schema` BLOCKS `stage2-deterministic-expansion` (stage-1 schema must exist before stage-2 imports it); verifier + docs after.
 
@@ -926,7 +955,7 @@ Internal sequencing within TB1: 3 producer agents parallel; verifier blocks on p
 
 ### Total
 
-**5 teams · 25 agents · 2 dispatch waves.** Estimated 8-14 days wall-clock (Wave A 5-7 days realistic / 8-12 days conservative per critique iter-1; Wave B 3-5 days post-Wave-A; Wave D parallel with Wave A).
+**5 teams · 26 agents · 2 dispatch waves.** Estimated 8-14 days wall-clock (Wave A 8-12 days conservative / 5-7 day stretch per master plan v2.1 line 243+805; Wave B 3-5 days post-Wave-A; Wave D parallel with Wave A). TA2 grew from 6→7 agents 2026-04-25 21:55 EDT to absorb EC-V21-A.16 empty-state work via dedicated `empty-section-state` agent (master plan critique iter-2 Issue 14 lock).
 
 ---
 
@@ -950,14 +979,14 @@ Internal sequencing within TB1: 3 producer agents parallel; verifier blocks on p
 - ✅ **R-v2.1.A** Wave A timeline — **Option C resolved**: keep 5-7 day target with explicit fail-forward semantic per handoff Issue 5 — any agent fs-side-effects refactor >200 LOC ships as a graph-node-adapter wrapper in v2.1; underlying refactor defers to v2.2 day-0. Documented in TA1.langgraph-wirer guardrails. No A1/A2 split.
 - ✅ **R-v2.1.B** Chat-bridge — **Bond default held**: folded into TA1.open-questions-emitter.
 - ✅ **R-v2.1.C** Sidecar + API routes — **Bond default held**: together in TA3.
-- ✅ **R-v2.1.D** Cost ceiling — **Confirmed $500/mo at 100 DAU as v2.1 ship gate** (handoff Group E ruling). EC-V21-B.6 pinned to ≤ $500/mo. Free-tier hard-cap (1 synthesis/mo) is the structural backstop during the Wave-A unoptimized window. AV.01 portfolio-keystone alignment ($320/mo) carries to v2.2 (Wave E heuristic-engine cost lever) — tracked in plans/post-v2.1-followups.md.
+- ✅ **R-v2.1.D** ~~Cost ceiling~~ — **STRUCK / DECLASSIFIED 2026-04-25 21:09 EDT per David: "we are moving forward regardless of cost."** EC-V21-B.6 reframed to instrumentation-only (telemetry + dashboard live, no $/mo gate). R-V21.05 declassified. Cost figures ($924/mo Wave A, $647/mo Wave B) tracked in master plan §Systems-Engineering Math §Cost table for visibility. Free-tier hard-cap (1 synthesis/mo) still ships per D-V21.10 for product shape (not for cost control). AV.01 alignment ($320/mo) is an aspirational v2.2 lever, not a v2.1 gate.
 - ~~**R-v2.1.E** Methodology-correction canonical path~~ — **2026-04-25 LOCK REVOKED 2026-04-26.** Original lock asserted `plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` and `.claude/plans/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` existed at 34126 bytes — neither does on disk. The handoff fact-check missed `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` (correct path includes the `kb-upgrade-v2/` subdir; handoff was checking `system-design/METHODOLOGY-CORRECTION.md` — different path). Canonical home is now `system-design/kb-upgrade-v2/METHODOLOGY-CORRECTION.md` (only intact copy + co-located with only complete 1-8 module tree). See `plans/v21-outputs/ta1/methodology-canonical.md`.
 
 ### Still open (plan-doc work before Dispatch Wave 1)
 
 - [ ] Master plan v2.1 (`plans/c1v-MIT-Crawley-Cornell.v2.1.md`) flipped DRAFT → ready-for-execution. Currently DRAFT awaiting David's review.
 - [ ] This spawn-prompts doc reviewed and approved (post-fix-up critique iter 2 — optional).
-- [x] Five R-v2.1 rulings above resolved (locked 2026-04-25 19:50 EDT; A=Option C / B=held / C=held / D=confirm $500 / E=non-decision).
+- [x] Five R-v2.1 rulings above resolved (locked 2026-04-25 19:50 EDT + 21:09 EDT cost-as-blocker declassification; A=Option C / B=held / C=held / D=STRUCK (cost not a blocker) / E=non-decision).
 
 **Dispatch unblocked when:** Master plan ready-for-execution + this doc approved (or fix-up sweep accepted as-is).
 

@@ -106,7 +106,8 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
   // Fire-and-forget Cloud Run sidecar dispatch. When RENDER_SIDECAR_URL is
   // unset (local dev / Wave-A pre-deploy), this is a no-op — the row stays
   // 'pending' and TA3's run-single-artifact.py picks it up on next sweep.
-  const sidecarBase = process.env.RENDER_SIDECAR_URL;
+  const sidecarBase =
+    process.env.RENDER_SIDECAR_URL ?? process.env.PYTHON_SIDECAR_URL;
   if (sidecarBase) {
     void fetch(`${sidecarBase}${SIDECAR_RETRY_PATH}`, {
       method: 'POST',

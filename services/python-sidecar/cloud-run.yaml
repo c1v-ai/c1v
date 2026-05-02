@@ -2,12 +2,12 @@
 #
 # Deploy:
 #   gcloud run services replace services/python-sidecar/cloud-run.yaml \
-#     --region us-central1 --project <PROJECT_ID>
+#     --region us-central1 --project <c1v-prd>
 #
 # IAM: only the Vercel-side service account may invoke /run-render.
 #   gcloud run services add-iam-policy-binding python-sidecar \
 #     --region us-central1 \
-#     --member serviceAccount:vercel-invoker@<PROJECT_ID>.iam.gserviceaccount.com \
+#     --member serviceAccount:vercel-invoker@<c1v-prd>.iam.gserviceaccount.com \
 #     --role roles/run.invoker
 #
 # Resource sizing per TA3 spec: cpu=2, memory=4Gi, timeout=900s,
@@ -19,6 +19,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: python-sidecar
+  namespace: c1v-prd
   labels:
     cloud.googleapis.com/location: us-central1
   annotations:
@@ -37,9 +38,9 @@ spec:
     spec:
       containerConcurrency: 1
       timeoutSeconds: 900
-      serviceAccountName: python-sidecar-runtime@PROJECT_ID.iam.gserviceaccount.com
+      serviceAccountName: python-sidecar-runtime@c1v-prd.iam.gserviceaccount.com
       containers:
-        - image: us-central1-docker.pkg.dev/PROJECT_ID/c1v/python-sidecar:latest
+        - image: us-central1-docker.pkg.dev/c1v-prd/c1v/python-sidecar:latest
           ports:
             - name: http1
               containerPort: 8080

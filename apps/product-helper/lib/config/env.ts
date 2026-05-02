@@ -8,13 +8,13 @@ const envSchema = z.object({
   AUTH_SECRET: z.string()
     .min(32, 'AUTH_SECRET must be at least 32 characters for security'),
 
-  // AI Services - Anthropic Claude API
+  // Legacy: Anthropic direct-API key. App-level LLM calls now route through
+  // OpenRouter (see lib/langchain/config.ts + engines/openrouter-client.ts).
+  // The only remaining consumer is scripts/preflight-api-spec.ts, an Anthropic
+  // stop_reason replay harness. Optional — but if set, must be real-shape.
   ANTHROPIC_API_KEY: z.string()
-    .min(1, 'ANTHROPIC_API_KEY is required')
-    .refine(
-      (key) => key.startsWith('sk-ant-'),
-      'ANTHROPIC_API_KEY must start with "sk-ant-"'
-    ),
+    .startsWith('sk-ant-', 'ANTHROPIC_API_KEY must start with "sk-ant-" if set')
+    .optional(),
 
   // Stripe Payment Integration - required for payment features
   STRIPE_SECRET_KEY: z.string()
@@ -36,9 +36,15 @@ const envSchema = z.object({
     .min(1, 'BASE_URL is required')
     .url('BASE_URL must be a valid URL'),
 
-  // OpenRouter - required for G11 model routing. Every production LLM call
-  // goes through openrouter-client.ts; see plans/kb-runtime-architecture.md §2.4.
-  OPENROUTER_API_KEY: z.string().min(1, 'OPENROUTER_API_KEY is required'),
+  // OpenRouter - required. Every production LLM call goes through
+  // lib/langchain/config.ts (LangChain ChatOpenAI w/ baseURL override) or
+  // engines/openrouter-client.ts; see plans/kb-runtime-architecture.md §2.4.
+  OPENROUTER_API_KEY: z.string()
+    .min(1, 'OPENROUTER_API_KEY is required')
+    .refine(
+      (key) => key.startsWith('sk-or-'),
+      'OPENROUTER_API_KEY must start with "sk-or-"'
+    ),
   OPENROUTER_BASE_URL: z.string().url().optional(),
   CHEAP_MODE: z.enum(['true', 'false']).optional(),
 

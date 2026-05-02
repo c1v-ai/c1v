@@ -17,6 +17,8 @@
  */
 
 const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days per D-V21.08
+const DEFAULT_ARTIFACT_BUCKET =
+  process.env.ARTIFACT_STORAGE_BUCKET ?? 'project-artifacts';
 
 export type SignedUrlCache = Map<string, string>;
 
@@ -48,12 +50,20 @@ function splitStoragePath(storagePath: string): { bucket: string; objectPath: st
   const trimmed = storagePath.replace(/^\/+/, '');
   const slash = trimmed.indexOf('/');
   if (slash <= 0) {
-    throw new Error(
-      `Invalid storage_path "${storagePath}": expected "<bucket>/<object-path>"`
-    );
+    return {
+      bucket: DEFAULT_ARTIFACT_BUCKET,
+      objectPath: trimmed,
+    };
+  }
+  const firstSegment = trimmed.slice(0, slash);
+  if (firstSegment !== DEFAULT_ARTIFACT_BUCKET) {
+    return {
+      bucket: DEFAULT_ARTIFACT_BUCKET,
+      objectPath: trimmed,
+    };
   }
   return {
-    bucket: trimmed.slice(0, slash),
+    bucket: firstSegment,
     objectPath: trimmed.slice(slash + 1),
   };
 }
@@ -110,6 +120,37 @@ export async function getSignedUrl(
 
   cache?.set(cacheKey, fullUrl);
   return fullUrl;
+}
+
+export async function uploadStorageObject(args: {
+  storagePath: string;
+  body: BodyInit;
+  contentType: string;
+  upsert?: boolean;
+}): Promise<void> {
+  const { url, serviceRoleKey } = getStorageConfig();
+  const { bucket, objectPath } = splitStoragePath(args.storagePath);
+
+  const response = await fetch(
+    `${url}/storage/v1/object/${bucket}/${objectPath}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        'Content-Type': args.contentType,
+        ...(args.upsert ?? true ? { 'x-upsert': 'true' } : {}),
+      },
+      body: args.body,
+    }
+  );
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Supabase object upload failed: ${response.status} ${response.statusText} — ${body}`
+    );
+  }
 }
 
 export const SIGNED_URL_DEFAULT_TTL_SECONDS = DEFAULT_TTL_SECONDS;

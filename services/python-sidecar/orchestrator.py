@@ -64,7 +64,7 @@ STORAGE_BUCKET = os.environ.get("ARTIFACT_STORAGE_BUCKET", "project-artifacts")
 
 # Map artifact_kind -> (generator script, render target, schemaRef, file ext, mime)
 # Generator names match scripts/artifact-generators/gen-*.py (canonical, do NOT modify).
-ARTIFACT_REGISTRY: dict[str, dict[str, str]] = {
+ARTIFACT_REGISTRY: dict[str, dict[str, Any]] = {
     "recommendation_json": {
         "generator": "gen-arch-recommendation.py",
         "target": "json-enriched",
@@ -96,25 +96,312 @@ ARTIFACT_REGISTRY: dict[str, dict[str, str]] = {
     "hoq_xlsx": {
         "generator": "gen-qfd.py",
         "target": "xlsx",
-        "schema_ref": "module-5-hoq/hoq.schema.json",
+        "schema_ref": "qfd-legacy.schema.json",
         "ext": "xlsx",
         "format": "xlsx",
     },
     "fmea_early_xlsx": {
         "generator": "gen-fmea.py",
         "target": "xlsx",
-        "schema_ref": "module-8-risk/fmea.schema.json",
+        "schema_ref": "module-8-risk/fmea-early.schema.json",
         "ext": "xlsx",
         "format": "xlsx",
     },
     "fmea_residual_xlsx": {
         "generator": "gen-fmea.py",
         "target": "xlsx",
-        "schema_ref": "module-8-risk/fmea.schema.json",
+        "schema_ref": "module-8-risk/fmea-residual.schema.json",
+        "ext": "xlsx",
+        "format": "xlsx",
+        "options": {"variant": "residual"},
+    },
+    # ── Wave-E UI export gap (2026-04-29) ───────────────────────────────
+    # Optional artifact kinds. The Vercel pre-create on synthesis kickoff
+    # does NOT include these in EXPECTED_ARTIFACT_KINDS — they're added on
+    # demand by the sidecar when the generator produces them. UI surfacing
+    # via DownloadDropdown picks them up automatically.
+    #
+    # gen-n2.py: pptx target is explicitly NOT implemented; do not add
+    # n2_matrix_pptx until gen-n2.py emits it. xlsx is supported via the
+    # legacy n2_from_json.py adapter the migrator wraps.
+    "n2_matrix_xlsx": {
+        "generator": "gen-n2.py",
+        "target": "xlsx",
+        "schema_ref": "n2-matrix.schema.json",
         "ext": "xlsx",
         "format": "xlsx",
     },
+    "decision_network_xlsx": {
+        "generator": "gen-decision-net.py",
+        "target": "xlsx",
+        "schema_ref": "decision-network.stub.schema.json",
+        "ext": "xlsx",
+        "format": "xlsx",
+    },
+    "decision_network_svg": {
+        "generator": "gen-decision-net.py",
+        "target": "svg",
+        "schema_ref": "decision-network.stub.schema.json",
+        "ext": "svg",
+        "format": "svg",
+    },
+    "form_function_map_xlsx": {
+        "generator": "gen-form-function.py",
+        "target": "xlsx",
+        "schema_ref": "form-function-map.stub.schema.json",
+        "ext": "xlsx",
+        "format": "xlsx",
+    },
+    "form_function_map_svg": {
+        "generator": "gen-form-function.py",
+        "target": "svg",
+        "schema_ref": "form-function-map.stub.schema.json",
+        "ext": "svg",
+        "format": "svg",
+    },
+    "form_function_map_mmd": {
+        "generator": "gen-form-function.py",
+        "target": "mmd",
+        "schema_ref": "form-function-map.stub.schema.json",
+        "ext": "mmd",
+        "format": "mmd",
+    },
 }
+
+
+def _adapt_decision_network(instance: dict[str, Any]) -> dict[str, Any]:
+    """Adapt canonical decision_network.v1 into gen-decision-net's render shape."""
+    if "decisions" in instance or "alternatives" in instance:
+        return instance
+
+    phase14 = (
+        instance.get("phases", {}).get("phase_14_decision_nodes", {})
+        if isinstance(instance.get("phases"), dict)
+        else {}
+    )
+    phase16 = (
+        instance.get("phases", {}).get("phase_16_pareto_frontier", {})
+        if isinstance(instance.get("phases"), dict)
+        else {}
+    )
+    nodes = instance.get("decision_nodes") or phase14.get("decision_nodes") or []
+    vectors = instance.get("pareto_alternatives") or phase16.get("architecture_vectors") or []
+
+    decisions: list[dict[str, Any]] = []
+    alternatives: list[dict[str, Any]] = []
+    criteria_by_id: dict[str, dict[str, Any]] = {}
+    scores: dict[str, dict[str, Any]] = {}
+    utilities: dict[str, float] = {}
+
+    for node in nodes:
+        node_id = node.get("id")
+        if not node_id:
+            continue
+        decisions.append({
+            "id": node_id,
+            "question": node.get("question") or node.get("label") or node.get("title") or node_id,
+            "dependsOn": node.get("dependency_edges") or [],
+        })
+        for c in node.get("criteria") or []:
+            cid = c.get("criterion_id") or c.get("id")
+            if not cid:
+                continue
+            criteria_by_id.setdefault(cid, {
+                "id": cid,
+                "name": cid,
+                "weight": c.get("weight", 1),
+                "direction": c.get("direction", "maximize"),
+            })
+        for alt in node.get("alternatives") or []:
+            aid = alt.get("id")
+            if not aid:
+                continue
+            render_aid = f"{node_id}.{aid}"
+            alternatives.append({
+                "id": render_aid,
+                "decisionId": node_id,
+                "name": alt.get("name") or alt.get("label") or aid,
+            })
+            scores.setdefault(render_aid, {})
+        for s in node.get("scores") or []:
+            aid = s.get("alternative_id")
+            cid = s.get("criterion_id")
+            if not aid or not cid:
+                continue
+            render_aid = f"{node_id}.{aid}"
+            scores.setdefault(render_aid, {})[cid] = s.get("normalized_value", s.get("raw_value"))
+        for u in (node.get("utility_vector") or {}).get("values") or []:
+            aid = u.get("alternative_id")
+            if aid:
+                utilities[f"{node_id}.{aid}"] = u.get("utility")
+
+    costs: dict[str, Any] = {}
+    for vector in vectors:
+        vid = vector.get("id")
+        if not vid:
+            continue
+        utilities.setdefault(vid, vector.get("utility_total"))
+        criterion_scores = vector.get("criterion_scores") or []
+        if criterion_scores:
+            costs[vid] = sum(float(c.get("value", 0)) for c in criterion_scores)
+            alternatives.append({"id": vid, "name": vid})
+
+    return {
+        "decisions": decisions,
+        "alternatives": alternatives,
+        "criteria": list(criteria_by_id.values()),
+        "scores": scores,
+        "utilities": {k: v for k, v in utilities.items() if v is not None},
+        "costs": costs,
+        "winner": instance.get("selected_architecture_id"),
+    }
+
+
+def _adapt_form_function(instance: dict[str, Any]) -> dict[str, Any]:
+    """Adapt canonical form_function_map.v1 into gen-form-function's render shape."""
+    if "functions" in instance or "forms" in instance or "mappings" in instance:
+        return instance
+
+    functions = []
+    for fn in (instance.get("phase_2_function_inventory") or {}).get("functions") or []:
+        label = fn.get("name") or fn.get("label") or fn.get("id")
+        parts = str(label).split(" ", 1)
+        functions.append({
+            "id": fn.get("id"),
+            "verb": parts[0] if parts else "",
+            "object": parts[1] if len(parts) > 1 else "",
+        })
+
+    forms = [
+        {"id": form.get("id"), "name": form.get("name") or form.get("id")}
+        for form in (instance.get("phase_1_form_inventory") or {}).get("forms") or []
+    ]
+
+    mappings = []
+    for cell in (instance.get("phase_3_concept_mapping_matrix") or {}).get("cells") or []:
+        relation = cell.get("relation")
+        default_quality = 5 if relation == "primary" else 3 if relation == "fallback" else 1
+        mappings.append({
+            "functionId": cell.get("function_id"),
+            "formId": cell.get("form_id"),
+            "quality": cell.get("score") or cell.get("quality") or default_quality,
+        })
+
+    concept_function = {
+        "id": "functions",
+        "label": "Functions",
+        "children": [
+            {
+                "id": fn.get("id"),
+                "label": " ".join(part for part in [fn.get("verb"), fn.get("object")] if part),
+            }
+            for fn in functions
+        ],
+    }
+    concept_form = {
+        "id": "forms",
+        "label": "Forms",
+        "children": [
+            {"id": form.get("id"), "label": form.get("name")}
+            for form in forms
+        ],
+    }
+
+    return {
+        "functions": functions,
+        "forms": forms,
+        "mappings": mappings,
+        "conceptExpansion": {"function": concept_function, "form": concept_form},
+    }
+
+
+def _adapt_hoq(instance: dict[str, Any]) -> dict[str, Any]:
+    """Adapt canonical hoq.v1 into the legacy QFD workbook writer shape."""
+    if all(k in instance for k in ("front_porch", "second_floor", "main_floor", "roof", "back_porch", "basement")):
+        cleaned = dict(instance)
+        for key in ("main_floor", "roof", "basement"):
+            cleaned[key] = {
+                k: v
+                for k, v in (instance.get(key) or {}).items()
+                if not str(k).startswith("_")
+            }
+        return cleaned
+
+    customer_rows = (instance.get("customer_requirements") or {}).get("rows") or []
+    ec_rows = (instance.get("engineering_characteristics") or {}).get("rows") or []
+    rel_rows = (instance.get("relationship_matrix") or {}).get("rows") or []
+    roof_pairs = (instance.get("roof_correlations") or {}).get("pairs") or []
+    targets = {
+        row.get("ec_id"): row
+        for row in (instance.get("target_values") or {}).get("rows") or []
+    }
+    basement_rows = {
+        row.get("ec_id"): row
+        for row in (instance.get("competitive_benchmarks") or {}).get("basement_competitors") or []
+    }
+
+    main_floor = {
+        row.get("pc_id"): row.get("cells", {})
+        for row in rel_rows
+        if row.get("pc_id")
+    }
+    back_porch: dict[str, Any] = {
+        "_competitor_b_name": "Competitor B",
+        "_competitor_c_name": "Competitor C",
+    }
+    for row in customer_rows:
+        pc_id = row.get("pc_id")
+        if pc_id:
+            back_porch[pc_id] = {
+                "A_low": "",
+                "A_high": "",
+                "A_target": "",
+                "B": "",
+                "C": "",
+            }
+
+    basement: dict[str, Any] = {}
+    for ec in ec_rows:
+        ec_id = ec.get("ec_id")
+        target = targets.get(ec_id, {})
+        bench = basement_rows.get(ec_id, {})
+        basement[f"EC{ec_id}"] = {
+            "unit": target.get("unit") or ec.get("unit") or "",
+            "competitor_b": bench.get("competitor_b", ""),
+            "competitor_c": bench.get("competitor_c", ""),
+            "external_threshold": target.get("external_threshold", ""),
+            "target": target.get("target", ""),
+            "technical_difficulty": target.get("technical_difficulty", 3),
+            "estimated_cost": target.get("estimated_cost", 3),
+        }
+
+    return {
+        "metadata": instance.get("metadata") or {
+            "project_title": instance.get("system_name", "Project"),
+            "developed_by": "c1v",
+            "last_updated": instance.get("produced_at", ""),
+        },
+        "front_porch": customer_rows,
+        "second_floor": ec_rows,
+        "main_floor": main_floor,
+        "roof": {
+            pair.get("pair_key"): pair.get("integer_value", 0)
+            for pair in roof_pairs
+            if pair.get("pair_key")
+        },
+        "back_porch": back_porch,
+        "basement": basement,
+    }
+
+
+def _adapt_instance_for_artifact(artifact_kind: str, instance: dict[str, Any]) -> dict[str, Any]:
+    if artifact_kind == "hoq_xlsx":
+        return _adapt_hoq(instance)
+    if artifact_kind.startswith("decision_network_"):
+        return _adapt_decision_network(instance)
+    if artifact_kind.startswith("form_function_map_"):
+        return _adapt_form_function(instance)
+    return instance
 
 
 def _sha256_file(path: Path) -> str:
@@ -174,15 +461,16 @@ def _upsert_artifact_row(
 
 def _upload_to_storage(*, project_id: str, artifact_kind: str, file_path: Path, ext: str) -> str:
     """Upload to Supabase Storage; return storage_path key."""
-    storage_path = f"{project_id}/{artifact_kind}.{ext}"
+    object_path = f"{project_id}/{artifact_kind}.{ext}"
+    storage_path = f"{STORAGE_BUCKET}/{object_path}"
     if os.environ.get("SIDECAR_DRY_RUN") == "1":
-        log.info("DRY_RUN upload to %s/%s", STORAGE_BUCKET, storage_path)
+        log.info("DRY_RUN upload to %s", storage_path)
         return storage_path
 
     client = _supabase_client()
     with file_path.open("rb") as fh:
         client.storage.from_(STORAGE_BUCKET).upload(
-            path=storage_path,
+            path=object_path,
             file=fh.read(),
             file_options={"upsert": "true"},
         )
@@ -270,7 +558,7 @@ def render_artifact(
 
     with tempfile.TemporaryDirectory(prefix=f"sidecar-{artifact_kind}-") as tmp:
         work_dir = Path(tmp)
-        instance = dict(agent_output_payload)
+        instance = _adapt_instance_for_artifact(artifact_kind, dict(agent_output_payload))
 
         if artifact_kind == "recommendation_pdf":
             try:
@@ -283,7 +571,10 @@ def render_artifact(
             "instanceJson": instance,
             "outputDir": str(work_dir),
             "targets": [spec["target"]],
-            "options": {"instanceName": f"{artifact_kind}-{project_id}"},
+            "options": {
+                **spec.get("options", {}),
+                "instanceName": f"{artifact_kind}-{project_id}",
+            },
         }
         input_path = work_dir / "input.json"
         input_path.write_text(json.dumps(gen_input), encoding="utf-8")

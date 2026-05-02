@@ -132,21 +132,59 @@ async function SynthesisContent({
   }
 
   const cache = new Map<string, string>();
-  let payload: ArchitectureRecommendation | null = null;
+  let raw: Record<string, unknown> | null = null;
   try {
     const signedUrl = await getSignedUrl(latest.storagePath, undefined, cache);
     const res = await fetch(signedUrl, { cache: 'no-store' });
-    if (res.ok) {
-      payload = (await res.json()) as ArchitectureRecommendation;
-    }
+    if (res.ok) raw = (await res.json()) as Record<string, unknown>;
   } catch {
-    payload = null;
+    raw = null;
   }
 
-  if (!payload) {
+  if (!raw) {
     return <SynthesisEmptyState projectId={projectId} />;
   }
 
+  // generate-synthesis.ts writes a runtime-envelope (no metadata/pareto_frontier).
+  // RecommendationViewer needs the full ArchitectureRecommendation shape.
+  // Until the generator is wired to produce the full shape, render a summary card.
+  if (raw._schema === 'synthesis.architecture-recommendation.runtime-envelope.v1') {
+    const artifacts = await buildDownloadArtifacts(projectId);
+    return (
+      <div className="space-y-6">
+        <div className="rounded-lg border bg-card p-6 space-y-3">
+          <h1 className="text-2xl font-bold text-foreground">Architecture Recommendation</h1>
+          <p className="text-sm text-muted-foreground">
+            Synthesis completed for <strong>{String(raw.project_name ?? 'this project')}</strong>
+            {raw.synthesized_at ? ` on ${new Date(raw.synthesized_at as string).toLocaleString()}` : ''}.
+            Download the full recommendation below.
+          </p>
+          <p className="text-xs text-muted-foreground rounded bg-muted/50 px-3 py-2">
+            The interactive recommendation viewer requires the canonical artifact. Re-run
+            Deep Synthesis to generate it, or download the PDF/PPTX/HTML exports.
+          </p>
+        </div>
+        {artifacts.length > 0 && (
+          <div className="flex items-center gap-3">
+            {artifacts
+              .filter((a) => a.status === 'ready' && a.signed_url)
+              .map((a) => (
+                <a
+                  key={a.kind}
+                  href={a.signed_url!}
+                  download
+                  className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
+                >
+                  {a.kind.replace('recommendation_', '').toUpperCase()}
+                </a>
+              ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const payload = raw as unknown as ArchitectureRecommendation;
   const artifacts = await buildDownloadArtifacts(projectId);
 
   return (

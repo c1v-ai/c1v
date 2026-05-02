@@ -95,7 +95,7 @@ class RenderArtifactSuite(unittest.TestCase):
 
         def _capture_upload(**kwargs):
             self.upload_calls.append(kwargs)
-            return f"{kwargs['project_id']}/{kwargs['artifact_kind']}.{kwargs['ext']}"
+            return f"project-artifacts/{kwargs['project_id']}/{kwargs['artifact_kind']}.{kwargs['ext']}"
 
         self._patch_upsert = mock.patch.object(
             orchestrator, "_upsert_artifact_row", side_effect=_capture_upsert

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -14,16 +15,22 @@ const statusStyles: Record<string, string> = {
 };
 
 export function ProjectHeaderCompact() {
-  const { projectName, projectStatus } = useProjectChat();
+  const { projectId, projectName, projectStatus } = useProjectChat();
+  const pathname = usePathname();
+
+  // Smart back: artifact sub-pages go to project overview; project overview goes to projects list
+  const isProjectRoot = pathname === `/projects/${projectId}`;
+  const backHref = isProjectRoot ? '/projects' : `/projects/${projectId}`;
+  const backLabel = isProjectRoot ? 'Back to projects' : 'Back to project overview';
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-background flex-shrink-0">
       <Link
-        href="/home"
-        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors"
-        aria-label="Back to projects"
+        href={backHref}
+        className="flex items-center justify-center h-9 w-9 rounded-md hover:bg-muted transition-colors"
+        aria-label={backLabel}
       >
-        <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+        <ArrowLeft className="h-5 w-5 text-foreground" />
       </Link>
 
       <h1 className="text-sm font-semibold truncate text-foreground">

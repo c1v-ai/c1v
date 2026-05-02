@@ -193,11 +193,13 @@ export type NewAtlasEntryRow = typeof atlasEntries.$inferInsert;
  * layer. NOT a "T1-tier" gate — tier letters (A-H) apply to citations,
  * not to the corpus threshold.
  *
- * Lowered from 20 to 10 per David's ruling 2026-04-23 (portfolio-scope
- * sufficiency; R2 fallback path accepted). Kept in sync with
+ * Lowered 20 → 10 → 7 per David's rulings 2026-04-23 (portfolio-scope
+ * sufficiency; matches current_valid after medium.com SPA + pre-v2
+ * staging rejections; R2 fallback path accepted; priors emit with
+ * provisional: true + sample_size metadata). Kept in sync with
  * `MIN_CORPUS_READY_SIZE` in `lib/langchain/schemas/atlas/entry.ts`.
  */
-export const ATLAS_MIN_CORPUS_SIZE = 10;
+export const ATLAS_MIN_CORPUS_SIZE = 7;
 
 /**
  * Data-quality grades surfaced in the `data_quality_grade` column.

@@ -206,11 +206,12 @@ export function MobileExplorerSheet() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
-          variant="ghost"
+          variant="default"
           size="icon"
-          className="fixed bottom-20 left-4 z-50 rounded-full shadow-lg border border-border bg-background"
+          aria-label="Open project explorer"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 z-50 h-12 w-12 rounded-full shadow-xl bg-[var(--color-danube)] text-white border-0 hover:bg-[var(--color-danube-light)] active:scale-95 touch-manipulation"
         >
-          <PanelLeft className="h-5 w-5" />
+          <PanelLeft className="h-6 w-6" strokeWidth={2.5} />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0 overflow-y-auto">

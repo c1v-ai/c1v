@@ -31,6 +31,18 @@ KB_DIR = (
     / "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened"
     / "6-software-define-interface-LLM-kb"
 )
+if not KB_DIR.exists():
+    KB_DIR = (
+        REPO_ROOT
+        / "apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf"
+        / "6-software-define-interface-LLM-kb"
+    )
+if not KB_DIR.exists():
+    KB_DIR = (
+        REPO_ROOT
+        / "apps/product-helper/.planning/phases/13-Knowledge-banks-deepened"
+        / "7-interfaces/07-uncategorized"
+    )
 LEGACY_N2_FROM_JSON = KB_DIR / "n2_from_json.py"
 LEGACY_CREATE_N2 = KB_DIR / "create_n2_chart.py"
 

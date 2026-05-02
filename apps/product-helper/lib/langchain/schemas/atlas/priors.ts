@@ -134,10 +134,11 @@ export const citationSchema = z
         'captcha_wall_content_via_webfetch',
         'paywall_content_via_webfetch',
         'cdn_geoblock_content_via_webfetch',
+        'webfetch_only_no_raw_html',
       ])
       .default('clean')
       .describe(
-        'x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. When ≠ `clean`, `sha256` covers a wall/stub, not the article; consumers MUST verify via `content_sha256` instead.',
+        'x-ui-surface=internal:provenance-hash — tag describing what `sha256` actually hashes. `clean` = sha matches article bytes. `captcha_wall` / `paywall` / `cdn_geoblock` = sha covers a wall, content retrieved via WebFetch. `webfetch_only_no_raw_html` = SPA shell / JS-rendered page where raw HTML carries no article body (e.g., stripe.com/blog SPA); content extracted via WebFetch only. When ≠ `clean`, `content_sha256` is REQUIRED.',
       ),
     /**
      * SHA-256 of the extracted Markdown body (article text), stable across

@@ -16,6 +16,7 @@ import {
   MessageSquare,
   ArrowRight,
   Target,
+  Users,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -24,6 +25,7 @@ import {
 
 interface ProblemStatementData {
   summary: string;
+  targetAudience?: string;
   context: string;
   impact: string;
   goals: string[];
@@ -110,6 +112,24 @@ export function ProblemStatementSection({ project }: ProblemStatementSectionProp
           </p>
         </CardContent>
       </Card>
+
+      {/* Target Audience */}
+      {data.targetAudience && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <CardTitle>Target Audience</CardTitle>
+            </div>
+            <CardDescription>Who has this problem</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-relaxed text-foreground">
+              {data.targetAudience}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Context */}
       {data.context && (

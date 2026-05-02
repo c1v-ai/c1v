@@ -53,6 +53,13 @@ const KIND_LABELS: Record<string, string> = {
   fmea_residual_xlsx: 'FMEA residual (xlsx)',
   hoq_xlsx: 'HoQ (xlsx)',
   bundle_zip: 'Bundle ZIP',
+  // Wave-E UI export gap (2026-04-29) — sidecar-rendered Python outputs.
+  n2_matrix_xlsx: 'N² Matrix (xlsx)',
+  decision_network_xlsx: 'Decision Network (xlsx)',
+  decision_network_svg: 'Decision Network (svg)',
+  form_function_map_xlsx: 'Form-Function Map (xlsx)',
+  form_function_map_svg: 'Form-Function Map (svg)',
+  form_function_map_mmd: 'Form-Function Map (mmd)',
 };
 
 function labelFor(kind: string): string {
@@ -140,6 +147,14 @@ export function DownloadDropdown({
                       )}
                     </span>
                   </a>
+                </DropdownMenuItem>
+              );
+            }
+
+            if (artifact.status === 'ready' && !artifact.signed_url) {
+              return (
+                <DropdownMenuItem key={artifact.kind} disabled>
+                  {label} — file unavailable
                 </DropdownMenuItem>
               );
             }
