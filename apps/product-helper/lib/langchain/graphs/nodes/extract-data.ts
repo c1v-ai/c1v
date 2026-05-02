@@ -163,8 +163,9 @@ async function emitNfrContractEnvelope(
   mergedData: any,
 ): Promise<void> {
   const ed = mergedData as Record<string, unknown> | undefined;
-  const nfrs = ed?.['nfrs'];
-  const constants = ed?.['constants'];
+  const nfrsRaw = ed?.['nonFunctionalRequirements'] as unknown[] | undefined;
+  const nfrs = nfrsRaw?.length ? nfrsRaw : null; // null → null-path (surfaceOpenQuestion); non-empty array → success-path (fixed INTK-01)
+  const constants = ed?.['constants'] ?? null;    // constants: no extraction field maps here; stays null until Wave E constants agent
   const synthesizedAt = new Date().toISOString();
   const inputsHash = computeInputsHash({
     intake: { projectId: state.projectId, projectName: state.projectName, projectVision: state.projectVision },
@@ -196,7 +197,7 @@ async function emitOne(
     };
     try {
       await surfaceOpenQuestion({
-        source: 'm2_nfr',
+        source: kind === 'nfr' ? 'm2_nfr' : 'm2_constants',
         question: `Help me synthesize the ${kind === 'nfr' ? 'non-functional requirements' : 'engineering constants'} for this project — I don't have enough upstream context to derive them.`,
         computed_options: envelope.computed_options,
         math_trace: envelope.math_trace,

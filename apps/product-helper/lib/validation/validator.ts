@@ -419,7 +419,9 @@ function validateHardGate7(
     severity: 'warning',
   });
 
-  // This is a soft check - we'll pass it but add a warning
+  // This is a soft check — we pass unconditionally but add a warning.
+  // INTK-04 deferred: making this blocking would regress all existing projects that lack
+  // measurable vision keywords. Tracked in post-v2-followups.md. Phase 1 scope: document only.
   const passed = true;
   if (!visionHasMetrics) {
     warnings.push(`${info.name}: Consider adding measurable success criteria to the project vision`);
@@ -457,7 +459,9 @@ function validateHardGate8(
     severity: 'warning',
   });
 
-  // This is a soft check
+  // This is a soft check — regex on vision string is insufficient for real constraint coverage.
+  // INTK-04 deferred: changing to blocking requires extractedData constraint fields to be non-empty,
+  // which the extraction pipeline does not yet guarantee. Tracked in post-v2-followups.md.
   const passed = true;
   if (!hasConstraints) {
     warnings.push(`${info.name}: Consider documenting business and technical constraints`);
