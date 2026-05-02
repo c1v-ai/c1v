@@ -66,7 +66,12 @@ The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.
   3. After a conversation mentioning explicit out-of-scope items, `extractedData.systemBoundaries.outOfScope` is populated.
   4. Phase 2 artifact rows in `project_artifacts` show `status = 'succeeded'` (not silently missing or failed).
   5. LangSmith eval dataset shows NFR synthesis + engineering-constants agents producing ≥1 result — no "insufficient upstream context" on the representative test set.
-**Plans:** TBD
+**Plans:** 5 plans
+- [ ] 01-01-PLAN.md — TDD test scaffolds for emitNfrContractEnvelope, transformToValidationData, and Crawley gate isolation (Wave 1)
+- [ ] 01-02-PLAN.md — Fix emitNfrContractEnvelope (extract-data.ts) + document HG7/HG8 soft-gate intent (validator.ts) (Wave 2)
+- [ ] 01-03-PLAN.md — Export + fix transformToValidationData outOfScope/inScope mappings (check-prd-spec.ts) (Wave 2)
+- [ ] 01-04-PLAN.md — Diagnose USE_LANGGRAPH production state via Vercel + record decision (Wave 1)
+- [ ] 01-05-PLAN.md — Smoke replay + DB probe + INTK-02/INTK-04 sign-off (Wave 3)
 **UI hint:** no
 
 ### Phase 2: Observability Wiring
@@ -113,7 +118,7 @@ The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.
 
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
-| 1. Intake Extraction Fix         | 0/0 | Not started | -         |
+| 1. Intake Extraction Fix         | 0/5 | Not started | -         |
 | 2. Observability Wiring          | 0/0 | Not started | -         |
 | 3. pgvector Phase B Ingest Recovery | 0/0 | Not started | -         |
 

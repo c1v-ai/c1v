@@ -1,6 +1,6 @@
 # State: c1v v2.2.1+ QA
 
-**Last updated:** 2026-05-02 (initialization)
+**Last updated:** 2026-05-02 (Phase 1 planned)
 
 ## Project Reference
 
@@ -11,10 +11,10 @@
 ## Current Position
 
 - **Milestone:** v2.2.1+ QA pass (pre-traffic hardening)
-- **Phase:** 1 (Intake Extraction Fix) — Not started
-- **Plan:** None yet (next step: `/gsd-plan-phase 1`)
-- **Status:** Roadmap approved, awaiting phase planning
-- **Progress:** 0/3 phases complete
+- **Phase:** 1 (Intake Extraction Fix) — Planned, ready to execute
+- **Plan:** 5 plans across 3 waves (next step: `/gsd-execute-phase 1`)
+- **Status:** Plans verified; USE_LANGGRAPH=true confirmed in prod (PATH-A)
+- **Progress:** 0/3 phases complete (Phase 1: 0/5 plans executed)
 
 ```
 [░░░░░░░░░░] 0%   Phase 1
