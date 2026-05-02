@@ -191,3 +191,5 @@ Active for v2 cycle. See `plans/c1v-MIT-Crawley-Cornell.md` §9 + v2 §15.5.
 - Zod `.refine()` + `.extend()` drops the refinement. Unwrap with `.innerType()`, extend, re-apply via `.superRefine()`. Pattern: `applyNumericMathGate` in `schemas/module-2/requirements-table-base.ts`.
 - Stale `.next` after dev-server port change → `/manifest.webmanifest` returns 500 ENOENT → `rm -rf .next && pnpm dev`.
 - One-off scripts: `scripts/<name>.ts`, run via `pnpm tsx scripts/<name>.ts`.
+- **Turbopack dev-mode break (Next 15 + postgres driver):** `pnpm dev` errors `Module not found: Can't resolve 'net'` from `postgres` package via `instrumentation.ts`. Production webpack build is unaffected. Workaround: add `serverExternalPackages: ['postgres']` to `next.config.ts`, OR test against `prd.c1v.ai` directly.
+- `pnpm type-check` runs `tsc --noEmit` from app root. Wired in `turbo.json` `type-check` task as of PR #20 (2026-05-02). Use it before any large rebase/cherry-pick to catch broken re-exports early.
