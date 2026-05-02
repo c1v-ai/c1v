@@ -13,7 +13,7 @@
  * @module lib/langchain/agents/system-design/ffbd-agent
  */
 
-import { ChatAnthropic } from '@langchain/anthropic';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import { ffbdV1Schema, type FfbdV1 } from '@/lib/langchain/schemas/module-3/ffbd-v1';
 import type { DataFlows } from '@/lib/langchain/schemas/module-1/phase-2-5-data-flows';
@@ -31,7 +31,7 @@ export interface FfbdAgentInput {
 
 export async function runFfbdAgent(
   input: FfbdAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FfbdV1 } = {},
+  opts: { llm?: BaseChatModel; stub?: FfbdV1 } = {},
 ): Promise<FfbdV1> {
   // ffbd is M3 — folded into the 'synthesis' bucket since the 6 named v2
   // agent buckets are reserved per spec; ffbd is an upstream contributor.
@@ -40,7 +40,7 @@ export async function runFfbdAgent(
 
 async function runFfbdAgentInner(
   input: FfbdAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FfbdV1 } = {},
+  opts: { llm?: BaseChatModel; stub?: FfbdV1 } = {},
 ): Promise<FfbdV1> {
   if (opts.stub) {
     const parsed = ffbdV1Schema.parse(opts.stub);

@@ -11,7 +11,7 @@
  * @module lib/langchain/agents/system-design/fmea-early-agent
  */
 
-import { ChatAnthropic } from '@langchain/anthropic';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { withAgentMetrics } from '@/lib/observability/synthesis-metrics';
 import { fmeaEarlySchema, type FmeaEarly } from '@/lib/langchain/schemas/module-8-risk/fmea-early';
 import type { FfbdV1 } from '@/lib/langchain/schemas/module-3/ffbd-v1';
@@ -31,14 +31,14 @@ export interface FmeaEarlyAgentInput {
 
 export async function runFmeaEarlyAgent(
   input: FmeaEarlyAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FmeaEarly } = {},
+  opts: { llm?: BaseChatModel; stub?: FmeaEarly } = {},
 ): Promise<FmeaEarly> {
   return withAgentMetrics({ agent: 'fmea-early' }, () => runFmeaEarlyAgentInner(input, opts));
 }
 
 async function runFmeaEarlyAgentInner(
   input: FmeaEarlyAgentInput,
-  opts: { llm?: ChatAnthropic; stub?: FmeaEarly } = {},
+  opts: { llm?: BaseChatModel; stub?: FmeaEarly } = {},
 ): Promise<FmeaEarly> {
   if (opts.stub) {
     const parsed = fmeaEarlySchema.parse(opts.stub);
