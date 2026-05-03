@@ -101,7 +101,12 @@ export async function generateQFD(
       conversationText,
       state.projectName,
       needsStr,
-      criteriaStr
+      criteriaStr,
+      {
+        extractedData: state.extractedData,
+        projectType: state.projectType,
+        projectVision: state.projectVision,
+      }
     );
 
     // Handle null result gracefully

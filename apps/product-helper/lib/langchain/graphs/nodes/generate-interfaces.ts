@@ -100,7 +100,12 @@ export async function generateInterfaces(
       conversationText,
       state.projectName,
       ffbdStr,
-      useCasesStr
+      useCasesStr,
+      {
+        extractedData: state.extractedData,
+        projectType: state.projectType,
+        projectVision: state.projectVision,
+      }
     );
 
     // Handle null result gracefully

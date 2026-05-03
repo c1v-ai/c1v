@@ -81,7 +81,11 @@ export async function generateFFBD(
       state.projectName,
       state.projectVision,
       useCasesStr,
-      boundariesStr
+      boundariesStr,
+      {
+        extractedData: state.extractedData,
+        projectType: state.projectType,
+      }
     );
 
     // Handle null result gracefully

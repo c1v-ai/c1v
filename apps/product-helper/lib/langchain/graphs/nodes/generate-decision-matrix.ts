@@ -86,7 +86,12 @@ export async function generateDecisionMatrix(
       conversationText,
       state.projectName,
       requirementsStr,
-      ffbdStr
+      ffbdStr,
+      {
+        extractedData: state.extractedData,
+        projectType: state.projectType,
+        projectVision: state.projectVision,
+      }
     );
 
     // Handle null result gracefully
