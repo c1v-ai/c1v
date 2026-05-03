@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-04-27T22:10:27.692Z",
-  "total": 300,
+  "generated_at": "2026-05-02T00:00:00.000Z",
+  "total": 360,
   "per_agent": [
     {
       "agent": "decision-net",
@@ -91,6 +91,61 @@
         "partial": 8,
         "wrong": 4
       }
+    },
+    {
+      "agent": "extraction",
+      "count": 10,
+      "by_grade": {
+        "correct": 6,
+        "partial": 3,
+        "wrong": 1
+      }
+    },
+    {
+      "agent": "ffbd-intake",
+      "count": 10,
+      "by_grade": {
+        "correct": 6,
+        "partial": 3,
+        "wrong": 1
+      }
+    },
+    {
+      "agent": "qfd-intake",
+      "count": 10,
+      "by_grade": {
+        "correct": 6,
+        "partial": 3,
+        "wrong": 1
+      }
+    },
+    {
+      "agent": "decision-matrix-intake",
+      "count": 10,
+      "by_grade": {
+        "correct": 6,
+        "partial": 3,
+        "wrong": 1
+      }
+    },
+    {
+      "agent": "interfaces-intake",
+      "count": 10,
+      "by_grade": {
+        "correct": 6,
+        "partial": 3,
+        "wrong": 1
+      }
+    },
+    {
+      "agent": "nfr-runllmonly",
+      "count": 10,
+      "by_grade": {
+        "correct": 6,
+        "partial": 3,
+        "wrong": 1
+      }
     }
-  ]
+  ],
+  "_notes": "Datasets 1-10 are v2 system-design agents (30 samples each). Datasets 11-16 are intake-graph LLM call paths (10 samples each, v1 baseline; expansion to 30 for v2 parity is a follow-up). See lib/eval/v2-eval-harness.ts INTAKE_AGENTS const."
 }

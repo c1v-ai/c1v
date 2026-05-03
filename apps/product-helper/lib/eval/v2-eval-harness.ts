@@ -41,13 +41,47 @@ export const V2_AGENTS = [
 
 export type AgentName = (typeof V2_AGENTS)[number];
 
+/**
+ * Intake-graph LLM call paths — the 6 LLM-invoking sites inside the
+ * conversational intake graph. Kept separate from `V2_AGENTS` because intake
+ * agents are pre-v2 system-design pipeline (different artifact family); see
+ * plan §8 step 4 ("intake-prompt-redesign").
+ *
+ * - `extraction`              → `agents/extraction-agent.ts` (extracts ExtractionResult from chat history)
+ * - `ffbd-intake`             → `agents/ffbd-agent.ts`
+ * - `qfd-intake`              → `agents/qfd-agent.ts`
+ * - `decision-matrix-intake`  → `agents/decision-matrix-agent.ts`
+ * - `interfaces-intake`       → `agents/interfaces-agent.ts`
+ * - `nfr-runllmonly`          → `graphs/nodes/generate-nfr.ts` `runLlmOnly` factory path
+ *
+ * Datasets live at `lib/eval/datasets/<intake-agent>.jsonl`. v1 ships 10
+ * graded samples each; expansion to 30 (v2 parity) is a follow-up.
+ */
+export const INTAKE_AGENTS = [
+  'extraction',
+  'ffbd-intake',
+  'qfd-intake',
+  'decision-matrix-intake',
+  'interfaces-intake',
+  'nfr-runllmonly',
+] as const;
+
+export type IntakeAgentName = (typeof INTAKE_AGENTS)[number];
+
+/**
+ * Union of v2 agents and intake agents — convenient when the harness loads
+ * a dataset by string without needing to discriminate the family. Existing
+ * `getDataset(agent)` callers continue to pass `AgentName` and are unaffected.
+ */
+export type AnyEvalAgentName = AgentName | IntakeAgentName;
+
 export type Grade = 'correct' | 'partial' | 'wrong';
 
 export type GraderKind = 'human' | 'fixture-replay' | 'self-application';
 
 export interface EvalExample {
   id: string;
-  agent: AgentName;
+  agent: AgentName | IntakeAgentName;
   input: {
     projectIntake: Record<string, unknown>;
     upstreamArtifacts: Record<string, unknown>;
@@ -115,7 +149,9 @@ export function hasLangSmith(): boolean {
  *
  * @throws when a JSONL line is unparseable (with line number).
  */
-export async function getDataset(agent: AgentName): Promise<EvalExample[]> {
+export async function getDataset(
+  agent: AgentName | IntakeAgentName,
+): Promise<EvalExample[]> {
   const path = join(DATASETS_DIR, `${agent}.jsonl`);
   if (!existsSync(path)) return [];
   const raw = await readFile(path, 'utf8');
