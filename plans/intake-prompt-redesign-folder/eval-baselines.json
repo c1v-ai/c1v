@@ -1,0 +1,47 @@
+{
+  "captured_at": "2026-05-02T00:00:00Z",
+  "git_sha": "9f6026c972c62326b84d43898dc4682939cfce6a",
+  "harness": "apps/product-helper/lib/eval/v2-eval-harness.ts",
+  "mode": "fixture-replay",
+  "notes": [
+    "Plan §8 step 0.5 references datasets extraction.jsonl, ffbd.jsonl, qfd.jsonl, decision-matrix.jsonl, interfaces.jsonl — none of these exist on disk.",
+    "Actual datasets in apps/product-helper/lib/eval/datasets/ cover the v2 system-design agents only (M3-M8 + architecture-recommendation).",
+    "Baseline scores computed from pre-graded fixture-replay summary at lib/eval/datasets/_summary.json (no LLM calls; no OpenRouter spend).",
+    "Score = correct / count. partial/wrong counted as failures.",
+    "All 10 agents share an identical 18/8/4 distribution in the seeded fixture set — that is a property of the seed corpus, not a fluke."
+  ],
+  "results": {
+    "hoq": {
+      "score": 0.60,
+      "samples": 30,
+      "by_grade": { "correct": 18, "partial": 8, "wrong": 4 },
+      "maps_to_intake_agent": "qfd-agent.ts (M6 HoQ artifact family)",
+      "notes": "Closest match for intake qfd-agent path; M6 is the same artifact family."
+    },
+    "interface-specs": {
+      "score": 0.60,
+      "samples": 30,
+      "by_grade": { "correct": 18, "partial": 8, "wrong": 4 },
+      "maps_to_intake_agent": "interfaces-agent.ts (M7.b interface_specs)",
+      "notes": "Closest match for intake interfaces-agent path."
+    },
+    "decision-net": {
+      "score": 0.60,
+      "samples": 30,
+      "by_grade": { "correct": 18, "partial": 8, "wrong": 4 },
+      "maps_to_intake_agent": "decision-matrix-agent.ts (M4 family)",
+      "notes": "Related but not identical: decision-matrix is the intake-side companion to M4 decision-net."
+    }
+  },
+  "missing_datasets": [
+    "extraction (intake extraction-agent — no analogue in v2 set)",
+    "ffbd-intake (intake ffbd-agent — closest is form-function but artifact shape differs)",
+    "qfd-intake (intake-specific qfd flow — only M6 hoq exists)",
+    "decision-matrix-intake (intake decision-matrix — only M4 decision-net exists)",
+    "interfaces-intake (intake-specific interfaces flow — only M7.b interface-specs exists)",
+    "nfr-runllmonly (intake NFR runLlmOnly path — closest is nfr-resynth but covers M2 resynth not intake LLM-only emission)"
+  ],
+  "live_run_status": "deferred",
+  "live_run_rationale": "Running the harness in live (LANGCHAIN_API_KEY-bound) mode would burn ~$N on M datasets × N samples through OpenRouter. Per plan instructions, do not burn live credits. Fixture-replay baselines suffice for v1.",
+  "follow_up": "Create new datasets for the 6 missing intake agent paths before step 4 of the main rewrite. Without baselines, those agents merge on smoke-replay only and confidence-drift gates (EC-V21-C.4) cannot fire."
+}
