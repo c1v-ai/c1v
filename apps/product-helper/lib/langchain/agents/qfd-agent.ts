@@ -18,6 +18,15 @@
 import { createClaudeAgent } from '../config';
 import { qfdSchema, type Qfd } from '../schemas';
 import { PromptTemplate } from '@langchain/core/prompts';
+import {
+  escapeBraces as sharedEscapeBraces,
+  buildProjectContextPreamble,
+  summarizeUpstream,
+  QFD_RULES,
+} from '../prompts';
+import { renderAtlasPriors } from '../atlas-loader';
+import { intakePromptV2 } from '@/lib/config/feature-flags';
+import type { IntakeState } from '../graphs/types';
 
 /**
  * Structured QFD extraction LLM with Zod schema validation
@@ -26,6 +35,12 @@ import { PromptTemplate } from '@langchain/core/prompts';
 const structuredQfdLLM = createClaudeAgent(qfdSchema, 'extract_qfd', {
   temperature: 0.2,
   maxTokens: 20000,
+});
+
+/** Flag-on V2 LLM with tighter cap (6K). */
+const structuredQfdLLMV2 = createClaudeAgent(qfdSchema, 'extract_qfd_v2', {
+  temperature: 0.2,
+  maxTokens: 6000,
 });
 
 /**
@@ -131,11 +146,30 @@ export async function extractQFD(
   conversationHistory: string,
   projectName: string,
   customerNeeds: string,
-  performanceCriteria: string
+  performanceCriteria: string,
+  /**
+   * Optional V2 context. Only consulted when `INTAKE_PROMPT_V2=true`.
+   */
+  opts?: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
 ): Promise<Qfd | null> {
   try {
+    if (intakePromptV2()) {
+      return await extractQFDV2(
+        conversationHistory,
+        projectName,
+        opts ?? {},
+      );
+    }
+
     // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
     // This is needed because conversation history may contain JSON-like content with { and }
+    // NOTE: legacy bug at this line — `}` replace is a no-op (single→single) instead of double.
+    // Preserved verbatim because the flag-off path must remain byte-identical. The flag-on
+    // path uses the shared (correct) escapeBraces from prompts.ts.
     const escapeBraces = (str: string) => str.replace(/\{/g, '{{').replace(/\}/g, '}');
 
     // Format prompt with project context
@@ -157,6 +191,59 @@ export async function extractQFD(
     console.error('QFD extraction error:', error);
 
     // Return null on failure — callers should preserve existing state
+    return null;
+  }
+}
+
+/**
+ * Build the V2 QFD prompt body from shared utilities.
+ */
+export function buildQFDPromptV2(
+  conversationHistory: string,
+  projectName: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
+): string {
+  const preamble = buildProjectContextPreamble({
+    projectName,
+    projectVision: opts.projectVision ?? '',
+    projectType: opts.projectType ?? null,
+  });
+  const upstream = summarizeUpstream(
+    { extractedData: opts.extractedData },
+    ['NFRs', 'ffbd'],
+  );
+  const priors = renderAtlasPriors(opts.projectType ?? 'unknown', [
+    'latency',
+    'availability',
+    'throughput',
+  ]);
+  const conversationBlock =
+    `## Conversation\n${sharedEscapeBraces(conversationHistory)}`;
+  return [preamble, upstream, priors.text, conversationBlock, QFD_RULES].join(
+    '\n\n',
+  );
+}
+
+async function extractQFDV2(
+  conversationHistory: string,
+  projectName: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
+): Promise<Qfd | null> {
+  try {
+    const promptText = buildQFDPromptV2(conversationHistory, projectName, opts);
+    const result = await structuredQfdLLMV2.invoke(promptText);
+    validateQFDQuality(result);
+    return result;
+  } catch (error) {
+    console.error('QFD extraction error (v2):', error);
     return null;
   }
 }
