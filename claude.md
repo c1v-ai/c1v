@@ -17,6 +17,8 @@ cd apps/product-helper && POSTGRES_URL=stub AUTH_SECRET=stub ANTHROPIC_API_KEY=s
 - **Root `.planning/phases/` is gitignored** — use `git add -f <path>` for all planning doc commits (SUMMARY.md, VERIFICATION.md, DIAGNOSIS.md, etc.). Root `.planning/ROADMAP.md` and `.planning/STATE.md` are whitelisted and commit normally.
 - **emitOne null-path checks `=== null/undefined`, not falsiness** — empty arrays `[]` are truthy and bypass the null-path in `extract-data.ts`. Coerce empty arrays to `null` explicitly (e.g., `arr?.length ? arr : null`) when passing results to `emitOne`.
 - **tsx module-mutation mocking is unreliable under esbuild ESM** — use Jest for smoke replays and unit tests; do not rely on `(mod as any).fn = ...` monkey-patching in `.ts` scripts run via `pnpm tsx`.
+- **Adding a value to a Zod z.enum() requires updating all exhaustive maps** — grep for `Record<ThatEnumType, string>` across the codebase; every exhaustive record needs the new key or tsc fails. Found this with `OpenQuestionSource` + `'m2_constants'` breaking `SOURCE_LABEL` in `open-questions-viewer.tsx`.
+- **kb-embedder `EMBEDDINGS_STUB=1` (Phase A) permanently blocks Phase B re-ingest** — `chunk_hash` is content-only (SHA-256 of text), so stub and real embeddings of identical content produce the same dedup key. ON CONFLICT DO NOTHING silently skips all Phase B inserts. Fix: `DELETE FROM kb_chunks` before re-running without the stub flag.
 
 ## Current Reality (2026-04-24)
 
