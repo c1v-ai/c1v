@@ -1,24 +1,24 @@
 # State: c1v v2.2.1+ QA
 
-**Last updated:** 2026-05-02 (Phase 1 complete)
+**Last updated:** 2026-05-02 (Phase 2 OBS-01/02 confirmed; OBS-03 awaiting 48h traffic)
 
 ## Project Reference
 
 **Core Value:** Intake chat must surface actors/constraints well enough for downstream synthesis to generate non-trivial NFRs and engineering constants.
 
-**Current Focus:** Phase 1 — Intake Extraction Fix (top priority; root cause of the MAIN ISSUE)
+**Current Focus:** Phase 3 — pgvector Phase B Ingest Recovery (Phase 2 OBS-03 is a time-gated human action, not a code task)
 
 ## Current Position
 
 - **Milestone:** v2.2.1+ QA pass (pre-traffic hardening)
-- **Phase:** 2 (Observability Wiring) — Not started
-- **Plan:** —
-- **Status:** Phase 1 complete (CONDITIONAL PASS). Ready for Phase 2.
-- **Progress:** 1/3 phases complete
+- **Phase:** 2 (Observability Wiring) — OBS-01/02 complete; OBS-03 human gate (≥48h traffic, earliest 2026-05-04)
+- **Plan:** 02-01 complete
+- **Status:** Phase 2 in-progress (OBS-03 pending). Phase 3 can start in parallel.
+- **Progress:** 1/3 phases fully complete; Phase 2 pending OBS-03
 
 ```
 [██████████] 100% Phase 1 ✓ (5/5 plans, CONDITIONAL PASS)
-[░░░░░░░░░░] 0%   Phase 2
+[████████░░] 80%  Phase 2 (OBS-01 ✓, OBS-02 ✓, OBS-03 ⏳ human gate)
 [░░░░░░░░░░] 0%   Phase 3
 ```
 

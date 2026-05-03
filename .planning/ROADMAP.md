@@ -12,7 +12,7 @@ The intake conversation must surface actors and constraints well enough that dow
 ## Phases
 
 - [x] **Phase 1: Intake / Synthesis Context — Diagnose & Fix** — trace whether Crawley schema gate or extraction pipeline is blocking NFR/constants synthesis, then fix ✓ 2026-05-02
-- [ ] **Phase 2: Observability Wiring** — `setSentryTransport` called at boot, counter emitting on LLM-only path, baseline captured
+- [ ] **Phase 2: Observability Wiring** — OBS-01/02 already shipped in Wave E; OBS-03 human gate (≥48h prod traffic → update baseline JSON)
 - [ ] **Phase 3: pgvector Phase B Ingest Recovery** — dedup-key collision diagnosed, ingest re-runs, prod `kb_chunks` populated
 
 ## Phase Details
@@ -79,26 +79,22 @@ The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.
 **Depends on:** Nothing (independent of Phase 1 and Phase 3; can run in parallel)
 **Requirements:** OBS-01, OBS-02, OBS-03
 
-**Root Cause (Wave E postmortem):**
-- `setSentryTransport` in `lib/observability/synthesis-metrics.ts` is never called at boot — the default no-op transport is active; all metric calls silently discard
-- `synthesis_metrics_total{module="m2",impl="llm-only"}` counter has zero occurrences in any source file — specced but never implemented on the LLM-only execution path
-- `sentry-baseline-2026-04-27.json` has `status: "gap_surfaced"` and `total_calls: null` — no real baseline was ever captured
-- `SENTRY_AUTH_TOKEN` and `LANGCHAIN_API_KEY` were unset in the engine-core agent env when this was written
-- E.13 is DEFERRED not because the 7-day production window is running, but because the instrumentation was never shipped
+**Actual State (discovered 2026-05-02):**
+- OBS-01 ✓ DONE: `setSentryTransport` wired in `instrumentation.ts:56` via Wave E commit `504fcc6` — active at boot
+- OBS-02 ✓ DONE: `recordSynthesisMetricsTotal({ module: 'm2', impl: 'llm-only' })` fires in `generate-nfr.ts:92` + `generate-constants.ts:56`; `nfrImpl` defaults to `'llm'` (line 488 of intake-graph.ts)
+- OBS-03 ⏳ HUMAN GATE: `sentry-baseline-2026-04-27.json` still has `total_calls: null`. Requires ≥48h prod traffic (earliest: 2026-05-04 ~19:35 EDT), then manual Sentry scrape + file update
 
-**Files to touch:**
-| File | Change |
-|------|--------|
-| `lib/observability/synthesis-metrics.ts` | Wire `setSentryTransport` call — invoke at boot via `instrumentation.ts` or equivalent entry point |
-| LLM-only synthesis path | Emit `synthesis_metrics_total{module="m2",impl="llm-only"}` counter on each invocation |
-| `sentry-baseline-2026-04-27.json` | Update `total_calls` with real scraped value after ≥48h prod traffic; flip `status` from `gap_surfaced` |
-| Vercel env / `.env.local` | Confirm `SENTRY_AUTH_TOKEN` and `LANGCHAIN_API_KEY` are set in the production environment |
+**OBS-03 Capture Process:**
+1. Query Sentry for `synthesis_metrics_total` events filtered by `module=m2,impl=llm-only`
+2. Update `plans/v21-outputs/observability/sentry-baseline-2026-04-27.json`: set `total_calls`, `status: "captured"`, `captured_at` to capture date
+3. Mark OBS-03 `[x]` in REQUIREMENTS.md
 
 **Success Criteria** (what must be TRUE):
-  1. `setSentryTransport` is called during application startup — no longer the default no-op transport.
-  2. `synthesis_metrics_total{module="m2",impl="llm-only"}` appears in at least one source file and increments on the LLM-only synthesis path.
-  3. After ≥48h of production traffic, `sentry-baseline-2026-04-27.json` is updated with a real `total_calls` integer (not null) and `status` is no longer `gap_surfaced`.
-**Plans:** TBD
+  1. ✓ `setSentryTransport` is called during application startup — confirmed in `instrumentation.ts:56`
+  2. ✓ `synthesis_metrics_total{module="m2",impl="llm-only"}` emits on the LLM-only synthesis path — confirmed in generate-nfr/generate-constants
+  3. After ≥48h of production traffic, `sentry-baseline-2026-04-27.json` is updated with a real `total_calls` integer (not null) and `status` is no longer `gap_surfaced`
+**Plans:** 1 plan
+- [x] 02-01-PLAN.md — Verify OBS-01/02 already wired, update tracking, document OBS-03 gate (Wave 1)
 **UI hint:** no
 
 ### Phase 3: pgvector Phase B Ingest Recovery

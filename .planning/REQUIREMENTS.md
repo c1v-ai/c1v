@@ -14,9 +14,9 @@
 
 ### Observability Wiring
 
-- [ ] **OBS-01**: `setSentryTransport` is called at application boot (currently the default no-op transport is active — nothing reaches Sentry)
-- [ ] **OBS-02**: `synthesis_metrics_total{module="m2",impl="llm-only"}` counter emits on the LLM-only synthesis path (currently zero occurrences in source)
-- [ ] **OBS-03**: Sentry baseline JSON (`sentry-baseline-2026-04-27.json`) updated with real `total_calls` data after instrumentation ships (currently `total_calls: null`)
+- [x] **OBS-01**: `setSentryTransport` is called at application boot — wired in `instrumentation.ts:56` via Wave E commit `504fcc6`
+- [x] **OBS-02**: `synthesis_metrics_total{module="m2",impl="llm-only"}` counter emits on the LLM-only synthesis path — `recordSynthesisMetricsTotal` called in `generate-nfr.ts:92` and `generate-constants.ts:56`; `nfrImpl` defaults to `'llm'` in `createIntakeGraph`
+- [ ] **OBS-03**: Sentry baseline JSON (`sentry-baseline-2026-04-27.json`) updated with real `total_calls` data — **human gate**: requires ≥48h prod traffic post-deploy (earliest: 2026-05-04 ~19:35 EDT)
 
 ### pgvector / KB Ingest
 
@@ -67,9 +67,9 @@
 | INTK-02 | Phase 1 | Pending |
 | INTK-03 | Phase 1 | Pending |
 | INTK-04 | Phase 1 | Pending |
-| OBS-01 | Phase 2 | Pending |
-| OBS-02 | Phase 2 | Pending |
-| OBS-03 | Phase 2 | Pending |
+| OBS-01 | Phase 2 | Complete |
+| OBS-02 | Phase 2 | Complete |
+| OBS-03 | Phase 2 | Pending (human gate — 48h traffic) |
 | VEC-01 | Phase 3 | Pending |
 | VEC-02 | Phase 3 | Pending |
 | VEC-03 | Phase 3 | Pending |

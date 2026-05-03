@@ -7,8 +7,8 @@
   "projects_observed": null,
   "captured_at": "2026-04-27T00:00:00Z",
   "captured_by": "engine-core",
-  "status": "gap_surfaced",
-  "gap_reason": "Live Sentry/LangSmith scrape tooling is not yet wired in this environment. Findings: (1) `synthesis_metrics_total{module=\"m2\",impl=\"llm-only\"}` is named in the v2.1 spec but does not appear as a literal in any source file under apps/product-helper/ (grep returns 0 hits). (2) The Sentry transport in lib/observability/synthesis-metrics.ts is pluggable but has no production wiring shipped (`setSentryTransport` is never called at boot; default no-op transport is active). (3) SENTRY_AUTH_TOKEN and LANGCHAIN_API_KEY are unset in the engine-core agent's env. (4) Per dispatch instructions, fabricating baseline numbers is forbidden — DO NOT FABRICATE.",
-  "next_action": "engine-prod-swap (or whichever Wave E agent owns production observability wiring) must (a) wire `setSentryTransport` at boot with `@sentry/nextjs`, (b) emit `synthesis_metrics_total{module=\"m2\",impl=\"llm-only\"}` from GENERATE_nfr/GENERATE_constants on the LLM-only path, (c) accumulate ≥48h of post-v2.1.1 production traffic, (d) re-scrape and overwrite this file with `total_calls` + `projects_observed` populated and `status: \"captured\"`. qa-e-verifier's EC-V21-E.13 check should treat `status: \"gap_surfaced\"` as deferred-not-failed for the engine-core handoff but blocking for engine-prod-swap closeout.",
+  "status": "wired_awaiting_traffic",
+  "wiring_confirmed": "2026-05-02T23:35:00Z — OBS-01: setSentryTransport wired in instrumentation.ts:56 (Wave E commit 504fcc6). OBS-02: recordSynthesisMetricsTotal called in generate-nfr.ts:92 + generate-constants.ts:56 with impl=llm-only; nfrImpl defaults to llm in createIntakeGraph. Branch fix/intake-extraction-nfr-outofscope deployed at commit 4864084.",
+  "next_action": "After ≥48h of production traffic (earliest 2026-05-04 ~19:35 EDT): (1) query Sentry for synthesis_metrics_total events filtered by module=m2,impl=llm-only, (2) set total_calls and projects_observed to real values, (3) set status to 'captured' and captured_at to the scrape timestamp, (4) mark OBS-03 complete in .planning/REQUIREMENTS.md.",
   "schema_version": "v1"
 }
