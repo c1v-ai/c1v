@@ -142,6 +142,14 @@ export async function extractData(
     // Compute artifact readiness using the types module function
     const artifactReadiness = computeArtifactReadiness(mergedData);
 
+    // Surface phase-leak / fabrication guards as warn-level logs so LangSmith
+    // metadata captures regressions (e.g. an inference-mandate prompt that
+    // reintroduces NFR extraction at the context-diagram phase).
+    const guards = detectExtractionGuards(state, mergedData);
+    for (const guard of guards) {
+      console.warn(`[EXTRACT_GUARD] ${guard.kind}: ${guard.detail}`);
+    }
+
     // v2.1 Wave A — extract_data augmentation: emit contract-pin envelope for
     // NFR / constants slices when stubs are on state. Failure path routes to
     // system-question-bridge instead of throwing (Wave A ↔ Wave E pin).
@@ -307,4 +315,78 @@ export function getExtractionSummary(data: ExtractionResult): string {
     `External Systems: ${data.systemBoundaries.external.length}`,
     `Data Entities: ${data.dataEntities.length}`,
   ].join('\n');
+}
+
+// ============================================================
+// Extraction guards — phase-leak + fabrication detection
+// ============================================================
+
+export type ExtractionGuard = {
+  kind: 'phase_leak' | 'fabrication';
+  detail: string;
+};
+
+/**
+ * Detect signals that extraction is going off-rails:
+ *
+ * - **phase_leak**: extraction emitted artifacts that belong to a downstream
+ *   phase (e.g. NFRs or goals at the `context-diagram` step). Indicates the
+ *   prompt is over-eager and likely fabricating to fill schema slots.
+ *
+ * - **fabrication**: actor count grossly exceeds the user's substantive word
+ *   count on a short conversation (e.g. 12 actors invented from a 4-word
+ *   "an AI meal planner" input).
+ *
+ * Pure function — call from extractData() or unit tests with a fabricated
+ * state object. Log-only in v1; future: surface via `state.guardrailFlags`.
+ */
+export function detectExtractionGuards(
+  state: IntakeState,
+  data: ExtractionResult,
+): ExtractionGuard[] {
+  const guards: ExtractionGuard[] = [];
+
+  if (state.currentKBStep === 'context-diagram') {
+    const nfrCount = data.nonFunctionalRequirements?.length ?? 0;
+    if (nfrCount > 0) {
+      guards.push({
+        kind: 'phase_leak',
+        detail: `${nfrCount} NFRs extracted at context-diagram step`,
+      });
+    }
+    const goalsCount = data.goalsMetrics?.length ?? 0;
+    if (goalsCount > 0) {
+      guards.push({
+        kind: 'phase_leak',
+        detail: `${goalsCount} goals at context-diagram step`,
+      });
+    }
+  }
+
+  const userWords = (state.messages ?? [])
+    .filter(m => {
+      const anyM = m as unknown as {
+        _getType?: () => string;
+        type?: string;
+        role?: string;
+      };
+      const t = anyM._getType?.() ?? anyM.type ?? anyM.role;
+      return t === 'human' || t === 'user';
+    })
+    .reduce((sum, m) => {
+      const content = typeof (m as { content: unknown }).content === 'string'
+        ? ((m as { content: string }).content)
+        : '';
+      return sum + content.split(/\s+/).filter(Boolean).length;
+    }, 0);
+
+  const actorCount = data.actors?.length ?? 0;
+  if (userWords < 30 && actorCount > userWords * 2) {
+    guards.push({
+      kind: 'fabrication',
+      detail: `${actorCount} actors from ${userWords} user-words`,
+    });
+  }
+
+  return guards;
 }
