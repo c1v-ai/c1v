@@ -1,25 +1,25 @@
 # State: c1v v2.2.1+ QA
 
-**Last updated:** 2026-05-02 (Phase 2 OBS-01/02 confirmed; OBS-03 awaiting 48h traffic)
+**Last updated:** 2026-05-02 (Phases 1 + 3 complete; Phase 2 OBS-03 pending 48h traffic)
 
 ## Project Reference
 
 **Core Value:** Intake chat must surface actors/constraints well enough for downstream synthesis to generate non-trivial NFRs and engineering constants.
 
-**Current Focus:** Phase 3 — pgvector Phase B Ingest Recovery (Phase 2 OBS-03 is a time-gated human action, not a code task)
+**Current Focus:** OBS-03 human gate — after 2026-05-04 ~19:35 EDT, scrape Sentry for `synthesis_metrics_total{module=m2,impl=llm-only}` and update baseline JSON.
 
 ## Current Position
 
 - **Milestone:** v2.2.1+ QA pass (pre-traffic hardening)
-- **Phase:** 2 (Observability Wiring) — OBS-01/02 complete; OBS-03 human gate (≥48h traffic, earliest 2026-05-04)
-- **Plan:** 02-01 complete
-- **Status:** Phase 2 in-progress (OBS-03 pending). Phase 3 can start in parallel.
-- **Progress:** 1/3 phases fully complete; Phase 2 pending OBS-03
+- **Phase:** All phases complete (Phase 2 has one human gate: OBS-03)
+- **Plan:** All plans complete
+- **Status:** v2.2.1+ QA milestone complete pending OBS-03 (time gate only, no code work)
+- **Progress:** 7/7 v1 requirements met (OBS-03 pending data accumulation)
 
 ```
 [██████████] 100% Phase 1 ✓ (5/5 plans, CONDITIONAL PASS)
-[████████░░] 80%  Phase 2 (OBS-01 ✓, OBS-02 ✓, OBS-03 ⏳ human gate)
-[░░░░░░░░░░] 0%   Phase 3
+[████████░░] 80%  Phase 2 (OBS-01 ✓, OBS-02 ✓, OBS-03 ⏳ human gate 2026-05-04)
+[██████████] 100% Phase 3 ✓ (1/1 plans — 3,355 rows in prod with real embeddings)
 ```
 
 ## Performance Metrics

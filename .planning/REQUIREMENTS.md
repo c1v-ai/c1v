@@ -20,9 +20,9 @@
 
 ### pgvector / KB Ingest
 
-- [ ] **VEC-01**: Root cause of `kb_source + chunk_hash` unique constraint collision in `ingest-kbs.ts` diagnosed and documented
-- [ ] **VEC-02**: Phase B ingest runs without silent no-op — new KB content inserts into `kb_chunks` table in both local (Supabase :54322) and production (`yxginqyxtysjdkeymnon`)
-- [ ] **VEC-03**: Production `kb_chunks` row count verified ≥1 (embeddings present in prod, not just local)
+- [x] **VEC-01**: Root cause diagnosed — Phase A ran with `EMBEDDINGS_STUB=1`; ON CONFLICT DO NOTHING blocks Phase B from replacing stub rows. Documented in `03-01-DIAGNOSIS.md`. Secondary: walker was including `_legacy_` and `_dev-runbooks` dirs.
+- [x] **VEC-02**: Phase B ingest successful — 3,355 rows inserted in both local (Supabase :54322) and prod (`yxginqyxtysjdkeymnon`). Walker fixed; stub rows cleared; real OpenAI embeddings written.
+- [x] **VEC-03**: Prod `kb_chunks` row count = 3,355 with real OpenAI embeddings (IVFFLAT cosine index). Idempotent on second run (0 inserts, 3,452 skipped).
 
 ## v2 Requirements
 
@@ -70,9 +70,9 @@
 | OBS-01 | Phase 2 | Complete |
 | OBS-02 | Phase 2 | Complete |
 | OBS-03 | Phase 2 | Pending (human gate — 48h traffic) |
-| VEC-01 | Phase 3 | Pending |
-| VEC-02 | Phase 3 | Pending |
-| VEC-03 | Phase 3 | Pending |
+| VEC-01 | Phase 3 | Complete |
+| VEC-02 | Phase 3 | Complete |
+| VEC-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 10 total

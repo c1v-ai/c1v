@@ -13,7 +13,7 @@ The intake conversation must surface actors and constraints well enough that dow
 
 - [x] **Phase 1: Intake / Synthesis Context — Diagnose & Fix** — trace whether Crawley schema gate or extraction pipeline is blocking NFR/constants synthesis, then fix ✓ 2026-05-02
 - [ ] **Phase 2: Observability Wiring** — OBS-01/02 already shipped in Wave E; OBS-03 human gate (≥48h prod traffic → update baseline JSON)
-- [ ] **Phase 3: pgvector Phase B Ingest Recovery** — dedup-key collision diagnosed, ingest re-runs, prod `kb_chunks` populated
+- [x] **Phase 3: pgvector Phase B Ingest Recovery** — dedup-key collision diagnosed, walker fixed, 3,355 rows in prod with real OpenAI embeddings ✓ 2026-05-02
 
 ## Phase Details
 
@@ -107,16 +107,17 @@ The KB vector store powers `generateKBDrivenResponse` in `kb-question-generator.
   3. Local Supabase (`postgresql://postgres:postgres@localhost:54322/postgres`) `kb_chunks` table reports a row count consistent with the corpus after ingest.
   4. Production Supabase project `yxginqyxtysjdkeymnon` `kb_chunks` table reports `count(*) ≥ 1` with `embedding IS NOT NULL`.
   5. Re-running ingest a second time after a successful run is an idempotent no-op (does not error, does not double-insert) — the dedup logic works as intended once the key is correct.
-**Plans:** TBD
+**Plans:** 1 plan
+- [x] 03-01-PLAN.md — Diagnose collision, fix walker, clear local stub rows, ingest local + prod (Wave 1)
 **UI hint:** no
 
 ## Progress
 
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
-| 1. Intake Extraction Fix         | 0/5 | Not started | -         |
-| 2. Observability Wiring          | 0/0 | Not started | -         |
-| 3. pgvector Phase B Ingest Recovery | 0/0 | Not started | -         |
+| 1. Intake Extraction Fix         | 5/5 | Complete | 2026-05-02 |
+| 2. Observability Wiring          | 1/1 | In Progress (OBS-03 human gate) | - |
+| 3. pgvector Phase B Ingest Recovery | 1/1 | Complete | 2026-05-02 |
 
 ## Out of Scope (this milestone)
 

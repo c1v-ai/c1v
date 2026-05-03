@@ -52,7 +52,8 @@ const DEFAULT_KB_ROOT = resolve(
 const TARGET_CHARS = 2000;
 const OVERLAP_CHARS = 200;
 
-// Folders skipped entirely — build artifacts, tool state, raw unreviewed input.
+// Folders skipped entirely — build artifacts, tool state, raw unreviewed input,
+// and internal GSD dirs that are not KB knowledge-bank content.
 const SKIP_DIR_PATTERNS = [
   /^\.claude$/,
   /^\.git$/,
@@ -60,6 +61,8 @@ const SKIP_DIR_PATTERNS = [
   /^node_modules$/,
   /^raw$/,
   /^rejected$/,
+  /^_legacy_/,     // Archived pre-T9 content superseded by numbered KB folders
+  /^_dev-runbooks$/, // Developer operational guides, not KB content
 ];
 
 interface WalkedFile {
