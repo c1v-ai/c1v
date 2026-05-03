@@ -1,11 +1,453 @@
+/**
+ * Intake / Extraction Prompt Module (v2)
+ *
+ * Replaces the legacy 199-line monolith with phase-staged extraction prompts +
+ * shared utilities. Legacy export preserved as `extractionPromptLegacy` until
+ * the `INTAKE_PROMPT_V2` flag flips on (see step 3).
+ *
+ * Design rules — every new prompt slice MUST:
+ *   - Avoid MUST/REQUIRED-minimum/Every-X inference cascades.
+ *   - Avoid the "industry-standard" boilerplate phrasing.
+ *   - Allow empty arrays / null fields when the user has not stated something.
+ *   - Stay focused on its slice (don't re-extract upstream phases).
+ *   - Keep examples illustrative (1 short snippet max) — never prescriptive.
+ */
+
 import { PromptTemplate } from '@langchain/core/prompts';
+import type { KnowledgeBankStep } from '@/lib/education/knowledge-bank';
+import type { IntakeState } from './graphs/types';
+
+// ============================================================
+// Shared Utilities
+// ============================================================
 
 /**
- * Data Extraction Prompt
- * Extracts structured data using structured requirements methodology
- * Calculates artifact readiness with specification-compliant relationships
+ * Escape curly braces so PromptTemplate doesn't interpret them as variables.
+ * Doubles BOTH `{` and `}`. Important: doing only one side mangles JSON-shaped
+ * inputs and was the root cause of the qfd / interfaces template parse bug.
  */
-export const extractionPrompt = PromptTemplate.fromTemplate(`
+export function escapeBraces(str: string): string {
+  return str.replace(/\{/g, '{{').replace(/\}/g, '}}');
+}
+
+/**
+ * Render the project-context preamble that prefixes every intake prompt.
+ * v1 returns plain text; caching across turns is deferred per plan §6.1.
+ */
+export function buildProjectContextPreamble(args: {
+  projectName: string;
+  projectVision: string;
+  projectType?: string | null;
+}): string {
+  const { projectName, projectVision, projectType } = args;
+  const typeLine = projectType
+    ? `Project Type: ${projectType}`
+    : 'Project Type: (not specified)';
+  return [
+    '## Project Context',
+    `Project Name: ${projectName}`,
+    typeLine,
+    `Vision Statement: ${projectVision || '(not provided)'}`,
+    '',
+    'Use this context to ground your extraction. Do not invent details the',
+    'user has not stated. Empty fields are valid output when the user has not',
+    'covered that topic yet — the conversation will continue.',
+  ].join('\n');
+}
+
+/**
+ * Render a focused upstream-context summary for downstream phase prompts.
+ * Reads only the requested slices to keep token usage minimal.
+ */
+export function summarizeUpstream(
+  state: IntakeState | { extractedData?: Partial<IntakeState['extractedData']> },
+  deps: Array<
+    | 'actors'
+    | 'useCases'
+    | 'systemBoundaries'
+    | 'ffbd'
+    | 'NFRs'
+    | 'decisionMatrix'
+  >,
+): string {
+  const ed = (state as { extractedData?: Partial<IntakeState['extractedData']> })
+    .extractedData;
+  if (!ed || deps.length === 0) {
+    return '';
+  }
+
+  const sections: string[] = [];
+
+  for (const dep of deps) {
+    if (dep === 'actors') {
+      const actors = ed.actors ?? [];
+      if (actors.length > 0) {
+        sections.push(
+          ['### Actors', ...actors.map((a) => `- ${a.name} (${a.role})`)].join('\n'),
+        );
+      }
+    } else if (dep === 'useCases') {
+      const ucs = ed.useCases ?? [];
+      if (ucs.length > 0) {
+        sections.push(
+          [
+            '### Use Cases',
+            ...ucs.map(
+              (uc) =>
+                `- ${uc.name} [actor: ${uc.actor}]${uc.description ? ` — ${uc.description}` : ''}`,
+            ),
+          ].join('\n'),
+        );
+      }
+    } else if (dep === 'systemBoundaries') {
+      const sb = ed.systemBoundaries;
+      if (sb) {
+        const internal = sb.internal ?? [];
+        const external = sb.external ?? [];
+        const inScope = sb.inScope ?? [];
+        const outOfScope = sb.outOfScope ?? [];
+        if (
+          internal.length ||
+          external.length ||
+          inScope.length ||
+          outOfScope.length
+        ) {
+          const lines = ['### System Boundaries'];
+          if (internal.length) lines.push(`- Internal: ${internal.join(', ')}`);
+          if (external.length) lines.push(`- External: ${external.join(', ')}`);
+          if (inScope.length) lines.push(`- In Scope: ${inScope.join(', ')}`);
+          if (outOfScope.length)
+            lines.push(`- Out of Scope: ${outOfScope.join(', ')}`);
+          sections.push(lines.join('\n'));
+        }
+      }
+    } else if (dep === 'NFRs') {
+      const nfrs = ed.nonFunctionalRequirements ?? [];
+      if (nfrs.length > 0) {
+        sections.push(
+          [
+            '### Non-Functional Requirements',
+            ...nfrs.map(
+              (n) => `- [${n.category}] ${n.requirement} (priority: ${n.priority})`,
+            ),
+          ].join('\n'),
+        );
+      }
+    } else if (dep === 'ffbd') {
+      const ffbd = ed.ffbd as { topLevelBlocks?: Array<{ name?: string }> } | undefined;
+      const blocks = ffbd?.topLevelBlocks ?? [];
+      if (blocks.length > 0) {
+        sections.push(
+          [
+            '### FFBD (top-level functions)',
+            ...blocks.map((b, i) => `- F.${i + 1}: ${b.name ?? '(unnamed)'}`),
+          ].join('\n'),
+        );
+      }
+    } else if (dep === 'decisionMatrix') {
+      const dm = ed.decisionMatrix as
+        | { recommendation?: string; alternatives?: Array<{ name?: string }> }
+        | undefined;
+      if (dm && (dm.recommendation || (dm.alternatives?.length ?? 0) > 0)) {
+        const lines = ['### Decision Matrix'];
+        if (dm.recommendation) lines.push(`- Recommended: ${dm.recommendation}`);
+        if (dm.alternatives?.length) {
+          lines.push(
+            `- Alternatives: ${dm.alternatives.map((a) => a.name ?? '(unnamed)').join(', ')}`,
+          );
+        }
+        sections.push(lines.join('\n'));
+      }
+    }
+  }
+
+  if (sections.length === 0) {
+    return '## Upstream context\n_(none yet)_';
+  }
+  return ['## Upstream context', ...sections].join('\n\n');
+}
+
+// ============================================================
+// Phase-Staged Extraction Prompts
+// ============================================================
+
+const SHARED_OUTPUT_NOTE = `
+## Output
+
+Return structured JSON matching the extraction schema. Empty arrays and
+null/empty strings are valid for fields the user has not covered. Do not
+fabricate content to "fill" the schema.
+`.trim();
+
+const contextDiagramPrompt = PromptTemplate.fromTemplate(`
+You are extracting context-diagram data from a conversation. Focus ONLY on
+actors and external systems — leave all other fields empty for now.
+
+## Project Context
+Project Name: {projectName}
+Vision Statement: {projectVision}
+
+## Conversation
+{conversationHistory}
+
+## What to extract
+
+1. **Actors** the user has named or clearly implied:
+   - name, role (Primary / Secondary / External System)
+   - Optional: a short description if the user gave one
+   - goals / painPoints: include only if the user has stated them.
+     Return empty arrays if not stated. Do not infer.
+
+2. **External systems / interactions** the user has named:
+   - name, what flows to/from it (only if stated)
+   - If the user said "none" or "nope", capture that as confirmed-none.
+
+If the user has not yet named any actors or external systems, return empty
+arrays. The conversation will continue.
+
+Illustrative only (do not copy): if the user said "users sign up and we email
+them via SendGrid", you might extract one Primary actor "User" and one
+External System "SendGrid".
+
+${SHARED_OUTPUT_NOTE}
+
+{educationBlock}
+`.trim());
+
+const useCaseDiagramPrompt = PromptTemplate.fromTemplate(`
+You are extracting use-case-diagram data from a conversation. Focus on use
+cases and their relationships — assume actors already captured upstream.
+
+## Project Context
+Project Name: {projectName}
+Vision Statement: {projectVision}
+
+## Conversation
+{conversationHistory}
+
+## What to extract
+
+1. **Use cases** the user has described:
+   - id (UC1, UC2, ...), name as a verb phrase, primary actor
+   - preconditions / postconditions only if stated
+   - <<include>> / <<extends>> / <<trigger>> relationships only if stated
+
+Return an empty useCases array if the user has not described any concrete
+scenarios yet. Do not invent use cases from a vision statement alone.
+
+Illustrative only: if the user said "buyers add items to a cart and check out",
+you might extract UC1 "Add to cart" and UC2 "Check out" linked to actor
+"Buyer".
+
+${SHARED_OUTPUT_NOTE}
+
+{educationBlock}
+`.trim());
+
+const scopeTreePrompt = PromptTemplate.fromTemplate(`
+You are extracting scope and data-entity information from a conversation.
+Focus on what the user has explicitly placed in or out of scope, and on data
+objects they have named.
+
+## Project Context
+Project Name: {projectName}
+Vision Statement: {projectVision}
+
+## Conversation
+{conversationHistory}
+
+## What to extract
+
+1. **systemBoundaries.inScope** — features / deliverables the user has stated
+   are part of this build.
+2. **systemBoundaries.outOfScope** — features / deliverables the user has
+   explicitly deferred or excluded.
+3. **dataEntities** — named objects with attributes / relationships the user
+   has described.
+
+Return empty arrays if the user has not yet drawn these boundaries. The
+conversation will surface this content over time.
+
+Illustrative only: if the user said "we'll launch with read-only dashboards
+and add editing later", inScope might be ["Read-only dashboards"] and
+outOfScope might be ["Editing"].
+
+${SHARED_OUTPUT_NOTE}
+
+{educationBlock}
+`.trim());
+
+const functionalRequirementsPrompt = PromptTemplate.fromTemplate(`
+You are extracting problem framing, project-level goals, and non-functional
+requirements from a conversation.
+
+## Project Context
+Project Name: {projectName}
+Vision Statement: {projectVision}
+
+## Conversation
+{conversationHistory}
+
+## What to extract
+
+1. **problemStatement** (summary, context, impact, goals): only what the user
+   has stated. If the user has not described the problem yet, return an
+   object with empty strings and an empty goals array. Do not paraphrase the
+   vision statement back as a "problem".
+
+2. **goalsMetrics**: project-level goals the user has stated, with metrics /
+   targets they have specified. Return an empty array if not stated.
+
+3. **nonFunctionalRequirements**: NFRs the user has stated (performance,
+   security, scalability, reliability, usability, maintainability,
+   compliance). Each NFR needs category, requirement, priority. Metrics and
+   targets are optional. Return an empty array if no NFRs have been stated.
+
+Do not infer NFRs from project type, domain, or general "best practices". If
+the user said nothing about uptime, latency, or compliance, leave the array
+empty. The downstream NFR-resynth agent and chat bridge will surface gaps.
+
+Illustrative only: if the user said "we need PCI compliance for payments",
+you might add one NFR with category "compliance", requirement
+"PCI-DSS compliant payment processing", priority "critical".
+
+${SHARED_OUTPUT_NOTE}
+
+{educationBlock}
+`.trim());
+
+/**
+ * Phase-staged extraction prompts keyed by KnowledgeBankStep.
+ *
+ * Only 4 KB steps are mapped — the others (ucbd, sysml-activity-diagram,
+ * ffbd, decision-matrix, qfd-house-of-quality, interfaces) have dedicated
+ * generator agents and don't run through extract-data. The selector in
+ * extraction-agent falls back to 'context-diagram' for unmapped steps.
+ */
+export const EXTRACTION_PROMPTS: Partial<Record<KnowledgeBankStep, PromptTemplate>> = {
+  'context-diagram': contextDiagramPrompt,
+  'use-case-diagram': useCaseDiagramPrompt,
+  'scope-tree': scopeTreePrompt,
+  'functional-requirements': functionalRequirementsPrompt,
+};
+
+// ============================================================
+// Per-Agent Rules Blocks (consumed by step 4-5 agent rewrites)
+// ============================================================
+
+export const FFBD_RULES = `
+FFBD extraction rules (functional decomposition, Crawley discipline):
+
+- Each block must describe WHAT the system does (verb phrase), not what
+  component does it. "Store prediction result" is functional; "Database" is
+  structural and should be rejected.
+- Use AND for parallel paths, OR for alternative paths, IT for iteration.
+  Every opening gate needs a matching close gate (parenthesis discipline).
+- IT gates require a termination condition. Loops without one are infinite.
+- Hierarchical numbering: F.1, F.1.1, F.1.2. Keep ≤ 10 sub-functions per
+  parent — beyond that, add a decomposition level.
+- Mark exactly one block as the core value function (the function that IS the
+  product's primary value proposition).
+- Connections describe the flow between blocks, including the gate type when
+  the flow is parallel / alternative / iterative.
+
+If the user has not described enough behavior to decompose into functions,
+return a minimal top-level block list reflecting what was stated. Do not
+fabricate sub-functions.
+`.trim();
+
+export const QFD_RULES = `
+QFD House-of-Quality extraction rules:
+
+- Customer needs are stated in user language ("accurate predictions"), not
+  engineering language. Pull them from the conversation, not from a generic
+  template.
+- Engineering characteristics are measurable system properties the team can
+  control. Each one must have units (e.g. "MAE in degrees C", "p95 latency
+  in ms").
+- Relationship strengths: strong (9), moderate (3), weak (1). Cells default
+  to no-relationship; only fill when there is a defensible link.
+- Roof correlations capture trade-offs between engineering characteristics
+  (e.g. accuracy vs compute time). Use strong-positive / positive / negative
+  / strong-negative.
+- Importance weights for customer needs sum to 1.0. If the user has not
+  ranked them, leave the weights null and surface a clarifying question via
+  the chat bridge rather than guessing.
+- Competitor scoring is honest. If the user has not benchmarked anything,
+  emit an empty competitors array.
+`.trim();
+
+export const DECISION_MATRIX_RULES = `
+Decision Matrix extraction rules:
+
+- Performance criteria are measurable, solution-agnostic properties (response
+  time, cost, accuracy). Reject anything that names a specific feature.
+- Each criterion needs a measurement scale: defined conditions that map
+  real-world values to scores. "4 out of 5" is meaningless without saying
+  what earns a 4.
+- Weights are percentages summing to 100%. If the user has not ranked
+  criteria, leave the matrix in a draft state and surface a clarifying
+  question rather than fabricating weights.
+- Each alternative scores against every criterion using the defined scale.
+  Document the source of the score (measurement, benchmark, estimate).
+- Weighted totals are derived; do not back-fill a winner before the math
+  resolves. Run a sensitivity check — if a 5% weight nudge flips the winner,
+  flag the decision as fragile.
+- A criterion may carry a minimum acceptable threshold. Alternatives below
+  the threshold are eliminated regardless of weighted score.
+`.trim();
+
+export const INTERFACES_RULES = `
+Interface specification extraction rules:
+
+- Subsystems are grouped by FUNCTION, not by component or by team. Functions
+  that share data and run on similar cadences belong together.
+- Every interface gets a unique ID (IF-01, IF-02, ...) used consistently
+  across DFD, N2 chart, sequence diagrams, and the interface matrix.
+- Each interface specifies: source subsystem, destination subsystem, data
+  payload, protocol, frequency / trigger. Operational interfaces describe
+  runtime data flow; design interfaces describe constraints (size, weight,
+  voltage, schema versions).
+- The N2 chart and the interface specs must agree. A mismatch is a real bug,
+  not a documentation issue.
+- Most subsystems both send and receive. A send-only subsystem usually means
+  a missing return / acknowledgment interface — surface that as a question
+  rather than silently emitting a one-way contract.
+- Sequence diagrams cover primary use cases end-to-end and label every
+  message with its IF-ID.
+`.trim();
+
+export const NFR_RULES = `
+NFR extraction rules:
+
+- Capture only NFRs the user has stated or that are unambiguously implied by
+  a stated requirement (e.g. "must be PCI compliant" implies the compliance
+  NFR). Do not append a generic "every system needs availability" baseline.
+- Each NFR has: category (performance | security | scalability | reliability
+  | usability | maintainability | compliance), requirement (specific
+  statement), priority (critical | high | medium | low). Metrics and targets
+  are optional and should reflect what the user actually quantified.
+- When the user gestures at a quality attribute without quantifying it
+  ("should be fast"), record the category and requirement but leave metric
+  and target null. The chat bridge will surface the gap as an open question
+  rather than guessing a number.
+- Avoid stacking duplicate NFRs in the same category unless they describe
+  meaningfully different concerns (e.g. read latency vs write latency).
+`.trim();
+
+// ============================================================
+// Legacy export (preserved until INTAKE_PROMPT_V2 flips on)
+// ============================================================
+
+/**
+ * Legacy 199-line monolith extraction prompt.
+ *
+ * Reachable via the `INTAKE_PROMPT_V2=false` (default) code path in
+ * `extract-data.ts`. Retained verbatim so flag-off behavior is byte-identical
+ * to pre-step-3 behavior. Will be removed in a follow-up commit once the
+ * flag flips on by default.
+ */
+export const extractionPromptLegacy = PromptTemplate.fromTemplate(`
 Analyze this conversation using structured requirements methodology. Extract structured PRD data with artifact readiness scores.
 
 ## Project Context
@@ -197,3 +639,10 @@ INFERENCE STRATEGY:
 
 Do NOT return empty or null for ANY of these four sections. Every project has problems, goals, and quality requirements - extract or infer them.
 `);
+
+/**
+ * @deprecated Use `extractionPromptLegacy` (current default behind
+ * `INTAKE_PROMPT_V2=false`) or the phase-staged `EXTRACTION_PROMPTS` map
+ * (active when `INTAKE_PROMPT_V2=true`).
+ */
+export const extractionPrompt = extractionPromptLegacy;
