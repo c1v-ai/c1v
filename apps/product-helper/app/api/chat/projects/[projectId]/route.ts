@@ -182,6 +182,7 @@ export async function POST(
         name: project.name,
         vision: project.vision,
         teamId: team.id,
+        projectType: project.projectType ?? null,
         projectData: project.projectData
           ? {
               actors: project.projectData.actors,

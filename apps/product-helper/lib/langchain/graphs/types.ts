@@ -347,6 +347,13 @@ export interface IntakeState {
    */
   teamId: number;
 
+  /**
+   * Project type from onboarding metadata (e.g. 'saas', 'marketplace', 'mobile').
+   * Optional — older projects may not have this set. Threaded into state so
+   * downstream LLM calls (e.g. renderAtlasPriors) can consume without re-querying.
+   */
+  projectType?: string | null;
+
   // ============================================================
   // Extracted Data (Incremental)
   // ============================================================
@@ -513,7 +520,8 @@ export function createInitialState(
     messages: BaseMessage[];
     generatedArtifacts: ArtifactPhase[];
     completeness: number;
-  }>
+  }>,
+  projectType?: string | null
 ): IntakeState {
   const extractedData: ExtractionResult = existingData?.extractedData ?? {
     actors: [],
@@ -538,6 +546,7 @@ export function createInitialState(
     projectName,
     projectVision,
     teamId,
+    projectType: projectType ?? null,
 
     // Extracted data
     extractedData,

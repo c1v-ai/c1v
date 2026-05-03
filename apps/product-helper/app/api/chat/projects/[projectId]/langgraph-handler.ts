@@ -57,6 +57,7 @@ export interface ProjectContext {
   name: string;
   vision: string;
   teamId: number;
+  projectType?: string | null;
   projectData?: {
     actors?: unknown;
     useCases?: unknown;
@@ -104,7 +105,7 @@ export async function processWithLangGraph(
   project: ProjectContext,
   userMessage: string
 ): Promise<LangGraphResult> {
-  const { id: projectId, name: projectName, vision: projectVision, teamId } = project;
+  const { id: projectId, name: projectName, vision: projectVision, teamId, projectType } = project;
 
   // [STATE_DEBUG] Entry point
   console.log(`[STATE_DEBUG] processWithLangGraph called for project ${projectId}`);
@@ -133,7 +134,8 @@ export async function processWithLangGraph(
         projectName,
         projectVision,
         teamId,
-        existingData
+        existingData,
+        projectType
       );
     }
 
@@ -288,7 +290,7 @@ export async function processWithLangGraph(
 
     return {
       response: `I encountered an error while processing your message. Please try again. (Error: ${errorMessage})`,
-      state: createInitialState(projectId, projectName, projectVision, teamId),
+      state: createInitialState(projectId, projectName, projectVision, teamId, undefined, projectType),
       error: errorMessage,
     };
   }
@@ -308,7 +310,7 @@ export async function streamWithLangGraph(
   project: ProjectContext,
   userMessage: string
 ): Promise<ReadableStream<Uint8Array>> {
-  const { id: projectId, name: projectName, vision: projectVision, teamId } = project;
+  const { id: projectId, name: projectName, vision: projectVision, teamId, projectType } = project;
 
   // Load or create state
   let state = await loadCheckpoint(projectId);
@@ -326,7 +328,8 @@ export async function streamWithLangGraph(
       projectName,
       projectVision,
       teamId,
-      existingData
+      existingData,
+      projectType
     );
   }
 
