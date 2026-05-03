@@ -15,14 +15,33 @@
 import { createClaudeAgent } from '../config';
 import { ffbdSchema, type Ffbd } from '../schemas';
 import { PromptTemplate } from '@langchain/core/prompts';
+import {
+  escapeBraces as sharedEscapeBraces,
+  buildProjectContextPreamble,
+  summarizeUpstream,
+  FFBD_RULES,
+} from '../prompts';
+import { renderAtlasPriors } from '../atlas-loader';
+import { intakePromptV2 } from '@/lib/config/feature-flags';
+import type { IntakeState } from '../graphs/types';
 
 /**
  * Structured FFBD extraction LLM with Zod schema validation
- * Uses Claude Sonnet with temperature 0.2 for deterministic results
+ * Uses Claude Sonnet with temperature 0.2 for deterministic results.
+ * Flag-off path keeps the legacy 20K cap (post-`ee70f4e`).
  */
 const structuredFfbdLLM = createClaudeAgent(ffbdSchema, 'extract_ffbd', {
   temperature: 0.2,
   maxTokens: 20000,
+});
+
+/**
+ * Flag-on V2 LLM with tighter cap (6K). Separate instance so the legacy
+ * path is unaffected. Module-scoped per the existing pattern.
+ */
+const structuredFfbdLLMV2 = createClaudeAgent(ffbdSchema, 'extract_ffbd_v2', {
+  temperature: 0.2,
+  maxTokens: 6000,
 });
 
 /**
@@ -105,9 +124,27 @@ export async function extractFFBD(
   projectName: string,
   projectVision: string,
   useCases: string,
-  systemBoundaries: string
+  systemBoundaries: string,
+  /**
+   * Optional V2 context. Only consulted when `INTAKE_PROMPT_V2=true`. The
+   * flag-off path is byte-identical to the pre-rewrite behavior regardless
+   * of what is passed here.
+   */
+  opts?: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+  },
 ): Promise<Ffbd | null> {
   try {
+    if (intakePromptV2()) {
+      return await extractFFBDV2(
+        conversationHistory,
+        projectName,
+        projectVision,
+        opts ?? {},
+      );
+    }
+
     // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
     // This is needed because conversation history may contain JSON-like content with { and }
     const escapeBraces = (str: string) => str.replace(/\{/g, '{{').replace(/\}/g, '}}');
@@ -132,6 +169,64 @@ export async function extractFFBD(
     console.error('FFBD extraction error:', error);
 
     // Return null on failure — callers should preserve existing state
+    return null;
+  }
+}
+
+/**
+ * Build the V2 FFBD prompt body from shared utilities. Exported for tests
+ * that need to assert the rendered prompt body without invoking the LLM.
+ */
+export function buildFFBDPromptV2(
+  conversationHistory: string,
+  projectName: string,
+  projectVision: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+  },
+): string {
+  const preamble = buildProjectContextPreamble({
+    projectName,
+    projectVision,
+    projectType: opts.projectType ?? null,
+  });
+  const upstream = summarizeUpstream(
+    { extractedData: opts.extractedData },
+    ['useCases', 'systemBoundaries'],
+  );
+  const priors = renderAtlasPriors(opts.projectType ?? 'unknown', [
+    'latency',
+    'availability',
+  ]);
+  const conversationBlock =
+    `## Conversation\n${sharedEscapeBraces(conversationHistory)}`;
+  return [preamble, upstream, priors.text, conversationBlock, FFBD_RULES].join(
+    '\n\n',
+  );
+}
+
+async function extractFFBDV2(
+  conversationHistory: string,
+  projectName: string,
+  projectVision: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+  },
+): Promise<Ffbd | null> {
+  try {
+    const promptText = buildFFBDPromptV2(
+      conversationHistory,
+      projectName,
+      projectVision,
+      opts,
+    );
+    const result = await structuredFfbdLLMV2.invoke(promptText);
+    validateFFBDQuality(result);
+    return result;
+  } catch (error) {
+    console.error('FFBD extraction error (v2):', error);
     return null;
   }
 }
