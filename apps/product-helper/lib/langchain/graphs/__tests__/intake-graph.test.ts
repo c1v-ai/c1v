@@ -496,6 +496,7 @@ describe('full intake flow integration', () => {
     });
 
     it('should follow PRD-SPEC artifact sequence', () => {
+      // 7 core KB phases + 8 Steps 3-6 phases (added in v2.1 Wave A)
       const expectedSequence: ArtifactPhase[] = [
         'context_diagram',
         'use_case_diagram',
@@ -504,6 +505,14 @@ describe('full intake flow integration', () => {
         'requirements_table',
         'constants_table',
         'sysml_activity_diagram',
+        'ffbd_top_level',
+        'ffbd_decomposed',
+        'decision_matrix',
+        'qfd_house_of_quality',
+        'data_flow_diagram',
+        'n2_chart',
+        'sequence_diagrams',
+        'interface_matrix',
       ];
 
       expect(ARTIFACT_PHASE_SEQUENCE).toEqual(expectedSequence);

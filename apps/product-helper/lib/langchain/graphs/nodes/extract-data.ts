@@ -83,6 +83,26 @@ export async function extractData(
       };
     }
 
+    // Skip expensive LLM extraction when data is already sufficiently complete.
+    // This prevents 20K-token re-extractions on subsequent artifact generation loops.
+    const hasCompleteData = (
+      state.extractedData.actors.length >= 1 &&
+      state.extractedData.useCases.length >= 5 &&
+      state.extractedData.dataEntities.length >= 1
+    );
+
+    if (hasCompleteData) {
+      console.log(`[EXTRACT_DEBUG] Skipping extraction — data already complete (actors: ${state.extractedData.actors.length}, useCases: ${state.extractedData.useCases.length})`);
+      const completeness = calculateCompleteness(state.extractedData);
+      const artifactReadiness = computeArtifactReadiness(state.extractedData);
+      await emitNfrContractEnvelope(state, state.extractedData);
+      return {
+        extractedData: state.extractedData,
+        completeness,
+        artifactReadiness,
+      };
+    }
+
     // [EXTRACT_DEBUG] Before extraction call
     console.log(`[EXTRACT_DEBUG] Calling extractProjectData for project: ${state.projectName}`);
 

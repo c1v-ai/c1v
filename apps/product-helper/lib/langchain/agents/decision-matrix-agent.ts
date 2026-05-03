@@ -22,7 +22,7 @@ import { PromptTemplate } from '@langchain/core/prompts';
  */
 const structuredDecisionMatrixLLM = createClaudeAgent(decisionMatrixSchema, 'extract_decision_matrix', {
   temperature: 0.2,
-  maxTokens: 20000,
+  maxTokens: 8000,
 });
 
 /**
@@ -283,7 +283,7 @@ export function calculateDecisionMatrixCompleteness(result: DecisionMatrix): num
   // Score completeness: 20 points
   if (altCount > 0 && criteriaCount > 0) {
     const criterionIds = result.criteria.map(c => c.id);
-    let totalExpected = altCount * criteriaCount;
+    const totalExpected = altCount * criteriaCount;
     let totalPresent = 0;
     for (const alt of result.alternatives) {
       for (const cId of criterionIds) {

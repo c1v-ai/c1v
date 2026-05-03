@@ -401,6 +401,11 @@ export async function streamWithLangGraph(
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let heartbeatActive = true;
+      const heartbeatInterval = setInterval(() => {
+        if (!heartbeatActive) return;
+        try { controller.enqueue(encoder.encode('<!--ping-->\n')); } catch { /* closed */ }
+      }, 15000);
       try {
         // Use graph.stream for intermediate state updates
         const eventStream = await graph.stream(state, {
@@ -468,6 +473,28 @@ export async function streamWithLangGraph(
             if (output.extractedData) {
               latestExtractedData = output.extractedData;
             }
+
+            // Eagerly persist state after each artifact so partial runs survive connection loss
+            if (nodeName === 'generate_artifact' && accumulatedArtifacts.size > 0) {
+              try {
+                const partialCheckpoint: IntakeState = {
+                  ...state,
+                  ...accumulatedState,
+                  messages: [
+                    ...state.messages,
+                    new AIMessage(fullResponse || 'generating...'),
+                  ],
+                  generatedArtifacts: Array.from(accumulatedArtifacts) as ArtifactPhase[],
+                };
+                await saveCheckpoint(projectId, partialCheckpoint);
+                if (accumulatedState.extractedData || accumulatedState.completeness !== undefined) {
+                  await updateProjectDataFromState(projectId, accumulatedState);
+                }
+                console.log(`[STREAM] Eager checkpoint saved (${accumulatedArtifacts.size} artifacts)`);
+              } catch (cpErr) {
+                console.error('[STREAM] Eager checkpoint failed (non-fatal):', cpErr);
+              }
+            }
           }
         }
 
@@ -525,8 +552,12 @@ export async function streamWithLangGraph(
           }
         }
 
+        heartbeatActive = false;
+        clearInterval(heartbeatInterval);
         controller.close();
       } catch (error) {
+        heartbeatActive = false;
+        clearInterval(heartbeatInterval);
         console.error('[LangGraph Stream] Error:', error);
         const errorMsg =
           error instanceof Error
@@ -789,7 +820,7 @@ async function triggerPostIntakeGeneration(
   console.log(`[POST_INTAKE] Starting post-intake generation for project ${projectId}`);
 
   // Query project onboarding metadata and map to KBProjectContext
-  let projectContext: Partial<KBProjectContext> = {};
+  const projectContext: Partial<KBProjectContext> = {};
   try {
     const project = await db.query.projects.findFirst({
       where: eq(projects.id, projectId),
