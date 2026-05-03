@@ -15,6 +15,15 @@
 import { createClaudeAgent } from '../config';
 import { decisionMatrixSchema, type DecisionMatrix } from '../schemas';
 import { PromptTemplate } from '@langchain/core/prompts';
+import {
+  escapeBraces as sharedEscapeBraces,
+  buildProjectContextPreamble,
+  summarizeUpstream,
+  DECISION_MATRIX_RULES,
+} from '../prompts';
+import { renderAtlasPriors } from '../atlas-loader';
+import { intakePromptV2 } from '@/lib/config/feature-flags';
+import type { IntakeState } from '../graphs/types';
 
 /**
  * Structured decision matrix extraction LLM with Zod schema validation
@@ -24,6 +33,13 @@ const structuredDecisionMatrixLLM = createClaudeAgent(decisionMatrixSchema, 'ext
   temperature: 0.2,
   maxTokens: 8000,
 });
+
+/** Flag-on V2 LLM with tighter cap (6K). */
+const structuredDecisionMatrixLLMV2 = createClaudeAgent(
+  decisionMatrixSchema,
+  'extract_decision_matrix_v2',
+  { temperature: 0.2, maxTokens: 6000 },
+);
 
 /**
  * Prompt template for decision matrix extraction
@@ -111,9 +127,23 @@ export async function extractDecisionMatrix(
   conversationHistory: string,
   projectName: string,
   requirements: string,
-  ffbdSummary: string
+  ffbdSummary: string,
+  /** Optional V2 context. Only consulted when `INTAKE_PROMPT_V2=true`. */
+  opts?: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
 ): Promise<DecisionMatrix | null> {
   try {
+    if (intakePromptV2()) {
+      return await extractDecisionMatrixV2(
+        conversationHistory,
+        projectName,
+        opts ?? {},
+      );
+    }
+
     // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
     // This is needed because conversation history may contain JSON-like content with { and }
     const escapeBraces = (str: string) => str.replace(/\{/g, '{{').replace(/\}/g, '}}');
@@ -137,6 +167,63 @@ export async function extractDecisionMatrix(
     console.error('Decision matrix extraction error:', error);
 
     // Return null on failure — callers should preserve existing state
+    return null;
+  }
+}
+
+/**
+ * Build the V2 Decision Matrix prompt body from shared utilities.
+ */
+export function buildDecisionMatrixPromptV2(
+  conversationHistory: string,
+  projectName: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
+): string {
+  const preamble = buildProjectContextPreamble({
+    projectName,
+    projectVision: opts.projectVision ?? '',
+    projectType: opts.projectType ?? null,
+  });
+  const upstream = summarizeUpstream(
+    { extractedData: opts.extractedData },
+    ['NFRs', 'ffbd'],
+  );
+  const priors = renderAtlasPriors(opts.projectType ?? 'unknown', [
+    'latency',
+    'availability',
+    'cost',
+  ]);
+  const conversationBlock =
+    `## Conversation\n${sharedEscapeBraces(conversationHistory)}`;
+  return [preamble, upstream, priors.text, conversationBlock, DECISION_MATRIX_RULES].join(
+    '\n\n',
+  );
+}
+
+async function extractDecisionMatrixV2(
+  conversationHistory: string,
+  projectName: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
+): Promise<DecisionMatrix | null> {
+  try {
+    const promptText = buildDecisionMatrixPromptV2(
+      conversationHistory,
+      projectName,
+      opts,
+    );
+    const result = await structuredDecisionMatrixLLMV2.invoke(promptText);
+    validateDecisionMatrixQuality(result);
+    return result;
+  } catch (error) {
+    console.error('Decision matrix extraction error (v2):', error);
     return null;
   }
 }
