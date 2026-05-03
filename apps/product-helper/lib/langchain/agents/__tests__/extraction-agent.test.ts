@@ -5,14 +5,23 @@
  * Does NOT test LLM extraction (that requires integration tests).
  */
 
+// Capture the most recent prompt text passed to the LLM so the selector
+// tests can assert which prompt branch ran. Lives at module scope so the
+// jest.mock factory can close over it.
+const mockInvoke = jest.fn();
+
 // Mock the LangChain config to avoid requiring API keys
 jest.mock('../../config', () => ({
   createClaudeAgent: jest.fn().mockReturnValue({
-    invoke: jest.fn().mockResolvedValue({}),
+    invoke: (...args: unknown[]) => mockInvoke(...args),
   }),
 }));
 
-import { calculateCompleteness, mergeExtractionData } from '../extraction-agent';
+import {
+  calculateCompleteness,
+  mergeExtractionData,
+  extractProjectData,
+} from '../extraction-agent';
 import type { ExtractionResult } from '../../schemas';
 
 describe('calculateCompleteness', () => {
@@ -302,5 +311,88 @@ describe('mergeExtractionData', () => {
     const merged = mergeExtractionData(existing, newData);
     expect(merged.nonFunctionalRequirements).toHaveLength(1);
     expect(merged.nonFunctionalRequirements![0].category).toBe('security');
+  });
+});
+
+describe('extractProjectData prompt selection (INTAKE_PROMPT_V2)', () => {
+  const stubResult: ExtractionResult = {
+    actors: [],
+    useCases: [],
+    systemBoundaries: { internal: [], external: [] },
+    dataEntities: [],
+    problemStatement: { summary: '', context: '', impact: '', goals: [] },
+    goalsMetrics: [],
+    nonFunctionalRequirements: [],
+  };
+
+  const ORIGINAL_FLAG = process.env.INTAKE_PROMPT_V2;
+
+  beforeEach(() => {
+    mockInvoke.mockReset();
+    mockInvoke.mockResolvedValue(stubResult);
+  });
+
+  afterAll(() => {
+    if (ORIGINAL_FLAG === undefined) {
+      delete process.env.INTAKE_PROMPT_V2;
+    } else {
+      process.env.INTAKE_PROMPT_V2 = ORIGINAL_FLAG;
+    }
+  });
+
+  it('uses legacy prompt when flag is off (default)', async () => {
+    delete process.env.INTAKE_PROMPT_V2;
+    await extractProjectData('user: hello', 'Demo', 'Demo vision', 'context-diagram');
+    expect(mockInvoke).toHaveBeenCalledTimes(1);
+    const promptText = mockInvoke.mock.calls[0][0] as string;
+    // Legacy prompt has the unique "Calculate Artifact Readiness" header
+    expect(promptText).toContain('Calculate Artifact Readiness');
+  });
+
+  it('uses context-diagram slice when flag on + kbStep=context-diagram', async () => {
+    process.env.INTAKE_PROMPT_V2 = 'true';
+    await extractProjectData('user: hello', 'Demo', 'Demo vision', 'context-diagram');
+    const promptText = mockInvoke.mock.calls[0][0] as string;
+    expect(promptText).toContain('extracting context-diagram data');
+    expect(promptText).not.toContain('Calculate Artifact Readiness');
+  });
+
+  it('uses functional-requirements slice when flag on + kbStep=functional-requirements', async () => {
+    process.env.INTAKE_PROMPT_V2 = 'true';
+    await extractProjectData(
+      'user: hello',
+      'Demo',
+      'Demo vision',
+      'functional-requirements',
+    );
+    const promptText = mockInvoke.mock.calls[0][0] as string;
+    expect(promptText).toContain('problem framing');
+  });
+
+  it('falls back to context-diagram slice when kbStep is unmapped (e.g. ffbd)', async () => {
+    process.env.INTAKE_PROMPT_V2 = 'true';
+    const result = await extractProjectData(
+      'user: hello',
+      'Demo',
+      'Demo vision',
+      'ffbd',
+    );
+    expect(result).not.toBeNull();
+    const promptText = mockInvoke.mock.calls[0][0] as string;
+    expect(promptText).toContain('extracting context-diagram data');
+  });
+
+  it('handles empty-array extraction without crashing (no-fabrication path)', async () => {
+    process.env.INTAKE_PROMPT_V2 = 'true';
+    mockInvoke.mockResolvedValueOnce(stubResult);
+    const result = await extractProjectData(
+      'an AI meal planner',
+      'Meal Planner',
+      'AI meal planner',
+      'context-diagram',
+    );
+    expect(result).toEqual(stubResult);
+    expect(result?.actors).toEqual([]);
+    expect(result?.nonFunctionalRequirements).toEqual([]);
   });
 });

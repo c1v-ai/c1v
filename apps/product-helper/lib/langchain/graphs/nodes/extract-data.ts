@@ -87,7 +87,7 @@ export async function extractData(
     // This prevents 20K-token re-extractions on subsequent artifact generation loops.
     const hasCompleteData = (
       state.extractedData.actors.length >= 1 &&
-      state.extractedData.useCases.length >= 5 &&
+      state.extractedData.useCases.length >= 2 &&
       state.extractedData.dataEntities.length >= 1
     );
 
@@ -106,11 +106,15 @@ export async function extractData(
     // [EXTRACT_DEBUG] Before extraction call
     console.log(`[EXTRACT_DEBUG] Calling extractProjectData for project: ${state.projectName}`);
 
-    // Run extraction using the existing extraction agent
+    // Run extraction using the existing extraction agent.
+    // Threads currentKBStep + projectType so the v2 phase-staged selector
+    // (gated by INTAKE_PROMPT_V2) can pick the right prompt slice.
     const newExtraction = await extractProjectData(
       conversationText,
       state.projectName,
-      state.projectVision
+      state.projectVision,
+      state.currentKBStep,
+      state.projectType,
     );
 
     // If extraction failed, preserve existing state

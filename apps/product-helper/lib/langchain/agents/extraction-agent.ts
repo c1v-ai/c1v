@@ -15,7 +15,9 @@
 
 import { createClaudeAgent } from '../config';
 import { extractionSchema, type ExtractionResult } from '../schemas';
-import { extractionPrompt } from '../prompts';
+import { extractionPromptLegacy, EXTRACTION_PROMPTS } from '../prompts';
+import type { KnowledgeBankStep } from '@/lib/education/knowledge-bank';
+import { intakePromptV2 } from '@/lib/config/feature-flags';
 
 /**
  * Structured extraction LLM with Zod schema validation
@@ -44,15 +46,31 @@ const structuredExtractionLLM = createClaudeAgent(extractionSchema, 'extract_prd
 export async function extractProjectData(
   conversationHistory: string,
   projectName: string,
-  projectVision: string
+  projectVision: string,
+  /**
+   * Knowledge-bank step driving prompt selection when `INTAKE_PROMPT_V2` is on.
+   * Defaults to 'context-diagram' for cold-start safety. Unmapped steps fall
+   * back to the 'context-diagram' slice rather than crashing.
+   */
+  kbStep: KnowledgeBankStep = 'context-diagram',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _projectType?: string | null,
 ): Promise<ExtractionResult | null> {
   try {
     // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
     // This is needed because conversation history may contain JSON-like content with { and }
     const escapeBraces = (str: string) => str.replace(/\{/g, '{{').replace(/\}/g, '}}');
 
-    // Format prompt with conversation context
-    const promptText = await extractionPrompt.format({
+    // Select prompt: phase-staged when flag on (with fallback), legacy otherwise.
+    const useV2 = intakePromptV2();
+    const prompt = useV2
+      ? (EXTRACTION_PROMPTS[kbStep] ?? EXTRACTION_PROMPTS['context-diagram']!)
+      : extractionPromptLegacy;
+
+    // Format prompt with conversation context.
+    // Both legacy + v2 slices share the same 4 placeholder names
+    // (projectName, projectVision, conversationHistory, educationBlock).
+    const promptText = await prompt.format({
       projectName: escapeBraces(projectName),
       projectVision: escapeBraces(projectVision),
       conversationHistory: escapeBraces(conversationHistory),
