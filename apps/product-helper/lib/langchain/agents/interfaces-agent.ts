@@ -15,6 +15,15 @@
 import { createClaudeAgent } from '../config';
 import { interfacesSchema, type Interfaces } from '../schemas';
 import { PromptTemplate } from '@langchain/core/prompts';
+import {
+  escapeBraces as sharedEscapeBraces,
+  buildProjectContextPreamble,
+  summarizeUpstream,
+  INTERFACES_RULES,
+} from '../prompts';
+import { renderAtlasPriors } from '../atlas-loader';
+import { intakePromptV2 } from '@/lib/config/feature-flags';
+import type { IntakeState } from '../graphs/types';
 
 /**
  * Structured Interfaces extraction LLM with Zod schema validation
@@ -24,6 +33,13 @@ const structuredInterfacesLLM = createClaudeAgent(interfacesSchema, 'extract_int
   temperature: 0.2,
   maxTokens: 20000,
 });
+
+/** Flag-on V2 LLM with tighter cap (6K). */
+const structuredInterfacesLLMV2 = createClaudeAgent(
+  interfacesSchema,
+  'extract_interfaces_v2',
+  { temperature: 0.2, maxTokens: 6000 },
+);
 
 /**
  * Prompt template for Interfaces extraction
@@ -116,11 +132,28 @@ export async function extractInterfaces(
   conversationHistory: string,
   projectName: string,
   ffbdSummary: string,
-  useCases: string
+  useCases: string,
+  /** Optional V2 context. Only consulted when `INTAKE_PROMPT_V2=true`. */
+  opts?: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
 ): Promise<Interfaces | null> {
   try {
+    if (intakePromptV2()) {
+      return await extractInterfacesV2(
+        conversationHistory,
+        projectName,
+        opts ?? {},
+      );
+    }
+
     // Escape curly braces in inputs to prevent PromptTemplate from interpreting them as variables
     // This is needed because conversation history may contain JSON-like content with { and }
+    // NOTE: legacy bug at line 124 — `}` replace is a no-op. Preserved verbatim
+    // because the flag-off path must remain byte-identical. Flag-on uses the
+    // shared (correct) escapeBraces from prompts.ts.
     const escapeBraces = (str: string) => str.replace(/\{/g, '{{').replace(/\}/g, '}');
 
     // Format prompt with project context
@@ -142,6 +175,62 @@ export async function extractInterfaces(
     console.error('Interfaces extraction error:', error);
 
     // Return null on failure — callers should preserve existing state
+    return null;
+  }
+}
+
+/**
+ * Build the V2 Interfaces prompt body from shared utilities.
+ */
+export function buildInterfacesPromptV2(
+  conversationHistory: string,
+  projectName: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
+): string {
+  const preamble = buildProjectContextPreamble({
+    projectName,
+    projectVision: opts.projectVision ?? '',
+    projectType: opts.projectType ?? null,
+  });
+  const upstream = summarizeUpstream(
+    { extractedData: opts.extractedData },
+    ['ffbd', 'decisionMatrix'],
+  );
+  const priors = renderAtlasPriors(opts.projectType ?? 'unknown', [
+    'latency',
+    'availability',
+  ]);
+  const conversationBlock =
+    `## Conversation\n${sharedEscapeBraces(conversationHistory)}`;
+  return [preamble, upstream, priors.text, conversationBlock, INTERFACES_RULES].join(
+    '\n\n',
+  );
+}
+
+async function extractInterfacesV2(
+  conversationHistory: string,
+  projectName: string,
+  opts: {
+    extractedData?: Partial<IntakeState['extractedData']>;
+    projectType?: string | null;
+    projectVision?: string;
+  },
+): Promise<Interfaces | null> {
+  try {
+    const promptText = buildInterfacesPromptV2(
+      conversationHistory,
+      projectName,
+      opts,
+    );
+    const result = await structuredInterfacesLLMV2.invoke(promptText);
+    validateInterfacesQuality(result);
+    return result;
+  } catch (error) {
+    console.error('Interfaces extraction error (v2):', error);
     return null;
   }
 }
