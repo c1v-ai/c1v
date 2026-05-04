@@ -37,13 +37,6 @@ import {
   evaluateEngineStory,
   type SubstrateEvaluation,
 } from './_engine-substrate';
-import {
-  buildProjectContextPreamble,
-  summarizeUpstream,
-  NFR_RULES,
-} from '../../prompts';
-import { renderAtlasPriors } from '../../atlas-loader';
-import { intakePromptV2 } from '@/lib/config/feature-flags';
 
 const STORY_ID = 'm2-nfr';
 const MODULE = 'm2' as const;
@@ -55,39 +48,8 @@ export interface GenerateNfrLlmAgent {
    * v2.1 LLM-only NFR agent contract: takes intake-shape input, returns
    * the NFR row. Per the contract pin, this MUST yield an NFR slice that
    * conforms to the M2 schema.
-   *
-   * Optional second argument `promptContext` is the V2 prompt body assembled
-   * from shared utilities (preamble + upstream summary + atlas priors +
-   * NFR_RULES). It is supplied only when `INTAKE_PROMPT_V2=true`. Agents that
-   * use it should set their LLM `maxTokens` cap to 6000 on the V2 path; the
-   * legacy path retains the agent's pre-existing cap.
    */
-  generate(
-    state: IntakeState,
-    promptContext?: string,
-  ): Promise<{ nfrs: unknown[]; constants?: unknown[] }>;
-}
-
-/**
- * Build the V2 NFR prompt context from shared utilities. Exported for tests.
- */
-export function buildNfrPromptContextV2(state: IntakeState): string {
-  const preamble = buildProjectContextPreamble({
-    projectName: state.projectName,
-    projectVision: state.projectVision,
-    projectType: state.projectType ?? null,
-  });
-  const upstream = summarizeUpstream({ extractedData: state.extractedData }, [
-    'actors',
-    'useCases',
-    'systemBoundaries',
-    'ffbd',
-  ]);
-  const priors = renderAtlasPriors(state.projectType ?? 'unknown', [
-    'latency',
-    'availability',
-  ]);
-  return [preamble, upstream, priors.text, NFR_RULES].join('\n\n');
+  generate(state: IntakeState): Promise<{ nfrs: unknown[]; constants?: unknown[] }>;
 }
 
 export interface CreateGenerateNfrNodeOptions {
@@ -152,12 +114,7 @@ async function runLlmOnly(
     };
   }
 
-  // V2: build a fresh prompt context from shared utilities and pass it to
-  // the injected agent. Flag-off path passes nothing (legacy agent prompt).
-  const promptContext = intakePromptV2()
-    ? buildNfrPromptContextV2(state)
-    : undefined;
-  const result = await agent.generate(state, promptContext);
+  const result = await agent.generate(state);
   return {
     nfrEnvelope: {
       nfr_engine_contract_version: NFR_ENGINE_CONTRACT_VERSION,
