@@ -417,24 +417,6 @@ Interface specification extraction rules:
   message with its IF-ID.
 `.trim();
 
-export const NFR_RULES = `
-NFR extraction rules:
-
-- Capture only NFRs the user has stated or that are unambiguously implied by
-  a stated requirement (e.g. "must be PCI compliant" implies the compliance
-  NFR). Do not append a generic "every system needs availability" baseline.
-- Each NFR has: category (performance | security | scalability | reliability
-  | usability | maintainability | compliance), requirement (specific
-  statement), priority (critical | high | medium | low). Metrics and targets
-  are optional and should reflect what the user actually quantified.
-- When the user gestures at a quality attribute without quantifying it
-  ("should be fast"), record the category and requirement but leave metric
-  and target null. The chat bridge will surface the gap as an open question
-  rather than guessing a number.
-- Avoid stacking duplicate NFRs in the same category unless they describe
-  meaningfully different concerns (e.g. read latency vs write latency).
-`.trim();
-
 // ============================================================
 // Legacy export (preserved until INTAKE_PROMPT_V2 flips on)
 // ============================================================

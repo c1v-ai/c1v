@@ -15,7 +15,6 @@ import {
   QFD_RULES,
   DECISION_MATRIX_RULES,
   INTERFACES_RULES,
-  NFR_RULES,
   extractionPromptLegacy,
 } from '../prompts';
 import { PromptTemplate } from '@langchain/core/prompts';
@@ -169,7 +168,6 @@ describe('industry-standard purge', () => {
     ['QFD_RULES', QFD_RULES],
     ['DECISION_MATRIX_RULES', DECISION_MATRIX_RULES],
     ['INTERFACES_RULES', INTERFACES_RULES],
-    ['NFR_RULES', NFR_RULES],
   ];
 
   it.each(ruleBlocks)('%s does not contain "industry-standard"', (_name, body) => {
