@@ -20,11 +20,14 @@ jest.mock('@/lib/chat/system-question-bridge', () => ({
   surfaceOpenQuestion: jest.fn().mockResolvedValue(undefined),
 }));
 
-import { describe, it, expect, jest } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
-import { detectExtractionGuards } from '../extract-data';
+import { detectExtractionGuards, extractData } from '../extract-data';
 import type { IntakeState } from '../../types';
 import type { ExtractionResult } from '../../../schemas';
+
+const { surfaceOpenQuestion } = jest.requireMock('@/lib/chat/system-question-bridge') as { surfaceOpenQuestion: jest.Mock };
+const { persistArtifact } = jest.requireMock('@/lib/langchain/graphs/nodes/_persist-artifact') as { persistArtifact: jest.Mock };
 
 // Minimal helpers ----------------------------------------------------------
 
@@ -145,5 +148,64 @@ describe('detectExtractionGuards', () => {
     });
     const guards = detectExtractionGuards(state, data);
     expect(guards.find(g => g.kind === 'fabrication')).toBeUndefined();
+  });
+});
+
+// ============================================================
+// T0 — NFR/constants contract-pin phase gate
+// ============================================================
+
+describe('emitNfrContractEnvelope phase-gate (T0)', () => {
+  const { extractProjectData, mergeExtractionData } = jest.requireMock(
+    '@/lib/langchain/agents/extraction-agent',
+  ) as { extractProjectData: jest.Mock; mergeExtractionData: jest.Mock };
+
+  beforeEach(() => {
+    surfaceOpenQuestion.mockClear();
+    persistArtifact.mockClear();
+    extractProjectData.mockClear();
+    mergeExtractionData.mockClear();
+  });
+
+  function makeContextDiagramState(over: Partial<IntakeState> = {}): IntakeState {
+    return makeState({
+      currentKBStep: 'context-diagram',
+      projectId: 'proj-test',
+      messages: [new HumanMessage('I want to build a meal planner app.')],
+      ...over,
+    });
+  }
+
+  it('Test A — context-diagram + incomplete data: no surfaceOpenQuestion or persistArtifact', async () => {
+    // hasCompleteData = false → extraction path; mock returns null so we preserve state
+    extractProjectData.mockResolvedValueOnce(null);
+
+    const state = makeContextDiagramState();
+    await extractData(state);
+
+    expect(surfaceOpenQuestion).not.toHaveBeenCalled();
+    expect(persistArtifact).not.toHaveBeenCalled();
+  });
+
+  it('Test B — context-diagram + complete data: no surfaceOpenQuestion or persistArtifact', async () => {
+    // hasCompleteData = true → short-circuit path skips extraction, calls emitNfrContractEnvelope
+    const state = makeContextDiagramState({
+      extractedData: {
+        actors: [{ name: 'User', role: 'Primary', description: 'x' }],
+        useCases: [
+          { id: 'UC1', name: 'Browse recipes', description: 'x', actors: [] },
+          { id: 'UC2', name: 'Save meal plan', description: 'x', actors: [] },
+        ],
+        systemBoundaries: { internal: [], external: [] },
+        dataEntities: [{ name: 'Recipe', description: 'x', attributes: [] }],
+        goalsMetrics: [],
+        nonFunctionalRequirements: [],
+      } as unknown as IntakeState['extractedData'],
+    });
+
+    await extractData(state);
+
+    expect(surfaceOpenQuestion).not.toHaveBeenCalled();
+    expect(persistArtifact).not.toHaveBeenCalled();
   });
 });

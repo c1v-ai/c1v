@@ -194,6 +194,15 @@ async function emitNfrContractEnvelope(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mergedData: any,
 ): Promise<void> {
+  const phaseAllowsNfrSurfacing =
+    state.currentKBStep === 'functional-requirements' ||
+    state.currentKBStep === 'sysml-activity-diagram' ||
+    state.currentKBStep === 'ffbd' ||
+    state.currentKBStep === 'decision-matrix' ||
+    state.currentKBStep === 'qfd-house-of-quality' ||
+    state.currentKBStep === 'interfaces';
+  if (!phaseAllowsNfrSurfacing) return;
+
   const ed = mergedData as Record<string, unknown> | undefined;
   const nfrsRaw = ed?.['nonFunctionalRequirements'] as unknown[] | undefined;
   const nfrs = nfrsRaw?.length ? nfrsRaw : null; // null → null-path (surfaceOpenQuestion); non-empty array → success-path (fixed INTK-01)
