@@ -142,6 +142,11 @@ Eleven Zod schemas at `lib/langchain/schemas/{module-2,module-3,module-4,module-
 - **LLM provider:** Anthropic Claude via `@langchain/anthropic` (not OpenAI)
 - **Route groups:** `(marketing)` = public, `(dashboard)` = authenticated, `(login)` = auth flows
 
+## Invariants
+
+- **Atlas (KB-9) is paid-tier only** — consumed exclusively at M4 Decision Network + SYN Architecture Recommendation. Free-tier paths (intake fan-out, draft agents, arch-preview) emit atlas-shaped stubs (`provisional: true`, `sample_size: 0`) — never call `renderAtlasPriors` against pgvector with `kb_source='atlas'`. Future early-atlas binding tracked in `plans/post-v2.2.3-followups.md`.
+- **Decision Matrix ≠ Decision Network** — Decision Matrix lives in Scope (go/no-go, free, populated by intake-side `decision-matrix-agent.ts`). Decision Network is the paid 19-phase Opus-4.7 keystone (atlas-bound, in System Architecture Recommendation). Easy to conflate; agent reference table at `apps/product-helper/docs/architecture/data-flow-diagram.html` is authoritative.
+
 ## Deployed Features
 
 - **Marketing Landing Page** (Feb 22, 2026) — 9 components, framer-motion animations, public at `/`
@@ -192,3 +197,7 @@ Active for v2 cycle. See `plans/c1v-MIT-Crawley-Cornell.md` §9 + v2 §15.5.
 - **NFR envelope field names (fixed 2026-05-02):** `emitNfrContractEnvelope` in `lib/langchain/graphs/nodes/extract-data.ts` reads `mergedData.nonFunctionalRequirements` (NOT `nfrs` or `constants` — those fields don't exist on `ExtractionResult`). Empty array is coerced to `null` so `emitOne` takes the null-path correctly. `source` tag for the constants path is `'m2_constants'` (not `'m2_nfr'`).
 - **`transformToValidationData` is exported (fixed 2026-05-02):** `lib/langchain/graphs/nodes/check-prd-spec.ts` exports this function. `outOfScope` maps from `extractedData.systemBoundaries.outOfScope ?? []` (no longer hardcoded `[]`). `inScope` prefers `extractedData.systemBoundaries.inScope` with `internal` as fallback.
 - **HG7/HG8 are intentional soft gates:** `lib/validation/validator.ts` gates HG7 (vision metrics) and HG8 (constraints) always return `passed: true`. This is intentional — hardening them to blocking requires extraction to reliably populate NFR/constraint fields first (INTK-04 deferred).
+- **Read plans BEFORE touching code:** Always read `.cursor/plans/` AND `.planning/phases/` before implementing anything in product-helper. Existing architectural decisions, in-flight roadmap phases, and verified fixes can be silently invalidated by rushing to code. Write a plan file first, get approval, then execute.
+- **LangGraph token burn: grep ALL agent files for maxTokens overrides** — `extraction-agent.ts` AND `decision-matrix-agent.ts` both had `maxTokens: 20000` (5× `LLM_DEFAULTS.MAX_TOKENS_EXTRACTION = 4000`). When debugging token burn, check every file in `lib/langchain/agents/` not just the one showing in LangSmith.
+- **Streaming CDN idle timeout ≠ `maxDuration`:** `maxDuration: 600` controls the Vercel function timeout only. A streaming connection silent >60s will 504 at the CDN even if the function is still running. Any graph node that generates output without streaming (e.g. `extract_data` LLM call) needs a heartbeat `<!--ping-->` every 15s.
+- **`ARTIFACT_PHASE_SEQUENCE` includes Steps 3-6 (15 total):** The sequence has 7 core KB phases + 8 Steps 3-6 phases added in v2.1 Wave A. Tests asserting only 7 phases are stale. Use `git log` on the test file before dismissing "pre-existing" failures — they may be real drift.
