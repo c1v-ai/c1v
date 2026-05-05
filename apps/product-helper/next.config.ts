@@ -1,17 +1,17 @@
 // Validate environment at build/start time
 import '@/lib/config/env';
 
+import path from 'node:path';
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: '../../',
-  },
+  outputFileTracingRoot: path.resolve(__dirname, '../..'),
   // Externalize LangChain packages for server-side rendering
   // This prevents bundling which causes duplicate module instances and
   // breaks isInstance/prototype checks. The packages use Node.js native ESM.
   serverExternalPackages: [
+    'postgres',
     // Core LangChain packages - externalized to use Node.js native resolution
     '@langchain/core',
     '@langchain/anthropic',
@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
   // any `node:` import in client bundles — pptxgenjs's browser code paths never
   // touch them at runtime (the export is invoked behind a click handler in a
   // 'use client' component).
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer, webpack, nextRuntime }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...(config.resolve.fallback ?? {}),
@@ -46,6 +46,18 @@ const nextConfig: NextConfig = {
           resourceRegExp: /^node:/,
         }),
       );
+    }
+    if (isServer && nextRuntime === 'edge') {
+      config.resolve.fallback = {
+        ...(config.resolve.fallback ?? {}),
+        net: false,
+        tls: false,
+        fs: false,
+        crypto: false,
+        stream: false,
+        dns: false,
+        perf_hooks: false,
+      };
     }
     return config;
   },

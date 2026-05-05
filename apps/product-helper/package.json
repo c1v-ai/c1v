@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:turbo": "next dev --turbopack",
+    "dev:turbo": "next dev --turbopack --experimental-turbopack-root=../../",
     "build": "next build",
     "start": "next start",
     "test": "jest",
@@ -27,6 +27,9 @@
     "db:reset": "supabase db reset",
     "schemas:generate": "npx tsx lib/langchain/schemas/generate-all.ts",
     "or": "tsx scripts/or.ts",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test:unit": "jest --testPathIgnorePatterns='__tests__/db/' --testPathIgnorePatterns='integration\\.test\\.'",
+    "test:integration": "jest --testPathPattern='(__tests__/db/|integration\\.test\\.)'",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -88,6 +91,10 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.5.9",
     "@jest/globals": "30.2.0",
     "@playwright/test": "1.57.0",
     "@types/jest": "30.0.0",

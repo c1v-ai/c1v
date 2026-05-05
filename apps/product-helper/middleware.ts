@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  let res = NextResponse.next();
+  const res = NextResponse.next();
 
   // Security headers (OWASP best practices)
   res.headers.set('X-Frame-Options', 'DENY');

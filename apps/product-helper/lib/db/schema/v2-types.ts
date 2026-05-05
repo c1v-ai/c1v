@@ -35,7 +35,7 @@ export interface AlternativeFlow {
 }
 
 /**
- * Enhanced Use Case with full Epic.dev parity
+ * Enhanced Use Cases
  */
 export interface EnhancedUseCase {
   id: string;
