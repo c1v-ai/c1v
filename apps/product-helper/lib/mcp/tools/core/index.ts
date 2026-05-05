@@ -5,6 +5,14 @@
  * through the Model Context Protocol.
  */
 
+import { registerGetPrd } from './get-prd';
+import { registerGetDatabaseSchema } from './get-database-schema';
+import { registerGetTechStack } from './get-tech-stack';
+import { registerGetUserStories } from './get-user-stories';
+import { registerGetCodingContext } from './get-coding-context';
+import { registerGetProjectArchitecture } from './get-project-architecture';
+import { registerGetDiagrams } from './get-diagrams';
+
 // Tool exports
 export { registerGetPrd, definition as getPrdDefinition, handler as getPrdHandler } from './get-prd';
 export {
@@ -53,15 +61,6 @@ export {
  * ```
  */
 export function registerAllCoreTools(): void {
-  // Import and register each tool
-  const { registerGetPrd } = require('./get-prd');
-  const { registerGetDatabaseSchema } = require('./get-database-schema');
-  const { registerGetTechStack } = require('./get-tech-stack');
-  const { registerGetUserStories } = require('./get-user-stories');
-  const { registerGetCodingContext } = require('./get-coding-context');
-  const { registerGetProjectArchitecture } = require('./get-project-architecture');
-  const { registerGetDiagrams } = require('./get-diagrams');
-
   registerGetPrd();
   registerGetDatabaseSchema();
   registerGetTechStack();
