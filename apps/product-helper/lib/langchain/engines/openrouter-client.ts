@@ -50,9 +50,27 @@ export interface UsageRecord {
   cost_usd: number;
 }
 
+/** OpenRouter reasoning/thinking token configuration. */
+export interface ReasoningOptions {
+  /** Effort level — maps to provider-specific budget (Anthropic: token count; OpenAI/Grok: % of max_tokens). */
+  effort?: 'high' | 'xhigh' | 'medium' | 'low' | 'minimal' | 'none';
+  /**
+   * Direct token budget for providers that support it (Anthropic: min 1024, max 128000).
+   * Ignored by effort-based providers.
+   */
+  max_tokens?: number;
+  /**
+   * When true, reasoning tokens are consumed but not returned in the response.
+   * Useful when you want the quality lift without paying streaming bandwidth.
+   */
+  exclude?: boolean;
+}
+
 export interface ChatOptions {
   temperature?: number;
   max_tokens?: number;
+  /** OpenRouter reasoning / extended-thinking configuration. */
+  reasoning?: ReasoningOptions;
   /** Abort signal forwarded to `fetch`. */
   signal?: AbortSignal;
   /** Called once per successful (non-streaming) call with usage + cost. */
@@ -68,6 +86,13 @@ export interface ChatResult {
   model: string;
   usage: UsageRecord;
   finish_reason: string | null;
+  /** Plain-text reasoning content, when the model returns it and `exclude` is not true. */
+  reasoning?: string;
+  /**
+   * Structured reasoning array from OpenRouter (text / summary / encrypted blocks).
+   * Pass this unchanged in subsequent turns to preserve reasoning continuity.
+   */
+  reasoning_details?: unknown[];
 }
 
 /**
@@ -152,7 +177,12 @@ interface OpenRouterResponse {
   id: string;
   model: string;
   choices: Array<{
-    message: { role: string; content: string };
+    message: {
+      role: string;
+      content: string;
+      reasoning?: string;
+      reasoning_details?: unknown[];
+    };
     finish_reason: string | null;
   }>;
   usage?: {
@@ -177,6 +207,7 @@ function buildRequestBody(
   };
   if (opts.temperature !== undefined) body.temperature = opts.temperature;
   if (opts.max_tokens !== undefined) body.max_tokens = opts.max_tokens;
+  if (opts.reasoning !== undefined) body.reasoning = opts.reasoning;
 
   if (hasCacheHints && model.startsWith('anthropic/')) {
     // OpenRouter pass-through for Anthropic prompt caching.
@@ -217,12 +248,15 @@ function parseResult(
     cost_usd: json.usage?.total_cost ?? 0,
   };
   opts.onUsage?.(usage);
-  return {
+  const result: ChatResult = {
     content: choice.message.content,
     model: usage.model,
     usage,
     finish_reason: choice.finish_reason ?? null,
   };
+  if (choice.message.reasoning !== undefined) result.reasoning = choice.message.reasoning;
+  if (choice.message.reasoning_details !== undefined) result.reasoning_details = choice.message.reasoning_details;
+  return result;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
