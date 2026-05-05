@@ -90,13 +90,14 @@ jobs:
           CI: true
 
       - name: Upload Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/product-helper/coverage/coverage-final.json
           flags: unit
           name: unit-tests
+          slug: c1v-ai/c1v
 
   test-integration:
     name: Integration Tests
@@ -146,13 +147,14 @@ jobs:
           POSTGRES_URL: postgresql://test:test@localhost:5432/c1v_test
 
       - name: Upload Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/product-helper/coverage/coverage-final.json
           flags: integration
           name: integration-tests
+          slug: c1v-ai/c1v
 
   test-e2e:
     name: E2E Tests

@@ -46,6 +46,14 @@
       "dependsOn": ["^lint"],
       "outputs": []
     },
+    "test:unit": {
+      "cache": false,
+      "outputs": ["coverage/**"]
+    },
+    "test:integration": {
+      "cache": false,
+      "outputs": ["coverage/**"]
+    },
     "clean": {
       "cache": false
     },
