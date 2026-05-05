@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Artifact Quality Map — c1v Pipeline</title>
+<style>
+  body { font-family: Consolas, 'Courier New', monospace; background: #0B2C29; color: #FBFCFC; margin: 0; padding: 1.5rem; font-size: 12px; }
+  h1 { font-family: 'Space Grotesk', Helvetica, Arial, sans-serif; color: #F18F01; font-size: 1.6rem; margin-bottom: .25rem; }
+  .subtitle { color: #5998C5; margin-bottom: 1.5rem; font-size: .85rem; }
+  .legend { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; font-size: .8rem; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: .75rem; font-weight: bold; }
+  .b-live   { background: #1a6b3a; color: #a8f0c0; }
+  .b-gap    { background: #6b5700; color: #ffe08a; }
+  .b-broken { background: #6b1a1a; color: #ffaaaa; }
+  .b-manual { background: #1a3a6b; color: #aaccff; }
+
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  col.c1  { width: 130px; }
+  col.c2  { width: 180px; }
+  col.c3  { width: 120px; }
+  col.c4  { width: 120px; }
+  col.c5  { width: 200px; }
+  col.c6  { width: 260px; }
+  col.c7  { width: 200px; }
+
+  th { background: #0d1f1d; color: #F18F01; padding: 8px 6px; text-align: left; border-bottom: 2px solid #F18F01; font-family: 'Space Grotesk', Helvetica, sans-serif; font-size: .8rem; position: sticky; top: 0; }
+  td { padding: 7px 6px; vertical-align: top; border-bottom: 1px solid #1a3a36; word-wrap: break-word; line-height: 1.45; }
+  tr:hover td { background: #102623; }
+
+  .module { font-family: 'Space Grotesk', Helvetica, sans-serif; font-weight: bold; font-size: .75rem; color: #F18F01; margin-bottom: 3px; }
+  .art-name { font-weight: bold; font-size: .9rem; color: #FBFCFC; }
+
+  a { color: #5998C5; text-decoration: none; font-size: .78rem; word-break: break-all; }
+  a:hover { color: #F18F01; }
+
+  .fn-name { color: #a8f0c0; font-size: .8rem; }
+  .desc { color: #c0d8d4; font-size: .8rem; }
+
+  .path-group { margin-bottom: 6px; }
+  .path-label { color: #5998C5; font-size: .7rem; margin-bottom: 1px; }
+
+  .comment-cell { background: #060f0e; min-height: 40px; }
+
+  tr.live td:first-child   { border-left: 3px solid #1a6b3a; }
+  tr.gap td:first-child    { border-left: 3px solid #b89000; }
+  tr.broken td:first-child { border-left: 3px solid #9b1a1a; }
+  tr.manual td:first-child { border-left: 3px solid #1a3a9b; }
+  tr.assembly td:first-child { border-left: 3px solid #5998C5; }
+</style>
+</head>
+<body>
+
+<h1>Artifact Quality Map</h1>
+<div class="subtitle">c1v pipeline — extraction → Python PPT/Excel/PDF — sidecar deployment</div>
+
+<div class="legend">
+  <span class="badge b-live">LIVE</span> registered in sidecar ARTIFACT_REGISTRY, deployed to Cloud Run &nbsp;|&nbsp;
+  <span class="badge b-gap">GENERATOR EXISTS / NOT DEPLOYED</span> script in scripts/artifact-generators/, not in sidecar registry &nbsp;|&nbsp;
+  <span class="badge b-broken">BROKEN</span> registered in sidecar but generator doesn't implement the target &nbsp;|&nbsp;
+  <span class="badge b-manual">MANUAL ONLY</span> high-quality script lives in .planning/phases/14/, not wired to pipeline
+</div>
+
+<table>
+<colgroup>
+  <col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7">
+</colgroup>
+<thead>
+<tr>
+  <th>ARTIFACT NAME</th>
+  <th>FUNCTIONS THAT BUILD IT</th>
+  <th>FEEDS INTO (downstream)</th>
+  <th>FED BY (upstream)</th>
+  <th>WHAT THE CURRENT FUNCTION DOES</th>
+  <th>FULL PATH — PY / Excel / JSON</th>
+  <th>COMMENTS / UPGRADE REQUIREMENTS</th>
+</tr>
+</thead>
+<tbody>
+
+<!-- ═══════════════════════════════════════════════════════ M1 DFD -->
+<tr class="gap">
+<td>
+  <div class="module">M1</div>
+  <div class="art-name">Data Flow Diagram</div>
+  <div style="margin-top:4px"><span class="badge b-gap">GENERATOR EXISTS / NOT DEPLOYED</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-dfd.py</div>
+  <div class="desc" style="margin-top:4px">Sidecar: <em>not registered</em><br>Manual: create_dfd_thg_v2.py</div>
+</td>
+<td class="desc">M7 interfaces (DFD context), Synthesis recommendation</td>
+<td class="desc">M1 intake: actors, system boundary, context diagram JSON</td>
+<td class="desc">gen-dfd.py exists in generators dir but has no sidecar ARTIFACT_REGISTRY entry and no output format documented. Manual script (create_dfd_thg_v2.py) builds from scratch with python-pptx. Gold standard DFD lives in module-7-interfaces/ as a PPTX.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-dfd.py">/scripts/artifact-generators/gen-dfd.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manual script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/6-software-define-interface-LLM-kb/create_dfd_thg_v2.py">/phases/14-…/6-interfaces/create_dfd_thg_v2.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard output:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-7-interfaces/data_flow_diagram.pptx">/kb-upgrade-v2/module-7-interfaces/data_flow_diagram.pptx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M2 UCBD -->
+<tr class="gap">
+<td>
+  <div class="module">M2</div>
+  <div class="art-name">UCBD / Requirements Table</div>
+  <div style="margin-top:4px"><span class="badge b-gap">GENERATOR EXISTS / NOT DEPLOYED</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-ucbd.py</div>
+  <div class="desc" style="margin-top:4px">Sidecar: <em>not registered</em><br>Manual: generate_ucbd_pptx.py</div>
+</td>
+<td class="desc">M3 FFBD (functions derived from requirements), M6 HoQ front porch (PCs), M8 FMEA (failure modes target requirements)</td>
+<td class="desc">M1 scope (use cases → requirements), intake extractedData: requirements_table, constants_table, nfrs</td>
+<td class="desc">gen-ucbd.py exists but is not registered in the sidecar. Manual script (generate_ucbd_pptx.py) builds UCBD slides by writing into UCBD_Template_and_Sample.xlsx via openpyxl. Manually-produced UCBDs (Cornell format) are the highest-quality output — full table with colored bands, formulas, and proper column layout.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-ucbd.py">/scripts/artifact-generators/gen-ucbd.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manual script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/2-dev-sys-reqs-for-kb-llm-software/generate_ucbd_pptx.py">/phases/14-…/2-requirements/generate_ucbd_pptx.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (xlsx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/2-requirements/03-templates/UCBD_Template_and_Sample.xlsx">/phases/13-…/2-requirements/03-templates/UCBD_Template_and_Sample.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (filled):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-2-requirements/diagrams/c1v_UCBDs.pptx">/kb-upgrade-v2/module-2-requirements/diagrams/c1v_UCBDs.pptx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Cornell template (xlsx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/Build Product Requirements Templates and Docs/CESYS522_UCBD_Template_and_Sample (1).xlsx">/Build Product…/CESYS522_UCBD_Template_and_Sample (1).xlsx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M3 FFBD -->
+<tr class="manual">
+<td>
+  <div class="module">M3</div>
+  <div class="art-name">FFBD (Functional Flow Block Diagram)</div>
+  <div style="margin-top:4px"><span class="badge b-manual">MANUAL ONLY</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-ffbd.py</div>
+  <div class="desc" style="margin-top:4px">Sidecar: <em>not registered</em><br>Manual: create_ffbd_thg_v3.py</div>
+</td>
+<td class="desc">M4 Decision Network (candidate architecture choices arise from functional failures), M5 Form-Function (function inventory), M8 FMEA (failure modes per function)</td>
+<td class="desc">M2 requirements (functional requirements → FFBD functions), ffbd.v1.json</td>
+<td class="desc">gen-ffbd.py exists in generators but is not registered in the sidecar. Manual script create_ffbd_thg_v3.py writes into the gold-standard FFBD_Template - MASTER.pptx using python-pptx. The template has meticulously laid-out swim lanes, AND/OR gates, and box connectivity. Current generator builds from scratch, producing a visually inferior result vs the template-fill approach David used manually.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-ffbd.py">/scripts/artifact-generators/gen-ffbd.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manual script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/3-ffbd-llm-kb/create_ffbd_thg_v3.py">/phases/14-…/3-ffbd/create_ffbd_thg_v3.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Master template (PPTX):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/3-ffbd/03-templates/FFBD_Template - MASTER.pptx">/phases/13-…/3-ffbd/03-templates/FFBD_Template - MASTER.pptx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard output:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/M3-ffbd.pptx">/plans/dogfooding-artifact-deck/portfolio/M3-ffbd.pptx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">JSON schema:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-3-ffbd/">/kb-upgrade-v2/module-3-ffbd/</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M4 Decision Network XLSX -->
+<tr class="live">
+<td>
+  <div class="module">M4</div>
+  <div class="art-name">Decision Network (xlsx + svg)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-decision-net.py</div>
+  <div class="desc" style="margin-top:4px">Orchestrator adapter: _adapt_decision_network()<br>Sidecar kinds: decision_network_xlsx, decision_network_svg</div>
+</td>
+<td class="desc">Synthesis recommendation (derivation chain D-01–D-04), M8 FMEA residual (architecture anchor per failure mode)</td>
+<td class="desc">M3 FFBD (candidate function failures drive architecture choices), M6 HoQ (engineering characteristics → criteria weights), decision_network.v1.json</td>
+<td class="desc">Builds scoring matrix xlsx (alternatives × criteria with utility scores) and SVG DAG via networkx + matplotlib entirely from scratch — no template fill. Adapter _adapt_decision_network() normalises canonical decision_network.v1 shape → flat decisions/alternatives/criteria/scores dict. Does NOT produce PPTX. Gold standard in dogfooding portfolio uses a manually-built Excel with coloured cells, utility bar chart, and Pareto frontier plot.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-decision-net.py">/scripts/artifact-generators/gen-decision-net.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Orchestrator adapter:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">/services/python-sidecar/orchestrator.py</a> — _adapt_decision_network() line ~172
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (xlsx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/4-decision-net-crawley-on-cornell/03-templates/decision-matrix-template.xlsx">/phases/13-…/4-decision-net/03-templates/decision-matrix-template.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (filled):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/M4-decision-network.xlsx">/plans/dogfooding-artifact-deck/portfolio/M4-decision-network.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">JSON (canonical):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-4-decision-net/">/kb-upgrade-v2/module-4-decision-net/ (decision_network.v1.json)</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M5 Form-Function -->
+<tr class="live">
+<td>
+  <div class="module">M5</div>
+  <div class="art-name">Form/Function Map (xlsx + svg + mmd)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-form-function.py</div>
+  <div class="desc" style="margin-top:4px">Orchestrator adapter: _adapt_form_function()<br>Sidecar kinds: form_function_map_xlsx, form_function_map_svg, form_function_map_mmd</div>
+</td>
+<td class="desc">M7 interfaces (what components connect to what), Synthesis (form-function informs selected architecture)</td>
+<td class="desc">M3 FFBD (functions list), M4 Decision Network (winning forms = architecture components), form_function_map.v1.json</td>
+<td class="desc">Builds Pugh-style quality matrix xlsx (functions × forms, 1–5 Likert), bipartite SVG (networkx + matplotlib), and Mermaid concept-expansion tree. Adapter _adapt_form_function() normalises canonical form_function_map.v1 phases (phase_1_form_inventory, phase_2_function_inventory, phase_3_concept_mapping_matrix) into flat functions/forms/mappings. Entirely from scratch — no template file used.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-form-function.py">/scripts/artifact-generators/gen-form-function.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Orchestrator adapter:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">/services/python-sidecar/orchestrator.py</a> — _adapt_form_function() line ~260
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard output:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/M5-form-function.xlsx">/plans/dogfooding-artifact-deck/portfolio/M5-form-function.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">JSON (canonical):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-5-formfunction/">/kb-upgrade-v2/module-5-formfunction/ (form_function_map.v1.json)</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M6 HoQ -->
+<tr class="live">
+<td>
+  <div class="module">M6</div>
+  <div class="art-name">House of Quality / QFD (xlsx)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-qfd.py</div>
+  <div class="desc" style="margin-top:4px">Orchestrator adapter: _adapt_hoq()<br>Sidecar kind: hoq_xlsx</div>
+</td>
+<td class="desc">M4 Decision Network (EC targets → alternative weighting criteria), Synthesis recommendation (HoQ targets embedded in recommendation)</td>
+<td class="desc">M2 requirements (PCs = customer requirements = front porch rows), M1 system performance goals, hoq.v1.json</td>
+<td class="desc">TEMPLATE-FILL APPROACH: gen-qfd.py loads QFD-Template.xlsx and writes values into hardcoded cell addresses (B2, B33–B38 front porch, EC columns, roof lower triangle, back porch AE–AI, basement C46–C47). Adapter _adapt_hoq() normalises hoq.v1 phases into the legacy flat dict. The QFD-Template.xlsx has full formatting, coloured bands, conditional formatting, merged cells — quality depends entirely on that template. Gold standard c1v_QFD.xlsx was hand-filled in Microsoft Excel with full colour and formula support.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-qfd.py">/scripts/artifact-generators/gen-qfd.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Orchestrator adapter:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">/services/python-sidecar/orchestrator.py</a> — _adapt_hoq() line ~318
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (xlsx) — CRITICAL:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/6-hoq/03-templates/QFD-Template.xlsx">/phases/13-…/6-hoq/03-templates/QFD-Template.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Filled example:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/6-hoq/04-filled-examples/QFD_FILLED_TEST.xlsx">/phases/13-…/6-hoq/04-filled-examples/QFD_FILLED_TEST.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (kb-upgrade-v2):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-6-qfd/c1v_QFD.xlsx">/kb-upgrade-v2/module-6-qfd/c1v_QFD.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Cell map reference:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/5-HoQ_for_software_sys_design/TEMPLATE_CELL-MAP.md">/phases/14-…/5-HoQ/TEMPLATE_CELL-MAP.md</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M7 N2 -->
+<tr class="live">
+<td>
+  <div class="module">M7</div>
+  <div class="art-name">N-Squared Chart (xlsx)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+  <div class="desc" style="margin-top:4px">Note: PPTX target explicitly NOT implemented in gen-n2.py</div>
+</td>
+<td>
+  <div class="fn-name">gen-n2.py</div>
+  <div class="desc" style="margin-top:4px">Manual: n2_from_json.py, create_n2_chart.py<br>Sidecar kind: n2_matrix_xlsx</div>
+</td>
+<td class="desc">M8 FMEA (interfaces as failure mode sources — interface_ref field), Synthesis recommendation</td>
+<td class="desc">M5 form-function (components that interact), M7 interface specs (interface definitions), n2_matrix.v1.json</td>
+<td class="desc">gen-n2.py explicitly documents "pptx target not yet implemented in migrator; tracked as extender scope." xlsx produced from scratch via openpyxl — no template used. Manual scripts n2_from_json.py and create_n2_chart.py in phase 14 produce a visually richer N2 grid with diagonal labels, colour-coded interaction cells, and conditional formatting. Gold standard n2_chart.xlsx in module-7-interfaces has full cell formatting.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-n2.py">/scripts/artifact-generators/gen-n2.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manual scripts:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/6-software-define-interface-LLM-kb/n2_from_json.py">/phases/14-…/6-interfaces/n2_from_json.py</a><br>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/6-software-define-interface-LLM-kb/create_n2_chart.py">/phases/14-…/6-interfaces/create_n2_chart.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (xlsx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/7-interfaces/03-templates/n-squared-chart.xlsx">/phases/13-…/7-interfaces/03-templates/n-squared-chart.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-7-interfaces/n2_chart.xlsx">/kb-upgrade-v2/module-7-interfaces/n2_chart.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (PPTX):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-7-interfaces/n2_chart.pptx">/kb-upgrade-v2/module-7-interfaces/n2_chart.pptx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M7 Interface Matrix -->
+<tr class="gap">
+<td>
+  <div class="module">M7</div>
+  <div class="art-name">Interface Matrix (xlsx)</div>
+  <div style="margin-top:4px"><span class="badge b-gap">GENERATOR EXISTS / NOT DEPLOYED</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-interfaces.py</div>
+  <div class="desc" style="margin-top:4px">Sidecar: <em>not registered</em><br>Manual: interface_matrix_from_json.py</div>
+</td>
+<td class="desc">M8 FMEA (interface failure modes — interface_ref field links FMEA rows to interfaces)</td>
+<td class="desc">M5 form-function (component pairs), M7 N2 (interface definitions), interface_specs.v1.json</td>
+<td class="desc">gen-interfaces.py exists but is not registered in the sidecar. Manual script interface_matrix_from_json.py in phase 14 uses the interface-Matrix-Template.xlsx to fill a component-by-component interface table with signal types, direction, protocol, and status. Multiple gold standard variants exist (basic, advanced, per-component split files).</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-interfaces.py">/scripts/artifact-generators/gen-interfaces.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manual script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/6-software-define-interface-LLM-kb/interface_matrix_from_json.py">/phases/14-…/6-interfaces/interface_matrix_from_json.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (xlsx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/7-interfaces/03-templates/interface-Matrix-Template.xlsx">/phases/13-…/7-interfaces/03-templates/interface-Matrix-Template.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (advanced):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-7-interfaces/interface_matrix.xlsx">/kb-upgrade-v2/module-7-interfaces/interface_matrix.xlsx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M7 Sequence Diagrams -->
+<tr class="gap">
+<td>
+  <div class="module">M7</div>
+  <div class="art-name">Sequence Diagrams (pptx)</div>
+  <div style="margin-top:4px"><span class="badge b-gap">GENERATOR EXISTS / NOT DEPLOYED</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-sequence.py</div>
+  <div class="desc" style="margin-top:4px">Sidecar: <em>not registered</em><br>Manual: create_sequence_thg.py</div>
+</td>
+<td class="desc">Synthesis recommendation (interface flow evidence)</td>
+<td class="desc">Interface specs, use case flows from M1/M2</td>
+<td class="desc">gen-sequence.py exists but not registered. Manual create_sequence_thg.py in phase 14 builds sequence diagrams as PPTX slides using the sequence-diagram.pptx template. Gold standard sequence_diagrams.pptx in module-7-interfaces has visually rich UML-style sequence slides with lifelines, activation bars, and message arrows.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-sequence.py">/scripts/artifact-generators/gen-sequence.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manual script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/14-artifact-publishing-json-excel-ppt-pdf/6-software-define-interface-LLM-kb/create_sequence_thg.py">/phases/14-…/6-interfaces/create_sequence_thg.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (pptx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/7-interfaces/03-templates/sequence-diagram.pptx">/phases/13-…/7-interfaces/03-templates/sequence-diagram.pptx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-7-interfaces/sequence_diagrams.pptx">/kb-upgrade-v2/module-7-interfaces/sequence_diagrams.pptx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M8 FMEA Early -->
+<tr class="live">
+<td>
+  <div class="module">M8</div>
+  <div class="art-name">FMEA Table — Early (xlsx)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-fmea.py (default variant)</div>
+  <div class="desc" style="margin-top:4px">Delegates to legacy: generate_fmea_xlsx.py + generate_stoplights.py<br>Sidecar kind: fmea_early_xlsx</div>
+</td>
+<td class="desc">M8 FMEA Residual (12 surviving failure modes pass through), Synthesis recommendation (residual risk flags)</td>
+<td class="desc">M3 FFBD (functions that can fail → failure modes), M7 interfaces (interface failure sources), fmea_early.v1.json</td>
+<td class="desc">gen-fmea.py materialises fmea_table.json, rating_scales.json, and stoplight_charts.json into a temp dir and delegates to the legacy generate_fmea_xlsx.py script via subprocess. Stoplights sheet appended to same workbook. Legacy scripts build entirely from scratch via openpyxl — no template fill. Gold standard fmea_table.xlsx in module-8-risk was hand-formatted with conditional formatting, colour-coded RPN stoplight bands, and a colour-coded severity/likelihood matrix.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-fmea.py">/scripts/artifact-generators/gen-fmea.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Legacy xlsx script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-8-risk/generate_fmea_xlsx.py">/kb-upgrade-v2/module-8-risk/generate_fmea_xlsx.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Legacy stoplight script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-8-risk/generate_stoplights.py">/kb-upgrade-v2/module-8-risk/generate_stoplights.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Template (xlsx):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/8-risk/03-templates/FMEA-sample.xlsx">/phases/13-…/8-risk/03-templates/FMEA-sample.xlsx</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (early):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-8-risk/fmea_table.xlsx">/kb-upgrade-v2/module-8-risk/fmea_table.xlsx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ M8 FMEA Residual -->
+<tr class="live">
+<td>
+  <div class="module">M8</div>
+  <div class="art-name">FMEA Table — Residual (xlsx)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-fmea.py (variant=residual)</div>
+  <div class="desc" style="margin-top:4px">Adapter: _residual_to_table() + _residual_to_stoplight()<br>Sidecar kind: fmea_residual_xlsx</div>
+</td>
+<td class="desc">Synthesis recommendation (residual risk flags embedded — 13 HIGH-RPN items flagged in architecture_recommendation.v1.json)</td>
+<td class="desc">M8 FMEA Early (12 surviving FMs + 4 new architecture-specific FMs), M4 Decision Network (winning architecture → new failure modes), fmea_residual.v1.json</td>
+<td class="desc">_residual_to_table() adapter maps fmea_residual.v1 fields (recoverability, weighted_rpn, predecessor_ref, form_refs, decision_anchor, landed_controls) into the legacy columnar fmea_table shape. Stops at generate_fmea_xlsx.py for rendering. Stoplight regenerated from residual severity/likelihood. Gold standard fmea_residual.v1.xlsx has a dedicated stoplight sheet with colour bands.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-fmea.py">/scripts/artifact-generators/gen-fmea.py</a> — _residual_to_table() / _residual_to_stoplight()
+  </div>
+  <div class="path-group">
+    <div class="path-label">Orchestrator (options.variant):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">/services/python-sidecar/orchestrator.py</a> — fmea_residual_xlsx entry, line ~110
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (residual):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-8-risk/fmea_residual.v1.xlsx">/kb-upgrade-v2/module-8-risk/fmea_residual.v1.xlsx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ Synthesis JSON -->
+<tr class="live">
+<td>
+  <div class="module">Synthesis</div>
+  <div class="art-name">Architecture Recommendation (json-enriched)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-arch-recommendation.py</div>
+  <div class="desc" style="margin-top:4px">Target: json-enriched<br>Sidecar kind: recommendation_json</div>
+</td>
+<td class="desc">recommendation_html, recommendation_pdf (both consume this JSON), downstream CLI tools, manifest endpoint</td>
+<td class="desc">architecture_recommendation.v1.json — aggregates M1–M8 module references, 4 derivation chains (D-01–D-04), 3 Pareto alternatives (AV.01/AV.02/AV.03), 13 residual FMEA flags, HoQ target values</td>
+<td class="desc">Reads architecture_recommendation.v1.json, denormalizes by inlining referenced module artifacts (requirements table, interface specs, etc.) and emits a single bundle JSON with manifest digests. Source of truth for all downstream render targets.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-arch-recommendation.py">/scripts/artifact-generators/gen-arch-recommendation.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">JSON schema:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/schemas/generated/synthesis/">/apps/product-helper/schemas/generated/synthesis/ (architecture-recommendation.schema.json)</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (JSON):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/system-design/kb-upgrade-v2/module-synthesis/architecture_recommendation.v1.json">/kb-upgrade-v2/module-synthesis/architecture_recommendation.v1.json</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ Synthesis HTML -->
+<tr class="live">
+<td>
+  <div class="module">Synthesis</div>
+  <div class="art-name">Architecture Recommendation (html)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-arch-recommendation.py</div>
+  <div class="desc" style="margin-top:4px">Target: html<br>Sidecar kind: recommendation_html</div>
+</td>
+<td class="desc">recommendation_pdf (weasyprint renders from this HTML), user download</td>
+<td class="desc">recommendation_json (json-enriched bundle), architecture_recommendation.v1.json</td>
+<td class="desc">Single-file self-contained HTML with all CSS inline. Uses brand colors Firefly #0B2C29 (dark bg), Porcelain #FBFCFC (light bg), Tangerine #F18F01 (accent), Danube #5998C5 (secondary). Fonts: Space Grotesk headings, Consolas body. Sections: summary, winning alternative, derivation chain, Pareto table, FMEA risk flags, HoQ targets, module references. Opens via file:// with no CDN deps.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-arch-recommendation.py">/scripts/artifact-generators/gen-arch-recommendation.py</a> — _render_html() function
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ Synthesis PDF -->
+<tr class="live">
+<td>
+  <div class="module">Synthesis</div>
+  <div class="art-name">Architecture Recommendation (pdf)</div>
+  <div style="margin-top:4px"><span class="badge b-live">LIVE</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-arch-recommendation.py + weasyprint</div>
+  <div class="desc" style="margin-top:4px">Pre-render: _pre_render_mermaid() via render-mermaid.sh<br>Sidecar kind: recommendation_pdf</div>
+</td>
+<td class="desc">User download (final deliverable)</td>
+<td class="desc">recommendation_html (weasyprint converts this), Mermaid diagrams pre-rendered to PNG via mmdc (R-V21.02 mitigation)</td>
+<td class="desc">Sidecar calls _pre_render_mermaid() first: walks agent_output_payload for Mermaid strings, runs render-mermaid.sh (mmdc → PNG), rewrites to base64 data-URI img tags so weasyprint never sees raw mmd. Then passes HTML through weasyprint==62.3 (pinned — v63+ has breaking API changes). Falls back gracefully: if mmdc fails, leaves original mmd source block visible in PDF.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-arch-recommendation.py">/scripts/artifact-generators/gen-arch-recommendation.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Mermaid pre-render script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/scripts/render-mermaid.sh">/services/python-sidecar/scripts/render-mermaid.sh</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Sidecar pre-render fn:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">/services/python-sidecar/orchestrator.py</a> — _pre_render_mermaid() line ~480
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ Synthesis PPTX BROKEN -->
+<tr class="broken">
+<td>
+  <div class="module">Synthesis</div>
+  <div class="art-name">Architecture Recommendation (pptx)</div>
+  <div style="margin-top:4px"><span class="badge b-broken">BROKEN — TARGET NOT IMPLEMENTED</span></div>
+</td>
+<td>
+  <div class="fn-name">gen-arch-recommendation.py</div>
+  <div class="desc" style="margin-top:4px">Target: pptx — <strong style="color:#ffaaaa">NOT IN render() function</strong><br>Sidecar kind: recommendation_pptx (registered but will fail)</div>
+</td>
+<td class="desc">Master deck assembly (assemble-master-pptx.py sources from this)</td>
+<td class="desc">architecture_recommendation.v1.json, all M1–M8 module artifacts</td>
+<td class="desc">CRITICAL BUG: The sidecar ARTIFACT_REGISTRY registers recommendation_pptx with target="pptx" and generator="gen-arch-recommendation.py". However, gen-arch-recommendation.py's render() function only handles "html", "pdf", and "json-enriched" — there is no pptx branch. The generator header doesn't list pptx in Targets. Result: every recommendation_pptx synthesis attempt writes status="failed" with "generator did not emit target=pptx". The gold standard synthesis.pptx in the dogfooding portfolio is entirely hand-built.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Generator (missing pptx branch):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/gen-arch-recommendation.py">/scripts/artifact-generators/gen-arch-recommendation.py</a> — render() at line ~413
+  </div>
+  <div class="path-group">
+    <div class="path-label">Sidecar registry entry:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">/services/python-sidecar/orchestrator.py</a> — recommendation_pptx entry line ~89
+  </div>
+  <div class="path-group">
+    <div class="path-label">Gold standard (hand-built):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/synthesis.pptx">/plans/dogfooding-artifact-deck/portfolio/synthesis.pptx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ Assembly PPTX -->
+<tr class="assembly">
+<td>
+  <div class="module">Assembly</div>
+  <div class="art-name">Master Deck (pptx — portfolio only)</div>
+  <div style="margin-top:4px"><span class="badge b-gap">PORTFOLIO ONLY / NOT IN SIDECAR</span></div>
+</td>
+<td>
+  <div class="fn-name">assemble-master-pptx.py</div>
+  <div class="desc" style="margin-top:4px">Reads: master-deck.manifest.json<br>Run manually from repo root</div>
+</td>
+<td class="desc">Final portfolio deliverable — M1→M8 + Synthesis in one deck</td>
+<td class="desc">All per-module PPTX artifacts listed in master-deck.manifest.json (M1 data-flows, M2 UCBDs, M3 FFBD, M4 decision-network, M5 form-function, M7 n2/dfd/sequence, M8 FMEA, Synthesis)</td>
+<td class="desc">Deep-copies XML slide elements from each source PPTX into a master Presentation, inserts section header slides between modules, and adds a title slide. No template used — 16:9 blank presentation as base. Deduplicates SlideLayout parts by content hash to keep file size sane. Note: M6 HoQ section currently has empty sources array in manifest — no PPTX emitted for HoQ today.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/assemble-master-pptx.py">/scripts/artifact-generators/assemblers/assemble-master-pptx.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manifest:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/master-deck.manifest.json">/scripts/artifact-generators/assemblers/master-deck.manifest.json</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Output (last run):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.pptx">/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.pptx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════════ Assembly XLSX -->
+<tr class="assembly">
+<td>
+  <div class="module">Assembly</div>
+  <div class="art-name">Master Workbook (xlsx — portfolio only)</div>
+  <div style="margin-top:4px"><span class="badge b-gap">PORTFOLIO ONLY / NOT IN SIDECAR</span></div>
+</td>
+<td>
+  <div class="fn-name">assemble-master-xlsx.py</div>
+  <div class="desc" style="margin-top:4px">Reads: master-workbook.manifest.json<br>Run manually from repo root</div>
+</td>
+<td class="desc">Final portfolio deliverable — all module matrices in one workbook with 00_README index sheet</td>
+<td class="desc">All per-module xlsx artifacts: M1 data-flows, M2 requirements, M3 FFBD, M4 decision-network, M5 form-function, M6 QFD (two sources: kb-upgrade-v2 + self-app run), M7 N2 + interface matrix, M8 FMEA early + residual, Synthesis</td>
+<td class="desc">Copies cell values, styles, column widths, row heights, merged cells, and frozen panes from each source xlsx into a new workbook. Prefixes sheet names with module tag (e.g. "M7_N2_n2 chart"). Inserts 00_README index sheet at position 0 listing all sections, source files, and copied sheet names. Handles duplicate sheet names by appending numeric suffix.</td>
+<td>
+  <div class="path-group">
+    <div class="path-label">Script:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/assemble-master-xlsx.py">/scripts/artifact-generators/assemblers/assemble-master-xlsx.py</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Manifest:</div>
+    <a href="file:///Users/davidancor/Projects/c1v/scripts/artifact-generators/assemblers/master-workbook.manifest.json">/scripts/artifact-generators/assemblers/master-workbook.manifest.json</a>
+  </div>
+  <div class="path-group">
+    <div class="path-label">Output (last run):</div>
+    <a href="file:///Users/davidancor/Projects/c1v/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.xlsx">/plans/dogfooding-artifact-deck/portfolio/c1v-self-application.xlsx</a>
+  </div>
+</td>
+<td class="comment-cell"></td>
+</tr>
+
+</tbody>
+</table>
+
+<div style="margin-top: 2rem; padding: 1rem; background: #060f0e; border-left: 3px solid #F18F01; font-size: .8rem; color: #c0d8d4;">
+  <strong style="color:#F18F01;">CORE QUALITY GAP SUMMARY</strong><br><br>
+  The generators were written by wave agents focused on schema correctness, not visual fidelity. The gap between "current" and "gold standard" falls into three categories:<br><br>
+  <strong style="color:#a8f0c0;">1. TEMPLATE-FILL vs FROM-SCRATCH</strong> — Only gen-qfd.py uses a template fill approach (writes into QFD-Template.xlsx cell-by-cell). All others (FMEA, Decision Net, Form-Function, N2) build entirely from scratch via openpyxl/matplotlib, losing all conditional formatting, charts, colour bands, and Excel formulas that exist in the manually-produced reference files.<br><br>
+  <strong style="color:#ffaaaa;">2. UNIMPLEMENTED TARGETS</strong> — recommendation_pptx is registered in the sidecar but gen-arch-recommendation.py has no pptx branch → silently fails on every synthesis run. gen-n2.py explicitly documents pptx as "not yet implemented."<br><br>
+  <strong style="color:#ffe08a;">3. DEPLOYED GAPS</strong> — 5 generator scripts exist (gen-dfd.py, gen-ucbd.py, gen-ffbd.py, gen-interfaces.py, gen-sequence.py) and 5 high-quality manual scripts exist in phases/14/, but none are registered in the sidecar ARTIFACT_REGISTRY. Users never receive DFD, UCBD, FFBD, Interface Matrix, or Sequence Diagram artifacts.
+</div>
+
+</body>
+</html>

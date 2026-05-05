@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Intake → M4 Draft Recommendation v1 — Full Zod Handshake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --firefly: #0B2C29;
+    --porcelain: #FBFCFC;
+    --tangerine: #F18F01;
+    --danube: #5998C5;
+    --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+    --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b; --slate-900: #0f172a;
+    --amber-50: #fffbeb; --amber-100: #fef3c7; --amber-600: #d97706; --amber-700: #b45309;
+    --emerald-50: #ecfdf5; --emerald-100: #d1fae5; --emerald-600: #059669; --emerald-700: #047857;
+    --rose-50: #fff1f2; --rose-100: #ffe4e6; --rose-600: #e11d48; --rose-700: #be123c;
+    --indigo-50: #eef2ff; --indigo-100: #e0e7ff; --indigo-600: #4f46e5; --indigo-700: #4338ca;
+    --purple-50: #faf5ff; --purple-100: #f3e8ff; --purple-600: #9333ea; --purple-700: #7e22ce;
+    --sky-50: #f0f9ff; --sky-100: #e0f2fe; --sky-600: #0284c7; --sky-700: #0369a1;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--porcelain); color: var(--slate-900); margin: 0;
+    line-height: 1.55; font-size: 14.5px;
+  }
+  code, pre, .mono {
+    font-family: 'Consolas', 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 13px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 32px 32px 96px; }
+
+  header.hero {
+    background: var(--firefly); color: var(--porcelain);
+    padding: 36px 32px; border-radius: 12px; margin-bottom: 32px;
+  }
+  header.hero h1 {
+    margin: 0 0 12px; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  header.hero h1 .sub { color: var(--tangerine); }
+  header.hero .meta {
+    display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px;
+    color: rgba(251,252,252,0.75);
+  }
+  header.hero .meta strong { color: var(--tangerine); font-weight: 600; }
+  header.hero p.tldr {
+    margin: 18px 0 0; font-size: 15px; line-height: 1.65;
+    color: rgba(251,252,252,0.92); max-width: 1080px;
+  }
+
+  h2.section {
+    font-size: 20px; font-weight: 700; margin: 48px 0 16px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--firefly);
+    letter-spacing: -0.01em;
+  }
+  h2.section .lvl {
+    display: inline-block; background: var(--tangerine); color: var(--firefly);
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-right: 10px;
+    vertical-align: middle;
+  }
+  h3.subsection {
+    font-size: 16px; font-weight: 600; margin: 28px 0 10px; color: var(--slate-700);
+  }
+  h4.minihead {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--slate-500); margin: 18px 0 8px;
+  }
+
+  nav.toc {
+    background: white; border: 1px solid var(--slate-200); border-radius: 10px;
+    padding: 18px 22px; margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin: 0 0 12px; font-size: 13px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--slate-500); font-weight: 600;
+  }
+  nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+  nav.toc li { margin-bottom: 4px; font-size: 13.5px; }
+  nav.toc a { color: var(--slate-700); text-decoration: none; }
+  nav.toc a:hover { color: var(--tangerine); text-decoration: underline; }
+
+  .chip {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 500; margin: 2px 4px 2px 0;
+    border: 1px solid; line-height: 1.5; white-space: nowrap;
+  }
+  .chip.tech-zod { background: var(--emerald-50); color: var(--emerald-700); border-color: var(--emerald-100); }
+  .chip.tech-drizzle { background: var(--amber-50); color: var(--amber-700); border-color: var(--amber-100); }
+  .chip.tech-langgraph { background: var(--amber-50); color: var(--amber-700); border-color: var(--amber-100); }
+  .chip.tech-react { background: var(--sky-50); color: var(--sky-700); border-color: var(--sky-100); }
+  .chip.tech-db { background: var(--slate-100); color: var(--slate-700); border-color: var(--slate-200); }
+  .chip.tech-storage { background: var(--slate-100); color: var(--slate-700); border-color: var(--slate-200); }
+  .chip.model-haiku { background: var(--emerald-50); color: var(--emerald-700); border-color: var(--emerald-100); }
+  .chip.model-sonnet { background: var(--sky-50); color: var(--sky-700); border-color: var(--sky-100); }
+  .chip.model-opus { background: var(--purple-50); color: var(--purple-700); border-color: var(--purple-100); }
+  .chip.no-llm { background: var(--rose-50); color: var(--rose-700); border-color: var(--rose-100); }
+  .chip.path-a { background: var(--purple-50); color: var(--purple-700); border-color: var(--purple-100); }
+  .chip.path-b { background: var(--indigo-50); color: var(--indigo-700); border-color: var(--indigo-100); }
+
+  .schema-card {
+    background: white; border: 1px solid var(--slate-200); border-radius: 12px;
+    margin-bottom: 18px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+  }
+  .schema-card.layer-0 { border-left: 4px solid var(--sky-600); }
+  .schema-card.layer-1 { border-left: 4px solid var(--purple-600); }
+  .schema-card.layer-2 { border-left: 4px solid var(--amber-600); }
+  .schema-card.layer-3 { border-left: 4px solid var(--rose-600); }
+  .schema-card.layer-4 { border-left: 4px solid var(--emerald-600); }
+  .schema-card.layer-5 { border-left: 4px solid var(--tangerine); }
+  .schema-card.layer-6 { border-left: 4px solid var(--indigo-600); }
+
+  .schema-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; padding: 14px 22px 10px; border-bottom: 1px solid var(--slate-100);
+    flex-wrap: wrap;
+  }
+  .schema-id {
+    background: var(--firefly); color: var(--porcelain);
+    font-weight: 700; font-size: 13px; padding: 5px 11px; border-radius: 6px;
+    letter-spacing: 0.04em; font-family: 'Consolas', monospace; flex-shrink: 0;
+  }
+  .schema-title {
+    font-size: 16px; font-weight: 600; margin: 0; color: var(--slate-900);
+    letter-spacing: -0.01em;
+  }
+  .schema-meta {
+    display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px;
+    color: var(--slate-600); align-items: center;
+  }
+  .schema-body { padding: 14px 22px; }
+
+  .file-pill {
+    display: inline-block; background: var(--slate-100); color: var(--slate-700);
+    padding: 2px 8px; border-radius: 4px; font-family: 'Consolas', monospace;
+    font-size: 12px; margin: 2px 0;
+  }
+  .file-pill a { color: inherit; text-decoration: none; }
+  .file-pill a:hover { color: var(--tangerine); text-decoration: underline; }
+
+  pre.codeblock {
+    background: var(--slate-900); color: #e2e8f0;
+    padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+    font-size: 12.5px; line-height: 1.55; margin: 10px 0;
+  }
+  pre.codeblock .keyword { color: #c084fc; }
+  pre.codeblock .string  { color: #fbbf24; }
+  pre.codeblock .comment { color: #64748b; font-style: italic; }
+  pre.codeblock .type    { color: #5eead4; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px;
+    background: white; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+  }
+  th, td {
+    text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--slate-100);
+    vertical-align: top;
+  }
+  th {
+    background: var(--slate-50); font-size: 11.5px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--slate-600); font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.mono { font-family: 'Consolas', monospace; font-size: 12px; }
+  td.warn { color: var(--amber-700); }
+  td.bad { color: var(--rose-700); }
+  td.good { color: var(--emerald-700); }
+
+  .mermaid-wrap {
+    background: white; border: 1px solid var(--slate-200); border-radius: 10px;
+    padding: 22px; margin: 16px 0; overflow-x: auto;
+  }
+
+  .callout {
+    border-radius: 8px; padding: 12px 16px; margin: 12px 0;
+    font-size: 13px; line-height: 1.55;
+  }
+  .callout.warn   { background: var(--amber-50);   border-left: 3px solid var(--amber-600);   color: var(--amber-700); }
+  .callout.info   { background: var(--sky-50);     border-left: 3px solid var(--sky-600);     color: var(--sky-700); }
+  .callout.danger { background: var(--rose-50);    border-left: 3px solid var(--rose-600);    color: var(--rose-700); }
+  .callout.good   { background: var(--emerald-50); border-left: 3px solid var(--emerald-600); color: var(--emerald-700); }
+  .callout b { color: inherit; font-weight: 700; }
+
+  .layer-stack {
+    background: linear-gradient(135deg, var(--firefly) 0%, #133e3a 100%);
+    color: var(--porcelain); border-radius: 12px; padding: 24px 28px;
+    margin: 24px 0; font-size: 13.5px; line-height: 1.7;
+  }
+  .layer-stack .lyr {
+    display: block; margin-bottom: 8px; padding: 8px 14px;
+    background: rgba(255,255,255,0.06); border-left: 4px solid var(--tangerine);
+    border-radius: 4px;
+  }
+  .layer-stack .lyr-name {
+    color: var(--tangerine); font-weight: 700; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .layer-stack .lyr-content { color: rgba(251,252,252,0.92); font-size: 13px; }
+
+  .arrow-down { text-align: center; color: var(--slate-400); font-size: 18px; margin: 4px 0; }
+
+  .producer-consumer {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+    font-size: 12.5px;
+  }
+  .producer-consumer .pc {
+    background: var(--slate-50); border-radius: 6px; padding: 10px 14px;
+    border-left: 3px solid var(--slate-400);
+  }
+  .producer-consumer .pc.producer { border-left-color: var(--emerald-600); }
+  .producer-consumer .pc.consumer { border-left-color: var(--purple-600); }
+  .producer-consumer .pc h5 {
+    margin: 0 0 4px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--slate-500); font-weight: 600;
+  }
+
+  ul.field-list { margin: 6px 0 12px; padding-left: 18px; font-size: 13px; }
+  ul.field-list li { margin-bottom: 4px; }
+  ul.field-list li code { background: var(--slate-100); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+  .timeline {
+    background: white; border: 1px solid var(--slate-200); border-radius: 10px;
+    padding: 18px 24px; margin: 12px 0; font-size: 13px;
+  }
+  .timeline .step {
+    display: grid; grid-template-columns: 70px 1fr; gap: 14px;
+    padding: 8px 0; border-bottom: 1px dashed var(--slate-100);
+  }
+  .timeline .step:last-child { border-bottom: none; }
+  .timeline .step .t {
+    font-family: 'Consolas', monospace; font-size: 12px;
+    color: var(--tangerine); font-weight: 600;
+  }
+  .timeline .step .desc { color: var(--slate-700); }
+  .timeline .step .desc b { color: var(--firefly); }
+  .timeline .step .desc code { background: var(--slate-100); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+  footer {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--slate-200);
+    color: var(--slate-500); font-size: 12px; text-align: center;
+  }
+  footer a { color: var(--slate-700); }
+
+  @media (max-width: 720px) {
+    .container { padding: 16px; }
+    nav.toc ol { columns: 1; }
+    .producer-consumer { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="hero">
+  <h1>Intake → M4 Draft Recommendation v1 <span class="sub">— Full Zod Handshake</span></h1>
+  <div class="meta">
+    <span><strong>Date:</strong> 2026-05-04</span>
+    <span><strong>Status:</strong> REFERENCE</span>
+    <span><strong>Scope:</strong> Welcome form → M4 v1 DRAFT + architecture_recommendation v1 DRAFT</span>
+    <span><strong>Audience:</strong> agents wiring intake handoffs</span>
+  </div>
+  <p class="tldr">
+    The single source of truth for every Zod schema and Drizzle table that data passes through from welcome onboarding → M4 v1 DRAFT decision network + architecture_recommendation v1 DRAFT keystone. Open this when wiring any agent and you need to know <b>"what shape arrives, what shape must I emit, and where does it land."</b>
+  </p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#visual-map">Visual map (6 layers)</a></li>
+    <li><a href="#layer-0">Layer 0 — Intake surfaces</a></li>
+    <li><a href="#layer-1a">Layer 1A — Path A: Quick Start</a></li>
+    <li><a href="#layer-1b">Layer 1B — Path B: Chat-Intake</a></li>
+    <li><a href="#layer-2">Layer 2 — M0b discriminator gate</a></li>
+    <li><a href="#layer-3">Layer 3 — Adapters (THE GAP)</a></li>
+    <li><a href="#layer-4">Layer 4 — Crawley upstream artifacts</a></li>
+    <li><a href="#layer-5">Layer 5 — M4 v1 DRAFT decision network</a></li>
+    <li><a href="#layer-6">Layer 6 — architecture_recommendation v1 keystone</a></li>
+    <li><a href="#walkthrough">End-to-end narrative walkthrough</a></li>
+    <li><a href="#adapter-priority">Adapter implementation priority (T8)</a></li>
+    <li><a href="#storage-map">Storage map</a></li>
+    <li><a href="#taxonomy">7-level archetype taxonomy</a></li>
+    <li><a href="#open-questions">Open questions</a></li>
+    <li><a href="#refs">Cross-references</a></li>
+  </ol>
+</nav>
+
+<!-- ============== VISUAL MAP ============== -->
+<h2 class="section" id="visual-map">Visual map — 6 layers</h2>
+
+<div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    subgraph L0["LAYER 0 — INTAKE SURFACES (revised 2026-05-04 — M0a removed)"]
+        Form[Welcome Form<br/>scope-mode-toggle · project-metadata-selectors · building-input]
+        CreateProj[createProject action<br/>→ projects table]
+        Form --> CreateProj
+    end
+
+    subgraph L1A["LAYER 1A — PATH A: QUICK START"]
+        QSConfig[QuickStartConfig]
+        QSAgent[QS-Synthesizer<br/>narrow M4-prep<br/>assumption-based]
+        SynResult[SynthesisResult<br/>domainAnalysis + useCaseDerivation]
+        QSConfig --> QSAgent --> SynResult
+    end
+
+    subgraph L1B["LAYER 1B — PATH B: CHAT-INTAKE"]
+        ChatState[IntakeState · LangGraph]
+        ExtractData[extract-data.ts per turn]
+        ExtSchema[extractionSchema<br/>actors · useCases · NFRs · ffbd? · qfd? ...]
+        BackendAgents[Backend agents: tech-stack · db-schema<br/>· api-spec · stories · infra · guidelines]
+        ChatState --> ExtractData --> ExtSchema --> BackendAgents
+    end
+
+    L0 --> L1A
+    L0 --> L1B
+    L1A -.handoff.-> L1B
+
+    subgraph L2["LAYER 2 — M0b DISCRIMINATOR GATE"]
+        M0b[discriminator-intake-agent<br/>deterministic rule tree · NO LLM]
+        IDisc[IntakeDiscriminators v1<br/>pipeline_route · pruning_set · computed_constants]
+        M0b --> IDisc
+    end
+
+    L1A --> L2
+    L1B --> L2
+
+    subgraph L3["LAYER 3 — ADAPTERS — THE GAP"]
+        Adapters[5 adapters required<br/>legacy → Crawley shapes<br/>~15-20 hr work for T8]
+    end
+
+    L2 --> L3
+
+    subgraph L4["LAYER 4 — CRAWLEY UPSTREAM ARTIFACTS"]
+        Crawley[M3 ffbd-v1 · M7.a n2-matrix · M8.a fmea-early<br/>M2 nfrs-v2 · M2 constants-v2 · M5 form-function]
+    end
+
+    L3 --> L4
+
+    subgraph L5["LAYER 5 — M4 v1 DRAFT DECISION NETWORK"]
+        DNAgent[decision-net-agent<br/>delegates scoring to NFR Engine math]
+        DN[DecisionNetworkV1<br/>phases 11-19 · provisional priors]
+        DNAgent --> DN
+    end
+
+    L4 --> L5
+    Atlas[KB-9 Atlas<br/>fires from beginning · all tiers] --> L5
+
+    subgraph L6["LAYER 6 — ARCHITECTURE_RECOMMENDATION v1 KEYSTONE"]
+        SynAgent[T6 synthesis-agent]
+        ArchRec[architecture_recommendation v1<br/>kind: 'draft' · provisional: true<br/>+ delta_teaser]
+        SynAgent --> ArchRec
+    end
+
+    L5 --> L6
+
+    style L0 fill:#f0f9ff,stroke:#0284c7
+    style L1A fill:#faf5ff,stroke:#9333ea
+    style L1B fill:#eef2ff,stroke:#4f46e5
+    style L2 fill:#fffbeb,stroke:#d97706
+    style L3 fill:#fff1f2,stroke:#e11d48
+    style L4 fill:#ecfdf5,stroke:#059669
+    style L5 fill:#fef3c7,stroke:#F18F01
+    style L6 fill:#f3e8ff,stroke:#7e22ce
+</pre>
+</div>
+
+<div class="layer-stack">
+  <div class="lyr">
+    <div class="lyr-name">Layer 0 · INTAKE SURFACES</div>
+    <div class="lyr-content">Welcome form (4-5 fields) · createProject Drizzle insert. <b>M0a Clearbit/LinkedIn signup-signals scrape REMOVED 2026-05-04 evening</b> — no Clerk webhook, no <code>user_signals</code> table reads.</div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <div class="lyr">
+    <div class="lyr-name">Layer 1 · INTAKE PATH (CHOOSE ONE)</div>
+    <div class="lyr-content">Path A: Quick Start (1-shot vision → SynthesisResult) · Path B: Chat-Intake (multi-turn → extractionSchema + backend agents)</div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <div class="lyr">
+    <div class="lyr-name">Layer 2 · M0b DISCRIMINATOR GATE</div>
+    <div class="lyr-content">Deterministic rule tree · aggregates form + chat + form-discriminators → emits pipeline_route + pruning_set + computed_constants. (M0a signup-signals input REMOVED 2026-05-04 evening.)</div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <div class="lyr" style="border-left-color: var(--rose-600);">
+    <div class="lyr-name" style="color: var(--rose-600);">Layer 3 · ADAPTERS — THE GAP</div>
+    <div class="lyr-content">5 missing adapters that bridge legacy intake schemas → Crawley schemas. ~15-20 hr work. This is what blocks the live M4 path.</div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <div class="lyr">
+    <div class="lyr-name">Layer 4 · CRAWLEY UPSTREAM ARTIFACTS</div>
+    <div class="lyr-content">M3 ffbd-v1 · M2 nfrs-v2 · M2 constants-v2 · M7.a n2-matrix · M8.a fmea-early · M5 form-function (skipped in v1)</div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <div class="lyr">
+    <div class="lyr-name">Layer 5 · M4 v1 DRAFT DECISION NETWORK</div>
+    <div class="lyr-content">decision-net-agent delegates scoring to NFR Engine (pure math). <b>Atlas reads fire from the beginning</b> (atlas-gating revoked 2026-05-04 evening) — kb_chunk_ids populated from real atlas priors, not empty stubs.</div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <div class="lyr">
+    <div class="lyr-name">Layer 6 · ARCHITECTURE_RECOMMENDATION v1 KEYSTONE</div>
+    <div class="lyr-content">T6 synthesis-agent emits architecture_recommendation.v1.json with kind:'draft' · atlas-grounded from start · delta_teaser populated to motivate paid SYN keystone upgrade (full Pareto + sensitivity + derivation chain)</div>
+  </div>
+</div>
+
+<!-- ============== LAYER 0 ============== -->
+<h2 class="section" id="layer-0"><span class="lvl">Layer 0</span>Intake surfaces</h2>
+
+<div class="schema-card layer-0">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L0.1</span>
+      <h3 class="schema-title">Welcome onboarding form</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-react">⚛ React</span>
+      <span class="chip">5 fields</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">Files</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/welcome-onboarding.tsx">components/onboarding/welcome-onboarding.tsx</a></span> (orchestrator)</li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/scope-mode-toggle.tsx">scope-mode-toggle.tsx</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/project-metadata-selectors.tsx">project-metadata-selectors.tsx</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/building-input.tsx">building-input.tsx</a></span></li>
+    </ul>
+
+    <h4 class="minihead">Fields → discriminators</h4>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Maps to discriminator</th></tr>
+      <tr><td><code>scopeMode</code></td><td><code>'defined' | 'help'</code></td><td class="warn">currently text prefix into vision · should be G1/G2 + greenfield/brownfield router</td></tr>
+      <tr><td><code>projectType</code></td><td><code>saas | mobile-app | marketplace | api-service | e-commerce | internal-tool | open-source | other</code></td><td class="good">D0 product_archetype ✓</td></tr>
+      <tr><td><code>projectStage</code></td><td><code>idea | prototype | mvp | growth | mature</code></td><td class="bad">ORPHAN — saved, never read</td></tr>
+      <tr><td><code>userRole</code></td><td><code>founder | product-manager | developer | designer</code></td><td class="bad">ORPHAN — saved, never read</td></tr>
+      <tr><td><code>budget</code></td><td><code>bootstrap | seed | series-a | enterprise</code></td><td class="warn">D8 budget_band but WRONG ENUM (T7.4 fixes to dollar bands)</td></tr>
+      <tr><td><code>inputValue → vision</code></td><td>string (free text)</td><td>LLM context — primary input</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="schema-card layer-0">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L0.2</span>
+      <h3 class="schema-title">createProject action — Drizzle insert</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-drizzle">🟡 Drizzle</span>
+      <span class="chip tech-db">🗄 projects table</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">Files</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/actions/projects.ts">app/actions/projects.ts</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/db/schema/projects.ts">lib/db/schema/projects.ts</a></span></li>
+    </ul>
+
+    <h4 class="minihead">Persists to <code>projects</code> table</h4>
+    <table>
+      <tr><th>Column</th><th>Type</th><th>Source</th><th>Notes</th></tr>
+      <tr><td><code>id</code></td><td>uuid</td><td>generated</td><td>PK</td></tr>
+      <tr><td><code>team_id</code></td><td>bigint</td><td>Clerk session</td><td>FK → teams</td></tr>
+      <tr><td><code>created_by</code></td><td>bigint</td><td>Clerk session</td><td>FK → users</td></tr>
+      <tr><td><code>name</code></td><td>text</td><td><code>firstChars(vision, 50)</code> or <code>'New Project'</code></td><td>display name</td></tr>
+      <tr><td><code>vision</code></td><td>text</td><td>scopeMode prefix + user description + modeContext</td><td>max 5000 chars · primary LLM input</td></tr>
+      <tr><td><code>status</code></td><td>text</td><td><code>'intake'</code> on create</td><td>state machine</td></tr>
+      <tr><td><code>project_type</code></td><td>text?</td><td>form (optional)</td><td>D0</td></tr>
+      <tr><td><code>project_stage</code></td><td>text?</td><td>form (optional)</td><td class="bad">orphan</td></tr>
+      <tr><td><code>user_role</code></td><td>text?</td><td>form (optional)</td><td class="bad">orphan</td></tr>
+      <tr><td><code>budget</code></td><td>text?</td><td>form (optional)</td><td class="warn">D8 — wrong enum</td></tr>
+      <tr><td><code>validation_score</code></td><td>int</td><td>0 on create</td><td>populated post-intake</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="schema-card layer-0" style="opacity: 0.6;">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id" style="text-decoration: line-through;">L0.3</span>
+      <h3 class="schema-title" style="text-decoration: line-through;">M0a — signup-signals (background scrape)</h3>
+      <span class="chip" style="background: #fee; color: #b91c1c; border: 1px solid #fca5a5;">📛 REMOVED 2026-05-04 evening</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <p><b>Entire feature removed per David's call.</b> No Clerk webhook firing on signup. No Clearbit/LinkedIn scrape. No <code>user_signals</code> table reads anywhere downstream. The <code>signup-signals-agent.ts</code> + <code>user_signals</code> table + <code>/api/signup-signals/[userId]</code> route are left on disk inactive for v2.2.4+ revisit only.</p>
+    <p style="font-size: 13px; color: var(--slate-600);">Discriminator collection going forward: welcome form + chat questions only (see Layer 0.1 + Layer 1B). All references to <code>CompanySignals</code> downstream (Layer 1A QS-Synthesizer, Layer 2 M0b, Layer 3 L3.4 adapter) are deleted from the active flow.</p>
+  </div>
+</div>
+
+<!-- ============== LAYER 1A ============== -->
+<h2 class="section" id="layer-1a"><span class="lvl">Layer 1A</span>Path A — Quick Start</h2>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1A.1</span>
+      <h3 class="schema-title">QuickStartConfig — entry contract</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip path-a">Path A only</span>
+      <span class="chip tech-zod">✓ Zod</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">File</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/quick-start/orchestrator.ts">lib/langchain/quick-start/orchestrator.ts</a></span> line 90</li>
+    </ul>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">QuickStartConfig</span> {
+  projectId: <span class="keyword">number</span>;
+  teamId: <span class="keyword">number</span>;
+  userId: <span class="keyword">number</span>;
+  userInput: <span class="keyword">string</span>;             <span class="comment">// 10-500 chars</span>
+  onProgress?: <span class="type">ProgressCallback</span>; <span class="comment">// SSE event emitter</span>
+  projectContext?: <span class="type">Partial</span>&lt;<span class="type">KBProjectContext</span>&gt;;
+}</pre>
+  </div>
+</div>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1A.2</span>
+      <h3 class="schema-title">SynthesisResult — QS synthesis output</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip model-sonnet">🤖 Sonnet 4.6</span>
+      <span class="chip">2 sequential calls</span>
+      <span class="chip tech-zod">✓ Zod</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">File</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/quick-start-synthesis-agent.ts">agents/quick-start-synthesis-agent.ts</a></span> line 103</li>
+    </ul>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">SynthesisResult</span> {
+  domainAnalysis: <span class="type">DomainAnalysis</span>;        <span class="comment">// 1st sequential Sonnet call</span>
+  useCaseDerivation: <span class="type">UseCaseDerivation</span>;  <span class="comment">// 2nd sequential Sonnet call</span>
+  userInput: <span class="keyword">string</span>;
+}
+
+<span class="keyword">type</span> <span class="type">DomainAnalysis</span> = {
+  actors: <span class="type">Array</span>&lt;{ name; role; type: <span class="string">'human'</span>|<span class="string">'system'</span>|<span class="string">'external'</span> }&gt;;  <span class="comment">// 3-8</span>
+  systemBoundaries: { internal: <span class="keyword">string</span>[]; external: <span class="keyword">string</span>[] };
+  technicalContext: { platform; scale; architectureStyle };
+  projectName: <span class="keyword">string</span>;
+  projectVision: <span class="keyword">string</span>;  <span class="comment">// 2-3 sentence expansion</span>
+};
+
+<span class="keyword">type</span> <span class="type">UseCaseDerivation</span> = {
+  useCases: <span class="type">Array</span>&lt;{ id; name; description; actor; trigger; outcome;
+                  preconditions[]; postconditions[]; priority }&gt;;  <span class="comment">// 6-15</span>
+  features: <span class="type">Array</span>&lt;{ name; description; category }&gt;;  <span class="comment">// 5-12</span>
+  assumptions: <span class="keyword">string</span>[];                          <span class="comment">// ≥3</span>
+  dataEntities: <span class="type">Array</span>&lt;{ name; attributes[]; relationships[] }&gt;;  <span class="comment">// ≥2</span>
+};</pre>
+  </div>
+</div>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1A.3</span>
+      <h3 class="schema-title">QS-Synthesizer narrow M4-prep mode (T7.6 — TO BUILD)</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip path-a">Path A · post-T7.6</span>
+      <span class="chip" style="background: var(--rose-50); color: var(--rose-700); border-color: var(--rose-100);">⚠ NEW WORK</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <div class="callout warn">
+      <b>Status:</b> TO BUILD per T7.6. Replaces the broken <code>extractProjectData</code> synthetic-conversation branch (P0-1 orphan caller).
+    </div>
+
+    <h4 class="minihead">Proposed input contract</h4>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">QsM4PrepInput</span> {
+  vision: <span class="keyword">string</span>;
+  actors: <span class="type">Actor</span>[];
+  projectType?: <span class="keyword">string</span>;        <span class="comment">// D0</span>
+  projectId: <span class="keyword">number</span>;           <span class="comment">// tenant isolation in cache key</span>
+  // signals from M0a — REMOVED 2026-05-04 evening (M0a feature out of scope)
+}</pre>
+
+    <h4 class="minihead">Proposed output contract — produces M4 v1 inputs WITH ASSUMPTIONS</h4>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">QsM4PrepOutput</span> {
+  kind: <span class="string">'draft'</span>;
+  decisionNetworkInputs: {
+    alternatives: <span class="type">Array</span>&lt;{
+      id: <span class="keyword">string</span>;
+      app_shape: <span class="string">'monolith'</span>|<span class="string">'modular-services'</span>|<span class="string">'event-driven'</span>|<span class="string">'serverless'</span>|<span class="string">'hybrid-deploy'</span>;
+      ai_pattern: <span class="string">'none'</span>|<span class="string">'fm-wrapper'</span>|<span class="string">'rag-augmented'</span>|<span class="string">'agentic'</span>|<span class="string">'hybrid-rag-agents'</span>|<span class="string">'fine-tuned'</span>;
+      sketch: <span class="keyword">string</span>;
+      stack_proposal: { frontend; backend; db; infra };
+    }&gt;;  <span class="comment">// 3-5</span>
+    decision_criteria: <span class="type">Array</span>&lt;{ criterion; weight; rationale }&gt;;
+    failure_modes_provisional: <span class="type">Array</span>&lt;{ id; description; severity; occurrence; detection }&gt;;
+    scoring_matrix: <span class="type">Array</span>&lt;{ alternative_id; criterion; score;
+                            bound_to: <span class="string">'inferred'</span>; provisional: <span class="keyword">true</span> }&gt;;
+    pareto_frontier: <span class="keyword">string</span>[];
+    recommended: <span class="keyword">string</span>;
+  };
+  architectureRecommendationDraft: {
+    decisions: <span class="type">Array</span>&lt;{
+      id; decision; rationale;
+      empirical_priors: <span class="type">Array</span>&lt;{ atlas_entry_id: <span class="keyword">null</span>;
+                            citation: <span class="string">'provisional'</span>; sample_size: 0;
+                            provisional: <span class="keyword">true</span> }&gt;;
+    }&gt;;
+    chosen_alternative: <span class="keyword">string</span>;
+    derivation_chain_summary: <span class="keyword">string</span>;
+    delta_teaser: <span class="keyword">string</span>;
+  };
+}</pre>
+  </div>
+</div>
+
+<!-- ============== LAYER 1B ============== -->
+<h2 class="section" id="layer-1b"><span class="lvl">Layer 1B</span>Path B — Chat-Intake</h2>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1B.1</span>
+      <h3 class="schema-title">IntakeState — the state machine</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip path-b">Path B</span>
+      <span class="chip tech-langgraph">🟡 LangGraph Annotation.Root</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">Files</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/intake/state.ts">agents/intake/state.ts</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/intake-graph.ts">graphs/intake-graph.ts</a></span> line 307 (Annotation.Root)</li>
+    </ul>
+<pre class="codeblock"><span class="keyword">type</span> <span class="type">IntakeState</span> = {
+  projectId: <span class="keyword">number</span>;
+  projectVision: <span class="keyword">string</span>;
+  projectType?: <span class="keyword">string</span>;
+  conversationHistory: <span class="type">Message</span>[];
+  currentKBStep: <span class="type">KBStep</span>;            <span class="comment">// 'context-diagram' | 'use-case-diagram' | ...</span>
+  extractedData: <span class="type">ExtractionResult</span>;  <span class="comment">// see L1B.2</span>
+  <span class="comment">// + observability fields, heartbeat, etc.</span>
+};</pre>
+  </div>
+</div>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1B.2</span>
+      <h3 class="schema-title">extractionSchema — the BIG legacy schema</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-zod">✓ Zod</span>
+      <span class="chip tech-db">🗄 project_data.intake_state jsonb</span>
+      <span class="chip" style="background: var(--rose-50); color: var(--rose-700); border-color: var(--rose-100);">⚠ legacy shape ≠ Crawley</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">File</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas.ts">lib/langchain/schemas.ts</a></span> line 792</li>
+    </ul>
+<pre class="codeblock"><span class="keyword">const</span> extractionSchema = z.object({
+  <span class="comment">// Core PRD sections</span>
+  actors: z.array(actorSchema).default([]),
+  useCases: z.array(useCaseSchema).default([]),
+  systemBoundaries: systemBoundariesSchema.default({ internal: [], external: [] }),
+  dataEntities: z.array(dataEntitySchema).default([]),
+
+  <span class="comment">// Epic.dev parity</span>
+  problemStatement: problemStatementSchema.default({ ... }),
+  goalsMetrics: z.array(goalMetricSchema).default([]),
+  nonFunctionalRequirements: z.array(nonFunctionalRequirementSchema).default([]),
+
+  <span class="comment">// System Design Steps 3-6 (Cornell-flow LEGACY shape — NOT Crawley)</span>
+  ffbd: ffbdSchema.optional(),                  <span class="comment">// ⚠ legacy — NOT module-3/ffbd-v1</span>
+  decisionMatrix: decisionMatrixSchema.optional(),  <span class="comment">// ⚠ legacy — NOT module-4</span>
+  qfd: qfdSchema.optional(),                    <span class="comment">// ⚠ legacy — NOT module-6-hoq</span>
+  interfaces: interfacesSchema.optional(),      <span class="comment">// ⚠ legacy — NOT module-7-interfaces</span>
+
+  <span class="comment">// PROPOSED (T1.5) — adds new namespace key:</span>
+  <span class="comment">// draftArchitecture: z.object({ archPreview: ... }).optional(),</span>
+});
+
+<span class="keyword">type</span> <span class="type">ExtractionResult</span> = z.infer&lt;<span class="keyword">typeof</span> extractionSchema&gt;;</pre>
+
+    <h4 class="minihead">Persists to</h4>
+    <ul class="field-list">
+      <li><code>project_data.intake_state</code> jsonb column · schema at <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/db/schema/project-data.ts">lib/db/schema/project-data.ts</a></span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1B.3</span>
+      <h3 class="schema-title">extract-data.ts node (per-turn write)</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-langgraph">🟡 LangGraph node</span>
+      <span class="chip" style="background: var(--emerald-50); color: var(--emerald-700); border-color: var(--emerald-100);">✓ T0 patched 2026-05-04</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">File</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/nodes/extract-data.ts">graphs/nodes/extract-data.ts</a></span></li>
+    </ul>
+
+    <div class="producer-consumer">
+      <div class="pc producer">
+        <h5>Input</h5>
+        <code>IntakeState (pre-turn)</code>
+      </div>
+      <div class="pc consumer">
+        <h5>Output</h5>
+        <code>Partial&lt;IntakeState&gt;</code> with merged <code>extractedData</code>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <b>T0 invariant (shipped 2026-05-04):</b> <code>emitNfrContractEnvelope</code> is phase-gated — fires only when <code>currentKBStep ∈ {functional-requirements, sysml-activity-diagram, ffbd, decision-matrix, qfd-house-of-quality, interfaces}</code>.
+    </div>
+  </div>
+</div>
+
+<div class="schema-card layer-1">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L1B.4</span>
+      <h3 class="schema-title">Backend agents (post-intake parallel fan-out)</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip">6 agents</span>
+      <span class="chip model-sonnet">🤖 Sonnet 4.6</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <p style="font-size: 12.5px; color: var(--slate-600); margin: 4px 0 12px;">Each runs against converged <code>extractionSchema</code> (or QS handoff data) and emits its own Zod-validated artifact.</p>
+    <table>
+      <tr><th>Agent</th><th>File</th><th>Output Zod schema</th><th>Output route</th></tr>
+      <tr><td><b>Tech Stack</b></td><td><code>agents/tech-stack-agent.ts</code></td><td><code>TechStackModel</code> (categories + recommendations)</td><td><code>/requirements/tech-stack</code></td></tr>
+      <tr><td><b>DB Schema</b></td><td><code>agents/schema-extraction-agent.ts</code></td><td><code>DatabaseSchemaModel</code> (entities + relationships → DBML)</td><td><code>/backend/schema</code></td></tr>
+      <tr><td><b>API Spec</b></td><td><code>agents/api-spec-agent.ts</code></td><td><code>APISpecification</code> (OpenAPI 3.0)</td><td><code>/backend/api-spec</code></td></tr>
+      <tr><td><b>User Stories</b></td><td><code>agents/user-stories-agent.ts</code></td><td><code>GeneratedStory[]</code> (Drizzle <code>userStories</code> table)</td><td><code>/requirements/user-stories</code></td></tr>
+      <tr><td><b>Infrastructure</b></td><td><code>agents/infrastructure-agent.ts</code></td><td><code>InfrastructureSpec</code></td><td>(separate)</td></tr>
+      <tr><td><b>Coding Guidelines</b></td><td><code>agents/guidelines-agent.ts</code></td><td><code>CodingGuidelines</code></td><td><code>/backend/guidelines</code></td></tr>
+    </table>
+    <p style="font-size: 12.5px; color: var(--slate-600); margin: 4px 0;"><b>Persists to:</b> mix of <code>project_artifacts</code> rows (with kind discriminator) + <code>userStories</code> table for stories.</p>
+  </div>
+</div>
+
+<!-- ============== LAYER 2 ============== -->
+<h2 class="section" id="layer-2"><span class="lvl">Layer 2</span>M0b discriminator gate</h2>
+
+<div class="schema-card layer-2">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L2.1</span>
+      <h3 class="schema-title">discriminator-intake-agent — deterministic rule tree</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip no-llm">🚫 NO LLM</span>
+      <span class="chip tech-zod">✓ Zod</span>
+      <span class="chip tech-db">🗄 project_entry_states</span>
+      <span class="chip" style="background: var(--rose-50); color: var(--rose-700); border-color: var(--rose-100);">⚠ no caller wired today</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">Files</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/system-design/discriminator-intake-agent.ts">agents/system-design/discriminator-intake-agent.ts</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-0/intake-discriminators.ts">schemas/module-0/intake-discriminators.ts</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/db/schema/project-entry-states.ts">lib/db/schema/project-entry-states.ts</a></span></li>
+    </ul>
+
+    <h4 class="minihead">Input contract — composite (pulled from multiple sources)</h4>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">DiscriminatorIntakeInput</span> {
+  <span class="comment">// Tier-0 gates — asked explicitly in form OR chat</span>
+  tierZero: <span class="type">TierZeroGates</span>;
+  <span class="comment">// Tier-1 — top-5 asked discriminators</span>
+  asked: <span class="type">AskedDiscriminators</span>;
+  <span class="comment">// companySignals field REMOVED 2026-05-04 evening — M0a feature deleted</span>
+  <span class="comment">// From welcome form (greenfield/brownfield router)</span>
+  entryPattern: <span class="type">EntryPattern</span>;
+}
+
+<span class="keyword">type</span> <span class="type">TierZeroGates</span> = {
+  G1_decisions_needed: <span class="keyword">boolean</span>;     <span class="comment">// YES → fires M4 decision-network</span>
+  G2_prd_needed: <span class="keyword">boolean</span>;           <span class="comment">// YES → fires synthesizer + export</span>
+};
+
+<span class="keyword">type</span> <span class="type">AskedDiscriminators</span> = {
+  D0_product_archetype: <span class="type">ProductArchetype</span>;
+  D4_dau_band: <span class="type">DauBand</span>;             <span class="comment">// '&lt;100' | '100-1K' | '1K-10K' | '10K-100K' | '100K-1M' | '1M+'</span>
+  D6_industry: <span class="type">Industry</span>;
+  D7_transaction_pattern: <span class="type">TransactionPattern</span>;
+  D8_budget_band: <span class="type">BudgetBand</span>;       <span class="comment">// '&lt;$100' | '$100-1K' | '$1-10K' | '$10-100K' | '$100K+'</span>
+};</pre>
+
+    <h4 class="minihead">Output contract — IntakeDiscriminators v1</h4>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">IntakeDiscriminators</span> {
+  _schema: <span class="string">'module-0.intake-discriminators.v1'</span>;
+  produced_at: <span class="keyword">string</span>;
+  tier_zero_gates: <span class="type">TierZeroGates</span>;
+  asked_discriminators: <span class="type">AskedDiscriminators</span>;
+  tier2_inferred: {
+    D1_team_size?: <span class="type">TeamSize</span>;
+    D3_project_type?: <span class="type">ProjectTypeD3</span>;   <span class="comment">// greenfield/brownfield/hybrid</span>
+    D5_business_model?: <span class="type">BusinessModel</span>;  <span class="comment">// B2B/B2C/B2B2C</span>
+    D9_geo?: <span class="keyword">string</span>;
+    D10_sla_tier?: <span class="type">SlaTier</span>;
+    D12_data_sensitivity?: <span class="type">DataSensitivity</span>;
+  };
+  inference_audit: <span class="type">InferenceAuditRow</span>[];  <span class="comment">// every Tier-2 cites concrete sources</span>
+  pruning_set: <span class="type">PruningSetEntry</span>[];        <span class="comment">// alternatives REMOVED before M4 scoring fires</span>
+  computed_constants: <span class="type">ComputedConstants</span>;  <span class="comment">// pre-computed numeric/string primes</span>
+  pipeline_route: <span class="type">PipelineRoute</span>;         <span class="comment">// 'full'|'decisions-only'|'prd-only'|'browse-only'</span>
+}</pre>
+
+    <div class="callout info">
+      <b>Critical property:</b> <b>deterministic</b> — same inputs → same outputs, always. Audit chain reproducibility. This is why no LLM is used.
+    </div>
+  </div>
+</div>
+
+<!-- ============== LAYER 3 — THE GAP ============== -->
+<h2 class="section" id="layer-3"><span class="lvl" style="background: var(--rose-600); color: white;">Layer 3 — THE GAP</span>Adapters (legacy → Crawley)</h2>
+
+<div class="callout danger">
+  <b>Status:</b> ⚠ <b>No adapters exist today.</b> This is the wiring work T8 needs to do. Without these, the math engine has nothing real to score against.
+</div>
+
+<div class="schema-card layer-3">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L3.1</span>
+      <h3 class="schema-title">extractionSchema → Crawley M3 ffbd-v1</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip">~3 hr</span>
+      <span class="chip path-b">blocks Path B M4 firing</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <div class="producer-consumer">
+      <div class="pc producer">
+        <h5>Source (legacy)</h5>
+        <code>extractionSchema.ffbd</code> — produced by intake-side <code>ffbd-agent.ts</code>
+      </div>
+      <div class="pc consumer">
+        <h5>Target (Crawley)</h5>
+        <code>FfbdV1</code> — defined in <code>schemas/module-3/ffbd-v1.ts</code>
+      </div>
+    </div>
+
+    <h4 class="minihead">Differences</h4>
+    <ul class="field-list">
+      <li>Legacy intake has flat <code>functions: string[]</code> + freeform <code>subsystems</code></li>
+      <li>Crawley M3 has <code>ffbdFunctionSchema</code> (discriminatedUnion on <code>kind</code>), <code>ffbdArrowSchema</code>, <code>ffbdLogicGateSchema</code>, <code>ffbdFunctionInputSchema</code>, plus <code>_upstream_refs</code> + <code>_schema</code> envelope</li>
+    </ul>
+
+    <h4 class="minihead">Adapter signature</h4>
+<pre class="codeblock"><span class="keyword">function</span> adaptIntakeFfbdToCrawley(
+  intake: <span class="type">ExtractionResult</span>[<span class="string">'ffbd'</span>],
+  context: { projectId; signals?; usecases }
+): <span class="type">FfbdV1</span>;</pre>
+  </div>
+</div>
+
+<div class="schema-card layer-3">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L3.2</span>
+      <h3 class="schema-title">extractionSchema → Crawley M2 NFRs v2</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip">~3 hr</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <div class="producer-consumer">
+      <div class="pc producer">
+        <h5>Source</h5>
+        <code>extractionSchema.nonFunctionalRequirements: NonFunctionalRequirement[]</code>
+      </div>
+      <div class="pc consumer">
+        <h5>Target</h5>
+        <code>nfrs.v2.json</code> from <code>schemas/module-2/submodule-2-3-nfrs-constants.ts</code>
+      </div>
+    </div>
+
+    <h4 class="minihead">Difference</h4>
+    <p style="font-size: 13px; color: var(--slate-700);">Legacy NFRs are single-attribute (name, description, priority). Crawley M2 NFRs include <code>derivedFrom</code> discriminated union (fmea-derived | data-flow | fr-derived), priority weights, target values, measurement scales, and the engine.json contract for the NFR Engine Interpreter.</p>
+
+    <h4 class="minihead">Adapter signature</h4>
+<pre class="codeblock"><span class="keyword">function</span> adaptIntakeNfrsToCrawley(
+  legacy: <span class="type">NonFunctionalRequirement</span>[],
+  fmeaEarly: <span class="type">FmeaEarly</span>,
+  dataFlows: <span class="type">DataFlowsV1</span>,
+): <span class="type">NfrsV2</span>;</pre>
+  </div>
+</div>
+
+<div class="schema-card layer-3">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L3.3</span>
+      <h3 class="schema-title">SynthesisResult → Crawley M3+M2+M7.a+M8.a (QS path) — BIGGEST</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip">~6-8 hr</span>
+      <span class="chip path-a">blocks Path A M4 firing</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <div class="producer-consumer">
+      <div class="pc producer">
+        <h5>Source</h5>
+        QS <code>SynthesisResult</code> (domainAnalysis + useCaseDerivation)
+      </div>
+      <div class="pc consumer">
+        <h5>Target</h5>
+        Crawley M3 ffbd-v1 + M2 nfrs-v2 + M7.a n2-matrix-v1 + M8.a fmea-early-v1
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <b>Why it's the biggest:</b> QS skips the chat walk, so the adapter must <b>SYNTHESIZE Crawley shapes</b> from minimal seed data (vision + actors + use cases + data entities). All upstream provenance fields (<code>_upstream_refs</code>) get marked <code>provisional: true · synthesized_from: 'qs-shortcut'</code>.
+    </div>
+  </div>
+</div>
+
+<div class="schema-card layer-3" style="opacity: 0.6;">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id" style="text-decoration: line-through;">L3.4</span>
+      <h3 class="schema-title" style="text-decoration: line-through;">M0a CompanySignals → M2 NFR priors</h3>
+      <span class="chip" style="background: #fee; color: #b91c1c; border: 1px solid #fca5a5;">📛 REMOVED 2026-05-04 evening</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <p><b>Adapter removed.</b> M0a signup-signals feature is out of scope per David's call — there are no <code>CompanySignals</code> to adapt. NFR priors come from chat-collected discriminators (industry / target DAU / transaction pattern) only. Adapter count drops from 5 to 4.</p>
+  </div>
+</div>
+
+<div class="schema-card layer-3">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L3.5</span>
+      <h3 class="schema-title">M5 form-function shortcut for v1 (synthesize from vision)</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip">~2 hr</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <div class="producer-consumer">
+      <div class="pc producer">
+        <h5>Source</h5>
+        Vision + actors + use cases (skip Pass 3 prelude in v1)
+      </div>
+      <div class="pc consumer">
+        <h5>Target</h5>
+        Minimal <code>form_function_map.v1.json</code> stub for M4 alternatives column
+      </div>
+    </div>
+
+    <p style="font-size: 13px; color: var(--slate-700);">In v1, M4 alternatives column is normally seeded by M5.4 morphological matrix. Skip the full M5.1-5.5 walk; synthesize a stub with <code>_synthesis_method: 'm5-skipped'</code> for v1→v2 delta transparency.</p>
+  </div>
+</div>
+
+<!-- ============== LAYER 4 ============== -->
+<h2 class="section" id="layer-4"><span class="lvl">Layer 4</span>Crawley upstream artifacts (M4 inputs)</h2>
+
+<div class="callout info">
+  <b>From <code>decision-net-agent.ts:46-54</code> <code>_upstream_refs</code>:</b> M4 declares it consumes ffbd / n2_matrix / fmea_early / nfrs / constants / kb_8_atlas. These are the Crawley-shaped inputs adapters must produce.
+</div>
+
+<div class="schema-card layer-4">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L4.1</span>
+      <h3 class="schema-title">M3 FFBD v1</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-zod">✓ Zod</span>
+      <span class="chip tech-db">🗄 project_artifacts</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">File</h4>
+    <ul class="field-list"><li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-3/ffbd-v1.ts">schemas/module-3/ffbd-v1.ts</a></span></li></ul>
+
+    <h4 class="minihead">Key types</h4>
+    <ul class="field-list">
+      <li><code>ffbdFunctionSchema</code> — discriminated union of function kinds (operate / decide / loop / etc.)</li>
+      <li><code>ffbdArrowSchema</code> — directed arcs between functions</li>
+      <li><code>ffbdLogicGateSchema</code> — AND / OR / EOR / IF gates</li>
+      <li><code>ffbdFunctionInputSchema</code> — function input declarations</li>
+      <li><code>uncertaintyColorSchema</code> — green/yellow/red</li>
+    </ul>
+
+    <div class="producer-consumer">
+      <div class="pc producer">
+        <h5>Producer</h5>
+        Crawley M3 ffbd agent (post-Pass-1 walk OR via L3.1 adapter)
+      </div>
+      <div class="pc consumer">
+        <h5>Consumer</h5>
+        M4 (<code>_upstream_refs.ffbd</code>) · M5 (function inventory) · M7.a (interface decomposition)
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="schema-card layer-4">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L4.2</span>
+      <h3 class="schema-title">M7.a N2 matrix</h3>
+    </div>
+    <div class="schema-meta"><span class="chip tech-zod">✓ Zod</span></div>
+  </div>
+  <div class="schema-body">
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-7-interfaces/n2-matrix.ts">schemas/module-7-interfaces/n2-matrix.ts</a></span></li>
+    </ul>
+    <p style="font-size: 13px;"><b>Shape:</b> <code>n2_matrix.v1.json</code> with rows/cols indexed by FFBD functions, cells carry interface signatures (source × dest × payload).</p>
+
+    <div class="producer-consumer">
+      <div class="pc producer"><h5>Producer</h5>Pass-1 walk after FFBD</div>
+      <div class="pc consumer"><h5>Consumer</h5>M4 (<code>_upstream_refs.n2_matrix</code>) · M8.a (FMEA derives failure modes from interface contracts)</div>
+    </div>
+  </div>
+</div>
+
+<div class="schema-card layer-4">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L4.3</span>
+      <h3 class="schema-title">M8.a FMEA early (INSTRUMENTAL)</h3>
+    </div>
+    <div class="schema-meta"><span class="chip tech-zod">✓ Zod</span><span class="chip">RPN math</span></div>
+  </div>
+  <div class="schema-body">
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-8-risk/fmea-early.ts">schemas/module-8-risk/fmea-early.ts</a></span></li>
+    </ul>
+
+    <h4 class="minihead">Key types</h4>
+    <ul class="field-list">
+      <li><code>targetRefSchema</code> — references to FFBD functions or N2 cells</li>
+      <li><code>candidateMitigationSchema</code> — proposed mitigation strategies</li>
+      <li><code>fmeaFailureModeSchema</code> — RPN-scored failure modes (Severity × Occurrence × Detection)</li>
+    </ul>
+
+    <div class="producer-consumer">
+      <div class="pc producer"><h5>Producer</h5>Pass-1 walk terminal step (per rosetta — fires HERE, not at end)</div>
+      <div class="pc consumer"><h5>Consumer</h5>M2 NFRs (informs target values + priorities) · M5 (redundancy keywords drive form-redundancy phase) · M4 (<code>_upstream_refs.fmea_early</code> for risk-aware scoring)</div>
+    </div>
+  </div>
+</div>
+
+<div class="schema-card layer-4">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L4.4</span>
+      <h3 class="schema-title">M2 NFRs v2 + Constants v2</h3>
+    </div>
+    <div class="schema-meta"><span class="chip tech-zod">✓ Zod</span></div>
+  </div>
+  <div class="schema-body">
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-2/submodule-2-3-nfrs-constants.ts">schemas/module-2/submodule-2-3-nfrs-constants.ts</a></span></li>
+    </ul>
+    <p style="font-size: 13px;"><b>Shape:</b> <code>nfrs.v2.json</code> (NFR list with <code>derivedFrom</code> discriminated union — fmea-derived / data-flow / fr-derived) + <code>constants.v2.json</code> (computed numeric/string primes from NFRs).</p>
+
+    <div class="producer-consumer">
+      <div class="pc producer"><h5>Producer</h5>Pass-2 walk</div>
+      <div class="pc consumer"><h5>Consumer</h5>M4 (<code>_upstream_refs.nfrs + constants</code> — these define the decision criteria) · M5 · M6 QFD · M7.b interface specs</div>
+    </div>
+  </div>
+</div>
+
+<div class="schema-card layer-4">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L4.5</span>
+      <h3 class="schema-title">M5 Form-Function Map (skipped in v1)</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-zod">✓ 14 phase schemas</span>
+      <span class="chip" style="background: var(--rose-50); color: var(--rose-700); border-color: var(--rose-100);">⚠ NOT produced in v1 draft</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-5/index.ts">schemas/module-5/index.ts</a></span></li>
+    </ul>
+    <p style="font-size: 13px;"><b>Output:</b> <code>form_function_map.v1.json</code> with phases 1-7 (form inventory, function inventory, concept-mapping matrix, solution-neutral concept, concept expansion, alternatives, handoff)</p>
+
+    <div class="callout warn">
+      <b>Not produced in v1 draft path</b> — M4 v1 alternatives come from QS-Synthesizer assumptions or from M0b pruning_set, not from a real M5 morphological matrix. v2 paid refinement runs the full M5.1-5.5.
+    </div>
+  </div>
+</div>
+
+<!-- ============== LAYER 5 ============== -->
+<h2 class="section" id="layer-5"><span class="lvl">Layer 5</span>M4 v1 DRAFT decision network</h2>
+
+<div class="schema-card layer-5">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L5.1</span>
+      <h3 class="schema-title">DecisionNetworkV1 — output shape</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip no-llm">🚫 NO LLM in scoring</span>
+      <span class="chip">delegates to NFR Engine</span>
+      <span class="chip tech-zod">✓ 19 phase schemas</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">File</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/system-design/decision-net-agent.ts">agents/system-design/decision-net-agent.ts</a></span> line 46</li>
+    </ul>
+
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">DecisionNetworkV1</span> {
+  _schema: <span class="string">'module-4.decision-network.v1'</span>;
+  _output_path: <span class="keyword">string</span>;
+  _upstream_refs: {
+    ffbd: <span class="keyword">string</span>;          <span class="comment">// path to ffbd.v1.json</span>
+    n2_matrix: <span class="keyword">string</span>;     <span class="comment">// path to n2_matrix.v1.json</span>
+    fmea_early: <span class="keyword">string</span>;    <span class="comment">// path to fmea_early.v1.json</span>
+    nfrs: <span class="keyword">string</span>;          <span class="comment">// path to nfrs.v2.json</span>
+    constants: <span class="keyword">string</span>;     <span class="comment">// path to constants.v2.json</span>
+    kb_8_atlas: <span class="keyword">string</span>;    <span class="comment">// real atlas reads from start (gating revoked 2026-05-04)</span>
+  };
+  produced_at: <span class="keyword">string</span>;
+  produced_by: <span class="keyword">string</span>;
+  system_name: <span class="keyword">string</span>;
+  phases: {
+    phase_14_decision_nodes: <span class="type">Phase14Artifact</span>;
+    phase_15_decision_dependencies: <span class="type">Phase15Artifact</span>;
+    phase_16_pareto_frontier: <span class="type">Phase16Artifact</span>;
+    phase_17b_sensitivity: <span class="type">Phase17bArtifact</span>;
+    phase_19_empirical_prior_binding: <span class="type">Phase19Artifact</span>;
+    phases_11_13_vector_scores: <span class="type">Phases11to13VectorScoresArtifact</span>;
+  };
+  decision_audit: <span class="type">DecisionAuditRow</span>[];   <span class="comment">// G5 audit log</span>
+  selected_architecture_id: <span class="keyword">string</span>;
+}
+
+<span class="keyword">interface</span> <span class="type">DecisionAuditRow</span> {
+  row_id: <span class="keyword">string</span>;
+  decision_node_id: <span class="keyword">string</span>;
+  model_version: <span class="keyword">string</span>;
+  kb_chunk_ids: <span class="keyword">string</span>[];               <span class="comment">// empty in v1 (no atlas)</span>
+  engine_rule_id: <span class="keyword">string</span>;               <span class="comment">// which NFR Engine rule fired</span>
+  timestamp: <span class="keyword">string</span>;
+  hash_chain_prev: <span class="keyword">string</span>;
+  hash_self: <span class="keyword">string</span>;
+  provisional: <span class="keyword">boolean</span>;                 <span class="comment">// ALWAYS true in v1</span>
+}</pre>
+  </div>
+</div>
+
+<div class="schema-card layer-5">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L5.2</span>
+      <h3 class="schema-title">The handshake to math engine</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip no-llm">🚫 NO LLM hot path</span>
+      <span class="chip">pure arithmetic</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <div class="callout danger">
+      <b>Critical:</b> <code>decision-net-agent.ts</code> declares (line 88-93): <i>"The agent NEVER computes scores itself; it delegates here so every score is audit-logged with kb_chunk_ids + engine_rule_id."</i>
+    </div>
+
+    <h4 class="minihead">Math engine</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/engines/nfr-engine-interpreter.ts">lib/langchain/engines/nfr-engine-interpreter.ts</a></span> · <i>"Pure arithmetic + predicate matching — zero LLM calls in the hot path"</i></li>
+    </ul>
+
+    <h4 class="minihead">DecisionNetAgentDeps</h4>
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">DecisionNetAgentDeps</span> {
+  scoreViaEngine: (args: {
+    decisionNodeId: <span class="keyword">string</span>;
+    alternativeId: <span class="keyword">string</span>;
+    criterionId: <span class="keyword">string</span>;
+    kbChunkIds: <span class="keyword">string</span>[];   <span class="comment">// empty in v1</span>
+  }) =&gt; <span class="type">Promise</span>&lt;{
+    raw_value: <span class="keyword">number</span>;
+    normalized_value: <span class="keyword">number</span>;
+    engine_rule_id: <span class="keyword">string</span>;
+  }&gt;;
+  appendAuditRow: (row: <span class="type">DecisionAuditRow</span>) =&gt; <span class="type">Promise</span>&lt;<span class="keyword">void</span>&gt;;
+  modelVersion: <span class="keyword">string</span>;
+}</pre>
+
+    <h4 class="minihead">v1 draft mode behavior</h4>
+    <ul class="field-list">
+      <li><code>kb_chunk_ids: [...]</code> — real atlas reads from the start (gating revoked 2026-05-04 evening)</li>
+      <li><code>provisional: true</code> on every prior (<code>sample_size &lt; 10</code>)</li>
+      <li>Scoring uses NFR-engine rules + assumed defaults from M0b <code>computed_constants</code></li>
+    </ul>
+
+    <h4 class="minihead">Persists to</h4>
+    <p><code>project_artifacts</code> row with <code>kind = 'decision_network_v1'</code> + <code>kind: 'draft'</code> discriminator (per T1).</p>
+  </div>
+</div>
+
+<!-- ============== LAYER 6 ============== -->
+<h2 class="section" id="layer-6"><span class="lvl">Layer 6</span>architecture_recommendation v1 DRAFT keystone</h2>
+
+<div class="schema-card layer-6">
+  <div class="schema-head">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span class="schema-id">L6.1</span>
+      <h3 class="schema-title">ArchitectureRecommendationV1 — output shape</h3>
+    </div>
+    <div class="schema-meta">
+      <span class="chip tech-zod">✓ Zod</span>
+      <span class="chip">SHA-256 inputs_hash</span>
+      <span class="chip">kind: 'draft' | 'refined'</span>
+    </div>
+  </div>
+  <div class="schema-body">
+    <h4 class="minihead">Files</h4>
+    <ul class="field-list">
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/synthesis/architecture-recommendation.ts">schemas/synthesis/architecture-recommendation.ts</a></span></li>
+      <li><span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/system-design/synthesis-agent.ts">agents/system-design/synthesis-agent.ts</a></span> (T6 keystone)</li>
+    </ul>
+
+<pre class="codeblock"><span class="keyword">interface</span> <span class="type">ArchitectureRecommendationV1</span> {
+  _schema: <span class="string">'synthesis.architecture-recommendation.v1'</span>;
+  kind: <span class="string">'draft'</span> | <span class="string">'refined'</span>;      <span class="comment">// 'draft' in v1 path</span>
+  produced_at: <span class="keyword">string</span>;
+  inputs_hash: <span class="keyword">string</span>;             <span class="comment">// SHA-256 for cache deduplication</span>
+  decisions: <span class="type">Array</span>&lt;{
+    id: <span class="keyword">string</span>;                    <span class="comment">// 'D-01' | 'D-02' | ...</span>
+    decision: <span class="keyword">string</span>;
+    rationale: <span class="keyword">string</span>;
+    chosen_alternative_id: <span class="keyword">string</span>;
+    empirical_priors: <span class="type">Array</span>&lt;{
+      atlas_entry_id: <span class="keyword">string</span> | <span class="keyword">null</span>;   <span class="comment">// null in v1 (no atlas)</span>
+      citation: <span class="keyword">string</span>;                <span class="comment">// 'provisional' in v1</span>
+      sample_size: <span class="keyword">number</span>;             <span class="comment">// 0 in v1</span>
+      provisional: <span class="keyword">boolean</span>;            <span class="comment">// true in v1</span>
+    }&gt;;
+    delta_teaser?: <span class="keyword">string</span>;             <span class="comment">// v1 only — preview of what atlas would change</span>
+  }&gt;;
+  pareto_alternatives: <span class="type">Array</span>&lt;{ id; utility_total; on_frontier; choices[] }&gt;;
+  recommended_alternative: <span class="keyword">string</span>;
+  derivation_chain: <span class="type">DerivationChainNode</span>[];   <span class="comment">// v1: sparse; v2: full back-prop</span>
+  mermaid_bundle: <span class="type">MermaidBundle</span>;             <span class="comment">// viz output</span>
+  fmea_residual_flags?: <span class="type">FmeaResidualFlag</span>[];  <span class="comment">// empty in v1 (M8.b is paid-only)</span>
+  provisional: <span class="keyword">boolean</span>;                       <span class="comment">// true in v1</span>
+}</pre>
+
+    <h4 class="minihead">Storage</h4>
+    <p style="font-size: 13px;">Per T1 (kind discriminator) + T4 (viewer fallback):</p>
+    <ul class="field-list">
+      <li><code>project_artifacts.kind = 'recommendation_json'</code></li>
+      <li><code>kind:'draft'</code> discriminator on the artifact</li>
+      <li>Viewer at <code>/requirements/architecture/page.tsx</code> reads via <code>getArtifactByKind(projectId, 'recommendation_json')</code> → renders v1 with amber "Draft" badge OR v2 with green "Refined · Atlas-grounded" badge</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============== WALKTHROUGH ============== -->
+<h2 class="section" id="walkthrough">End-to-end narrative walkthrough</h2>
+
+<h3 class="subsection">Path A — Quick Start (1-shot ~37s to v1 visible)</h3>
+<div class="timeline">
+  <div class="step"><span class="t">t=0</span><span class="desc"><b>User signs up.</b> Welcome form captured. (M0a Clerk-webhook background scrape REMOVED 2026-05-04 evening.)</span></div>
+  <div class="step"><span class="t">t=0</span><span class="desc"><b>User fills welcome form</b> (vision + projectType + budget + greenfield/brownfield).</span></div>
+  <div class="step"><span class="t">t=2s</span><span class="desc"><code>createProject</code> action persists to <code>projects</code> table (status=intake).</span></div>
+  <div class="step"><span class="t">t=2s</span><span class="desc">User clicks Quick Start → <code>POST /api/projects/[id]/quick-start</code> → <code>runQuickStartPipeline</code>.</span></div>
+  <div class="step"><span class="t">t=3s</span><span class="desc"><b>QS-Synthesizer (post-T7.6)</b> fires with <code>QsM4PrepInput</code>.</span></div>
+  <div class="step"><span class="t">t=10s</span><span class="desc"><code>SynthesisResult</code> → <b>adapter L3.3</b> → synthesizes Crawley M3 ffbd-v1, M2 NFRs (provisional), M7.a N2, M8.a FMEA-early stubs into project_artifacts with <code>kind:'draft'</code>.</span></div>
+  <div class="step"><span class="t">t=12s</span><span class="desc"><b>M0b discriminator gate fires (deterministic):</b> aggregates form fields + form-derived AskedDiscriminators → emits IntakeDiscriminators v1. Persists to <code>project_entry_states</code>. Pruning_set + computed_constants now available. (M0a signals input REMOVED 2026-05-04 evening.)</span></div>
+  <div class="step"><span class="t">t=15s</span><span class="desc"><b>decision-net-agent fires in v1-draft mode.</b> Reads Crawley upstream + pruning_set. Delegates scoring to NFR Engine. <b>Atlas reads fire from the beginning</b> (atlas-gating revoked 2026-05-04 evening) — <code>kb_chunk_ids</code> populated from real atlas priors via pgvector. Writes <code>decision_network_v1</code> to project_artifacts with <code>kind:'draft'</code>.</span></div>
+  <div class="step"><span class="t">t=35s</span><span class="desc"><b>synthesis-agent (T6 keystone)</b> reads M4 v1 output → emits <code>architecture_recommendation.v1.json</code> with <code>kind:'draft'</code>, <code>provisional: true</code>, <code>delta_teaser</code> populated.</span></div>
+  <div class="step"><span class="t">t=37s</span><span class="desc"><b>Frontend renders:</b> <code>/requirements/architecture</code> shows v1 draft with amber badge + "Refine to full SYN blueprint (1000 credits)" CTA.</span></div>
+</div>
+
+<h3 class="subsection">Path B — Chat-Intake (multi-turn, ~3-10 min to v1 visible)</h3>
+<div class="timeline">
+  <div class="step"><span class="t">t=0</span><span class="desc">Same signup + form + createProject as Path A.</span></div>
+  <div class="step"><span class="t">t=2s</span><span class="desc"><b>User starts chatting.</b> Each turn: <code>extract-data.ts</code> updates <code>extractedData</code> jsonb; <code>kb-question-generator.ts</code> surfaces next discriminator question (in-chat, "helps me X" framing); backend agents fire when KB phase advances.</span></div>
+  <div class="step"><span class="t">turns 1-N</span><span class="desc">User answers progressively cover D4 / D6 / D7 (the chat-driven discriminators).</span></div>
+  <div class="step"><span class="t">when sufficient</span><span class="desc"><b>Adapters L3.1, L3.2</b> transform legacy → Crawley shapes.</span></div>
+  <div class="step"><span class="t">t=N min</span><span class="desc">Same M0b → M4 → SYN sequence as Path A (steps 7-10 above).</span></div>
+</div>
+
+<div class="callout good">
+  <b>Convergence point:</b> both paths converge at <b>step 7 (M0b discriminator gate)</b>. Above this, paths differ. Below this, both produce identical-shaped Crawley artifacts and v1 draft.
+</div>
+
+<!-- ============== ADAPTER PRIORITY ============== -->
+<h2 class="section" id="adapter-priority">Adapter implementation priority (T8)</h2>
+
+<table>
+  <tr><th>#</th><th>Adapter</th><th>Effort</th><th>Blocks</th></tr>
+  <tr style="opacity:0.5;text-decoration:line-through;"><td><b>1</b></td><td><code>adaptCompanySignalsToM2NFRSeeds</code> (L3.4)</td><td>—</td><td>📛 REMOVED 2026-05-04 — M0a feature deleted</td></tr>
+  <tr><td><b>2</b></td><td><code>adaptSynthesisResultToCrawleyM3M2M7aM8a</code> (L3.3)</td><td>~6-8 hr</td><td>QS path's M4 ability to fire</td></tr>
+  <tr><td><b>3</b></td><td><code>adaptIntakeFfbdToCrawley</code> (L3.1)</td><td>~3 hr</td><td>Chat-intake's M4 ability to fire</td></tr>
+  <tr><td><b>4</b></td><td><code>adaptIntakeNfrsToCrawley</code> (L3.2)</td><td>~3 hr</td><td>Same</td></tr>
+  <tr><td><b>5</b></td><td>M5 form-function shortcut for v1 (L3.5)</td><td>~2 hr</td><td>M4 alternatives column when M5 walk skipped</td></tr>
+</table>
+
+<div class="callout info">
+  <b>Total adapter work: ~14-19 hr</b> (was ~15-20 hr; L3.4 removed with M0a 2026-05-04 evening). Adapter count drops from 5 to 4. This is the bulk of T8.
+</div>
+
+<!-- ============== STORAGE MAP ============== -->
+<h2 class="section" id="storage-map">Storage map</h2>
+
+<table>
+  <tr><th>Table / column</th><th>What lives here</th><th>Schema file</th></tr>
+  <tr><td><code>projects</code></td><td>createProject output (vision, projectType, budget, status)</td><td><code>lib/db/schema/projects.ts</code></td></tr>
+  <tr style="opacity:0.5;text-decoration:line-through;"><td><code>user_signals</code></td><td>📛 REMOVED 2026-05-04 — table idle (M0a feature deleted)</td><td><code>lib/db/schema/user-signals.ts</code></td></tr>
+  <tr><td><code>project_entry_states</code></td><td>M0b IntakeDiscriminators v1</td><td><code>lib/db/schema/project-entry-states.ts</code></td></tr>
+  <tr><td><code>project_data.intake_state</code> jsonb</td><td>IntakeState (chat path) including extractionSchema + draftArchitecture (T1.5)</td><td><code>lib/db/schema/project-data.ts</code></td></tr>
+  <tr><td><code>project_artifacts</code></td><td>All Crawley artifacts (ffbd_v1, n2_matrix_v1, fmea_early_v1, nfrs_v2, decision_network_v1, recommendation_json, ...) with <code>kind:'draft' | 'refined'</code> per T1</td><td><code>lib/db/schema/project-artifacts.ts</code></td></tr>
+  <tr><td><code>userStories</code></td><td>Stories agent output</td><td><code>lib/db/schema/user-stories.ts</code></td></tr>
+  <tr><td><code>conversations</code></td><td>Chat messages</td><td><code>lib/db/schema/conversations.ts</code></td></tr>
+</table>
+
+<!-- ============== TAXONOMY ============== -->
+<h2 class="section" id="taxonomy">7-level archetype taxonomy</h2>
+
+<div class="callout info">
+  For full taxonomy details see <a href="file:///Users/davidancor/Projects/c1v/plans/draft-pipeline-funnel-project-plan.html#t7">funnel plan T7</a> + <a href="file:///Users/davidancor/Projects/c1v-project-admin-main/c1v-marketing/intake-data-map.html">canonical intake-data-map</a>.
+</div>
+
+<table>
+  <tr><th>Level</th><th>Axis</th><th>Where it surfaces in this doc</th></tr>
+  <tr><td><b>L1</b></td><td>Application shape</td><td>v1 draft Pareto — comes from QS-Synthesizer's <code>decisionNetworkInputs.alternatives[].app_shape</code> tuple field</td></tr>
+  <tr><td><b>L2</b></td><td>AI engagement</td><td>v1 draft Pareto — comes from <code>decisionNetworkInputs.alternatives[].ai_pattern</code> tuple field</td></tr>
+  <tr><td><b>L3</b></td><td>Inference topology</td><td>v2 paid refinement (full M4 + atlas)</td></tr>
+  <tr><td><b>L4</b></td><td>Release strategy</td><td>v2 paid refinement</td></tr>
+  <tr><td><b>L5</b></td><td>Retraining loop</td><td>v2 paid refinement</td></tr>
+  <tr><td><b>L6</b></td><td>Platform components</td><td>v2.2.4 deferred</td></tr>
+  <tr><td><b>L7</b></td><td>Edge / compression</td><td>v2 paid refinement</td></tr>
+</table>
+
+<!-- ============== OPEN QUESTIONS ============== -->
+<h2 class="section" id="open-questions">Open questions</h2>
+
+<ol style="font-size: 14px; line-height: 1.7;">
+  <li><b>Adapter ownership</b> — should L3.1-L3.5 adapters live in a new <code>lib/langchain/adapters/</code> directory, or alongside the agents that need them?</li>
+  <li><b>M5 shortcut policy</b> — when QS skips M5 form-function walk, should v1 draft alternatives carry an explicit <code>_synthesis_method: 'm5-skipped' | 'm5-fast-track' | 'm5-full'</code> field for transparency in the v1→v2 delta?</li>
+  <li><b>~~Atlas stub provenance~~</b> — REMOVED 2026-05-04 evening. The "atlas is paid-tier only · v1 emits empty <code>kb_chunk_ids</code>" invariant is REVOKED. Atlas reads fire from the beginning across all tiers. The open question about <code>_atlas_invariant_proof</code> is moot — there's no invariant to prove anymore.</li>
+</ol>
+
+<!-- ============== REFERENCES ============== -->
+<h2 class="section" id="refs">Cross-references</h2>
+
+<ul class="field-list">
+  <li><b>Funnel plan T7 (locked strategy):</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/plans/draft-pipeline-funnel-project-plan.html#t7">plans/draft-pipeline-funnel-project-plan.html#t7</a></span></li>
+  <li><b>Canonical intake-data-map (5-layer mess):</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v-project-admin-main/c1v-marketing/intake-data-map.html">c1v-project-admin-main/c1v-marketing/intake-data-map.html</a></span></li>
+  <li><b>Methodology rosetta (Pass 1/2/3 mapping):</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/plans/methodology-rosetta.md">plans/methodology-rosetta.md</a></span></li>
+  <li><b>Math sources (F1-F30 bibliography · DDIA F16-F21 · DMLS F22-F30):</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/plans/research/math-sources.md">plans/research/math-sources.md</a></span></li>
+  <li><b>System-design math logic (430-line strategy doc · workload/QoS/PACELC):</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/system-design/system-design-math-logic.md">system-design/system-design-math-logic.md</a></span></li>
+  <li><b>Atlas invariant + canonical sources:</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/CLAUDE.md">apps/product-helper/CLAUDE.md</a></span> § Invariants + § Canonical Reference Sources</li>
+  <li><b>Markdown twin of this doc:</b> <span class="file-pill"><a href="file:///Users/davidancor/Projects/c1v/plans/intake-to-m4-draft-zod-handshake.md">plans/intake-to-m4-draft-zod-handshake.md</a></span></li>
+</ul>
+
+<h3 class="subsection">Canonical book sources on disk</h3>
+<table>
+  <tr><th>Source</th><th>Year</th><th>Coverage</th><th>Status / Path</th></tr>
+  <tr>
+    <td><b>Crawley/Cameron/Selva</b><br/><i>System Architecture</i></td>
+    <td>2015</td>
+    <td>Form-function bridge · Decision Network · Three-pass canonical order. Methodology foundation.</td>
+    <td>✅ on disk · KB at <code>.planning/phases/13-Knowledge-banks-deepened/2-system-architecture-strategy-product-development/</code></td>
+  </tr>
+  <tr>
+    <td><b>Huyen</b><br/><i>AI Engineering</i></td>
+    <td>2024</td>
+    <td>FM-era patterns (RAG, agents, fine-tuning). Drives L2 AI archetypes.</td>
+    <td>✅ on disk · 12,365 lines + 229 artifacts at <code>.planning/.../ai-architecture/huyen-book/</code></td>
+  </tr>
+  <tr>
+    <td><b>Kleppmann</b><br/><i>Designing Data-Intensive Applications</i> (DDIA, ScyllaDB excerpt)</td>
+    <td>2017</td>
+    <td>Storage engines (Ch 3) · Replication (Ch 5) · Trouble with Distributed Systems (Ch 8). Backs F16-F21 in math bibliography. PACELC ground truth.</td>
+    <td>✅ on disk · 3,483 lines + 58 artifacts at <code>.planning/.../ai-architecture/ScyllaDB-Designing-Data-Intensive-Applications.md</code></td>
+  </tr>
+  <tr>
+    <td><b>Huyen</b><br/><i>Designing Machine Learning Systems</i> (DMLS)</td>
+    <td>2022</td>
+    <td>ML ops · drift detection · deployment topology · feature stores. Targeted chapters: 7 (Deployment), 8 (Drift), 9 (Continual Learning), 10 (MLOps).</td>
+    <td>✅ on disk · 7,283 lines + 177 artifacts at <code>.planning/.../ai-architecture/dmls-book/dmls.md</code></td>
+  </tr>
+</table>
+
+<footer>
+  Generated 2026-05-04 · Reference doc — keep in sync with code · Markdown twin at <code>plans/intake-to-m4-draft-zod-handshake.md</code>
+</footer>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    themeVariables: {
+      fontFamily: "'Space Grotesk', sans-serif",
+      primaryColor: '#FBFCFC',
+      primaryTextColor: '#0B2C29',
+      primaryBorderColor: '#0B2C29',
+      lineColor: '#475569',
+      secondaryColor: '#5998C5',
+      tertiaryColor: '#F18F01',
+    }
+  });
+</script>
+</body>
+</html>

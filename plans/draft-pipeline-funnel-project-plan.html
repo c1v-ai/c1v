@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Draft Pipeline Funnel — Visual Project Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --firefly: #0B2C29;
+    --porcelain: #FBFCFC;
+    --tangerine: #F18F01;
+    --danube: #5998C5;
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --amber-50: #fffbeb;
+    --amber-100: #fef3c7;
+    --amber-200: #fde68a;
+    --amber-600: #d97706;
+    --amber-700: #b45309;
+    --emerald-50: #ecfdf5;
+    --emerald-100: #d1fae5;
+    --emerald-600: #059669;
+    --emerald-700: #047857;
+    --rose-50: #fff1f2;
+    --rose-100: #ffe4e6;
+    --rose-600: #e11d48;
+    --rose-700: #be123c;
+    --indigo-50: #eef2ff;
+    --indigo-100: #e0e7ff;
+    --indigo-600: #4f46e5;
+    --indigo-700: #4338ca;
+    --purple-50: #faf5ff;
+    --purple-100: #f3e8ff;
+    --purple-600: #9333ea;
+    --purple-700: #7e22ce;
+    --sky-50: #f0f9ff;
+    --sky-100: #e0f2fe;
+    --sky-600: #0284c7;
+    --sky-700: #0369a1;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--porcelain);
+    color: var(--slate-900);
+    margin: 0;
+    line-height: 1.55;
+    font-size: 14.5px;
+  }
+
+  code, pre, .mono {
+    font-family: 'Consolas', 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 13px;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 32px 96px;
+  }
+
+  /* HEADER */
+  header.hero {
+    background: var(--firefly);
+    color: var(--porcelain);
+    padding: 36px 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+  }
+  header.hero h1 {
+    margin: 0 0 12px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  header.hero .meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: rgba(251, 252, 252, 0.75);
+  }
+  header.hero .meta span strong {
+    color: var(--tangerine);
+    font-weight: 600;
+  }
+  header.hero p.tldr {
+    margin: 18px 0 0;
+    font-size: 15px;
+    line-height: 1.65;
+    color: rgba(251, 252, 252, 0.92);
+    max-width: 920px;
+  }
+
+  /* SECTIONS */
+  h2.section {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--firefly);
+    letter-spacing: -0.01em;
+  }
+  h3.subsection {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 28px 0 10px;
+    color: var(--slate-700);
+  }
+
+  /* TOC */
+  nav.toc {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--slate-500);
+    font-weight: 600;
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 32px;
+  }
+  nav.toc li {
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+  nav.toc a { color: var(--slate-700); text-decoration: none; }
+  nav.toc a:hover { color: var(--tangerine); text-decoration: underline; }
+
+  /* CHIPS */
+  .chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 2px 4px 2px 0;
+    border: 1px solid;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .chip.model-haiku   { background: var(--emerald-50);  color: var(--emerald-700); border-color: var(--emerald-100); }
+  .chip.model-sonnet  { background: var(--sky-50);      color: var(--sky-700);     border-color: var(--sky-100); }
+  .chip.model-opus    { background: var(--purple-50);   color: var(--purple-700);  border-color: var(--purple-100); }
+  .chip.tech-zod      { background: var(--emerald-50);  color: var(--emerald-700); border-color: var(--emerald-100); }
+  .chip.tech-langgraph{ background: var(--amber-50);    color: var(--amber-700);   border-color: var(--amber-100); }
+  .chip.tech-langchain{ background: var(--amber-50);    color: var(--amber-700);   border-color: var(--amber-100); }
+  .chip.tech-db       { background: var(--slate-100);   color: var(--slate-700);   border-color: var(--slate-200); }
+  .chip.tech-storage  { background: var(--slate-100);   color: var(--slate-700);   border-color: var(--slate-200); }
+  .chip.tech-react    { background: var(--sky-50);      color: var(--sky-700);     border-color: var(--sky-100); }
+  .chip.tech-test     { background: var(--indigo-50);   color: var(--indigo-700);  border-color: var(--indigo-100); }
+  .chip.tech-ts       { background: var(--indigo-50);   color: var(--indigo-700);  border-color: var(--indigo-100); }
+  .chip.tech-mermaid  { background: var(--rose-50);     color: var(--rose-700);    border-color: var(--rose-100); }
+  .chip.tech-flag     { background: var(--amber-50);    color: var(--amber-700);   border-color: var(--amber-100); }
+  .chip.tech-ui       { background: var(--purple-50);   color: var(--purple-700);  border-color: var(--purple-100); }
+
+  /* TASK CARDS */
+  .task-card {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .task-card.frozen { border-left: 4px solid var(--rose-600); }
+  .task-card.gate   { border-left: 4px solid var(--amber-600); }
+  .task-card.value  { border-left: 4px solid var(--tangerine); }
+
+  .task-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px 12px;
+    border-bottom: 1px solid var(--slate-100);
+    flex-wrap: wrap;
+  }
+  .task-id-block { display: flex; align-items: center; gap: 12px; }
+  .task-id {
+    background: var(--firefly);
+    color: var(--porcelain);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    font-family: 'Consolas', monospace;
+  }
+  .task-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--slate-900);
+    letter-spacing: -0.01em;
+  }
+  .task-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--slate-600);
+    align-items: center;
+  }
+  .task-meta b { color: var(--slate-900); font-weight: 600; }
+  .task-meta .effort { color: var(--tangerine); font-weight: 600; }
+  .task-meta .blocked { color: var(--rose-600); font-weight: 600; }
+
+  .task-body { padding: 18px 22px; }
+
+  .task-body h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--slate-500);
+    margin: 18px 0 8px;
+  }
+  .task-body h4:first-child { margin-top: 0; }
+
+  /* PIPELINE LOCATION CALLOUT */
+  .pipeline-loc {
+    background: linear-gradient(135deg, var(--firefly) 0%, #133e3a 100%);
+    color: var(--porcelain);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    border-left: 4px solid var(--tangerine);
+  }
+  .pipeline-loc .label {
+    display: inline-block;
+    background: var(--tangerine);
+    color: var(--firefly);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .pipeline-loc strong { color: var(--tangerine); font-weight: 600; }
+  .pipeline-loc .agent-tag {
+    display: inline-block;
+    background: rgba(241, 143, 1, 0.15);
+    color: var(--tangerine);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 2px;
+  }
+  .pipeline-loc .lane-a { color: var(--danube); font-weight: 600; }
+  .pipeline-loc .lane-b { color: #c084fc; font-weight: 600; }
+
+  /* FILE LIST */
+  ul.file-list { margin: 6px 0 12px; padding-left: 18px; font-size: 13px; }
+  ul.file-list li { margin-bottom: 4px; }
+  ul.file-list a { color: var(--sky-700); text-decoration: none; word-break: break-all; }
+  ul.file-list a:hover { color: var(--tangerine); text-decoration: underline; }
+  ul.file-list .filenote { color: var(--slate-500); font-size: 12px; }
+  ul.file-list .frozen-icon::before { content: "🔒 "; }
+
+  ol.steps { margin: 8px 0 12px; padding-left: 22px; font-size: 13.5px; }
+  ol.steps li { margin-bottom: 6px; }
+  ol.steps code { background: var(--slate-100); padding: 1px 6px; border-radius: 4px; }
+
+  pre.codeblock {
+    background: var(--slate-900);
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.55;
+    margin: 10px 0;
+  }
+  pre.codeblock .keyword { color: #c084fc; }
+  pre.codeblock .string  { color: #fbbf24; }
+  pre.codeblock .comment { color: #64748b; font-style: italic; }
+
+  .verify {
+    background: var(--emerald-50);
+    border: 1px solid var(--emerald-100);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--emerald-700);
+  }
+  .verify::before { content: "✓ "; font-weight: bold; }
+
+  /* TIMELINE / PHASE BAR */
+  .phase-bar {
+    display: flex;
+    margin: 24px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--slate-200);
+  }
+  .phase-bar .phase {
+    flex: 1;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 12.5px;
+    border-right: 1px solid var(--slate-200);
+  }
+  .phase-bar .phase:last-child { border-right: none; }
+  .phase-bar .phase b { display: block; font-size: 13.5px; margin-bottom: 2px; color: var(--firefly); }
+  .phase-bar .phase span { color: var(--slate-500); font-size: 11.5px; }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--slate-100);
+    vertical-align: top;
+  }
+  th {
+    background: var(--slate-50);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--slate-600);
+    font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.mono { font-family: 'Consolas', monospace; font-size: 12px; }
+
+  /* CHECKLIST */
+  ul.checklist {
+    list-style: none;
+    padding-left: 0;
+    margin: 12px 0;
+    font-size: 13.5px;
+  }
+  ul.checklist li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+    border-bottom: 1px dashed var(--slate-100);
+  }
+  ul.checklist li::before {
+    content: "☐";
+    position: absolute;
+    left: 6px;
+    top: 5px;
+    color: var(--slate-400);
+    font-size: 16px;
+  }
+  ul.checklist li.done::before { content: "✓"; color: var(--emerald-600); }
+  ul.checklist li b { color: var(--firefly); }
+
+  /* MERMAID */
+  .mermaid-wrap {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 22px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  /* CALLOUTS */
+  .callout {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .callout.warn   { background: var(--amber-50);  border-left: 3px solid var(--amber-600);   color: var(--amber-700); }
+  .callout.info   { background: var(--sky-50);    border-left: 3px solid var(--sky-600);     color: var(--sky-700); }
+  .callout.danger { background: var(--rose-50);   border-left: 3px solid var(--rose-600);    color: var(--rose-700); }
+  .callout.good   { background: var(--emerald-50);border-left: 3px solid var(--emerald-600); color: var(--emerald-700); }
+  .callout b { color: inherit; font-weight: 700; }
+
+  /* OUTPUT ROUTE */
+  .output-route {
+    background: var(--firefly);
+    color: var(--porcelain);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    display: inline-block;
+    margin: 4px 0;
+  }
+  .output-route::before { content: "→ "; color: var(--tangerine); font-weight: bold; }
+
+  /* TIME-MATH */
+  .timemath {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .timemath .card {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .timemath .card.win {
+    background: var(--firefly);
+    color: var(--porcelain);
+    border-color: var(--firefly);
+  }
+  .timemath .card h4 {
+    margin: 0 0 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--slate-500);
+    font-weight: 600;
+  }
+  .timemath .card.win h4 { color: var(--tangerine); }
+  .timemath .card .big {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 4px 0;
+    letter-spacing: -0.02em;
+  }
+  .timemath .card.win .big { color: var(--tangerine); }
+  .timemath .card .small { font-size: 12.5px; color: var(--slate-500); }
+  .timemath .card.win .small { color: rgba(251,252,252, 0.7); }
+
+  /* FOOTER */
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--slate-200);
+    color: var(--slate-500);
+    font-size: 12px;
+    text-align: center;
+  }
+  footer a { color: var(--slate-700); }
+
+  /* RESPONSIVE */
+  @media (max-width: 720px) {
+    .container { padding: 16px; }
+    nav.toc ol { columns: 1; }
+    .timemath { grid-template-columns: 1fr; }
+    .phase-bar { flex-direction: column; }
+    .phase-bar .phase { border-right: none; border-bottom: 1px solid var(--slate-200); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HERO -->
+<header class="hero">
+  <h1>Draft Pipeline Funnel — Visual Project Plan</h1>
+  <div class="meta">
+    <span><strong>Source:</strong> HANDOFF-2026-05-04-draft-pipeline-funnel.md</span>
+    <span><strong>Base:</strong> 41acf9f (V2 fix shipped)</span>
+    <span><strong>New branch:</strong> feat/draft-pipeline-funnel</span>
+    <span><strong>Effort:</strong> ~5 days end-to-end</span>
+    <span><strong>Status:</strong> PLAN ONLY</span>
+  </div>
+  <p class="tldr">
+    <b>Free tier delivers a fully usable preliminary system design</b> — Project Overview + all of Scope (FFBD, Data Flows, Interfaces, Data Schema, FMEA, House of Quality, Decision Matrix go/no-go) + first-pass System Architecture Recommendation (NFR, Tech Stack, API Specs, Diagrams). Time to first usable Scope artifact: <b style="color:var(--tangerine);">&lt;60s</b>. Users iterate freely via chat — same free tier.
+    <br><br>
+    <b>Paid gate</b> (1000 credits at <code style="background:rgba(251,252,252,0.1);padding:1px 6px;border-radius:3px;">POST /api/projects/:id/synthesize</code>) unlocks the <b>SYN keystone group</b> only: Decision Network (Opus 4.7, 19 phases), Tradespace · Pareto · Sensitivity, Optimization Patterns, Architecture Diagram — all with full Pareto math + sensitivity analysis + derivation chain + signed export bundle. Paid refresh ALSO upgrades NFR / Tech Stack / API Specs from preliminary → math-grounded (per decision (c)). <b>Atlas reads happen across all tiers</b> from the start (atlas-gating revoked 2026-05-04 evening).
+    <br><br>
+    Same URLs, same components, in-place state discriminator (<code style="background:rgba(241,143,1,0.15);padding:1px 6px;border-radius:3px;color:var(--tangerine);">kind: 'draft' | 'refined'</code>). No new paywall surface. No URL forks. No code deletion.
+  </p>
+</header>
+
+<!-- TOC -->
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#pipeline-map">Pipeline picture</a></li>
+    <li><a href="#timemath">Time math (37s vs 100s)</a></li>
+    <li><a href="#phases">Phase summary</a></li>
+    <li><a href="#t0">T0 — Phase-gate NFR envelope</a></li>
+    <li><a href="#t05">T0.5 — Drop dead code (runLlmOnly)</a></li>
+    <li><a href="#validation">Phase 1 — Validation gate</a></li>
+    <li><a href="#t1">T1 — kind discriminator on schemas</a></li>
+    <li><a href="#t15">T1.5 — Extend extractionSchema</a></li>
+    <li><a href="#t2">T2 — Repurpose intake agents as draft</a></li>
+    <li><a href="#t3">T3 — generate-arch-preview.ts (free-tier motivator)</a></li>
+    <li><a href="#t5">T5 — kbAnalysisLLM migration</a></li>
+    <li><a href="#t4">T4 — Viewer badge + page.tsx</a></li>
+    <li><a href="#t6">T6 — Quick Start salvage (run first in Phase 2)</a></li>
+    <li><a href="#t7">T7 — Intake Mess audit (gates all of Phase 2)</a></li>
+    <li><a href="#t8">T8 — Tradespace + Pareto + Sensitivity page (last sprint)</a></li>
+    <li><a href="#t9">T9 — Explorer tree restructure (last sprint)</a></li>
+    <li><a href="#legacy">Legacy data sweep (SQL)</a></li>
+    <li><a href="#dod">Definition of Done</a></li>
+    <li><a href="#gotchas">Gotchas reference</a></li>
+    <li><a href="#companions">Companion docs</a></li>
+  </ol>
+</nav>
+
+<!-- ATLAS INVARIANT (REVISED 2026-05-04 evening) -->
+<div class="callout info" style="margin-bottom: 18px;">
+  <b>🌍 Atlas (KB-9) fires from the beginning — across all tiers.</b> Atlas is shared infrastructure: free-tier paths (intake fan-out, draft agents, arch-preview) AND paid SYN keystone all read real atlas priors from pgvector with <code>kb_source='atlas'</code>. <b>The prior "atlas is paid-tier only · free-tier emits atlas-shaped stubs" framing is REVOKED 2026-05-04 evening per David's call.</b> The pay-gate is the SYN keystone math + analysis depth (full Pareto, sensitivity analysis, optimization patterns, architecture diagram, derivation chain, signed bundle, Opus 4.7) — NOT atlas access.
+</div>
+
+<!-- PAY-GATE MODEL -->
+<div class="callout warn" style="margin-bottom: 18px;">
+  <b>Pay-gate model (corrected per David's sidebar review):</b> the funnel is NOT "free preview → paid pipeline B." The free tier is much larger.
+  <table style="margin-top:8px; background:transparent; box-shadow:none;">
+    <tr><th style="background:rgba(245,158,11,0.15);">Tier</th><th style="background:rgba(245,158,11,0.15);">Sidebar group</th><th style="background:rgba(245,158,11,0.15);">Items</th></tr>
+    <tr><td><b>🔓 Free</b></td><td>Project Overview</td><td>Problem Statement, Context Diagram, Target Users, Competitor Analysis</td></tr>
+    <tr><td><b>🔓 Free</b></td><td>Scope (all)</td><td>User Stories, FFBD, Form-Function Map, Data Flows, Interfaces, Data Schema, FMEA, House of Quality, <b>Decision Matrix · go/no-go</b></td></tr>
+    <tr><td><b>🔓 Free preliminary</b><br>(paid refresh)</td><td>System Arch Rec (top)</td><td>Non-Functional Req, Tech Stack, API Specs, Diagrams — first run is free, atlas-grounded from the start; <b>refresh upgrades them with full Pareto + sensitivity math depth via the paid SYN keystone</b></td></tr>
+    <tr><td><b>🔒 Paid only</b><br>(SYN keystone group)</td><td>System Arch Rec (locked)</td><td>Decision Network, Tradespace · Pareto · Sensitivity, Optimization Patterns, Architecture Diagram</td></tr>
+    <tr><td><b>🔒 Paid (future tier?)</b></td><td>Build</td><td>Claude.md / Skill.MD, Agent Orchestration MCP/CLI, Specialized Builder Agents</td></tr>
+  </table>
+</div>
+
+<!-- HOW TO READ -->
+<div class="callout info">
+  <b>How to read each task:</b> every task card opens with a <b>PIPELINE LOCATION</b> callout (dark green, tangerine-bordered) that explains exactly where the work sits in the agent landscape from the reference drawings — which lane (Pipeline A intake fan-out vs Pipeline B serial chain), which agents it touches, which output routes it feeds, and what it <i>connects</i>.
+</div>
+
+<!-- PIPELINE MAP -->
+<h2 class="section" id="pipeline-map">Pipeline picture</h2>
+<div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    Signup([User signs up]) --> Welcome["Welcome onboarding form<br/>greenfield/brownfield router"]
+
+    Welcome --> Choice{"User picks ONE path"}
+
+    Choice -->|"Path A — Quick Start<br/>1-sentence vision"| QS["QS-Synthesizer (Opus)<br/>SHORTCUT — skips M1/M2/M3/M5<br/>one-shots assumed inputs for M4"]
+    Choice -->|"Path B — Chat-Intake<br/>conversational"| Chat["Chat-Intake Agent<br/>walks Pass 1 + Pass 2"]
+
+    QS -->|"directly produces<br/>(NOT via project_artifacts middle layer)"| V1
+    QS -.->|"hands off all data<br/>to seed chat-intake"| Chat
+
+    Chat --> Pass1["Pass 1 walk (free)<br/>M1 actors/context/UCs/data flows/scope tree<br/>→ M3 FFBD<br/>→ M7.a N2 matrix<br/>→ M8.a FMEA v1 (INSTRUMENTAL)"]
+    Pass1 --> Pass2["Pass 2 walk (free)<br/>M2 FRs ← FFBD+UCs<br/>M2 NFRs ← FMEA v1 + Data Flows<br/>M2 Constants"]
+    Pass2 --> ScopeArtifacts["Scope-tier artifacts → project_artifacts<br/>FFBD · QFD · Interfaces · Data Schema<br/>FMEA early · Decision Matrix go/no-go · Tech Stack · etc."]
+    Pass2 --> V1
+
+    subgraph V1["FREE TIER — v1 DRAFT keystones (atlas-grounded from start)"]
+        direction LR
+        M4v1["M4 Decision Network v1 DRAFT<br/>real atlas priors + assumption fill-in<br/>kind: 'draft'"]
+        ARv1["architecture_recommendation_v1.json<br/>DRAFT keystone<br/>real empirical_priors[] from atlas"]
+        M4v1 --> ARv1
+    end
+
+    V1 --> Frontend["FREE TIER FRONTEND<br/>Project Overview · Scope tiles · System Arch Rec preliminary<br/>+ M4 v1 + Architecture Recommendation v1<br/>BADGE: AI Generated · Draft v1"]
+    ScopeArtifacts --> Frontend
+
+    Frontend --> DeltaTease["💡 Tease: 'Full Pareto math + sensitivity + residual-risk<br/>typically discovers LARGE recommendation changes here'<br/>(carrot to upgrade — show diff teaser)"]
+    DeltaTease --> CTA["CTA: Apply changes — refine to full SYN blueprint<br/>(1000 credits)"]
+
+    CTA -->|"POST /synthesize"| BackProp
+
+    subgraph BackProp["🔒 PAID — Pass 3 BACK-PROPAGATION (full Pareto + sensitivity v2 refinement)"]
+        direction TB
+        BP1["1 · M4.1-4.3 with atlas priors<br/>Pareto + sensitivity rerun"]
+        BP2["2 · M5.1-5.5 form-function<br/>(if absent or back-prop changes alternatives)"]
+        BP3["3 · D3 → C4 feedback loop<br/>optimization patterns drive concept revision"]
+        BP4["4 · M6 QFD + M7.b interface specs<br/>chain-budget priors from atlas"]
+        BP5["5 · M8.b FMEA v2 RESIDUAL<br/>on chosen architecture"]
+        BP6["6 · Δ Delta computation<br/>v1 vs v2 changes per decision"]
+        BP7["7 · T6 SYN keystone v2<br/>architecture_recommendation_v2.json<br/>+ derivation chain + signed bundle"]
+        BP1 --> BP2 --> BP3 --> BP4 --> BP5 --> BP6 --> BP7
+    end
+
+    BackProp --> RefinedView["v2 REFINED unlocks in-place<br/>BADGE: AI Generated · Refined · Full SYN keystone<br/>+ derivation chain + signed bundle<br/>+ Δ diff (v1 → v2 changes shown)"]
+
+    style QS fill:#F18F01,stroke:#0B2C29,color:#0B2C29
+    style M4v1 fill:#fde68a,stroke:#0B2C29
+    style ARv1 fill:#fde68a,stroke:#0B2C29
+    style Chat fill:#fde68a,stroke:#0B2C29
+    style Frontend fill:#d1fae5,stroke:#0B2C29
+    style DeltaTease fill:#FFE082,stroke:#F57C00,color:#0B2C29
+    style BP7 fill:#9333ea,stroke:#0B2C29,color:#fff
+</pre>
+</div>
+
+<!-- TIME MATH -->
+<h2 class="section" id="timemath">Time math</h2>
+<div class="timemath">
+  <div class="card">
+    <h4>Today (serial Pipeline B)</h4>
+    <div class="big">~100s</div>
+    <div class="small">M0 → M2.x → user clicks Synthesize → M3 → M1 → M5 → M4 (28s) → … baseline</div>
+  </div>
+  <div class="card win">
+    <h4>Funnel (parallel fan-out at t=9s)</h4>
+    <div class="big">~37s</div>
+    <div class="small">2.7× speedup · &lt;1 min from sign-up to WOW · ~63s saved to first visible architecture artifact</div>
+  </div>
+</div>
+
+<!-- PHASES -->
+<h2 class="section" id="phases">Phase summary</h2>
+<div class="phase-bar">
+  <div class="phase"><b>Phase 0</b><span>~45 min · standalone P0 fixes (T0, T0.5)</span></div>
+  <div class="phase"><b>Phase 1</b><span>~30-60 min · L4 trace replay validation gate</span></div>
+  <div class="phase"><b>Phase 2</b><span>~2-3 days · funnel build (T1, T1.5, T2, T3, T5, T4)</span></div>
+  <div class="phase"><b>Phase 3</b><span>~1 day · preview verify + production flip + 24h soak</span></div>
+  <div class="phase"><b>Phase 4</b><span>~½ day · P1/P2 cleanup</span></div>
+</div>
+
+<ul class="checklist">
+  <li><b>Phase 0</b> — T0 phase-gate NFR (~30 min) · T0.5 drop dead code (~10 min) · push preview, verify no first-turn NFR question</li>
+  <li><b>Phase 1</b> — §5 L4 trace replay through draft M4. PASS → Phase 2. FAIL → scope precondition-gate alternative.</li>
+  <li><b>Phase 2</b> — <b>T6 Quick Start salvage audit FIRST</b> (~3-4hr; may subsume T3) · T1 schemas, 8 agents incl. NFR/TS/API (~3hr) · <b>T1.5 PRE-T2 GATE</b> (~1hr) · T2 repurpose agents (~4hr) · T3 generate-arch-preview (~6hr — skip if subsumed by T6) · T5 kbAnalysisLLM (~2-3hr) · UI Freeze unfreeze · T4 viewer migration (~6hr) · §6.1 SQL legacy sweep</li>
+  <li><b>Last sprint before launch</b> — <b>T8 Tradespace + Pareto + Sensitivity page</b> (~6-8 hr · paid-tier · frontend-only · spec at <a href="file:///Users/davidancor/Projects/c1v/plans/m4-diagrams-spec.html">m4-diagrams-spec.html</a>) · <b>T9 Explorer tree restructure</b> (~2-3 hr · 5 known label/ordering fixes · pre-launch UX polish). Combined ~8-11 hr · ships alongside Phase 3.</li>
+  <li><b>Phase 3</b> — preview smoke trace · production flag flip <code>INTAKE_PROMPT_V2=true</code> · 24h soak</li>
+  <li><b>Phase 4</b> — P1: source-scanner test, eval baseline, phase-skip diag, obs metric · P2: drop legacy prompt, collapse V2-suffix, fix escapeBraces, drop flag</li>
+</ul>
+
+<!-- ============== T0 ============== -->
+<h2 class="section" id="t0">Phase 0 — Standalone P0 fixes</h2>
+
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T0</span>
+      <h3 class="task-title">Phase-gate <code>emitNfrContractEnvelope</code></h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~30 min</span>
+      <span><b>Closes:</b> P0-2</span>
+      <span><b>Risk:</b> very low</span>
+      <span class="chip tech-test">⚙ Pure TS</span>
+      <span class="chip tech-langgraph">🟡 LangGraph state read</span>
+      <span class="chip tech-zod">✓ Zod (no schema change)</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      This task sits inside the <b>extract-data flow</b> that feeds <span class="lane-a">Pipeline A's <span class="agent-tag">M2.3 NFR + goals</span></span> agent.
+      The bug: NFR open-questions and contract envelopes fire on the <b>FIRST</b> <span class="agent-tag">M2.1 context-diagram</span> turn — before the user has even reached the NFR phase.
+      T0 is a <b>cross-phase leakage suppressor</b>: it ensures M2.3's surfacing logic only fires when <code>currentKBStep</code> is in
+      <code>{functional-requirements, sysml-activity-diagram, ffbd, decision-matrix, qfd-house-of-quality, interfaces}</code>.
+      Touches no other agents. Pipeline B unaffected.
+      <strong>Connects:</strong> tightens the boundary between <span class="lane-a">M2.1 context-diagram</span> and <span class="lane-a">M2.3 NFR + goals</span> in Pipeline A's chat-driven intake.
+    </div>
+
+    <h4>Files</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/nodes/extract-data.ts">apps/product-helper/lib/langchain/graphs/nodes/extract-data.ts</a> <span class="filenote">— add phase-gate at top of <code>emitNfrContractEnvelope</code> body (line ~192)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/nodes/__tests__/extract-data-guards.test.ts">apps/product-helper/lib/langchain/graphs/nodes/__tests__/extract-data-guards.test.ts</a> <span class="filenote">— add 2 tests covering both callsites</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li>Locate two callsites: <code>extract-data.ts:98</code> (short-circuit) + <code>extract-data.ts:156</code> (normal extraction).</li>
+      <li>Insert phase-gate at TOP of <code>emitNfrContractEnvelope</code> body — single guard covers both.</li>
+      <li>Skip if <code>state.currentKBStep</code> ∉ {<code>functional-requirements</code>, <code>sysml-activity-diagram</code>, <code>ffbd</code>, <code>decision-matrix</code>, <code>qfd-house-of-quality</code>, <code>interfaces</code>}.</li>
+      <li>Test A: <code>currentKBStep='context-diagram'</code> + <code>hasCompleteData=false</code> → no surfaceOpenQuestion / persistArtifact.</li>
+      <li>Test B: <code>currentKBStep='context-diagram'</code> + <code>hasCompleteData=true</code> → same assertions.</li>
+    </ol>
+
+    <pre class="codeblock"><span class="keyword">async function</span> emitNfrContractEnvelope(state, mergedData) {
+  <span class="keyword">const</span> phaseAllowsNfrSurfacing =
+    state.currentKBStep === <span class="string">'functional-requirements'</span> ||
+    state.currentKBStep === <span class="string">'sysml-activity-diagram'</span> ||
+    state.currentKBStep === <span class="string">'ffbd'</span> ||
+    state.currentKBStep === <span class="string">'decision-matrix'</span> ||
+    state.currentKBStep === <span class="string">'qfd-house-of-quality'</span> ||
+    state.currentKBStep === <span class="string">'interfaces'</span>;
+  <span class="keyword">if</span> (!phaseAllowsNfrSurfacing) <span class="keyword">return</span>;
+  <span class="comment">// ... existing body</span>
+}</pre>
+
+    <div class="verify"><code>pnpm tsc --noEmit</code> clean · <code>npx jest .../extract-data-guards.test.ts</code> 7 pass · preview replay shows no first-turn NFR question.</div>
+  </div>
+</div>
+
+<!-- T0.5 -->
+<div class="task-card" id="t05">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T0.5</span>
+      <h3 class="task-title">Decide on <code>runLlmOnly</code> — drop recommended</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~10 min</span>
+      <span><b>Closes:</b> P0-3</span>
+      <span><b>Risk:</b> zero (revert)</span>
+      <span class="chip tech-ts">⚙ Pure TS</span>
+      <span class="chip tech-test">🔄 git revert</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      This is <b>orphan code</b> — the <code>createGenerateNfrNode</code> factory shipped in step 5d (<code>7b7a453</code>) has <b>zero callers</b> in <span class="lane-a">Pipeline A</span> or <span class="lane-b">Pipeline B</span>.
+      It does not appear in the agent reference table from the drawings; <span class="lane-a"><span class="agent-tag">M2.3 NFR + goals</span></span> uses its own LLM call path, not this factory.
+      Eval scores from <code>nfr-runllmonly.jsonl</code> reflect a phantom path.
+      <strong>Connects:</strong> nothing. Removing it eliminates a misleading inventory entry — the production codebase has 5 active LLM call paths, not 6.
+    </div>
+
+    <h4>Files (drop path)</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/nodes/generate-nfr.ts">apps/product-helper/lib/langchain/graphs/nodes/generate-nfr.ts</a> <span class="filenote">— revert commit <code>7b7a453</code></span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/prompts.ts">apps/product-helper/lib/langchain/prompts.ts</a> <span class="filenote">— drop <code>NFR_RULES</code> export</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li>Verify zero callers: <code>grep -rn "createGenerateNfrNode\|GenerateNfrLlmAgent" apps/product-helper/ --include="*.ts" | grep -v ".test.ts"</code> → expect 0 outside <code>generate-nfr.ts</code>.</li>
+      <li><code>git revert --no-edit 7b7a453</code> (do NOT amend prior commits).</li>
+      <li>Drop <code>NFR_RULES</code> export from <code>prompts.ts</code>.</li>
+      <li>Update plan §3.1 to "5 active LLM call paths + 1 dormant factory (deferred)".</li>
+    </ol>
+
+    <div class="verify"><code>pnpm tsc --noEmit</code> clean · prompts.test.ts pass · <code>git log --oneline</code> shows revert.</div>
+  </div>
+</div>
+
+<!-- ============== VALIDATION ============== -->
+<h2 class="section" id="validation">Phase 1 — Validation gate (BEFORE Phase 2)</h2>
+
+<div class="task-card gate">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">VAL</span>
+      <h3 class="task-title">Replay L4 trace through draft M4</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~30-60 min (quick) · 2-3 hr (thorough)</span>
+      <span><b>Cost:</b> ~$0.20-0.40 thorough</span>
+      <span><b>Gates:</b> entire funnel</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      This validation tests whether <span class="lane-b">Pipeline B's <span class="agent-tag">M4 Decision Network</span></span> agent (Opus 4.7, 19 phases, normally fed by NFRs + use cases + FFBD) can produce a <b>credible draft</b> when called with thin <span class="lane-a">Pipeline A</span> intake input (vision + 1 actor).
+      We're proving the architectural premise: that a Phase-14 + Phase-16 subset of the M4 agent can stand in as a free-tier preview.
+      <strong>Connects:</strong> validates the bridge between <span class="lane-a">Pipeline A intake</span> and <span class="lane-b">Pipeline B M4</span> that T3 will codify. If draft output looks like garbage, the funnel premise breaks and we scope a precondition-gate alternative instead.
+    </div>
+
+    <h4>Source trace</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/__tests__/v2.2.2-post/dataset_33ec71d2-b6cb-4d5e-8779-47a70c4c617f.jsonl">apps/product-helper/__tests__/v2.2.2-post/dataset_33ec71d2-b6cb-4d5e-8779-47a70c4c617f.jsonl</a> <span class="filenote">— record 4 (the L4 trace)</span></li>
+    </ul>
+
+    <h4>Two replay paths</h4>
+    <table>
+      <tr><th>Path</th><th>What to do</th><th>Effort</th></tr>
+      <tr>
+        <td><b>Quick</b></td>
+        <td>Call existing <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/system-design/decision-net-agent.ts">decision-net-agent.ts</a> directly with thin input + mocked atlas-loader returning <code>{provisional: true, entryCount: 0}</code>. Inspect raw output.</td>
+        <td>~30 min</td>
+      </tr>
+      <tr>
+        <td><b>Thorough</b></td>
+        <td>Prototype <code>decision-net-draft-agent.ts</code> with Phase-14 + Phase-16 subset prompt. Run live against OpenRouter.</td>
+        <td>2-3 hr · ~$0.20-0.40 in Opus tokens</td>
+      </tr>
+    </table>
+
+    <div class="callout good">
+      <b>PASS — ship the funnel:</b> 3 recognizable archetypes (Monolith / Modular / Event-driven) · ≥3 scored criteria each with designer-actionable rationale · 1 recommended with non-random reason · provisional banner reads "early estimate" not "garbage" · stable: identical input → identical recommendation.
+    </div>
+
+    <div class="callout danger">
+      <b>FAIL — scope precondition-gate alternative:</b> incoherent fabricated subsystem IDs (SS1-SS6, REQ-030) · recommendation flips on rerun · output looks like L4 trace with a "Draft" sticker. Alternative: draft M4 fires only when bridge has surfaced ≥1 actor + ≥1 use case + scale band identified. Slower (5-10 chat turns) but methodology-correct.
+    </div>
+  </div>
+</div>
+
+<!-- ============== T1 ============== -->
+<h2 class="section" id="t1">Phase 2 — Funnel build</h2>
+
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T1</span>
+      <h3 class="task-title">Add <code>kind</code> discriminator to artifact schemas</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~3 hr</span>
+      <span><b>Closes:</b> P0-4 partial (foundation)</span>
+      <span><b>Risk:</b> low</span>
+      <span class="chip tech-zod">✓ Zod discriminated union</span>
+      <span class="chip tech-ts">🔄 generate-all.ts regen</span>
+      <span class="chip tech-db">🗄 project_artifacts (no migration)</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      This adds <code>kind: 'draft' | 'refined'</code> to the root Zod schemas of <b>8 agents</b> spanning all tiers:
+      <ul style="margin:6px 0; padding-left: 18px; color: rgba(251,252,252,0.95);">
+        <li><b>Scope tier (free):</b> <span class="lane-a"><span class="agent-tag">M3 FFBD</span></span>, <span class="lane-a"><span class="agent-tag">M6 QFD</span></span>, <span class="lane-a"><span class="agent-tag">M7 N2+interfaces</span></span>, <span class="lane-a"><span class="agent-tag">Decision Matrix</span></span> — all default <code>'draft'</code></li>
+        <li><b>System Arch Rec preliminary tier (free first run, paid refresh per (c)):</b> <span class="lane-a"><span class="agent-tag">NFR</span></span>, <span class="lane-a"><span class="agent-tag">Tech Stack</span></span>, <span class="lane-a"><span class="agent-tag">API Specs</span></span> — <code>'draft'</code> on free run, <code>'refined'</code> on paid refresh (full Pareto + sensitivity + derivation chain depth added). Atlas reads in BOTH tiers.</li>
+        <li><b>SYN keystone (paid only):</b> <span class="lane-b"><span class="agent-tag">SYN Architecture Recommendation</span></span> — hardcoded <code>z.literal('refined')</code></li>
+      </ul>
+      <b>Atlas invariant tie-in:</b> for the System Arch Rec preliminary tier, <code>kind === 'draft'</code> is also the <i>load-bearing flag</i> that gates atlas reads — only <code>'refined'</code> writes can bind atlas data.
+      <strong>Connects:</strong> establishes the contract that lets the <b>same output routes</b> serve BOTH <span class="lane-a">Pipeline A draft outputs (T2)</span> AND <span class="lane-b">paid refined outputs</span> without forking URLs. Foundation for T4 badge switching.
+    </div>
+
+    <h4>Files</h4>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:8px 0 4px;"><b>Scope tier — default <code>'draft'</code>:</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-3/ffbd-v1.ts">schemas/module-3/ffbd-v1.ts</a> <span class="filenote">— add <code>kind</code> to root</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-4/index.ts">schemas/module-4/index.ts</a> <span class="filenote">— NEW root wrapper <code>decisionMatrixRootSchema</code> (go/no-go shape)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-6-hoq/index.ts">schemas/module-6-hoq/index.ts</a> <span class="filenote">— add <code>kind</code></span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/module-7-interfaces/index.ts">schemas/module-7-interfaces/index.ts</a> <span class="filenote">— add <code>kind</code></span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>System Arch Rec preliminary tier — default <code>'draft'</code>, paid refresh upgrades to <code>'refined'</code> per (c):</b></p>
+    <ul class="file-list">
+      <li><span class="filenote">schemas/module-2/nfr-v1.ts (verify exact path)</span> <span class="filenote">— add <code>kind</code> + atlas-binding fields gated on <code>kind === 'refined'</code></span></li>
+      <li><span class="filenote">schemas/tech-stack/index.ts (verify exact path — agent at <code>agents/tech-stack-agent.ts</code>)</span> <span class="filenote">— add <code>kind</code></span></li>
+      <li><span class="filenote">schemas/api-spec/index.ts (verify exact path — agent at <code>agents/api-spec-agents.ts</code>)</span> <span class="filenote">— add <code>kind</code></span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>SYN keystone — hardcoded <code>'refined'</code>:</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/synthesis/architecture-recommendation.ts">schemas/synthesis/architecture-recommendation.ts</a> <span class="filenote">— <code>kind: z.literal('refined')</code></span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas/__tests__/registry-no-dupes.test.ts">schemas/__tests__/registry-no-dupes.test.ts</a> <span class="filenote">— assert <code>kind</code> on all 8 + atlas-invariant assertion (no atlas fields populated when <code>kind === 'draft'</code>)</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li>Verify <code>module-4/</code> has 23 files, no <code>decision-network-v1.ts</code>.</li>
+      <li><code>module-4/index.ts</code>: export <code>decisionNetworkRootSchema = z.object({ kind: z.enum(['draft','refined']).default('refined'), phases: z.object({...}) })</code> wrapping existing phases.</li>
+      <li>Patch other 3 module roots — same <code>kind</code> field.</li>
+      <li><code>synthesis</code>: <code>kind: z.literal('refined').default('refined')</code> (hardcoded).</li>
+      <li>Regenerate JSON: <code>pnpm tsx lib/langchain/schemas/generate-all.ts</code>.</li>
+      <li>Test schema-parse round-trip on existing <code>project_artifacts</code> row → parses with <code>kind: 'refined'</code> injected.</li>
+    </ol>
+
+    <div class="verify"><code>pnpm tsc --noEmit</code> clean · jest schemas pass · legacy row deserialize → <code>kind === 'refined'</code>.</div>
+  </div>
+</div>
+
+<!-- ============== T1.5 ============== -->
+<div class="task-card gate" id="t15">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T1.5</span>
+      <h3 class="task-title">Extend <code>extractionSchema</code> with <code>draftArchitecture</code> — <b>PRE-T2 GATE</b></h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~1 hr</span>
+      <span><b>Closes:</b> Critique C3</span>
+      <span><b>Risk:</b> medium (touches IntakeState reducer)</span>
+      <span class="chip tech-zod">✓ Zod .optional()</span>
+      <span class="chip tech-langgraph">🟡 LangGraph Annotation.Root</span>
+      <span class="chip tech-db">🟢 Backward-compat</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      This carves out a typed jsonb namespace inside the <b>IntakeState reducer</b> — the central state object that <span class="lane-a">Pipeline A's <span class="agent-tag">M0</span>, <span class="agent-tag">M2.1</span>, <span class="agent-tag">M2.2</span>, <span class="agent-tag">M2.3</span></span> all read+write.
+      The new namespace <code>extractedData.draftArchitecture.{ffbd, qfd, decisionMatrix, interfaces, m4}</code> is where T2's repurposed intake-side agents and T3's new M4-draft node will land their output.
+      Lives in <code>project_data.intake_state</code> jsonb (existing column), NOT in <code>project_artifacts</code> (which is reserved for <span class="lane-b">Pipeline B refined</span> rows).
+      <strong>Connects:</strong> makes the <span class="lane-a">Pipeline A IntakeState</span> a typed home for draft-tier outputs without polluting <span class="lane-b">Pipeline B's <code>project_artifacts</code> table</span>. Without this, T2 cannot land — TypeScript would reject every write site.
+    </div>
+
+    <h4>Files</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/schemas.ts">lib/langchain/schemas.ts</a> <span class="filenote">— extend <code>extractionSchema</code> at line 792</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/intake-graph.ts">lib/langchain/graphs/intake-graph.ts</a> <span class="filenote">— verify reducer (line 307-422)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/channels.ts">lib/langchain/graphs/channels.ts</a> <span class="filenote">— <code>createDefaultExtractionResult()</code> at line 160</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/__tests__/schemas.test.ts">lib/langchain/__tests__/schemas.test.ts</a> <span class="filenote">— round-trip test</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li>Open <code>schemas.ts:792</code>, locate <code>extractionSchema</code>.</li>
+      <li>Add optional field:
+<pre class="codeblock">draftArchitecture: z.object({
+  ffbd: ffbdSchema.optional(),
+  qfd: qfdSchema.optional(),
+  decisionMatrix: decisionMatrixSchema.optional(),  <span class="comment">// go/no-go from T2</span>
+  interfaces: interfacesSchema.optional(),
+  archPreview: z.unknown().optional(),  <span class="comment">// typed in T3 (ArchPreviewOutput) — NEW namespace</span>
+}).optional(),</pre>
+      </li>
+      <li>Confirm <code>ExtractionResult</code> auto-updates via <code>z.infer</code>.</li>
+      <li>Run <code>pnpm tsc --noEmit</code> to surface callsites.</li>
+      <li><code>channels.ts</code>: <code>.optional()</code> means no change needed — confirm via parse.</li>
+      <li>Tests: legacy row parses; new row with <code>draftArchitecture.ffbd</code> parses.</li>
+      <li>Audit <code>Record&lt;.*ExtractionResult</code> — none exhaustive (cascade gotcha).</li>
+    </ol>
+
+    <div class="verify">tsc clean across entire app · schemas.test.ts pass · prod legacy row → parse OK.</div>
+  </div>
+</div>
+
+<!-- ============== T2 ============== -->
+<div class="task-card" id="t2">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T2</span>
+      <h3 class="task-title">Repurpose intake-side agents as draft producers</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~4 hr</span>
+      <span><b>Closes:</b> P0-1 + P0-4</span>
+      <span><b>Blocked by:</b> T1 + T1.5</span>
+      <span class="chip model-sonnet">🤖 Sonnet 4.6</span>
+      <span class="chip tech-zod">✓ Zod (kind from T1)</span>
+      <span class="chip tech-flag">🟢 Drops INTAKE_PROMPT_V2</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      <b>This is the architectural pivot.</b> The 4 agents that today fabricate noise during <span class="lane-a">Pipeline A intake</span> become explicit DRAFT producers writing to <code>extractedData.draftArchitecture.*</code>:
+      <code class="agent-tag">ffbd-agent.ts</code>, <code class="agent-tag">qfd-agent.ts</code>, <code class="agent-tag">decision-matrix-agent.ts</code>, <code class="agent-tag">interfaces-agent.ts</code>.
+      They sit alongside <span class="lane-a"><span class="agent-tag">M2.1</span>, <span class="agent-tag">M2.2</span>, <span class="agent-tag">M2.3</span></span> in Pipeline A's parallel fan-out — NOT in <span class="lane-b">Pipeline B</span>.
+      Each emits with <code>kind: 'draft'</code> hardcoded. The corresponding <span class="lane-b">Pipeline B agents</span> (<span class="agent-tag">M3 FFBD</span>, <span class="agent-tag">M6 QFD</span>, <span class="agent-tag">M4 Decision Network</span>, <span class="agent-tag">M7 N2+interfaces</span>) still produce the canonical refined <code>project_artifacts</code> rows.
+      <strong>Connects:</strong> this is what makes the funnel real — Pipeline A's intake fan-out now ALSO produces <i>architectural</i> outputs in &lt;15s, matching the structure that Pipeline B will refine later. The fabrication is acknowledged-and-labeled, not hidden.
+    </div>
+
+    <h4>Files (4 agents + 4 tests)</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/ffbd-agent.ts">agents/ffbd-agent.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/qfd-agent.ts">agents/qfd-agent.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/decision-matrix-agent.ts">agents/decision-matrix-agent.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/interfaces-agent.ts">agents/interfaces-agent.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/__tests__/ffbd-agent.test.ts">agents/__tests__/ffbd-agent.test.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/__tests__/qfd-agent.test.ts">agents/__tests__/qfd-agent.test.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/__tests__/decision-matrix-agent.test.ts">agents/__tests__/decision-matrix-agent.test.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/__tests__/interfaces-agent.test.ts">agents/__tests__/interfaces-agent.test.ts</a></li>
+    </ul>
+
+    <h4>Migration steps (apply identically to all 4)</h4>
+    <ol class="steps">
+      <li><b>Pre-flight grep</b> for legacy readers: <code>grep -rn "extractedData\.ffbd\|extractedData\.qfd\|extractedData\.decisionMatrix\|extractedData\.interfaces" apps/product-helper/ --include="*.ts" --include="*.tsx"</code>. Expect 4 page.tsx + maybe Quick Start orchestrator. Document.</li>
+      <li>Drop legacy V1 LLM (<code>maxTokens: 20000</code>). Keep V2 instance, rename <code>structuredFfbdLLMV2 → structuredFfbdLLM</code>.</li>
+      <li>Drop <code>INTAKE_PROMPT_V2</code> ternary. V2 IS the draft path now. Single LLM per agent.</li>
+      <li>Hardcode <code>kind: 'draft'</code> post-Zod-parse, before return.</li>
+      <li><b>Re-namespace writes:</b> <code>state.extractedData.ffbd = result</code> → <code>state.extractedData.draftArchitecture = { ...state.extractedData.draftArchitecture, ffbd: result }</code>.</li>
+      <li>Update <code>__tests__/&lt;agent&gt;.test.ts</code> — assertions move from <code>extractedData.ffbd</code> to <code>extractedData.draftArchitecture.ffbd</code>.</li>
+      <li>Drop local <code>escapeBraces</code> const + per-file <code>}</code> no-op bug (qfd:139, interfaces:124). Use shared correct version from <code>prompts.ts</code>.</li>
+      <li>Audit eval baselines (<code>ffbd-intake.jsonl</code> etc.) — <code>expected_output</code> may need namespace update.</li>
+    </ol>
+
+    <div class="callout warn">
+      <b>Gotcha:</b> T2 namespace move BREAKS page.tsx readers until T4 ships. Bundle T2 + T4 in a single PR OR keep a temp viewer fallback (read <code>draftArchitecture.X</code> first, fall back to legacy <code>X</code> for in-flight rows).
+    </div>
+
+    <div class="verify">tsc clean · 24/24 agent tests pass · trace shows writes to <code>draftArchitecture.*</code> with <code>kind: 'draft'</code>.</div>
+  </div>
+</div>
+
+<!-- ============== T3 ============== -->
+<div class="task-card value" id="t3">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T3</span>
+      <h3 class="task-title">Generate Architecture Preview node — <b style="color:var(--tangerine);">FREE-TIER MOTIVATOR ⭐</b></h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~6 hr</span>
+      <span><b>Closes:</b> free-tier "see architecture" motivator</span>
+      <span><b>Latency:</b> ~28s @ Opus 4.7</span>
+      <span><b>Risk:</b> medium</span>
+      <span class="chip model-opus">🤖 Opus 4.7</span>
+      <span class="chip tech-zod">✓ archPreviewSchema</span>
+      <span class="chip tech-langgraph">🟡 LangGraph fan-out</span>
+      <span class="chip tech-db">🗄 draftArchitecture.archPreview jsonb</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      <b>This is the free-tier "see architecture" motivator — but it is NOT a teaser of paid M4 Decision Network.</b>
+      Decision Matrix go/no-go content (the <span class="lane-a"><span class="agent-tag">/system-design/decision-matrix</span></span> Scope tile) is produced by T2's <code>decision-matrix-agent.ts</code>.
+      T3 produces a separate <b>non-authoritative 3-archetype preview</b> ("Monolith / Modular / Event-driven — here are 3 architectural lenses to think with") that motivates the paid SYN upgrade by showing the user "the rigorous version of this with full Pareto math + sensitivity analysis is one credit-spend away." Atlas priors are read in the free preview already (revoked atlas-gating per 2026-05-04 evening).
+      <b>What's NOT in T3 preview:</b> NO Pareto math. NO sensitivity analysis. NO derivation chain. Those are the paid <span class="lane-b"><span class="agent-tag">M4 Decision Network</span></span> + <span class="lane-b"><span class="agent-tag">SYN</span></span> deliverables — keeping the math + analysis depth paid-only is what makes the upgrade worth 1000 credits. <b>Atlas reads ARE done in the preview</b> (atlas-gating revoked 2026-05-04 — atlas fires across all tiers).
+      <strong>Connects:</strong> sits as a parallel fan-out target off <span class="lane-a"><code>extract_data</code></span> at t=9s, alongside T2's 4 namespace writes. Writes to a NEW namespace key <code>extractedData.draftArchitecture.archPreview</code> (NOT <code>m4</code> — preserving the boundary that "M4 = paid only").
+    </div>
+
+    <div class="callout danger">
+      <b>CRITICAL:</b> T3 is <b>NOT</b> a subset of paid M4 Decision Network. Different artifact, different methodology role, different schema. The 3 archetypes are intentionally <b>non-Pareto, non-authoritative</b> — labeled "preview" in the UI. If the user wants Pareto-grounded recommendation with full sensitivity + derivation chain, that's the paid SYN keystone (and it is genuinely better — different model run, different inputs, different ceiling). Atlas priors fire in BOTH (atlas-gating revoked 2026-05-04).
+    </div>
+
+    <h4>Thin-input contract (LOCKED)</h4>
+<pre class="codeblock"><span class="keyword">type</span> ArchPreviewInput = {
+  vision: <span class="keyword">string</span>;
+  actors: Actor[];
+  projectType?: <span class="keyword">string</span> | <span class="keyword">null</span>;
+  projectId: <span class="keyword">number</span>;  <span class="comment">// tenant isolation in cache key</span>
+};
+
+<span class="keyword">type</span> ArchPreviewOutput = {
+  kind: <span class="string">'draft'</span>;
+  note: <span class="string">'preview only — paid SYN refinement produces Pareto-grounded Decision Network'</span>;
+  archetypes: Array&lt;{
+    id: <span class="keyword">string</span>;             <span class="comment">// 'AV.01' | 'AV.02' | 'AV.03'</span>
+    name: <span class="keyword">string</span>;           <span class="comment">// 'Monolith SaaS' / 'Modular Services' / 'Event-Driven'</span>
+    sketch: <span class="keyword">string</span>;         <span class="comment">// 2-sentence shape description</span>
+    tradeoffs: {
+      strengths: <span class="keyword">string</span>[];   <span class="comment">// e.g. ['fast time-to-market', 'simple ops']</span>
+      weaknesses: <span class="keyword">string</span>[];  <span class="comment">// e.g. ['scaling ceiling', 'deploy coupling']</span>
+    };
+  }&gt;;
+  upgrade_cta: <span class="string">'Refine to full SYN Decision Network'</span>;
+};
+<span class="comment">// Note: NO scores. NO Pareto frontier. NO recommendation. NO atlas priors.
+//       Those exist only on paid SYN output — that is the point.</span></pre>
+
+    <h4>Files (NEW)</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/nodes/generate-arch-preview.ts">graphs/nodes/generate-arch-preview.ts</a> <span class="filenote">— node</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/system-design/arch-preview-agent.ts">agents/system-design/arch-preview-agent.ts</a> <span class="filenote">— thin-input agent (NO atlas)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/nodes/__tests__/generate-arch-preview.test.ts">__tests__/generate-arch-preview.test.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/system-design/__tests__/arch-preview-agent.test.ts">__tests__/arch-preview-agent.test.ts</a></li>
+    </ul>
+
+    <h4>Files (MODIFY)</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/edges.ts">graphs/edges.ts</a> <span class="filenote">— add <code>routeAfterExtractionWithDraft</code> at line 159</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/intake-graph.ts">graphs/intake-graph.ts</a> <span class="filenote">— register node + wire conditional edge at line 512</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li><b>Spike</b> LangGraph multi-target fan-out: <code>addConditionalEdges</code> with array-returning router (5 min smoke test).</li>
+      <li>Author thin-input contract (LOCKED — see above).</li>
+      <li><b>Implement</b> <code>arch-preview-agent.ts</code>:
+        <ul>
+          <li><code>createClaudeAgent(archPreviewSchema, 'generate_arch_preview', { maxTokens: 4000 })</code> — Opus 4.7</li>
+          <li>Prompt: "given thin signal, sketch 3 broad architectural archetypes (Monolith / Modular / Event-Driven) with strengths/weaknesses. Do NOT score. Do NOT recommend. Do NOT cite atlas evidence."</li>
+          <li><b>NO call to <code>renderAtlasPriors</code></b> — atlas invariant. Empty <code>priors</code> field deliberately omitted from this schema.</li>
+        </ul>
+      </li>
+      <li><b>Implement</b> <code>generate-arch-preview.ts</code> node:
+        <ul>
+          <li>Read <code>state.{projectVision, extractedData.actors, projectType, projectId}</code></li>
+          <li><code>inputs_hash = SHA-256(JSON.stringify({ projectId, vision, actors: actors.map(a=&gt;a.name), projectType }))</code></li>
+          <li>Write to <code>state.extractedData.draftArchitecture.archPreview</code> (NEW namespace key per T1.5)</li>
+          <li>Hardcode <code>kind: 'draft'</code></li>
+        </ul>
+      </li>
+      <li><b>Add</b> to <code>edges.ts</code>:
+<pre class="codeblock"><span class="keyword">export function</span> routeAfterExtractionWithDraft(state: IntakeState): <span class="keyword">string</span>[] {
+  <span class="keyword">const</span> targets: <span class="keyword">string</span>[] = [<span class="string">'check_prd_spec'</span>];
+  <span class="keyword">if</span> ((state.extractedData?.actors?.length ?? 0) &gt;= 1
+      &amp;&amp; !state.extractedData?.draftArchitecture?.archPreview) {
+    targets.push(<span class="string">'generate_arch_preview'</span>);  <span class="comment">// parallel fan-out at t=9s</span>
+  }
+  <span class="keyword">return</span> targets;
+}</pre>
+      </li>
+      <li><b>Wire</b> in <code>intake-graph.ts:512</code>: <code>addConditionalEdges('extract_data', routeAfterExtractionWithDraft, ['check_prd_spec', 'generate_arch_preview'])</code>.</li>
+      <li><b>Tests:</b> stable input → stable output; thin input → 3 archetypes with strengths/weaknesses; identical input twice → cache hit; cross-tenant test (2 projects same vision → different cache keys); <b>NEGATIVE TEST</b> — assert output schema has NO <code>scores</code>, NO <code>pareto_frontier</code>, NO <code>recommended</code>, NO <code>priors</code> fields (atlas invariant gate).</li>
+      <li>Heartbeat covers 28s window — already wired per <code>ee70f4e</code> (15s heartbeat).</li>
+    </ol>
+
+    <div class="callout info">
+      <b>Model selection — Opus stays.</b> Sonnet 4.6 saves ~8-12s but archetype quality + tradeoff coherence matters more than speed for the motivator UX. Latency from Opus is noise vs the 63s structural win from t=9s fan-out.<br>
+      <b>Stability:</b> identical input MUST produce identical archetypes (deterministic). <code>projectId</code> in <code>inputs_hash</code> prevents cross-tenant leak.<br>
+      <b>Atlas invariant test:</b> the negative-test assertion is non-negotiable — it's the CI gate that prevents a future PR from quietly leaking atlas reads into the free-tier preview.
+    </div>
+
+    <div class="verify">tsc clean · jest pass (incl. atlas-invariant negative test) · live preview archetypes visible at t≈37s · cache hit on identical input · cross-tenant isolation · <code>grep -rn "renderAtlasPriors\|kb_source.*atlas" arch-preview-agent.ts</code> returns 0 matches.</div>
+  </div>
+</div>
+
+<!-- ============== T5 ============== -->
+<div class="task-card" id="t5">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T5</span>
+      <h3 class="task-title">kbAnalysisLLM migration — orthogonal but SAME WINDOW</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~2-3 hr</span>
+      <span><b>Closes:</b> P0-5</span>
+      <span><b>Risk:</b> low</span>
+      <span class="chip model-sonnet">🤖 Sonnet 4.6</span>
+      <span class="chip tech-zod">✓ kbAnalysisSchema (no shape change)</span>
+      <span class="chip tech-test">🟢 Source-scanner regression</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      <code class="agent-tag">kb-question-generator.ts</code> drives <span class="lane-a">Pipeline A's chat-reply generation</span> across all KB phases (M0/M2.x intake, plus the chat persona that the user actually talks to).
+      Today it emits "I've inferred 12 potential external elements... USDA FoodData API" boilerplate that fabricates rather than asks. T5 strips the inference mandates, replaces "INFER aggressively" with "ASK, don't infer."
+      Also extends the <code>OpenQuestionSource</code> enum with <code>m1_intake_gap</code> — a new source type that flows through <code class="agent-tag">system-question-bridge.ts</code>, the same seam that already routes <span class="lane-b"><span class="agent-tag">M8a FMEA Early</span></span>'s open-questions back into the chat surface (per the M8a card in the drawing — "open questions via chat bridge").
+      <strong>Connects:</strong> hardens the <span class="lane-a">Pipeline A chat-reply generator</span> AND extends the <span class="lane-b">Pipeline B → Pipeline A bridge</span> (system-question-bridge.ts) to carry intake-tier gaps. Ships in same window as T2-T4 because if the chat still fabricates while the funnel shows a draft architecture, the "draft is honest preview" premise breaks.
+    </div>
+
+    <h4>Files</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/intake/kb-question-generator.ts">agents/intake/kb-question-generator.ts</a> <span class="filenote">— strip <code>INFERENCE_RULES.signals</code>, drop <code>minElements</code></span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/chat/system-question-bridge.types.ts">lib/chat/system-question-bridge.types.ts</a> <span class="filenote">— add <code>m1_intake_gap</code> to enum</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/projects/sections/open-questions-viewer.tsx">components/projects/sections/open-questions-viewer.tsx</a> <span class="filenote">— extend <code>SOURCE_LABEL</code> exhaustive map (cascade gotcha)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/__tests__/no-mandate-cascade.test.ts">lib/langchain/__tests__/no-mandate-cascade.test.ts</a> <span class="filenote">— NEW source-scanner regression</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li>Strip <code>INFERENCE_RULES.signals</code> from <code>kb-question-generator.ts</code> (kill USDA/Spoonacular/Stripe/Auth0 hardcoded suggestions).</li>
+      <li>Drop <code>minElements</code> floors.</li>
+      <li>Replace "INFER aggressively" → "ASK, don't infer. If signal is thin, generate a question, not a guess."</li>
+      <li>Add <code>m1_intake_gap</code> to <code>OpenQuestionSource</code> enum.</li>
+      <li>Update <code>SOURCE_TO_BUCKET</code> → <code>m1_intake_gap</code> lands in <code>requirements</code> bucket.</li>
+      <li>Update <code>SOURCE_LABEL</code> exhaustive map (tsc enforces).</li>
+      <li>Author <code>no-mandate-cascade.test.ts</code>: read <code>prompts.ts</code> source as text, regex-assert no <code>/MUST.*infer|Do NOT return empty|REQUIRED.*minimum|CRITICAL: Do NOT return/i</code> outside the <code>extractionPromptLegacy</code> carve-out.</li>
+    </ol>
+
+    <div class="verify">tsc clean (cascade map updated) · regression test pass · live preview shows questions, not boilerplate.</div>
+  </div>
+</div>
+
+<!-- ============== T4 ============== -->
+<div class="task-card frozen" id="t4">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T4</span>
+      <h3 class="task-title">🔒 Viewer badge + page.tsx data-fetch — <b style="color:var(--rose-600);">BLOCKED ON UI FREEZE</b></h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~6 hr</span>
+      <span><b>Closes:</b> funnel UX</span>
+      <span class="blocked">UI Freeze: 8 files</span>
+      <span class="chip tech-react">🟡 React Server Components</span>
+      <span class="chip tech-db">🟢 getArtifactByKind (existing)</span>
+      <span class="chip tech-ui">🎨 Tailwind amber/green badges</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      Migrates the <b>read side</b> of every system-design output route from the drawings:
+      <code class="output-route" style="display:inline;padding:2px 6px;font-size:11px;">/system-design/ffbd</code> (M3),
+      <code class="output-route" style="display:inline;padding:2px 6px;font-size:11px;">/system-design/qfd</code> (M6),
+      <code class="output-route" style="display:inline;padding:2px 6px;font-size:11px;">/system-design/decision-matrix</code> (M4),
+      <code class="output-route" style="display:inline;padding:2px 6px;font-size:11px;">/system-design/interfaces</code> (M7).
+      Today these page.tsx + viewer pairs read <code>extractedData.{ffbd,qfd,...}</code> directly via <code>(project as any)</code> casts.
+      Post-T4 they read <code>getArtifactByKind(projectId, '&lt;kind&gt;')</code> first — that returns <span class="lane-b">Pipeline B refined rows</span> from the <code>project_artifacts</code> table — and fall back to <code>extractedData.draftArchitecture.*</code> — that returns <span class="lane-a">Pipeline A draft rows</span> from <code>project_data.intake_state</code> jsonb.
+      Same component renders both; the <code>kind</code> field switches the badge (amber "Draft" vs green "Refined · Atlas-grounded") and CTA banner.
+      <strong>Connects:</strong> <span class="lane-a">Pipeline A draft outputs (T2/T3)</span> ↔ same URLs ↔ <span class="lane-b">Pipeline B refined outputs (M3/M4/M6/M7/SYN)</span>. This is what makes "same URL, in-place upgrade on refine" real.
+    </div>
+
+    <h4>Files (8 frozen — REQUIRES UNFREEZE)</h4>
+    <p style="margin:8px 0;font-size:12.5px;color:var(--slate-600);"><b>Viewer components (4):</b></p>
+    <ul class="file-list">
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/decision-matrix-viewer.tsx">components/system-design/decision-matrix-viewer.tsx</a></li>
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/ffbd-viewer.tsx">components/system-design/ffbd-viewer.tsx</a></li>
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/qfd-viewer.tsx">components/system-design/qfd-viewer.tsx</a></li>
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/interfaces-viewer.tsx">components/system-design/interfaces-viewer.tsx</a></li>
+    </ul>
+    <p style="margin:8px 0;font-size:12.5px;color:var(--slate-600);"><b>Page.tsx data-fetch (4):</b></p>
+    <ul class="file-list">
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/projects/%5Bid%5D/system-design/decision-matrix/page.tsx">app/(dashboard)/projects/[id]/system-design/decision-matrix/page.tsx</a> <span class="filenote">(reads <code>extractedData.decisionMatrix</code> lines 53, 81)</span></li>
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/projects/%5Bid%5D/system-design/ffbd/page.tsx">app/(dashboard)/projects/[id]/system-design/ffbd/page.tsx</a> <span class="filenote">(line 19)</span></li>
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/projects/%5Bid%5D/system-design/qfd/page.tsx">app/(dashboard)/projects/[id]/system-design/qfd/page.tsx</a> <span class="filenote">(lines 53, 82)</span></li>
+      <li><a class="frozen-icon" href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/projects/%5Bid%5D/system-design/interfaces/page.tsx">app/(dashboard)/projects/[id]/system-design/interfaces/page.tsx</a></li>
+    </ul>
+    <p style="margin:8px 0;font-size:12.5px;color:var(--slate-600);"><b>Doc fix:</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/CLAUDE.md">apps/product-helper/CLAUDE.md</a> <span class="filenote">— "System-Design Data Path" section claims viewers read via <code>getLatestSynthesis</code>. False. Update post-T4.</span></li>
+    </ul>
+
+    <h4>Per-route artifact kind</h4>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:8px 0 4px;"><b>Scope tier (free) — refined never overrides; tile stays free:</b></p>
+    <table>
+      <tr><th>Route</th><th><code>getArtifactByKind</code> arg</th><th>Draft fallback path</th><th>Badge</th></tr>
+      <tr><td><code>/system-design/decision-matrix</code></td><td class="mono">'decision_matrix_v1' (go/no-go)</td><td class="mono">extractedData.draftArchitecture.decisionMatrix</td><td>Draft</td></tr>
+      <tr><td><code>/system-design/ffbd</code></td><td class="mono">'ffbd_v1'</td><td class="mono">extractedData.draftArchitecture.ffbd</td><td>Draft</td></tr>
+      <tr><td><code>/system-design/qfd</code></td><td class="mono">'hoq_v1'</td><td class="mono">extractedData.draftArchitecture.qfd</td><td>Draft</td></tr>
+      <tr><td><code>/system-design/interfaces</code></td><td class="mono">'n2_matrix_v1' (verify canonical)</td><td class="mono">extractedData.draftArchitecture.interfaces</td><td>Draft</td></tr>
+      <tr><td><code>/system-design/arch-preview</code> (NEW page or banner on /requirements/architecture)</td><td class="mono">— (free-only)</td><td class="mono">extractedData.draftArchitecture.archPreview</td><td>Draft · Preview · upgrade-CTA</td></tr>
+    </table>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>System Arch Rec preliminary (per (c)) — atlas-grounded from the start; paid refresh upgrades with full Pareto + sensitivity math depth:</b></p>
+    <table>
+      <tr><th>Route</th><th>Free first run</th><th>Paid refresh</th><th>Badge state</th></tr>
+      <tr><td><code>/nfr</code> · <code>/goals-metrics</code> · <code>/problem-statement</code></td><td class="mono">kind: 'draft'</td><td class="mono">kind: 'refined' (atlas)</td><td>Draft → Refined</td></tr>
+      <tr><td><code>/requirements/tech-stack</code></td><td class="mono">kind: 'draft'</td><td class="mono">kind: 'refined' (atlas)</td><td>Draft → Refined</td></tr>
+      <tr><td><code>/backend/api-spec</code></td><td class="mono">kind: 'draft'</td><td class="mono">kind: 'refined' (atlas)</td><td>Draft → Refined</td></tr>
+    </table>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>SYN keystone (paid only) — refined-only, never produced free:</b></p>
+    <table>
+      <tr><th>Route</th><th><code>getArtifactByKind</code> arg</th><th>Free fallback?</th><th>Badge</th></tr>
+      <tr><td><code>/system-design/decision-network</code></td><td class="mono">'decision_network_v1'</td><td>NO — locked tile</td><td>Refined · Atlas-grounded</td></tr>
+      <tr><td><code>/system-design/tradespace</code> (Pareto · Sensitivity)</td><td class="mono">— (part of recommendation)</td><td>NO — locked tile</td><td>Refined · Atlas-grounded</td></tr>
+      <tr><td><code>/system-design/optimization-patterns</code></td><td class="mono">— (part of recommendation)</td><td>NO — locked tile</td><td>Refined · Atlas-grounded</td></tr>
+      <tr><td><code>/requirements/architecture</code></td><td class="mono">'recommendation_json' (SYN)</td><td>NO — locked tile</td><td>Refined · Atlas-grounded · derivation chain</td></tr>
+    </table>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li><b>Get UI Freeze unfreeze</b> from David covering all 8 files.</li>
+      <li>Per page.tsx, replace <code>(project as any).projectData?.intakeState?.extractedData?.&lt;X&gt;</code> with kind-based fallback:
+<pre class="codeblock"><span class="keyword">import</span> { getArtifactByKind } <span class="keyword">from</span> <span class="string">'@/lib/db/queries'</span>;
+
+<span class="keyword">async function</span> loadM4Artifact(projectId: <span class="keyword">number</span>) {
+  <span class="keyword">const</span> refined = <span class="keyword">await</span> getArtifactByKind(projectId, <span class="string">'decision_network_v1'</span>);
+  <span class="keyword">if</span> (refined?.content) <span class="keyword">return</span> { kind: <span class="string">'refined'</span> <span class="keyword">as const</span>, data: refined.content };
+  <span class="keyword">const</span> project = <span class="keyword">await</span> db.query.projectData.findFirst({
+    where: eq(projectData.projectId, projectId)
+  });
+  <span class="keyword">const</span> draft = (project?.intakeState <span class="keyword">as any</span>)?.extractedData?.draftArchitecture?.m4;
+  <span class="keyword">if</span> (draft) <span class="keyword">return</span> { kind: <span class="string">'draft'</span> <span class="keyword">as const</span>, data: draft };
+  <span class="keyword">return null</span>;
+}</pre>
+      </li>
+      <li>Pass <code>{ kind, data }</code> as props to viewer (was just <code>data</code>).</li>
+      <li>Per viewer, switch badge:
+        <ul>
+          <li><code>kind === 'draft'</code> → "AI Generated · Draft · provisional priors" + amber/muted styling</li>
+          <li><code>kind === 'refined'</code> → "AI Generated · Refined · Full SYN keystone" + green styling</li>
+        </ul>
+      </li>
+      <li>Add CTA banner on draft: "Refine into a full SYN blueprint with Pareto + sensitivity — uses 1000 credits" → links to <code>POST /api/projects/[id]/synthesize</code>.</li>
+      <li>Render provisional binding rows dotted/muted on draft (style only).</li>
+      <li>Verify FMEA viewer consistent.</li>
+      <li>Update CLAUDE.md "System-Design Data Path" to actual post-T4 state.</li>
+    </ol>
+
+    <div class="verify">tsc clean · viewer tests pass · playwright E2E: draft = amber badge + CTA · refined = green badge · CLAUDE.md drift resolved.</div>
+  </div>
+</div>
+
+<!-- ============== T6 ============== -->
+<div class="task-card value" id="t6">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T6</span>
+      <h3 class="task-title">Quick Start Salvage &amp; Repricing — <b style="color:var(--tangerine);">RUN FIRST IN PHASE 2 ⚡</b></h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~3-4 hr (audit + deletes); +2hr if extending synthesis to subsume T3</span>
+      <span><b>Closes:</b> P0-1 (orphan <code>extractProjectData</code> callers) · funnel pricing alignment</span>
+      <span><b>Risk:</b> low (mostly deletions)</span>
+      <span class="chip model-sonnet">🤖 Sonnet (existing synthesis)</span>
+      <span class="chip tech-ts">⚙ Pure TS deletes</span>
+      <span class="chip tech-flag">💸 Credit policy change</span>
+      <span class="chip tech-test">🧪 SSE smoke test</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      <b>Quick Start is already 80% of the free-tier draft pipeline.</b>
+      Lives at <code>apps/product-helper/lib/langchain/quick-start/orchestrator.ts</code> (1009 lines) and runs a 5-phase pipeline (synthesis → parallel extraction → validation → artifacts → persistence) producing actors, use cases, data entities, tech stack, DB schema, API spec, user stories, infrastructure, guidelines, Mermaid diagrams, and HG validation scoring. Every output lands in a sidebar tile that is <span class="lane-a">FREE</span> in the v2.2.3 pay-gate model.
+      <br><br>
+      <b>What's broken:</b>
+      <ul style="margin: 6px 0; padding-left: 18px; color: rgba(251,252,252,0.95);">
+        <li><b>Orphan call</b> at <code>orchestrator.ts:302</code> — <code>buildSyntheticConversation()</code> fakes a chat history and feeds it to <code>extractProjectData()</code>. On V2 prompts, V2 correctly refuses to fabricate from synthetic conversation, returning <code>actors=0, NFRs=0</code>. Wastes ~12K tokens per invocation for nothing. <b>This is P0-1.</b></li>
+        <li><b>Sibling P0-1 orphans</b> at <code>conversations.ts:128</code> + <code>save/route.ts:182</code> — same broken pattern, same V2-induced zero output.</li>
+        <li><b>1250-credit price tag</b> misaligned with new free-tier model — Quick Start IS the free-tier engine, not a premium one-shot.</li>
+      </ul>
+      <strong>Connects:</strong> Quick Start synthesis output (<code>domainAnalysis.actors</code>, <code>useCaseDerivation.useCases/dataEntities</code>, <code>technicalContext.architectureStyle</code>) is the seed that <span class="lane-a">Pipeline A intake fan-out</span> already needs. T6 deletes the broken extractProjectData branches, repositions Quick Start as the free engine, and audits whether <code>technicalContext.architectureStyle</code> already covers T3's 3-archetype preview need (which would subsume T3 entirely — saving ~6 hours).
+    </div>
+
+    <div class="callout warn">
+      <b>Run this BEFORE T3.</b> If the audit shows Quick Start synthesis already emits or can cheaply extend to emit 3 archetype options, T3 collapses from "new graph node + new agent + new conditional edge" to "extend <code>domainAnalysisSchema</code> with optional <code>archetypeOptions</code> field." Big effort delta.
+    </div>
+
+    <h4>Files</h4>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:8px 0 4px;"><b>Modify (deletions + price drop):</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/quick-start/orchestrator.ts">lib/langchain/quick-start/orchestrator.ts</a> <span class="filenote">— delete <code>buildSyntheticConversation()</code> (line 159) + delete the <code>extractProjectData()</code> call inside <code>runParallelExtractions</code> (line 302) + remove <code>extraction</code> from the parallel result destructuring + adjust <code>persistResults</code> to no longer take <code>extraction</code></span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/api/projects/[id]/quick-start/route.ts">app/api/projects/[id]/quick-start/route.ts</a> <span class="filenote">— change <code>checkAndDeductCredits(team.id, 1250)</code> at line 90 per credit policy decision (free / low-credit / paid)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/extraction-agent.ts">lib/langchain/agents/extraction-agent.ts</a> <span class="filenote">— audit conversations.ts:128 + save/route.ts:182 references; delete or redirect</span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>Conditionally modify (if subsuming T3):</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/quick-start-synthesis-agent.ts">lib/langchain/agents/quick-start-synthesis-agent.ts</a> <span class="filenote">— extend <code>domainAnalysisSchema</code> with optional <code>archetypeOptions: z.array(...).length(3)</code>; extend prompt to emit 3 non-authoritative archetypes per T3's contract</span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>Tests:</b></p>
+    <ul class="file-list">
+      <li>Quick Start integration tests <span class="filenote">— update fixtures to no longer expect <code>extraction</code> field in <code>QuickStartResult</code></span></li>
+      <li>NEW smoke test: <code>quick-start-no-orphan-extract.test.ts</code> <span class="filenote">— grep <code>orchestrator.ts</code> source: assert no <code>extractProjectData</code> imports remain</span></li>
+    </ul>
+
+    <h4>Migration steps (audit-first, deletes-second)</h4>
+    <ol class="steps">
+      <li><b>Audit synthesis output coverage:</b> read <code>SynthesisResult</code> shape at <code>quick-start-synthesis-agent.ts:103</code>. Compare to T3's <code>ArchPreviewOutput</code> contract (3 archetypes with strengths/weaknesses). Decision point:
+        <ul>
+          <li><b>(a) Synthesis already covers it</b> — <code>technicalContext.architectureStyle</code> is a single string today ("Monolithic web app", "Microservices") — extend to <code>archetypeOptions[3]</code> instead of building T3 separately. Saves ~6 hr.</li>
+          <li><b>(b) Synthesis insufficient</b> — keep T3 as a separate node; T6 limited to deletes + repricing.</li>
+        </ul>
+      </li>
+      <li><b>Delete the orphan branch in <code>orchestrator.ts</code>:</b>
+        <ul>
+          <li>Remove <code>buildSyntheticConversation()</code> function (line 159-192).</li>
+          <li>Remove <code>extractProjectData(conversationHistory, ...)</code> call inside <code>runParallelExtractions</code> (around line 302).</li>
+          <li>Remove <code>extraction: AgentResult&lt;ExtractionResult&gt;</code> from the parallel-extractions result type.</li>
+          <li>Remove <code>extraction</code> param from <code>persistResults()</code> + <code>runValidation()</code> signatures.</li>
+        </ul>
+      </li>
+      <li><b>Audit + delete sibling orphan callers:</b> grep <code>extractProjectData(</code> across the repo. Per the V2 fix handoff there are 2 more callers — <code>lib/.../conversations.ts:128</code> + <code>app/api/projects/[id]/save/route.ts:182</code>. Confirm V2 prompt zero-output, then delete the calls.</li>
+      <li><b>Credit policy decision</b> (lock with David before merging):
+        <ul>
+          <li><b>Free</b> — Quick Start becomes the unconditional free-tier engine. Drop <code>checkAndDeductCredits</code> to a no-op or remove entirely.</li>
+          <li><b>Low-credit (e.g. 100)</b> — keep a token-cost gate to discourage abuse but well below SYN's 1000.</li>
+          <li><b>Paid (1250 stays)</b> — only viable if Quick Start is repositioned as a paid one-shot path distinct from the free chat-driven intake. Probably not aligned with v2.2.3 pay-gate model.</li>
+        </ul>
+        Recommended: <b>free or low-credit (100)</b> per the new sidebar pay-gate.
+      </li>
+      <li><b>If (1a) — extend synthesis to subsume T3:</b>
+        <ul>
+          <li>Extend <code>domainAnalysisSchema</code>:
+<pre class="codeblock">archetypeOptions: z.array(z.object({
+  id: z.string(),       <span class="comment">// 'AV.01' | 'AV.02' | 'AV.03'</span>
+  name: z.string(),     <span class="comment">// 'Monolith SaaS' | 'Modular Services' | 'Event-Driven'</span>
+  sketch: z.string(),
+  tradeoffs: z.object({
+    strengths: z.array(z.string()),
+    weaknesses: z.array(z.string()),
+  }),
+})).length(3).optional()
+  .describe(<span class="string">'3 non-authoritative architectural archetypes for free-tier preview. NO scores. NO atlas. NO recommendation.'</span>),</pre>
+          </li>
+          <li>Extend the domain-analysis prompt with: "Also propose 3 architectural archetypes (Monolith / Modular / Event-driven) with strengths/weaknesses each. Do NOT score. Do NOT recommend. Do NOT cite atlas evidence."</li>
+          <li>Wire output into persistence so it lands at <code>extractedData.draftArchitecture.archPreview</code> (per T1.5 namespace).</li>
+          <li><b>Atlas-invariant negative test</b> still required: assert no <code>scores</code>, no <code>recommended</code>, no <code>priors</code> in archetypeOptions output.</li>
+        </ul>
+      </li>
+      <li><b>Update Quick Start integration tests</b> — <code>QuickStartResult.extraction</code> field is gone; persistence asserts updated.</li>
+      <li><b>Smoke test:</b> 1-sentence vision via SSE → no <code>extractProjectData</code> call fires (verify in trace) → V2 prompts NOT invoked from Quick Start path → synthesis output populates Project Overview + Scope tiles directly.</li>
+    </ol>
+
+    <div class="callout danger">
+      <b>Atlas invariant tie-in:</b> if step 5 ships (extending synthesis with archetypeOptions), the same negative test from T3 applies — <code>grep -rn "renderAtlasPriors\|kb_source.*atlas" quick-start-synthesis-agent.ts</code> must return 0 matches. Quick Start synthesis is a free-tier path; atlas reads are forbidden.
+    </div>
+
+    <div class="callout info">
+      <b>If T6 step 5 (subsume T3) ships, T3 becomes a no-op.</b> Update T3 task card to "subsumed by T6" + remove T3 from Phase 2 sequencing. The funnel build effort drops from ~22 hr to ~16 hr.
+    </div>
+
+    <div class="verify">tsc clean · jest pass (incl. updated Quick Start fixtures + new no-orphan grep test) · SSE smoke trace shows no extractProjectData invocation · credit deduct matches new policy · if (1a): atlas-invariant negative test green.</div>
+  </div>
+</div>
+
+<!-- ============== T7 ============== -->
+<div class="task-card gate" id="t7">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T7</span>
+      <h3 class="task-title">Intake Mess — inventory &amp; consolidation strategy 🧭</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">Step 1 (inventory) ~30 min · Step 2+ TBD</span>
+      <span><b>Closes:</b> 3-headed intake confusion · M0 unwired status · cross-cutting orphan call audit</span>
+      <span><b>Risk:</b> low (audit only)</span>
+      <span class="chip tech-test">📋 Inventory</span>
+      <span class="chip tech-flag">🧭 Strategy decision</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      Two intake paths exist today, doing overlapping work:
+      <ol style="margin: 6px 0; padding-left: 22px; color: rgba(251,252,252,0.95);">
+        <li><b>Quick Start path</b> (orchestrator + synthesis-agent + 5 parallel extraction agents) — SSE, 1250 credits, 1-shot from sentence to PRD</li>
+        <li><b>Chat LangGraph intake</b> (intake-graph.ts + ~22 nodes + 9 intake subagents) — conversational, multi-turn</li>
+      </ol>
+      Plus <b>3 orphan <code>extractProjectData</code> callers</b> (P0-1) crossing both paths.
+      <strong>Connects:</strong> both paths want to populate the same downstream namespace (<code>extractedData.*</code> + <code>draftArchitecture.*</code> + <code>project_artifacts</code>). Without consolidation, T1/T1.5/T2/T3 land on a fragmented foundation. T7 audits, then locks the strategy before any other Phase 2 work proceeds.
+      <br><br>
+      <b>📛 REMOVED 2026-05-04 evening — M0a signup-signals background:</b> earlier drafts of this plan included a third intake path (M0 signup-signals + discriminator-intake background scrape via Clerk webhook). <b>That entire feature is REMOVED per David's call.</b> No Clerk webhook, no Clearbit/LinkedIn scrape, no <code>user_signals</code> table population. Discriminators are collected via the welcome form + chat only.
+    </div>
+
+    <div class="callout warn">
+      <b>Run T7 BEFORE T1/T1.5/T2/T3/T6.</b> Strategy decisions here change the scope of every downstream task. Step 1 inventory is ~30 min (already done — embedded below). Step 2 strategy decision is the gating step.
+    </div>
+
+    <h4>Step 1 — Inventory (DONE, embedded below)</h4>
+
+    <h5 style="margin: 14px 0 4px; font-size: 13px; color: var(--firefly);">1️⃣ Quick Start path (1250 credits)</h5>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/quick-start/orchestrator.ts">lib/langchain/quick-start/orchestrator.ts</a> <span class="filenote">(1009 LOC, 5 phases)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/quick-start-synthesis-agent.ts">agents/quick-start-synthesis-agent.ts</a> <span class="filenote">(2 sequential Sonnet calls)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/api/projects/[id]/quick-start/route.ts">app/api/projects/[id]/quick-start/route.ts</a> <span class="filenote">(POST entry, 1250 credits, maxDuration 120s)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/extraction-agent.ts">agents/extraction-agent.ts</a> <span class="filenote">— ⚠️ orphan call from orchestrator.ts:302</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/schema-extraction-agent.ts">agents/schema-extraction-agent.ts</a></li>
+      <li><span class="filenote">agents/{tech-stack,api-spec,user-stories,infrastructure,guidelines}-agent.ts</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/quick-start/quick-start-button.tsx">components/quick-start/quick-start-button.tsx</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/quick-start/progress-cards.tsx">components/quick-start/progress-cards.tsx</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/quick-start-chips.tsx">components/onboarding/quick-start-chips.tsx</a></li>
+    </ul>
+
+    <h5 style="margin: 14px 0 4px; font-size: 13px; color: var(--firefly);">2️⃣ Chat LangGraph intake path</h5>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:4px 0;"><b>Entry routes:</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/api/chat/projects/[projectId]/route.ts">app/api/chat/projects/[projectId]/route.ts</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/api/chat/projects/[projectId]/langgraph-handler.ts">app/api/chat/projects/[projectId]/langgraph-handler.ts</a> <span class="filenote">(15s heartbeat)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/api/chat/projects/[projectId]/save/route.ts">app/api/chat/projects/[projectId]/save/route.ts</a> <span class="filenote">— ⚠️ orphan extractProjectData call (P0-1)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/actions/conversations.ts">app/actions/conversations.ts</a> <span class="filenote">— ⚠️ orphan extractProjectData call (P0-1)</span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:4px 0;"><b>Graph + nodes:</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/graphs/intake-graph.ts">lib/langchain/graphs/intake-graph.ts</a> <span class="filenote">(orchestrator)</span></li>
+      <li><span class="filenote">graphs/nodes/extract-data.ts (T0 patched), analyze-response.ts, check-prd-spec.ts, compute-next-question.ts, explain-decision.ts, generate-artifact.ts, generate-response.ts, _engine-substrate.ts, _persist-artifact.ts + 13 generation nodes (FFBD, QFD, DM, Network, FMEA-early, FMEA-residual, NFR, data-flows, form-function, interfaces, n2, synthesis, constants)</span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:4px 0;"><b>Intake subagents (<code>lib/langchain/agents/intake/</code>):</b></p>
+    <ul class="file-list">
+      <li><span class="filenote">clarification-detector.ts, completion-detector.ts, kb-question-generator.ts (T5 fix), priority-scorer.ts, question-bank.ts, questions.ts, state-manager.ts, state.ts, index.ts</span></li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--slate-600);margin:4px 0;"><b>Frontend:</b></p>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/chat/page.tsx">app/(dashboard)/chat/page.tsx</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/projects/%5Bid%5D/chat/page.tsx">app/(dashboard)/projects/[id]/chat/page.tsx</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/test-chat/page.tsx">app/(dashboard)/test-chat/page.tsx</a></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/project/project-chat-provider.tsx">components/project/project-chat-provider.tsx</a></li>
+    </ul>
+
+    <h5 style="margin: 14px 0 4px; font-size: 13px; color: var(--rose-700);">3️⃣ M0 signup-signals + discriminator — 📛 REMOVED 2026-05-04 evening</h5>
+    <div class="callout danger">
+      <b>Entire feature removed per David's call.</b> The previous plan included a Clerk-webhook-triggered M0a signup-signals background scrape (Clearbit + LinkedIn) populating <code>user_signals</code>, plus an M0b discriminator-intake gate consuming those signals. Both are out of scope for v2.2.3 and beyond.<br><br>
+      <b>Files no longer in active use</b> (left on disk for v2.2.4+ revisit if needed):
+      <ul class="file-list" style="margin-top: 6px;">
+        <li><code>agents/system-design/signup-signals-agent.ts</code> · <code>agents/system-design/discriminator-intake-agent.ts</code></li>
+        <li><code>schemas/module-0/index.ts</code> (+ user-profile, project-entry, intake-discriminators)</li>
+        <li><code>lib/db/schema/user-signals.ts</code> · <code>lib/db/schema/project-entry-states.ts</code> (RLS-policied tables, idle)</li>
+        <li><code>app/api/signup-signals/[userId]/route.ts</code> (standalone API entry, no callers)</li>
+        <li><code>scripts/verify-t7.ts</code> (verifier of removed feature)</li>
+      </ul>
+      <b>Discriminator collection going forward:</b> welcome form + chat questions only. No background scrape. No Clerk webhook. No <code>user_signals</code> reads anywhere.
+    </div>
+
+    <h5 style="margin: 14px 0 4px; font-size: 13px; color: var(--firefly);">⚠️ Cross-cutting: 3 orphan <code>extractProjectData</code> callers (P0-1)</h5>
+    <ul class="file-list">
+      <li><span class="filenote">lib/langchain/quick-start/orchestrator.ts:302 (synthetic conversation)</span></li>
+      <li><span class="filenote">app/api/chat/projects/[projectId]/save/route.ts:182</span></li>
+      <li><span class="filenote">app/actions/conversations.ts:128</span></li>
+    </ul>
+
+    <h5 style="margin: 14px 0 4px; font-size: 13px; color: var(--firefly);">Tests + scripts</h5>
+    <ul class="file-list">
+      <li><span class="filenote">__tests__/langchain/graphs/{intake-graph,intake-graph.live-project,intake-graph.ta1-integration}.test.ts</span></li>
+      <li><span class="filenote">lib/langchain/graphs/__tests__/{intake-graph-fanout,intake-graph-v21-wiring}.test.ts</span></li>
+      <li><span class="filenote">scripts/build-intake-eval-datasets.ts + validate-intake-eval-datasets.ts</span></li>
+    </ul>
+
+    <h4 style="color: var(--emerald-700);">Step 2 — STRATEGY LOCKED ✅ (2026-05-04)</h4>
+
+    <div class="callout good">
+      <b>Decision locked.</b> 5 core decisions made; T7.1-T7.6 sub-tasks defined; greenfield/brownfield required-question sets enumerated. Build path unambiguous.<br>
+      <b>Canonical references:</b><br>
+      • <a href="file:///Users/davidancor/Projects/c1v-project-admin-main/c1v-marketing/intake-data-map.html" style="color: var(--emerald-700); text-decoration: underline;">intake-data-map.html</a> — 5-layer mess inventory<br>
+      • <a href="file:///Users/davidancor/Projects/c1v/plans/intake-to-m4-draft-zod-handshake.md" style="color: var(--emerald-700); text-decoration: underline;">intake-to-m4-draft-zod-handshake.md</a> — full Zod handshake from welcome form → M4 v1 draft (every schema, file path, producer/consumer, adapter requirement)
+    </div>
+
+    <h5 style="margin: 14px 0 6px; font-size: 13px; color: var(--firefly);">7-level archetype taxonomy (locked 2026-05-04 · DDIA-extended)</h5>
+    <p style="font-size: 12.5px; color: var(--slate-600); margin: 4px 0;">Replaces the previous flat "9 archetypes" framing. Real architectures are tuples of one pick per level; v1 draft surfaces L1+L2 only. <b>L1, L3, L4 enriched with DDIA-grounded sub-axes</b> (storage engine, OLTP/OLAP, replication topology) — these refinements surface in v2 paid refinement.</p>
+    <table>
+      <tr><th>Level</th><th>Axis</th><th>Options</th><th>Source</th><th>Surface in</th></tr>
+      <tr><td><b>L1</b></td><td>Application shape</td><td>Monolith · Modular Services · Event-Driven · Serverless · Hybrid</td><td>Richards/Ford 2020, Bass/Clements 2021</td><td>v1 draft Pareto</td></tr>
+      <tr><td><b>L1.b</b></td><td>Storage engine (NEW · DDIA-grounded)</td><td>B-tree storage · LSM-tree storage · Column-oriented · Hybrid HTAP</td><td>Kleppmann 2017 DDIA Ch 3 · math F16/F17</td><td>v2 paid refinement</td></tr>
+      <tr><td><b>L2</b></td><td>AI engagement</td><td>None · FM Wrapper · RAG · Agentic · Hybrid (RAG+Agents) · Fine-Tuned</td><td>Huyen 2024, AI Engineering Ch 5-7</td><td>v1 draft Pareto</td></tr>
+      <tr><td><b>L3</b></td><td>Inference / workload topology</td><td>OLTP-online · OLAP-batch · Hybrid HTAP · Streaming</td><td>Huyen 2022 DMLS Ch 7 + Kleppmann 2017 DDIA Ch 3</td><td>v2 paid refinement</td></tr>
+      <tr><td><b>L4</b></td><td>Release strategy</td><td>Big-bang · Shadow · Canary · A/B · Interleaving · Bandit</td><td>Huyen 2022 DMLS Ch 9</td><td>v2 paid refinement</td></tr>
+      <tr><td><b>L4.b</b></td><td>Replication topology (NEW · DDIA-grounded)</td><td>No-replication · Single-leader · Multi-leader · Leaderless (Dynamo-style) · Consensus-based (Raft/Paxos)</td><td>Kleppmann 2017 DDIA Ch 5 · math F18/F19/F20</td><td>v2 paid refinement</td></tr>
+      <tr><td><b>L5</b></td><td>Retraining loop</td><td>None · Stateless · Stateful Champion/Challenger</td><td>Huyen 2022 DMLS Ch 9 Fig 9-1</td><td>v2 paid refinement</td></tr>
+      <tr><td><b>L6</b></td><td>Platform components</td><td>Feature Store? · Model Registry? · Drift Monitor? · Eval Harness?</td><td>Huyen 2022 DMLS Ch 10</td><td>v2.2.4 deferred</td></tr>
+      <tr><td><b>L7</b></td><td>Edge / model compression</td><td>Cloud-only · Quantization · Distillation · Pruning · Low-rank Factorization</td><td>Huyen 2022 DMLS Ch 7</td><td>v2 paid refinement</td></tr>
+    </table>
+    <p style="font-size: 12.5px; color: var(--slate-600); margin: 4px 0;">For v1, the QS one-shot prompt emits 3-5 alternatives, each as a <code>(app_shape, ai_pattern)</code> tuple. Levels 1.b, 3, 4, 4.b, 5, 7 are surfaced post-pay in v2 by the M4 + math engine consuming F1-F21 from <a href="file:///Users/davidancor/Projects/c1v/plans/research/math-sources.md">math-sources.md</a>. Level 6 deferred to v2.2.4.</p>
+
+    <h5 style="margin: 14px 0 6px; font-size: 13px; color: var(--firefly);">Core decisions (revised 2026-05-04 evening — M0a removed)</h5>
+    <ol class="steps">
+      <li><b>No background scrape, no signup webhooks</b> — M0a signup-signals is REMOVED entirely. No Clearbit, no LinkedIn, no Clerk-webhook firing on signup. Discriminators collected via welcome form + chat only.</li>
+      <li><b>Defer brownfield ingest</b> — no architecture doc upload, no GitHub repo scraping for v2.2.3. MVP/founder is the GTM persona. Brownfield ingest revisited in v2.2.4+ once enterprise demand is proven.</li>
+      <li><b>Consolidate discriminator collection</b> — welcome form + chat only. M0a/M0b removed.</li>
+      <li><b>Repurpose QS synthesizer as M4-prep</b> — narrow scope: "build exactly what M4 Decision Network needs, nothing more." Replaces the broken synthetic-conversation→extractProjectData branch.</li>
+      <li><b>Restructure scope-mode toggle</b> as greenfield/brownfield router — drives conditional form fields + pipeline path.</li>
+    </ol>
+
+    <h5 style="margin: 14px 0 6px; font-size: 13px; color: var(--firefly);">Sub-tasks (T7.3-T7.6 · ~9 hr critical path · revised 2026-05-04 evening)</h5>
+    <p style="font-size: 12.5px; color: var(--slate-600); margin: 4px 0;">T7.1 (Wire M0a Clerk webhook) and T7.2 (Wire M0b discriminator-intake gate) are <b>REMOVED 2026-05-04 evening</b> — entire M0a/M0b feature out of scope per David's call. Numbering preserved for traceability.</p>
+    <table>
+      <tr><th>#</th><th>Task</th><th>Effort</th><th>Depends on</th></tr>
+      <tr><td><b>T7.1</b></td><td>📛 REMOVED — Wire M0a Clerk webhook</td><td>—</td><td>—</td></tr>
+      <tr><td><b>T7.2</b></td><td>📛 REMOVED — Wire M0b discriminator-intake gate</td><td>—</td><td>—</td></tr>
+      <tr><td><b>T7.3</b></td><td>Restructure <code>scope-mode-toggle.tsx</code> → greenfield/brownfield router + conditional brownfield form fields</td><td>~3 hr</td><td>none — ship parallel</td></tr>
+      <tr><td><b>T7.4</b></td><td>Fix <code>budget</code> enum to D8 dollar bands · delete <code>projectStage</code> + <code>userRole</code> orphan fields from form + DB schema</td><td>~1 hr</td><td>T7.3</td></tr>
+      <tr><td><b>T7.5</b></td><td>Add 3-5 in-chat discriminator questions to <code>kb-question-generator.ts</code> (D4, D6, D7 in natural product-question style — replaces removed M0a signal extraction)</td><td>~2 hr</td><td>none — ship parallel</td></tr>
+      <tr><td><b>T7.6</b></td><td>Repurpose QS synthesizer as narrow M4-prep · delete synthetic-conversation→<code>extractProjectData</code> orphan branch (closes P0-1 from QS side)</td><td>~3-4 hr</td><td>none</td></tr>
+    </table>
+
+    <h5 style="margin: 14px 0 6px; font-size: 13px; color: var(--firefly);">Required questions per path</h5>
+
+    <p style="font-size:12.5px;color:var(--slate-600);margin:8px 0 4px;"><b>🟢 Greenfield (MVP / idea / founder) — minimum to fire QS synthesizer:</b></p>
+    <ul class="file-list">
+      <li><b>vision</b> (free text, ≥10 chars) — welcome form <code>building-input.tsx</code></li>
+      <li><b>D0 projectType</b> (saas/marketplace/api-service/...) — welcome form <code>project-metadata-selectors.tsx</code></li>
+      <li><b>D8 budget</b> (dollar band per schema: <code>&lt;$100 / $100-1K / $1-10K / $10-100K / $100K+</code>) — welcome form, ENUM FIXED in T7.4</li>
+      <li><b>D6 industry</b> — chat ("What industry / domain — fintech, healthcare, dev tools, e-comm, …?")</li>
+      <li><b>D4 target DAU band</b> — chat ("Roughly how many users at launch — small team, few thousand, millions?")</li>
+      <li><b>D7 transaction pattern</b> — chat ("Mostly reading content or actively saving things?")</li>
+    </ul>
+
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>🟦 Brownfield (growth / enterprise) — additional to greenfield:</b></p>
+    <ul class="file-list">
+      <li><b>deployment_state</b> (built / in-development / planned) — brownfield-only form section (T7.3)</li>
+      <li><b>integration_mode</b> (into existing / alongside / replacing) — brownfield-only form section</li>
+      <li><b>D4 current DAU</b> (separate from target) — brownfield-only form section</li>
+      <li><b>existing_tech_stack</b> (free text or chip-select common stacks) — brownfield-only form section</li>
+      <li><span class="filenote">(Deferred to v2.2.4: GitHub repo URL fetch · architecture doc upload · clearbit-augmented enterprise scrape)</span></li>
+    </ul>
+
+    <p style="font-size:12.5px;color:var(--slate-600);margin:12px 0 4px;"><b>🚫 Anti-annoying rules (KB-question-generator):</b></p>
+    <ul class="file-list">
+      <li>Welcome form: 4-5 fields max — all visibly justified by product impact</li>
+      <li>In-chat questions: <b>"helps me X"</b> framing — advance the user's thinking, not interrogate</li>
+      <li>Discriminator answers extracted from natural chat replies via existing structured-output flow — never force multiple-choice mid-conversation</li>
+      <li>NEVER ask a question whose answer is already in the welcome form</li>
+    </ul>
+
+    <h5 style="margin: 14px 0 6px; font-size: 13px; color: var(--firefly);">Parallel-ship groups</h5>
+    <table>
+      <tr><th>Group</th><th>Tasks</th><th>Effort</th><th>Sequencing</th></tr>
+      <tr><td><b>A — passive plumbing</b></td><td>T7.1 + T7.5</td><td>~2.5 hr</td><td>Independent — ship in parallel</td></tr>
+      <tr><td><b>B — onboarding form</b></td><td>T7.3 + T7.4</td><td>~4 hr</td><td>T7.3 → T7.4 sequential (same surface)</td></tr>
+      <tr><td><b>C — gate + synthesizer</b></td><td>T7.2 + T7.6</td><td>~5-6 hr</td><td>T7.2 → T7.6 sequential (T7.6 needs pruning_set)</td></tr>
+    </table>
+
+    <div class="callout info" style="margin-top: 16px;">
+      <b>Atlas-gating REVOKED 2026-05-04 evening.</b> Atlas fires across all tiers — both free preview and paid SYN keystone read real atlas priors. M0b's <code>pruning_set</code> scopes the atlas QUERY surface (smaller search → faster + more relevant retrieval) for ALL atlas reads, not just paid. The pay-gate is the math + analysis depth (Pareto, sensitivity, derivation chain), not atlas access.
+    </div>
+
+    <div class="callout warn">
+      <b>Deferred to v2.2.4</b> (logged in <a href="file:///Users/davidancor/Projects/c1v/plans/post-v2.2.3-followups.md">post-v2.2.3-followups.md</a>):
+      <ul style="margin: 6px 0; padding-left: 18px;">
+        <li>LinkedIn / GitHub OAuth sign-in</li>
+        <li>GitHub repo URL parsing + architecture inference</li>
+        <li>Architecture doc upload + parse</li>
+        <li>Brownfield ingest pipeline (full)</li>
+        <li>Deeper discriminator chains beyond D4/D6/D7 (D9 geo, D10 SLA, D12 data sensitivity)</li>
+      </ul>
+    </div>
+
+    <h5 style="margin: 22px 0 6px; font-size: 13px; color: var(--firefly);">🔧 EC-V21-E.14 / Path B closure (Wave E remaining work · NOT in v2.2.3 scope)</h5>
+
+    <div class="callout danger">
+      <b>📛 VOCABULARY CORRECTION (2026-05-04):</b> Earlier drafts of this section called this work "Wave D / agent-emitter rewrite." That phrase is a <b>misnomer</b> — there is NO Wave D in the v2.2 master plan. The canonical name is <b>EC-V21-E.14</b> (defined in <a href="file:///Users/davidancor/Projects/c1v/plans/c1v-MIT-Crawley-Cornell.v2.2.md" style="color:var(--rose-700);text-decoration:underline;">c1v-MIT-Crawley-Cornell.v2.2.md</a> Wave E line 111) or <b>"Path B closure"</b> (per <a href="file:///Users/davidancor/Projects/c1v/plans/HANDOFF-2026-04-27-v2.2-fixup.md" style="color:var(--rose-700);text-decoration:underline;">HANDOFF-2026-04-27-v2.2-fixup.md</a> R-V22.A).
+      <br><br>
+      <b>Two distinct "Wave D"s exist; do not conflate:</b>
+      <ul style="margin: 6px 0; padding-left: 22px;">
+        <li><b>v2.1 Wave D</b> (<code>td1-wave-d-complete</code> @ <code>bb1f443</code>) — ✅ SHIPPED 2026-04-26 · iter-3 API-spec two-stage refactor · UNRELATED to this work</li>
+        <li><b>"v2.2 Wave D / agent-rewrite"</b> — 🚨 <b>phantom name</b> referenced in CLAUDE.md but never defined in any master plan. The work it described is properly EC-V21-E.14 / Path B closure inside Wave E.</li>
+      </ul>
+    </div>
+
+    <h6 style="margin: 12px 0 6px; font-size: 12px; font-weight: 600; color: var(--firefly); text-transform: uppercase; letter-spacing: 0.06em;">Canonical authority chain</h6>
+    <table>
+      <tr><th>Doc</th><th>Defines</th><th>Status</th></tr>
+      <tr><td><a href="file:///Users/davidancor/Projects/c1v/plans/c1v-MIT-Crawley-Cornell.v2.2.md">c1v-MIT-Crawley-Cornell.v2.2.md</a> §Wave E line 111</td><td><b>EC-V21-E.14</b> — verbatim acceptance criterion: "P10 closure: live-project click-through produces 11-of-11 <code>project_artifacts</code> rows in <code>ready</code>... 7 NEW v2.1 LangGraph nodes refactored from re-validators (consume stub) to greenfield generators (read intake + upstream artifacts directly)."</td><td>📝 DRAFT · v2.2 stub authored 2026-04-26</td></tr>
+      <tr><td><a href="file:///Users/davidancor/Projects/c1v/plans/HANDOFF-2026-04-27-v2.2-fixup.md">HANDOFF-2026-04-27-v2.2-fixup.md</a> §Correction 1</td><td><b>Path B charter</b> — R-V22.A: "Path B (greenfield generator refactor) absorbed into Wave E. NOT v2.1.2 fast-follow." R-V22.B: "Each agent reads FROM the substrate the way M4's decision network reads from M5's morphological matrix. One node, one job, owns its derivation chain end-to-end."</td><td>✅ rulings locked 2026-04-27</td></tr>
+      <tr><td><a href="file:///Users/davidancor/Projects/c1v/plans/c1v-MIT-Crawley-Cornell.v2.1.1.md">c1v-MIT-Crawley-Cornell.v2.1.1.md</a></td><td>P10 incident filing — discovered 7 of 11 v2.1 LangGraph nodes are no-ops on live projects (consume "stub" produced by build scripts, not greenfield generators). Self-application fixtures populate stubs; live runtime projects don't.</td><td>✅ shipped 2026-04-27 · <code>v2.1.1-hotfix-complete</code> @ <code>102fce3</code></td></tr>
+      <tr><td><a href="file:///Users/davidancor/Projects/c1v/plans/methodology-rosetta.md">methodology-rosetta.md</a> §9.6</td><td>Substrate-vs-feeder architectural pattern · "The Atlas doesn't happen AT a point — it's read FROM at four points." Underwrites Path B's substrate-reads architecture.</td><td>✅ canonical reference</td></tr>
+    </table>
+
+    <div class="callout danger">
+      <b>The gap (corrected):</b> 10 Crawley matrix-derivation sites have <code>@consumers TBD</code> docstrings — schema gates are live and reject bad emissions, but no engine-story populates these fields.
+      <table style="margin-top: 8px; background: rgba(255,255,255,0.5);">
+        <tr><th>Schema file</th><th>Field</th><th>Sites</th></tr>
+        <tr><td><code>module-5/phase-2-function-taxonomy.ts</code></td><td><code>po_array_derivation</code></td><td>1 × <code>mathDerivationMatrixSchema</code></td></tr>
+        <tr><td><code>module-5/phase-3-form-function-concept.ts</code></td><td><code>full_dsm_block_derivations</code></td><td>9 × <code>mathDerivationMatrixSchema</code></td></tr>
+      </table>
+    </div>
+
+    <h6 style="margin: 12px 0 6px; font-size: 12px; font-weight: 600; color: var(--firefly); text-transform: uppercase; letter-spacing: 0.06em;">Canonical 7-node EC-V21-E.14 list (production reality, audited 2026-05-04)</h6>
+    <p style="font-size: 12.5px; color: var(--slate-600); margin: 4px 0;">Per v2.2 master plan line 111 — these are the 7 LangGraph nodes Path B refactors. <b>Wave E shipped 7 of 7</b> per <code>te1-greenfield-refactor-complete</code> tag + <a href="file:///Users/davidancor/Projects/c1v/plans/v22-outputs/te1/p10-closure-evidence.md"><code>p10-closure-evidence.md</code></a>. Earlier drafts of this table claimed "3 of 7 / 4 remain" — that framing was stale and has been corrected 2026-05-04 against actual disk state + TE1 verification report (EC-V21-E.14 = PASS).</p>
+    <table>
+      <tr><th>#</th><th>P10 node (canonical name)</th><th>Module</th><th>Path B status</th><th>Evidence</th></tr>
+      <tr><td>1</td><td><code>generate_data_flows</code></td><td>M1</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-data-flows.ts</code> calls <code>evaluateEngineStory('m1-data-flows')</code> · refactor commit <code>4c3c6ff</code></td></tr>
+      <tr><td>2</td><td><code>generate_form_function</code></td><td>M5</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-form-function.ts</code> calls <code>evaluateEngineStory('m5-form-function')</code></td></tr>
+      <tr><td>3</td><td><code>generate_decision_network</code></td><td>M4</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-decision-network.ts</code> calls <code>evaluateEngineStory('m4-decision-network')</code> · refactor commit <code>acbd9ff</code></td></tr>
+      <tr><td>4</td><td><code>generate_n2</code></td><td>M7.a</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-n2.ts</code> calls <code>evaluateEngineStory('m7-n2')</code> · refactor commit <code>fac0c00</code></td></tr>
+      <tr><td>5</td><td><code>generate_fmea_early</code></td><td>M8.a</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-fmea-early.ts</code> calls <code>evaluateEngineStory()</code> directly · agent file at <code>fmea-early-agent.ts</code> is dead transitional code</td></tr>
+      <tr><td>6</td><td><code>generate_fmea_residual</code></td><td>M8.b</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-fmea-residual.ts</code> calls <code>evaluateEngineStory()</code> directly · agent file is dead transitional code</td></tr>
+      <tr><td>7</td><td><code>generate_synthesis</code></td><td>T6 SYN</td><td class="good">✅ Wave E shipped</td><td>graph node <code>generate-synthesis.ts</code> calls <code>evaluateEngineStory('m4-synthesis-keystone')</code> · refactor commit <code>3ecc53a</code></td></tr>
+    </table>
+
+    <div class="callout info">
+      <b>Implications for v2.2.3 funnel:</b>
+      <ul style="margin: 6px 0; padding-left: 18px;">
+        <li><b>v1 draft path is unaffected</b> — the v1 keystones (<code>decision_network_v1</code> + <code>architecture_recommendation_v1</code>) ride on the math engine + NFR Engine Interpreter, not on these 7 graph nodes. Crawley matrix-derivation fields stay empty in v1 by design (provisional priors don't have matrix-derivation traces yet).</li>
+        <li><b>v2 paid refinement is unblocked at the LangGraph level</b> — all 7 P10 nodes are substrate-read greenfield refactored (Wave E, tag <code>te1-greenfield-refactor-complete</code>). The remaining EC-V21-E.14 work is the Crawley matrix-derivation field emissions (10 sites per TC1 EC-V21-C.2 PASS-with-WARN) and dead-file decommission — NOT the node refactor itself.</li>
+        <li><b>The handshake adapter L3.5</b> (per <a href="file:///Users/davidancor/Projects/c1v/plans/intake-to-m4-draft-zod-handshake.html#layer-3">handshake doc Layer 3</a>) already acknowledges this gap. v1 explicitly skips the M5 walk; v2 is where it must materialize properly via EC-V21-E.14 closure.</li>
+      </ul>
+    </div>
+
+    <h6 style="margin: 12px 0 6px; font-size: 12px; font-weight: 600; color: var(--firefly); text-transform: uppercase; letter-spacing: 0.06em;">Architectural framing — substrate-vs-feeder pattern (Rosetta §9.6)</h6>
+    <p style="font-size: 13px; margin: 4px 0;">The architectural reasoning behind Path B (per HANDOFF-2026-04-27 R-V22.B): each agent reads <b>FROM</b> the substrate. Not <b>THROUGH</b> a feeder pipe. The agent-emitter pattern that put structured artifact emission INSIDE an LLM call collapsed under three pressures:</p>
+    <table>
+      <tr><th>Pressure</th><th>Why agent-as-emitter failed</th></tr>
+      <tr><td><b>Determinism</b></td><td>LLMs are stochastic. Audit chains require byte-identical re-runs. F8 Pareto dominance can't depend on prompt mood.</td></tr>
+      <tr><td><b>Math fidelity</b></td><td>Weighted utility, queue theory, replication math (F1/F4/F18) can't be "approximately computed" by a model — they're closed-form.</td></tr>
+      <tr><td><b>Provenance traceability</b></td><td>Every score must cite <code>kb_chunk_ids + engine_rule_id</code> per <code>decision-net-agent.ts:88-93</code>. LLMs don't surface which rule fired.</td></tr>
+    </table>
+
+    <p style="font-size: 13px; margin: 12px 0 6px;"><b>The correct three-pattern split (architectural canon for c1v going forward):</b></p>
+    <table>
+      <tr><th>Pattern</th><th>Job</th><th>Why this layer</th><th>Examples</th></tr>
+      <tr>
+        <td><b>1. Extraction agents (LLM)</b></td>
+        <td>unstructured text → structured Zod-validated state</td>
+        <td>Only models can read user vision text + emit <code>{actors[], useCases[], dataEntities[]}</code></td>
+        <td><code>extract-data.ts</code> · <code>quick-start-synthesis-agent.ts</code> · <code>kb-question-generator.ts</code></td>
+      </tr>
+      <tr>
+        <td><b>2. Engine substrate (deterministic)</b></td>
+        <td>typed inputs → math-engine outputs with provenance</td>
+        <td>Scoring, Pareto, sensitivity, derivation chains MUST be reproducible (F11/F12)</td>
+        <td><code>nfr-engine-interpreter.ts</code> · <code>evaluateEngineStory()</code> · <code>discriminator-intake-agent.ts</code></td>
+      </tr>
+      <tr>
+        <td><b>3. Narrative agents (LLM, optional)</b></td>
+        <td>structured artifact → human-readable explanation</td>
+        <td>Prose generation is the one thing models do better than rule trees</td>
+        <td>NEW · <code>derivation_chain</code> summary · <code>delta_teaser</code> text · FMEA mitigation descriptions</td>
+      </tr>
+    </table>
+
+    <h6 style="margin: 12px 0 6px; font-size: 12px; font-weight: 600; color: var(--firefly); text-transform: uppercase; letter-spacing: 0.06em;">EC-V21-E.14 closure — execution plan</h6>
+    <p style="font-size: 13px; margin: 4px 0;">Per HANDOFF-2026-04-27-v2.2-fixup.md "Edit 1.4," owner is the NEW <code>agent-greenfield-refactor</code> agent. Four concrete steps:</p>
+    <ol style="font-size: 13px; margin: 4px 0 8px; padding-left: 22px;">
+      <li><b>✅ ALREADY COMPLETE — all 7 P10 nodes refactored</b> (Wave E, tag <code>te1-greenfield-refactor-complete</code>). All 7 nodes (<code>generate_data_flows</code> · <code>generate_form_function</code> · <code>generate_decision_network</code> · <code>generate_n2</code> · <code>generate_fmea_early</code> · <code>generate_fmea_residual</code> · <code>generate_synthesis</code>) read FROM substrate via <code>evaluateEngineStory()</code> + shared <code>_engine-substrate.ts</code> helper (250 LOC). E2E verified via <code>intake-graph.live-project.test.ts</code> 2/2 green. Per-node success-path tests at <code>__tests__/langchain/graphs/nodes/</code>. <b>0 hr remaining.</b></li>
+      <li><b>Extend <code>evaluateEngineStory()</code> for M5 stories</b> to emit Crawley-shaped <code>po_array_derivation</code> + <code>full_dsm_block_derivations</code> alongside the existing <code>form_function_map.runtime-envelope.v1</code>. Closes the 10 matrix-derivation sites. <b>~6-8 hr.</b></li>
+      <li><b>Decommission 3 dead agent files</b> Wave E left as transitional safety nets — annotate <code>form-function-agent.ts</code>, <code>fmea-early-agent.ts</code>, <code>fmea-residual-agent.ts</code> with <code>@deprecated do not import</code>; route any test fixtures through the substrate. <b>~2-3 hr.</b></li>
+      <li><b>(Optional) Carve narrow narrative agents</b> for prose-generation slots the substrate can't do — derivation-chain summary + delta_teaser text. <b>~3-4 hr each, only if UX needs them.</b></li>
+    </ol>
+    <p style="font-size: 13px; margin: 4px 0;"><b>EC-V21-E.14 closure total: ~8-11 hr remaining</b> (was inflated to ~20-27 hr before the 2026-05-04 audit; Step 1's ~12-16 hr is already complete). Steps 2 (matrix-derivation) + 3 (dead-file decommission) + optional 4 (narrative agents) are what's left. <b>Plan file</b> at <code>plans/v2.2-wave-e-ec14-closure.md</code> (does NOT exist — should be created when work begins, NOT named "wave-d").</p>
+    <p style="font-size: 13px; margin: 4px 0;"><b>Ship-gate criteria</b> (per master plan line 110-111): all 11 of 11 <code>project_artifacts</code> rows hit <code>ready</code> status on live-project click-through within 30s circuit-breaker per artifact · all 10 matrix-derivation sites populate from production runs · <code>tsx scripts/build-all.ts</code> emits Crawley-valid artifacts end-to-end without Zod parse errors.</p>
+
+    <div class="callout warn">
+      <b>NOT in EC-V21-E.14 scope — separate v2.2.4+ pre-Crawley legacy cleanup:</b>
+      <ul style="margin: 6px 0; padding-left: 22px;">
+        <li><code>decision-matrix-agent.ts</code> — wired (live LLM) but uses pre-Crawley <code>decisionMatrixSchema</code>. Serves <code>generate-decision-matrix.ts</code> graph node (the FREE Decision Matrix go/no-go Scope tile per sidebar). NOT in EC-V21-E.14's 7-node list. Refactoring this is a separate "pre-Crawley legacy agent cleanup" concern.</li>
+        <li><code>interfaces-agent.ts</code> — wired but pre-Crawley shape. Serves the legacy <code>extractionSchema.interfaces</code> blob path, not P10's <code>generate_n2</code> (which is M7.a). Same separate concern.</li>
+        <li><b>Effort:</b> ~3-4 hr × 2 = ~6-8 hr · <b>scope:</b> v2.2.4+ · <b>do NOT bundle with EC-V21-E.14 closure</b> — different problem (legacy schema migration vs P10 stub-consumer refactor).</li>
+      </ul>
+    </div>
+
+    <div class="callout warn">
+      <b>Downstream dependency — Python sidecar adapter chain.</b> EC-V21-E.14's "extend engine substrate to emit Crawley shapes" change cascades to <code><a href="file:///Users/davidancor/Projects/c1v/services/python-sidecar/orchestrator.py">services/python-sidecar/orchestrator.py</a></code> — the Cloud Run rendering half of the D-V21.24 split-platform synthesis pipeline. The sidecar has its own legacy adapter functions (<code>_adapt_decision_network</code>, <code>_adapt_form_function</code>, <code>_adapt_hoq</code> at <code>orchestrator.py:172/260/318</code>) that translate canonical artifact JSON → Python generator-input shape. Generators predate Crawley schemas; their input shape is frozen.
+      <br><br>
+      <b>Decision required — option (a) vs (b):</b>
+      <ul style="margin: 6px 0; padding-left: 22px;">
+        <li><b>(a) Strip new fields before passing to legacy generators</b> — cheaper · paid PDF/PPTX exports look identical to today · customer doesn't see what they're paying for in the bytes (rigor only visible in in-app viewer). Adds ~0 hr.</li>
+        <li><b>(b) Extend generators to consume matrix-derivation fields</b> — surface them in PDF/PPTX exports as derivation-chain transparency. <b>Higher product value</b>: paying users see the math provenance + F-citations in their downloads (investor-legible per Build → Show proof → Raise GTM frame). Affected generators: <code>gen-arch-recommendation.py</code> (PDF/PPTX derivation-chain page) · <code>gen-form-function.py</code> (XLSX derivation-matrix sheet) · <code>gen-decision-net.py</code> (XLSX scoring-trace columns). Adds ~6-8 hr.</li>
+      </ul>
+      <b>Total EC-V21-E.14 closure with option (b):</b> <b>~14-19 hr</b> (down from the pre-audit ~26-35 hr — Step 1 P10 refactor is done). Other sidecar artifacts (FMEA, HoQ, N2) don't carry matrix-derivation fields today and are unaffected by either path.
+    </div>
+
+    <div class="callout warn">
+      <b>For v2.2.3 scope: EC-V21-E.14 closure stays explicitly out.</b> Logged in <a href="file:///Users/davidancor/Projects/c1v/plans/post-v2.2.3-followups.md">plans/post-v2.2.3-followups.md</a> as a v2.2.4+ work item — but scope reduced post-2026-05-04 audit: only matrix-derivation + dead-file decommission remain. v1 → v2 transition does NOT require EC-V21-E.14 to close; the math engine + provisional priors carry v1 alone, and v2 atlas grounding runs alongside <b>all 7 already-shipped Path B refactors</b> (Wave E P10 closure).
+    </div>
+
+    <h6 style="margin: 18px 0 6px; font-size: 12px; font-weight: 600; color: var(--firefly); text-transform: uppercase; letter-spacing: 0.06em;">Architectural precedents — 7 prior shipped artifacts EC-V21-E.14 inherits from</h6>
+    <p style="font-size: 13px; margin: 4px 0;">EC-V21-E.14 closure doesn't invent — it completes a chain of refactors already established in the codebase. Each precedent's pattern should be mirrored:</p>
+    <table>
+      <tr><th>Prior doc</th><th>Status</th><th>Pattern EC-V21-E.14 inherits</th></tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/kb-runtime-architecture.md">plans/kb-runtime-architecture.md</a><br/><span style="font-size:11px;color:var(--slate-500);">2026-04-20 · engine substrate genesis · 13 gap-fills (G1-G13)</span></td>
+        <td>✅ 11 of 13 gaps shipped (G1-G11) · <code>lib/langchain/engines/</code> has 16 modules</td>
+        <td><b>Engine substrate is THE architectural pattern.</b> §2.4 explicitly: "Pure arithmetic + predicate matching, zero LLM calls in the hot path." Step 2 of EC-V21-E.14 closure (extend <code>evaluateEngineStory()</code>) IS continuing G2's engine.json rule-tree authoring for the M5 stories that need Crawley matrix-derivation emissions.</td>
+      </tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/HANDOFF-2026-04-27-v2.2-fixup.md">plans/HANDOFF-2026-04-27-v2.2-fixup.md</a><br/><span style="font-size:11px;color:var(--slate-500);">2026-04-27 · Path B charter · R-V22.A + R-V22.B locked rulings</span></td>
+        <td>✅ Path B fully executed by Wave E (<b>7 of 7 nodes</b> refactored to substrate-read · tag <code>te1-greenfield-refactor-complete</code> · per-node refactor commits in <a href="file:///Users/davidancor/Projects/c1v/plans/v22-outputs/te1/p10-closure-evidence.md"><code>p10-closure-evidence.md</code></a>) · TE1 verifier marked EC-V21-E.14 = PASS · 14 PASS / 1 DEFERRED / 0 FAIL (E.13 deferred = `@sentry/nextjs` SDK adoption, unrelated)</td>
+        <td><b>Path B is the locked architectural answer</b> — greenfield generator refactor, NOT stub-population. Substrate-vs-feeder pattern per Rosetta §9.6 is the moat shape. <b>Wave E delivered Path B end-to-end</b> for all 7 P10 nodes (tag <code>te1-greenfield-refactor-complete</code> · per-node refactor commits in <code>p10-closure-evidence.md</code>). Remaining EC-V21-E.14 work is the matrix-derivation field emissions Wave E flagged as PASS-with-WARN per TC1 EC-V21-C.2 — NOT another node refactor.</td>
+      </tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/reorg-mapping.md">plans/reorg-mapping.md</a><br/><span style="font-size:11px;color:var(--slate-500);">2026-04-22 · 3×8 submodule consolidation (M2/M3/M4)</span></td>
+        <td>✅ shipped · tag <code>t8-wave-1-complete</code> @ <code>e173d3b</code> · 5/5 verifier checks GREEN</td>
+        <td><b>Registry slugs are the public contract.</b> Preserve every <code>MODULE_X_PHASE_SCHEMAS</code> slug verbatim so generated JSON Schemas + preload routes + persisted JSONB landing paths stay valid. EC-V21-E.14's engine-substrate extension emits to fresh slugs that don't collide with the existing 31 emissions; existing slugs (<code>phase-1-dm-envelope</code>, ...) stay stable.</td>
+      </tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/t4a-outputs/verification-report.md">plans/t4a-outputs/verification-report.md</a><br/><span style="font-size:11px;color:var(--slate-500);">2026-04-24 · T4a Wave 2-early closure · originating M1 / M3 / M7.a / M8.a self-app artifacts</span></td>
+        <td>✅ shipped · tag <code>t4a-wave-2-early-complete</code> @ <code>18e75c8</code> · 6/6 V4a gates green · ships <code>data_flows.v1.json</code> (15 DE.NN) · <code>ffbd.v1.json</code> (7 fns) · <code>n2_matrix.v1.json</code> (10 IF.NN) · <code>fmea_early.v1.json</code> (12 FM.NN)</td>
+        <td><b>Originating self-app artifacts for 3 of the 7 EC-V21-E.14 nodes.</b> T4a's emissions directly precedent: <code>generate_data_flows</code> ← <code>data_flows.v1.json</code> (node 1, refactor commit <code>4c3c6ff</code>) · <code>generate_n2</code> ← <code>n2_matrix.v1.json</code> (node 4, refactor commit <code>fac0c00</code>) · <code>generate_fmea_early</code> ← <code>fmea_early.v1.json</code> (node 5, refactor commit <code>1622b20</code>) — <b>all three ✅ refactored Wave E per <code>p10-closure-evidence.md</code></b>. T4a's emission shapes were the contract Wave E refactored against, <b>proving the precedent pattern works</b> end-to-end. The 6-gate V4a verification (data-flow integrity, F.NN cross-ref to ffbd, IF.NN ↔ N2-connection xref) is the per-artifact verification template EC-V21-E.14 used per-node.</td>
+      </tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/t4b-t5-completion.md">plans/t4b-t5-completion.md</a><br/><span style="font-size:11px;color:var(--slate-500);">2026-04-24 · T4b + T5 Wave-3 closure · originating M4 / M5 / M7.b agent code + 12-gate validation discipline</span></td>
+        <td>✅ shipped · tag <code>t4b-wave-3-complete</code> @ <code>4ecfe3f</code> + tag <code>t5-wave-3-complete</code> @ <code>a30d9c6</code> · 12/12 gates green (V4b.1-5 · V5.1-4 · VG.1-3)</td>
+        <td><b>Originating agent code + 12-gate cross-artifact xref discipline.</b> T4b shipped <code>decision-net-agent.ts</code> + <code>interface-specs-agent.ts</code>; T5 shipped <code>form-function-agent.ts</code>; together they emitted the first <code>decision_network.v1.json</code> + <code>interface_specs.v1.json</code> + <code>form_function_map.v1.json</code> self-app artifacts. <b>Wave E refactored 2 of these into substrate-read graph nodes</b>: node 3 <code>generate_decision_network</code> ← <code>decision-net-agent.ts</code> contract (refactor commit <code>acbd9ff</code>) · node 2 <code>generate_form_function</code> ← <code>form-function-agent.ts</code> contract (refactor commit <code>7dfcc36</code>). T4b's other agent — <code>interface-specs-agent.ts</code> — is M7.b (formal interface specs) and sits <b>downstream</b> of node 4's M7.a <code>n2_matrix</code> output; M7.b is NOT one of the 7 EC-V21-E.14 nodes (separate consumer). The 12-gate verification pattern (V4b.3 cross-artifact <code>interface_id ↔ connection_id</code> referential integrity; V4b.4 business-rule enforcement separated from Zod schema; V4b.5 placeholder-text grep; V5.4 citation-attribution gate; VG.2 jest delta ≤ 0 vs baseline; VG.3 no-new-untracked) is the SAME shape Wave E used per-node — copy verbatim for the residual matrix-derivation extension Step 2. T4a/T4b/T5 produced the <b>self-app artifacts (one-shot, manual run on c1v-itself)</b>; EC-V21-E.14's Wave E refactor made the same artifacts emit <b>per-project on live click-through</b>.</td>
+      </tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/v21-outputs/td1/two-stage-pattern.md">plans/v21-outputs/td1/two-stage-pattern.md</a><br/><span style="font-size:11px;color:var(--slate-500);">2026-04-26 · TD1 / v2.1 Wave D · "flat-index × deterministic-expansion" pattern · worked example: <a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/langchain/agents/api-spec/stage2-expansion.ts"><code>stage2-expansion.ts</code></a></span></td>
+        <td>✅ shipped · tag <code>td1-wave-d-complete</code> @ <code>bb1f443</code> · 83% output-token + 75% cost reduction (per <a href="file:///Users/davidancor/Projects/c1v/plans/v21-outputs/td1/token-cost-delta.md">token-cost-delta.md</a>) · 5/5 EC verification PASS</td>
+        <td><b>Working code precedent for "narrow LLM intent → wide deterministic expansion".</b> Stage 1 LLM emits a flat scalar index (8 keys per row, ~2k tokens total, no nested sub-schemas, dropped <code>maxTokens</code> 12000→4000 so the model can't ramble); Stage 2 is a pure deterministic mapper (<code>expandOperation()</code> switches on <code>(method × hasPathParam × hasOwningEntity)</code>) that expands each entry to its full <code>apiSpecificationSchema</code> shape — no LLM, no <code>Date.now()</code>, no <code>Math.random()</code>, same input always yields byte-identical output (idempotency contract per EC-V21-D.5; testable as snapshot regression). <b>All 7 EC-V21-E.14 nodes Wave E refactored</b> (data_flows · form_function · decision_network · n2 · fmea_early · fmea_residual · synthesis) follow the SAME shape: extract intent from the artifact substrate → expand deterministically per Crawley schemas. The remaining matrix-derivation extension Step 2 inherits the same pattern. The doc's §"Reuse checklist" (8 steps) is copy-verbatim; only the dispatcher swaps. Quote: "The pattern is generic. Anywhere c1v has a structured-output agent whose output shape is <code>flat-index × deterministic-expansion</code>, this split applies."</td>
+      </tr>
+      <tr>
+        <td><a href="file:///Users/davidancor/Projects/c1v/plans/pipeline-b-steps36-schema-gap-audit.md">plans/pipeline-b-steps36-schema-gap-audit.md</a><br/><span style="font-size:11px;color:var(--slate-500);">~2026-04-22 · Phase N consumer-side wiring (Steps 3-6 → 6 backend agents)</span></td>
+        <td>✅ shipped · <code>lib/langchain/schemas/projections.ts</code> on disk · <code>buildSteps36Projections</code> wired in langgraph-handler + 4 agents</td>
+        <td><b>Drift-free Zod-derived <code>Pick&lt;&gt;</code> projection pattern.</b> EC-V21-E.14 closure adapters (per <a href="file:///Users/davidancor/Projects/c1v/plans/intake-to-m4-draft-zod-handshake.html#layer-3">handshake doc Layer 3</a>) follow this idiom: <code>type AdaptedFoo = Pick&lt;z.infer&lt;typeof crawleyFooSchema&gt;, '...'&gt;</code> — never hand-redeclare shapes. Compile-time fails on schema drift. Pair-wise revertible commits (one per agent).</td>
+      </tr>
+    </table>
+    <p style="font-size: 13px; margin: 4px 0;"><b>What this 7-doc lineage confirms:</b> EC-V21-E.14 P10 node closure is <b>shipped</b>, not pending — an architectural line that started Apr 20 (kb-runtime-architecture engine substrate), continued Apr 22 (reorg + Phase N consumer wiring), shipped originating agent emissions Apr 24 (T4a Wave 2-early + T4b/T5 Wave-3 — together precedenting the originating agents for nodes 1/2/3/4/5 of the 7 EC-V21-E.14 nodes that Wave E subsequently refactored to substrate-read; T6 Wave-4 originated node 7 <code>generate_synthesis</code>), proved out the deterministic-substrate pattern Apr 26 (TD1 two-stage-pattern with 83% token / 75% cost reduction), got its locked charter Apr 27 (Path B / Wave E absorption), and <b>shipped all 7 P10 node refactors via tag <code>te1-greenfield-refactor-complete</code></b> (per <code>p10-closure-evidence.md</code> — verifier marked EC-V21-E.14 = PASS). What remains: Crawley matrix-derivation field emissions (10 sites per TC1 EC-V21-C.2 PASS-with-WARN) + dead-file decommission · ~8-11 hr. Anyone closing the residual work inherits proven patterns from all 7 docs + the canonical wave authority chain (v2.2 master plan + v2.1.1 hotfix + v2.2-fixup handoff).</p>
+
+    <div class="verify">Inventory complete (Step 1) · Strategy locked (Step 2 above) · Sub-tasks T7.1-T7.6 ready to dispatch · EC-V21-E.14 P10 7-node refactor <b>SHIPPED</b> (tag <code>te1-greenfield-refactor-complete</code>, 2026-04-27 verifier PASS) · residual EC-V21-E.14 work (matrix-derivation extension + dead-file decommission, ~8-11 hr) documented as v2.2.4+ deferred per <a href="file:///Users/davidancor/Projects/c1v/plans/c1v-MIT-Crawley-Cornell.v2.2.md">v2.2 master plan</a> Wave E line 111 · 7 architectural precedents cited (kb-runtime-architecture · v2.2-fixup handoff · reorg-mapping · <a href="file:///Users/davidancor/Projects/c1v/plans/t4a-outputs/verification-report.md">T4a Wave 2-early</a> · <a href="file:///Users/davidancor/Projects/c1v/plans/t4b-t5-completion.md">T4b/T5 originating agents</a> · <a href="file:///Users/davidancor/Projects/c1v/plans/v21-outputs/td1/two-stage-pattern.md">TD1 two-stage-pattern</a> · Phase N projections) · pre-Crawley legacy cleanup (decision-matrix-agent + interfaces-agent) explicitly carved OUT of EC-V21-E.14 scope as separate v2.2.4+ concern · stale "4-of-7 nodes remaining" framing corrected against actual disk state 2026-05-04. Cross-linked with canonical <a href="file:///Users/davidancor/Projects/c1v-project-admin-main/c1v-marketing/intake-data-map.html">intake-data-map.html</a>.</div>
+  </div>
+</div>
+
+<!-- ============== T8 — TRADESPACE + SENSITIVITY PAGES ============== -->
+<h2 class="section" id="t8">Last sprint before launch (T8 + T9)</h2>
+
+<div class="callout info">
+  <b>Sprint scope:</b> two final tasks before v2.2.3 GTM. Both are frontend-only (no backend changes; consume existing SYN keystone output). Run after T1-T6 land. <b>Reference:</b> existing artifact map at <a href="file:///Users/davidancor/Projects/c1v/plans/artifact-quality-map.html">artifact-quality-map.html</a>.
+</div>
+
+<div class="task-card value" id="t8">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T8</span>
+      <h3 class="task-title">Build Tradespace + Pareto + Sensitivity page (paid-tier output)</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~6-8 hr</span>
+      <span><b>Closes:</b> paid-tier "see the math" UX gap</span>
+      <span><b>Risk:</b> low (frontend-only)</span>
+      <span class="chip tech-react">⚛ React Server Components</span>
+      <span class="chip tech-mermaid">📊 Inline SVG (no new libs)</span>
+      <span class="chip" style="background: var(--purple-50); color: var(--purple-700); border-color: var(--purple-100);">🔒 paid tier</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      Renders the <b>Tradespace · Pareto · Sensitivity</b> sidebar tile (locked 🔒 paid per the v2.2.3 pay-gate model). Sits in the SYN keystone group — consumes <code>architecture_recommendation.v1.json</code> output from <span class="lane-b"><span class="agent-tag">T6 SYN keystone</span></span>. No new agent work — the data is already produced by the existing paid synthesis pipeline (per T6 Wave-4 close: 3 Pareto alternatives + sensitivity entries already populate <code>architecture_recommendation.v1.json</code>).
+      <strong>Connects:</strong> closes the visualization gap between Pipeline B's keystone output and the user-facing paid-tier UX. After T8 ships, the user clicking "Refine to full SYN blueprint" sees not just text but the full Pareto frontier + sensitivity curve. (Atlas priors already loaded into the free preview — atlas-gating revoked 2026-05-04.)
+    </div>
+
+    <h4>Reference spec — m4-diagrams-spec.html (already authored)</h4>
+    <p style="font-size: 13px; margin: 4px 0;">All three visualizations are pre-spec'd in <a href="file:///Users/davidancor/Projects/c1v/plans/m4-diagrams-spec.html">plans/m4-diagrams-spec.html</a>. Build the React components from those SVG sketches:</p>
+    <table>
+      <tr><th>Visualization</th><th>Spec section</th><th>Source line</th><th>Data fields consumed</th></tr>
+      <tr><td><b>Tradespace Scatter + Pareto Frontier</b></td><td>"Tradespace Scatter + Pareto Frontier" (Crawley Fig 14.2 / 15.4 style)</td><td>m4-diagrams-spec.html line 354</td><td><code>pareto_alternatives[].{utility_total, on_frontier, choices[]}</code> from architecture_recommendation</td></tr>
+      <tr><td><b>4-Quadrant Decision Space</b> (optional)</td><td>"Decision Space View — 4-Quadrant"</td><td>m4-diagrams-spec.html line 477</td><td>same as above + <code>decisionsAxisX</code> / <code>decisionsAxisY</code> binding</td></tr>
+      <tr><td><b>Sensitivity Analysis — 3-Region Curve</b></td><td>"Sensitivity Analysis — 3-Region Curve"</td><td>m4-diagrams-spec.html line 681</td><td><code>sensitivity_analysis[].{parameter, low, mid, high, region_breakpoints}</code></td></tr>
+    </table>
+
+    <h4>Files (NEW)</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/app/%28dashboard%29/projects/%5Bid%5D/system-design/tradespace/page.tsx">app/(dashboard)/projects/[id]/system-design/tradespace/page.tsx</a> <span class="filenote">— RSC page · reads via <code>getArtifactByKind(projectId, 'recommendation_json')</code> · falls back to "Refine to unlock" CTA when no SYN run</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/tradespace-viewer.tsx">components/system-design/tradespace-viewer.tsx</a> <span class="filenote">— main viewer component</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/tradespace-scatter.tsx">components/system-design/tradespace-scatter.tsx</a> <span class="filenote">— inline SVG scatter + Pareto frontier (no chart lib)</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/system-design/sensitivity-curve.tsx">components/system-design/sensitivity-curve.tsx</a> <span class="filenote">— inline SVG 3-region curve</span></li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li><b>Verify SYN output shape</b> — open <code>.planning/runs/self-application/synthesis/architecture_recommendation.v1.json</code> to confirm <code>pareto_alternatives[]</code> + sensitivity fields are populated. Per T6 Wave-4 close they should be (verifier 6/6 gates green).</li>
+      <li><b>Extract SVG markup from m4-diagrams-spec.html</b> — copy the inline SVG blocks for Tradespace (line 354), 4-Quadrant (line 477), Sensitivity (line 681) into JSX-compatible components. Replace static <code>cx</code>/<code>cy</code> with computed positions from data.</li>
+      <li><b>Build <code>tradespace-scatter.tsx</code></b> — accept <code>{ alternatives: ParetoAlternative[] }</code> prop. Compute SVG coords from <code>utility_total</code> + criteria axes. Highlight on-frontier alternatives with stroke + fill. Render hover-card with alternative-id + criteria scores.</li>
+      <li><b>Build <code>sensitivity-curve.tsx</code></b> — accept <code>{ entries: SensitivityEntry[] }</code> prop. Compute 3-region SVG path from <code>region_breakpoints</code>. Color stable / sensitive / brittle regions per Crawley convention.</li>
+      <li><b>Build <code>tradespace-viewer.tsx</code></b> — orchestrates the 3 visualizations + descriptive sidebar (per m4-diagrams-spec.html layout: title bar + diagram + interpretation block).</li>
+      <li><b>Build <code>page.tsx</code></b> — RSC, reads <code>getArtifactByKind(projectId, 'recommendation_json')</code>. Renders viewer with badge "AI Generated · Refined · Full SYN keystone." If no SYN row exists, render the locked-tile CTA: "Refine to full SYN blueprint with Pareto + sensitivity (1000 credits)" → links to <code>POST /api/projects/[id]/synthesize</code>.</li>
+      <li><b>Register route</b> in sidebar config (overlaps with T9 explorer-tree restructure — coordinate).</li>
+      <li><b>Tests</b> — Playwright E2E: paid project shows tradespace; unpaid project shows CTA · component snapshot tests for the 3 SVG components against fixture data.</li>
+    </ol>
+
+    <div class="callout info">
+      <b>No backend changes.</b> All data fields are already produced by the existing paid SYN keystone (per T6 Wave-4 ship). T8 is pure frontend.
+    </div>
+
+    <div class="callout warn">
+      <b>UI Freeze check:</b> brand-new route + new components, so not in the existing UI Freeze table. Sidebar config is 🟡 semi-frozen — manifest-read extension is OK per CLAUDE.md.
+    </div>
+
+    <div class="verify"><code>pnpm tsc --noEmit</code> clean · jest snapshot tests pass · Playwright: paid project → tradespace SVG visible · unpaid project → CTA banner · sidebar route registered with 🔒 lock badge.</div>
+  </div>
+</div>
+
+<!-- ============== T9 — EXPLORER TREE RESTRUCTURE ============== -->
+<div class="task-card" id="t9">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">T9</span>
+      <h3 class="task-title">Explorer tree restructure (slight · pre-launch polish)</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~2-3 hr</span>
+      <span><b>Closes:</b> sidebar label clarity + lock-state alignment with v2.2.3 pay-gate</span>
+      <span><b>Risk:</b> very low (UI labels + ordering)</span>
+      <span class="chip tech-react">⚛ React</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      Sidebar component rendered in onboarding + project-shell layouts. Drives user navigation across all 24+ project routes. Currently has minor label-truncation + ordering issues that compound the v2.2.3 pay-gate clarity story (per <a href="file:///Users/davidancor/Projects/c1v-project-admin-main/c1v-marketing/intake-data-map.html">canonical intake-data-map sidebar reference</a>).
+      <strong>Connects:</strong> aligns sidebar surface with locked v2.2.3 pay-gate model. After T9 ships, every label is readable and lock states match the funnel plan's free/preliminary/paid tiers exactly.
+    </div>
+
+    <h4>Files</h4>
+    <ul class="file-list">
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/projects-sidebar.tsx">components/onboarding/projects-sidebar.tsx</a> <span class="filenote">— main sidebar component</span></li>
+      <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/components/onboarding/projects-sidebar-wrapper.tsx">components/onboarding/projects-sidebar-wrapper.tsx</a> <span class="filenote">— wrapper · likely owns ordering/config</span></li>
+      <li><span class="filenote">Sidebar config / route map (locate during execution — likely co-located with sidebar component)</span></li>
+    </ul>
+
+    <h4>Known issues to fix</h4>
+    <table>
+      <tr><th>#</th><th>Issue</th><th>Fix</th></tr>
+      <tr><td>1</td><td>"Tradespace · Pareto · Sensitivit..." truncates in narrow sidebar</td><td>Rename to "Tradespace + Pareto" (drop "Sensitivity" — covered on the same page; mention in tooltip / page header)</td></tr>
+      <tr><td>2</td><td>"Decision Matrix · go/no-go" mid-dot styling inconsistent with other entries</td><td>Standardize: either drop the suffix (just "Decision Matrix") or restyle the · separator across all entries that use it</td></tr>
+      <tr><td>3</td><td>Lock-state icons may not match v2.2.3 pay-gate model exactly</td><td>Audit per canonical pay-gate table (funnel plan T7): Project Overview + Scope = ○ free · NFR/Tech Stack/API Specs = 🔄 preliminary · Decision Network/Tradespace/Optimization Patterns/Architecture Diagram = 🔒 paid · Build section = 🔒 v2.2.4+</td></tr>
+      <tr><td>4</td><td>Order should match Rosetta §5 customer-facing sequence</td><td>Verify display order: Problem Statement → Context Diagram → Target Users → Competitor Analysis → User Stories → FFBD → Form-Function Map → Data Flows → Interfaces → Data Schema → FMEA → House of Quality → Decision Matrix → System Arch Rec items. If any out of order, fix.</td></tr>
+      <tr><td>5</td><td>New T8 page (Tradespace) needs sidebar registration</td><td>Add route <code>/system-design/tradespace</code> with 🔒 lock badge, slot below Decision Network</td></tr>
+    </table>
+
+    <h4>Out-of-scope (not part of T9 — separate concerns if surfaced)</h4>
+    <ul class="file-list">
+      <li>Adding NEW sidebar entries beyond what T8 introduces (e.g., new sub-pages) — those are separate tasks</li>
+      <li>Build section unlock (Claude.md / Skill.MD / Agent Orchestration / Specialized Builder Agents) — v2.2.4+ tier</li>
+      <li>Visual style overhaul of sidebar (colors, spacing, hover states) — UI Freeze territory</li>
+    </ul>
+
+    <h4>Migration steps</h4>
+    <ol class="steps">
+      <li><b>Audit current sidebar config</b> — read <code>projects-sidebar.tsx</code> + wrapper to find the route definition list. Document current order + lock states.</li>
+      <li><b>Compare against canonical pay-gate model</b> — funnel plan T7 § Step 2 LOCKED. Flag every mismatch.</li>
+      <li><b>Apply 5 known fixes</b> from table above. Each as a single Edit (no batch rewrites — preserve diff readability).</li>
+      <li><b>Add Tradespace route</b> per T8 ship.</li>
+      <li><b>Visual verification</b> — open the dashboard at narrowest supported width (typically 240px sidebar). Confirm no labels truncate. Confirm lock badges render at correct positions.</li>
+      <li><b>Snapshot test</b> — update sidebar component snapshot to reflect the new label set + ordering.</li>
+    </ol>
+
+    <div class="callout warn">
+      <b>UI Freeze check:</b> sidebar component is 🟡 semi-frozen per CLAUDE.md (manifest-read extensions OK; visual style edits require unfreeze). T9 is label/ordering only — does NOT change visual style — so should be within the semi-frozen scope. If executor finds visual changes are required, escalate to David.
+    </div>
+
+    <div class="verify"><code>pnpm tsc --noEmit</code> clean · sidebar snapshot test updated · visual check at 240px shows zero truncation · all lock-state icons match v2.2.3 pay-gate model · all 5 known issues from table marked closed.</div>
+  </div>
+</div>
+
+<div class="callout good" style="margin-top: 24px;">
+  <b>T8 + T9 close the v2.2.3 launch sprint.</b> Combined effort: ~8-11 hr. Both frontend-only · no backend changes · no new agents · no Wave-D / EC-V21-E.14 dependency. Once T8 and T9 ship alongside Phase 3 (preview verify + production flag flip + 24h soak), v2.2.3 is launchable.
+</div>
+
+<!-- ============== LEGACY SQL ============== -->
+<h2 class="section" id="legacy">Legacy data sweep (Phase 2 finisher)</h2>
+
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-id-block">
+      <span class="task-id">SQL</span>
+      <h3 class="task-title">Clear stale <code>extractedData.{ffbd,qfd,decisionMatrix,interfaces}</code> keys</h3>
+    </div>
+    <div class="task-meta">
+      <span class="effort">~10 min</span>
+      <span><b>Risk:</b> low (rare data — only L4-trace projects)</span>
+      <span class="chip tech-db">🗄 Supabase SQL Editor</span>
+    </div>
+  </div>
+  <div class="task-body">
+
+    <div class="pipeline-loc">
+      <span class="label">Pipeline location</span>
+      One-time migration on the <code>project_data</code> jsonb that powers <span class="lane-a">Pipeline A's IntakeState</span>. The legacy keys are write-only with no readers post-T2/T4 rename. Affects only the handful of L4-trace-style projects with fabricated data; most projects don't have these keys populated.
+      <strong>Connects:</strong> cleans up post-T2 namespace migration. Required because we accept the ephemeral data loss (Option A locked) — Option B (preserving fabricated content under new namespace) would launder noise as legitimate draft.
+    </div>
+
+    <pre class="codeblock"><span class="comment">-- file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/db/migrations/00XX_clear_legacy_draft_keys.sql</span>
+<span class="keyword">UPDATE</span> project_data
+<span class="keyword">SET</span> intake_state = (
+  intake_state #- <span class="string">'{extractedData,ffbd}'</span>
+              #- <span class="string">'{extractedData,qfd}'</span>
+              #- <span class="string">'{extractedData,decisionMatrix}'</span>
+              #- <span class="string">'{extractedData,interfaces}'</span>
+)
+<span class="keyword">WHERE</span> intake_state -&gt; <span class="string">'extractedData'</span> ?| <span class="keyword">array</span>[<span class="string">'ffbd'</span>,<span class="string">'qfd'</span>,<span class="string">'decisionMatrix'</span>,<span class="string">'interfaces'</span>];</pre>
+
+    <p style="font-size:13px;color:var(--slate-600);">Run via Supabase SQL Editor (drizzle-kit migrate broken — duplicate 0004 per CLAUDE.md).</p>
+  </div>
+</div>
+
+<!-- ============== DoD ============== -->
+<h2 class="section" id="dod">Definition of Done</h2>
+
+<ul class="checklist">
+  <li>New user signs up → vision → draft architecture in <b>&lt;60s</b> with badge "AI Generated · Draft · provisional priors"</li>
+  <li>User keeps chatting → bridge surfaces gap questions → draft tightens in place</li>
+  <li>User clicks "Refine to full SYN blueprint" → 1000-credit deduct → Pipeline B → ~100-175s later same URLs upgrade to "AI Generated · Refined · Full SYN keystone" + derivation chain + signed bundle</li>
+  <li>LangSmith: zero <code>[EXTRACT_GUARD]</code> warnings on either tier</li>
+  <li>kbAnalysisLLM no longer emits "I've inferred N potential elements" boilerplate</li>
+  <li><code>no-mandate-cascade.test.ts</code> passes in CI</li>
+  <li>Marketing landing → Quick Start → existing UI flow unchanged for visitors</li>
+</ul>
+
+<!-- ============== GOTCHAS ============== -->
+<h2 class="section" id="gotchas">Gotchas — fast reference</h2>
+
+<table>
+  <tr><th>Gotcha</th><th>Source</th><th>Mitigation</th></tr>
+  <tr><td><code>extractedData</code> shape change breaks legacy rows</td><td>code-review-2026-05-03 §A.1</td><td>Option A SQL migration (clear keys)</td></tr>
+  <tr><td>Viewer fallback uses <code>getArtifactByKind</code>, NOT <code>getLatestSynthesis</code></td><td>critique C1</td><td>per-route kind table in T4</td></tr>
+  <tr><td>UI Freeze on 4 viewers + 4 page.tsx</td><td>CLAUDE.md</td><td>unfreeze before T4</td></tr>
+  <tr><td>Multi-peer git tree</td><td>CLAUDE.md</td><td>always <code>git add &lt;explicit-path&gt;</code> — never <code>-A</code></td></tr>
+  <tr><td><code>OpenQuestionSource</code> enum cascade</td><td><code>m2_constants</code> incident</td><td>grep <code>Record&lt;OpenQuestionSource, ...&gt;</code></td></tr>
+  <tr><td>Turborepo silent env-filter</td><td>CLAUDE.md</td><td>declare in <code>turbo.json</code> <code>env[]</code> AND Vercel</td></tr>
+  <tr><td>Test env vars enforced strict</td><td>CLAUDE.md</td><td>real-shape prefixes (AUTH_SECRET ≥32, sk-or-, sk_, whsec_)</td></tr>
+</table>
+
+<h3 class="subsection">Test recipe</h3>
+<pre class="codeblock"><span class="keyword">cd</span> apps/product-helper &amp;&amp; \
+  POSTGRES_URL=stub AUTH_SECRET=stubstubstubstubstubstubstubstubstub \
+  STRIPE_SECRET_KEY=sk_test_stub STRIPE_WEBHOOK_SECRET=whsec_stub \
+  OPENROUTER_API_KEY=sk-or-stub BASE_URL=http://localhost:3000 \
+  npx jest &lt;path&gt;</pre>
+
+<!-- ============== COMPANIONS ============== -->
+<h2 class="section" id="companions">Companion docs</h2>
+
+<ul class="file-list">
+  <li><a href="file:///Users/davidancor/Projects/c1v/plans/HANDOFF-2026-05-04-draft-pipeline-funnel.md">plans/HANDOFF-2026-05-04-draft-pipeline-funnel.md</a> — full rationale (810 lines)</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/plans/draft-pipeline-funnel-project-plan.md">plans/draft-pipeline-funnel-project-plan.md</a> — markdown twin of this doc</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/plans/HANDOFF-2026-05-03-intake-prompt-redesign.md">plans/HANDOFF-2026-05-03-intake-prompt-redesign.md</a> — prior session (V2 fix)</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/plans/intake-prompt-redesign-folder/code-review-2026-05-03.md">plans/intake-prompt-redesign-folder/code-review-2026-05-03.md</a> — 911 lines, 3 P0s + addendum 4 P0s</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/plans/intake-prompt-redesign.md">plans/intake-prompt-redesign.md</a> — V2 plan that shipped</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/plans/methodology-rosetta.md">plans/methodology-rosetta.md</a> — Cornell ↔ three-pass ↔ Crawley ↔ Atlas</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/docs/architecture/data-flow-diagram.html">apps/product-helper/docs/architecture/data-flow-diagram.html</a> — the agent-cards diagram (visual reference)</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/lib/chat/system-question-bridge.ts">apps/product-helper/lib/chat/system-question-bridge.ts</a> — engine seam between Pipeline A &amp; B</li>
+  <li><a href="file:///Users/davidancor/Projects/c1v/apps/product-helper/__tests__/v2.2.2-post/dataset_33ec71d2-b6cb-4d5e-8779-47a70c4c617f.jsonl">apps/product-helper/__tests__/v2.2.2-post/dataset_33ec71d2-...jsonl</a> — preview trace</li>
+</ul>
+
+<footer>
+  Generated 2026-05-04 · author: Bond · base: <code>41acf9f</code> on <code>fix/intake-extraction-nfr-outofscope</code>
+</footer>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    themeVariables: {
+      fontFamily: "'Space Grotesk', sans-serif",
+      primaryColor: '#FBFCFC',
+      primaryTextColor: '#0B2C29',
+      primaryBorderColor: '#0B2C29',
+      lineColor: '#475569',
+      secondaryColor: '#5998C5',
+      tertiaryColor: '#F18F01',
+    }
+  });
+</script>
+</body>
+</html>

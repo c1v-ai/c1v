@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M4 Decision Network — Diagram Spec · c1v</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --firefly:#0B2C29;--surface:#0f3532;--surface2:#163e3a;--surface3:#1c4540;
+  --porcelain:#FBFCFC;--tangerine:#F18F01;--danube:#5998C5;
+  --green:#22c55e;--red:#ef4444;--muted:#7aaba6;--border:rgba(251,252,252,.10);
+  --font:Space Grotesk,sans-serif;--mono:Consolas,'Courier New',monospace;
+}
+body{background:var(--firefly);color:var(--porcelain);font-family:var(--font);font-size:14px;line-height:1.5}
+.page-header{background:var(--surface);border-bottom:1px solid var(--border);padding:24px 40px}
+.page-header h1{font-size:24px;font-weight:700;letter-spacing:-.3px}
+.page-header h1 span{color:var(--tangerine)}
+.page-header p{color:var(--muted);font-size:13px;margin-top:4px}
+.toc{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.toc a{font-size:11px;font-weight:600;color:var(--danube);text-decoration:none;border:1px solid rgba(89,152,197,.3);padding:3px 10px;border-radius:20px;background:rgba(89,152,197,.08)}
+.toc a:hover{background:rgba(89,152,197,.18)}
+main{max-width:1400px;margin:0 auto;padding:32px 24px 80px}
+.diagram-section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.section-num{width:36px;height:36px;border-radius:8px;background:var(--tangerine);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-meta h2{font-size:19px;font-weight:700;line-height:1.2}
+.section-meta p{font-size:12px;color:var(--muted);margin-top:3px}
+.source-ref{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;background:rgba(241,143,1,.1);color:var(--tangerine);border:1px solid rgba(241,143,1,.25);margin-top:5px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-body{padding:28px 32px}
+/* Decision Matrix */
+.dm-wrap{overflow-x:auto}
+.dm-table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+.dm-table th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap}
+.dm-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.dm-table tr:last-child td{border-bottom:none}
+.crit-name{font-weight:600;color:var(--porcelain);font-size:12px}
+.crit-sub{font-size:10px;color:var(--muted);font-family:var(--mono);display:block;margin-top:2px}
+.w-val{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--tangerine)}
+.score-cell{display:flex;flex-direction:column;gap:4px;min-width:90px}
+.bar-wrap{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative}
+.bar{height:100%;border-radius:3px}
+.score-num{font-family:var(--mono);font-size:11px;font-weight:700}
+.best .score-num{color:var(--tangerine)}
+.best .bar{background:var(--tangerine)}
+.good .score-num{color:#84cc16}
+.good .bar{background:#84cc16}
+.ok .score-num{color:var(--danube)}
+.ok .bar{background:var(--danube)}
+.low .score-num{color:var(--muted)}
+.low .bar{background:var(--muted)}
+.total-row td{background:rgba(241,143,1,.05)}
+.total-bar-outer{height:10px;background:rgba(255,255,255,.08);border-radius:4px;max-width:120px;overflow:hidden;margin-bottom:3px}
+.total-bar{height:100%;border-radius:4px}
+.formula-bar{background:var(--surface2);padding:12px 20px;font-family:var(--mono);font-size:11px;color:var(--danube);border-top:1px solid var(--border)}
+/* Legend */
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:11px 16px;background:var(--surface2);border-radius:6px;margin-bottom:16px;font-size:12px}
+.li{display:flex;align-items:center;gap:7px}
+.ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+/* SVGs */
+.graph-svg,.scatter-svg,.quad-svg,.hier-svg,.sens-svg{width:100%;display:block;margin:0 auto}
+.graph-svg{max-width:780px}
+.scatter-svg{max-width:700px}
+.quad-svg{max-width:640px}
+.hier-svg{max-width:600px}
+.sens-svg{max-width:600px}
+/* Patterns */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:860px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.pgrid{grid-template-columns:1fr}}
+.pcard{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px}
+.pname{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tangerine);margin-bottom:6px}
+.pdesc{font-size:12px;color:var(--porcelain);line-height:1.5;margin-bottom:8px}
+.pformula{font-family:var(--mono);font-size:11px;color:var(--danube);background:rgba(89,152,197,.08);padding:4px 8px;border-radius:3px;border-left:2px solid var(--danube)}
+.pstyle{font-size:11px;color:var(--muted);margin-top:6px}
+.pstyle b{color:var(--porcelain)}
+/* Callouts */
+.callout{border-radius:6px;padding:12px 16px;font-size:12px;margin-top:16px}
+.callout-warn{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2)}
+.callout-warn strong{color:#ef4444}
+.callout-info{background:rgba(89,152,197,.06);border:1px solid rgba(89,152,197,.2)}
+.callout-info strong{color:var(--danube)}
+.callout-gold{background:rgba(241,143,1,.05);border:1px solid rgba(241,143,1,.2)}
+.callout-gold strong{color:var(--tangerine)}
+/* Book strip */
+.bstrip{background:rgba(241,143,1,.04);border-top:1px solid rgba(241,143,1,.12);padding:10px 20px;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px}
+.bstrip strong{color:var(--tangerine)}
+/* Shared SVG text styles */
+.ax{fill:var(--muted);font-family:var(--font);font-size:11px}
+.gl{stroke:rgba(251,252,252,.06);stroke-width:1;fill:none}
+code{font-family:var(--mono);font-size:11px;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;color:#a5d6ff}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Module 4 — <span>Decision Network</span> Diagram Spec</h1>
+  <p>Faithful to Crawley 2015 Ch 14–16 book figures (PNGs viewed) · c1v brand · self-application data · ready for implementation</p>
+  <nav class="toc">
+    <a href="#s1">① Decision Matrix</a>
+    <a href="#s2">② Decision Network DAG</a>
+    <a href="#s3">③ Tradespace + Pareto</a>
+    <a href="#s4">④ 4-Quadrant Decision Space</a>
+    <a href="#s5">⑤ Decision Hierarchy</a>
+    <a href="#s6">⑥ Sensitivity 3-Region</a>
+    <a href="#s7">⑦ Optimization Patterns</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════
+     1  DECISION MATRIX
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-meta">
+      <h2>Decision Matrix — Weighted Performance Assessment</h2>
+      <p>Cornell CESYS525 · each alternative scored 0–1 against measurable performance criteria · weights sum to 1.0</p>
+      <span class="source-ref">Cornell KB-4 / Crawley Ch 14 §14.2 — "utility = a·u(M1) + (1−a)·u(M2)" · multi-attribute utility theory · line 6863</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="dm-wrap">
+    <table class="dm-table">
+      <thead>
+        <tr>
+          <th style="min-width:180px">Performance Criterion</th>
+          <th>Weight</th>
+          <th>Direction</th>
+          <th>ALT-A · Serverless Edge<br><small style="font-weight:400;color:var(--muted)">Next.js + Vercel + Supabase</small></th>
+          <th>ALT-B · Containers<br><small style="font-weight:400;color:var(--muted)">Cloud Run + GKE + PG</small></th>
+          <th>ALT-C · Monolith PaaS<br><small style="font-weight:400;color:var(--muted)">Render + Managed PG</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- PC-01 Latency  w=0.22  A=0.92★  B=0.71  C=0.65 -->
+        <tr>
+          <td><span class="crit-name">PC-01: Latency p95</span><span class="crit-sub">ms · minimize</span></td>
+          <td><span class="w-val">22%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↓ lower better</td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:92%"></div></div><span class="score-num">0.92 ★</span></div></td>
+          <td><div class="score-cell ok"><div class="bar-wrap"><div class="bar" style="width:71%"></div></div><span class="score-num">0.71</span></div></td>
+          <td><div class="score-cell low"><div class="bar-wrap"><div class="bar" style="width:65%"></div></div><span class="score-num">0.65</span></div></td>
+        </tr>
+        <!-- PC-02 Cost  w=0.18  A=0.85  B=0.58  C=0.88★ -->
+        <tr>
+          <td><span class="crit-name">PC-02: Monthly Cost</span><span class="crit-sub">$/mo · minimize</span></td>
+          <td><span class="w-val">18%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↓ lower better</td>
+          <td><div class="score-cell good"><div class="bar-wrap"><div class="bar" style="width:85%"></div></div><span class="score-num">0.85</span></div></td>
+          <td><div class="score-cell low"><div class="bar-wrap"><div class="bar" style="width:58%"></div></div><span class="score-num">0.58</span></div></td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:88%"></div></div><span class="score-num">0.88 ★</span></div></td>
+        </tr>
+        <!-- PC-03 Reliability  w=0.20  A=0.88  B=0.94★  C=0.72 -->
+        <tr>
+          <td><span class="crit-name">PC-03: Reliability 99.9% SLA</span><span class="crit-sub">% · maximize</span></td>
+          <td><span class="w-val">20%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↑ higher better</td>
+          <td><div class="score-cell good"><div class="bar-wrap"><div class="bar" style="width:88%"></div></div><span class="score-num">0.88</span></div></td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:94%"></div></div><span class="score-num">0.94 ★</span></div></td>
+          <td><div class="score-cell ok"><div class="bar-wrap"><div class="bar" style="width:72%"></div></div><span class="score-num">0.72</span></div></td>
+        </tr>
+        <!-- PC-04 Dev Velocity  w=0.15  A=0.90★  B=0.62  C=0.80 -->
+        <tr>
+          <td><span class="crit-name">PC-04: Dev Velocity</span><span class="crit-sub">deploys/wk · maximize</span></td>
+          <td><span class="w-val">15%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↑ higher better</td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:90%"></div></div><span class="score-num">0.90 ★</span></div></td>
+          <td><div class="score-cell ok"><div class="bar-wrap"><div class="bar" style="width:62%"></div></div><span class="score-num">0.62</span></div></td>
+          <td><div class="score-cell good"><div class="bar-wrap"><div class="bar" style="width:80%"></div></div><span class="score-num">0.80</span></div></td>
+        </tr>
+        <!-- PC-05 Security  w=0.12  A=0.78  B=0.85★  C=0.72 -->
+        <tr>
+          <td><span class="crit-name">PC-05: Security Posture</span><span class="crit-sub">score 0–10 · maximize</span></td>
+          <td><span class="w-val">12%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↑ higher better</td>
+          <td><div class="score-cell ok"><div class="bar-wrap"><div class="bar" style="width:78%"></div></div><span class="score-num">0.78</span></div></td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:85%"></div></div><span class="score-num">0.85 ★</span></div></td>
+          <td><div class="score-cell ok"><div class="bar-wrap"><div class="bar" style="width:72%"></div></div><span class="score-num">0.72</span></div></td>
+        </tr>
+        <!-- PC-06 Scalability  w=0.08  A=0.82  B=0.95★  C=0.55 -->
+        <tr>
+          <td><span class="crit-name">PC-06: Scalability Ceiling</span><span class="crit-sub">rps · maximize</span></td>
+          <td><span class="w-val">8%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↑ higher better</td>
+          <td><div class="score-cell good"><div class="bar-wrap"><div class="bar" style="width:82%"></div></div><span class="score-num">0.82</span></div></td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:95%"></div></div><span class="score-num">0.95 ★</span></div></td>
+          <td><div class="score-cell low"><div class="bar-wrap"><div class="bar" style="width:55%"></div></div><span class="score-num">0.55</span></div></td>
+        </tr>
+        <!-- PC-07 Maintainability  w=0.05  A=0.88★  B=0.70  C=0.85 -->
+        <tr>
+          <td><span class="crit-name">PC-07: Maintainability</span><span class="crit-sub">score 0–10 · maximize</span></td>
+          <td><span class="w-val">5%</span></td>
+          <td style="font-size:11px;color:var(--muted)">↑ higher better</td>
+          <td><div class="score-cell best"><div class="bar-wrap"><div class="bar" style="width:88%"></div></div><span class="score-num">0.88 ★</span></div></td>
+          <td><div class="score-cell ok"><div class="bar-wrap"><div class="bar" style="width:70%"></div></div><span class="score-num">0.70</span></div></td>
+          <td><div class="score-cell good"><div class="bar-wrap"><div class="bar" style="width:85%"></div></div><span class="score-num">0.85</span></div></td>
+        </tr>
+        <!-- Weighted Totals: A=0.878  B=0.726  C=0.761  (A wins) -->
+        <!-- A: .22*.92+.18*.85+.20*.88+.15*.90+.12*.78+.08*.82+.05*.88
+               = .2024+.153+.176+.135+.0936+.0656+.044 = 0.8696 -->
+        <!-- B: .22*.71+.18*.58+.20*.94+.15*.62+.12*.85+.08*.95+.05*.70
+               = .1562+.1044+.188+.093+.102+.076+.035 = 0.7546 -->
+        <!-- C: .22*.65+.18*.88+.20*.72+.15*.80+.12*.72+.08*.55+.05*.85
+               = .143+.1584+.144+.120+.0864+.044+.0425 = 0.7383 -->
+        <tr class="total-row">
+          <td><strong>Weighted Total</strong><span class="crit-sub">Σ weight × score</span></td>
+          <td><span class="w-val">100%</span></td>
+          <td></td>
+          <td>
+            <div class="total-bar-outer"><div class="total-bar" style="width:86.96%;background:var(--tangerine)"></div></div>
+            <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--tangerine)">0.870 ← WINNER</span>
+          </td>
+          <td>
+            <div class="total-bar-outer"><div class="total-bar" style="width:75.46%;background:var(--danube)"></div></div>
+            <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--porcelain)">0.755</span>
+          </td>
+          <td>
+            <div class="total-bar-outer"><div class="total-bar" style="width:73.83%;background:var(--danube)"></div></div>
+            <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--porcelain)">0.738</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="formula-bar">
+      weightedTotal(alt) = Σ<sub>i</sub> weight<sub>i</sub> × score(alt, PC-i) &nbsp;·&nbsp; Weights sum: 1.00 &nbsp;·&nbsp;
+      Scale: 0.0 = fails criterion &nbsp;|&nbsp; 0.5 = meets min acceptable &nbsp;|&nbsp; 1.0 = exceeds target &nbsp;·&nbsp;
+      ★ = best score per criterion row &nbsp;·&nbsp; Red dashed marker = min_acceptable threshold
+    </div>
+    <div class="bstrip">
+      <strong>Cornell KB-4:</strong> decision-matrix-template.xlsx — 19-phase methodology docs
+      <strong>Crawley Ch 14 §14.2:</strong> multi-attribute utility theory — u = a·u(IMLEO) + (1−a)·u(probability) · line 6863
+      <strong>Crawley Box 14.1:</strong> subjectivity property — scores need traceable source (KB-8 atlas / NFR / FMEA / inferred)
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     2  DECISION NETWORK DAG
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-meta">
+      <h2>Decision Network Graph (DAG)</h2>
+      <p>Crawley Ch 14 §14.5 · "more general version of decision trees — arbitrary topologies between decision nodes, chance nodes, and leaf nodes" · line 6889</p>
+      <span class="source-ref">Crawley Fig 14.4 (decision tree, only decision+leaf) + Fig 14.5 (with chance nodes, circles) · pp. 325–344</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="legend">
+        <div class="li">
+          <svg width="22" height="16"><rect x="1" y="2" width="20" height="12" rx="2" fill="none" stroke="#5998C5" stroke-width="1.5"/></svg>
+          Decision node (□) — square
+        </div>
+        <div class="li">
+          <svg width="28" height="16"><ellipse cx="14" cy="8" rx="13" ry="7" fill="none" stroke="#F18F01" stroke-width="1.5"/></svg>
+          Chance node (○) — ellipse
+        </div>
+        <div class="li">
+          <svg width="18" height="16"><polygon points="9,1 17,15 1,15" fill="none" stroke="#22c55e" stroke-width="1.5"/></svg>
+          Leaf node (△) — triangle
+        </div>
+        <div class="li"><svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#5998C5" stroke-width="2"/></svg> Logical</div>
+        <div class="li"><svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#F18F01" stroke-width="2" stroke-dasharray="6,3"/></svg> Reasonableness</div>
+        <div class="li"><svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#c084fc" stroke-width="2" stroke-dasharray="2,3"/></svg> Metric coupling</div>
+      </div>
+
+      <svg class="graph-svg" viewBox="0 0 780 370" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ab" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5998C5"/></marker>
+          <marker id="ao" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#F18F01"/></marker>
+          <marker id="ap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#c084fc"/></marker>
+          <marker id="ag" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/></marker>
+        </defs>
+
+        <!-- Edges -->
+        <!-- DN.01 → DN.02  metric_coupling (dotted purple) -->
+        <path d="M200,83 L348,83" stroke="#c084fc" stroke-width="1.5" stroke-dasharray="2,3" fill="none" marker-end="url(#ap)"/>
+        <!-- DN.01 → DN.03  logical (solid blue) -->
+        <path d="M200,96 Q200,183 348,183" stroke="#5998C5" stroke-width="1.5" fill="none" marker-end="url(#ab)"/>
+        <!-- DN.01 → DN.05  reasonableness (dashed orange) -->
+        <path d="M60,97 Q60,283 348,283" stroke="#F18F01" stroke-width="1.5" stroke-dasharray="6,3" fill="none" marker-end="url(#ao)"/>
+        <!-- DN.02 → DN.04  logical -->
+        <path d="M498,83 L593,178" stroke="#5998C5" stroke-width="1.5" fill="none" marker-end="url(#ab)"/>
+        <!-- DN.03 → DN.05  logical -->
+        <path d="M498,183 Q558,183 558,268" stroke="#5998C5" stroke-width="1.5" fill="none" marker-end="url(#ab)"/>
+        <!-- DN.04 → DN.05  -->
+        <path d="M618,213 L618,262" stroke="#5998C5" stroke-width="1.5" fill="none" marker-end="url(#ab)"/>
+        <!-- DN.05 → leaf -->
+        <path d="M698,283 L738,283" stroke="#22c55e" stroke-width="1.5" fill="none" marker-end="url(#ag)"/>
+
+        <!-- DN.01 Orchestration Runtime -->
+        <rect x="60" y="60" width="140" height="54" rx="4" fill="#163e3a" stroke="#5998C5" stroke-width="1.5"/>
+        <text x="130" y="79" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#5998C5" text-anchor="middle">DN.01</text>
+        <text x="130" y="92" font-family="Space Grotesk,sans-serif" font-size="11" fill="#FBFCFC" text-anchor="middle">Orchestration Runtime</text>
+        <text x="130" y="105" font-family="Consolas,monospace" font-size="9" fill="#7aaba6" text-anchor="middle">LangGraph / Express / BFS</text>
+
+        <!-- DN.02 LLM Provider -->
+        <rect x="348" y="58" width="150" height="54" rx="4" fill="#163e3a" stroke="#5998C5" stroke-width="1.5"/>
+        <text x="423" y="77" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#5998C5" text-anchor="middle">DN.02</text>
+        <text x="423" y="90" font-family="Space Grotesk,sans-serif" font-size="11" fill="#FBFCFC" text-anchor="middle">LLM Provider</text>
+        <text x="423" y="103" font-family="Consolas,monospace" font-size="9" fill="#7aaba6" text-anchor="middle">Anthropic / OpenAI / OpenRouter</text>
+
+        <!-- DN.03 Vector Store -->
+        <rect x="348" y="158" width="150" height="54" rx="4" fill="#163e3a" stroke="#5998C5" stroke-width="1.5"/>
+        <text x="423" y="177" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#5998C5" text-anchor="middle">DN.03</text>
+        <text x="423" y="190" font-family="Space Grotesk,sans-serif" font-size="11" fill="#FBFCFC" text-anchor="middle">Vector Store</text>
+        <text x="423" y="203" font-family="Consolas,monospace" font-size="9" fill="#7aaba6" text-anchor="middle">pgvector / Pinecone / Weaviate</text>
+
+        <!-- DN.04 Chance: Demand Spike -->
+        <ellipse cx="618" cy="195" rx="50" ry="27" fill="#163e3a" stroke="#F18F01" stroke-width="1.5"/>
+        <text x="618" y="188" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#F18F01" text-anchor="middle">DN.04</text>
+        <text x="618" y="199" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">Demand Spike?</text>
+        <text x="618" y="210" font-family="Consolas,monospace" font-size="9" fill="#7aaba6" text-anchor="middle">p=0.25 high</text>
+
+        <!-- DN.05 Deployment Target -->
+        <rect x="558" y="258" width="140" height="54" rx="4" fill="#163e3a" stroke="#5998C5" stroke-width="1.5"/>
+        <text x="628" y="277" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#5998C5" text-anchor="middle">DN.05</text>
+        <text x="628" y="290" font-family="Space Grotesk,sans-serif" font-size="11" fill="#FBFCFC" text-anchor="middle">Deployment Target</text>
+        <text x="628" y="303" font-family="Consolas,monospace" font-size="9" fill="#7aaba6" text-anchor="middle">Vercel / Cloud Run / Self-hosted</text>
+
+        <!-- Leaf -->
+        <polygon points="760,263 790,309 730,309" fill="#163e3a" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="760" y="291" font-family="Space Grotesk,sans-serif" font-size="9" fill="#22c55e" text-anchor="middle">Arch</text>
+        <text x="760" y="302" font-family="Space Grotesk,sans-serif" font-size="9" fill="#22c55e" text-anchor="middle">Selected</text>
+
+        <!-- DSS badge -->
+        <rect x="10" y="335" width="590" height="22" rx="4" fill="rgba(89,152,197,.08)" stroke="rgba(89,152,197,.25)" stroke-width="1"/>
+        <text x="20" y="349" font-family="Space Grotesk,sans-serif" font-size="10" fill="#5998C5">DSS Tasks: Representing ✓  Structuring ✓  Simulating ✓  Viewing ✓  ·  Topology: DAG  ·  4 decision · 1 chance · 1 leaf</text>
+      </svg>
+    </div>
+    <div class="bstrip">
+      <strong>Book Fig 14.4:</strong> Decision tree — squares=decision, triangles=leaf (only decision+leaf nodes, no chance). Apollo 5 mission-mode decisions branching left-to-right: earthDeparture → EOR → moonArrival → LOR → moonDeparture → leaf nodes (15 total paths).
+      <strong>Book Fig 14.5:</strong> Fragment of Apollo tree WITH chance node (circle) for risk factors — LOR (square) → moonDeparture: Direct/Orbit (squares) → Risk factors (circles) → R1…R6 leaf nodes (triangles). Annotated p, 1-p probabilities. Decision nodes=squares, chance=circles, leaf=triangles.
+      <strong>Line 6889:</strong> "Decision networks are a more general version of decision trees where the tree-structure condition is relaxed to allow arbitrary topologies between decision nodes, chance nodes, and leaf nodes."
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     3  TRADESPACE SCATTER + PARETO
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-meta">
+      <h2>Tradespace Scatter + Pareto Frontier</h2>
+      <p>Crawley Ch 15 §15.2–15.3 · each point = one logically feasible combination of decision assignments · Pareto frontier = non-dominated set = "edge of the envelope"</p>
+      <span class="source-ref">Crawley Fig 14.2 (Apollo: IMLEO vs success probability, Utopia at lower-right, dashed best line) + Fig 15.4 (GNC: mass vs #9's reliability, stepped Pareto line) · pp. 325–372</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="legend">
+        <div class="li"><div class="ld" style="background:var(--tangerine);width:12px;height:12px"></div> Pareto frontier (non-dominated, rank 1)</div>
+        <div class="li"><div class="ld" style="background:var(--danube);opacity:.55"></div> Dominated architectures</div>
+        <div class="li"><svg width="20" height="14"><circle cx="10" cy="7" r="8" fill="none" stroke="var(--tangerine)" stroke-width="1.2" stroke-dasharray="3,2"/></svg> Fuzzy Pareto halo (rank ≤ 2)</div>
+        <div class="li"><span style="font-size:14px;color:var(--muted)">U</span>&nbsp; Utopia point (best on all metrics)</div>
+      </div>
+
+      <!-- Tradespace SVG modeled on Crawley Fig 14.2 (Apollo) and Fig 15.4 (GNC)
+           X = Monthly Cost ($/mo), minimize → lower-left is Utopia corner
+           Y = Latency p95 (ms), minimize → lower-left is Utopia corner
+           Data (cost, latency):
+             AV.01(320,850) AV.02(280,1200) AV.03(580,720) AV.04(750,680)
+             AV.05(210,1800) AV.06(430,950) AV.07(320,1100) AV.08(650,690)
+           Pareto (minimize both): AV.05,AV.02,AV.01,AV.03,AV.08,AV.04 (6 on frontier)
+           Dominated: AV.06, AV.07
+           Scale: X→ 70+(cost-100)/700*520  Y→ 370-(latency-500)/1500*330
+           AV.01: x=70+220/700*520=233  y=370-350/1500*330=370-77=293
+           AV.02: x=70+180/700*520=204  y=370-700/1500*330=370-154=216
+           AV.03: x=70+480/700*520=426  y=370-220/1500*330=370-48=322
+           AV.04: x=70+650/700*520=553  y=370-180/1500*330=370-40=330
+           AV.05: x=70+110/700*520=152  y=370-1300/1500*330=370-286=84
+           AV.06: x=70+330/700*520=315  y=370-450/1500*330=370-99=271
+           AV.07: x=70+220/700*520=233  y=370-600/1500*330=370-132=238
+           AV.08: x=70+550/700*520=478  y=370-190/1500*330=370-42=328
+      -->
+      <svg class="scatter-svg" viewBox="0 0 660 420" xmlns="http://www.w3.org/2000/svg">
+        <!-- Plot area -->
+        <rect x="70" y="20" width="530" height="350" fill="rgba(15,53,50,.45)" rx="2"/>
+        <!-- Grid -->
+        <line x1="70" y1="90" x2="600" y2="90" class="gl"/>
+        <line x1="70" y1="160" x2="600" y2="160" class="gl"/>
+        <line x1="70" y1="230" x2="600" y2="230" class="gl"/>
+        <line x1="70" y1="300" x2="600" y2="300" class="gl"/>
+        <line x1="160" y1="20" x2="160" y2="370" class="gl"/>
+        <line x1="270" y1="20" x2="270" y2="370" class="gl"/>
+        <line x1="380" y1="20" x2="380" y2="370" class="gl"/>
+        <line x1="490" y1="20" x2="490" y2="370" class="gl"/>
+        <!-- Axes -->
+        <line x1="70" y1="370" x2="610" y2="370" stroke="rgba(251,252,252,.35)" stroke-width="1.2"/>
+        <line x1="70" y1="20" x2="70" y2="378" stroke="rgba(251,252,252,.35)" stroke-width="1.2"/>
+        <!-- X labels (cost) -->
+        <text x="160" y="390" class="ax" text-anchor="middle">$200</text>
+        <text x="270" y="390" class="ax" text-anchor="middle">$350</text>
+        <text x="380" y="390" class="ax" text-anchor="middle">$500</text>
+        <text x="490" y="390" class="ax" text-anchor="middle">$650</text>
+        <!-- Y labels (latency) -->
+        <text x="64" y="374" class="ax" text-anchor="end">500</text>
+        <text x="64" y="302" class="ax" text-anchor="end">800</text>
+        <text x="64" y="232" class="ax" text-anchor="end">1100</text>
+        <text x="64" y="162" class="ax" text-anchor="end">1400</text>
+        <text x="64" y="92" class="ax" text-anchor="end">1700</text>
+        <!-- Axis labels -->
+        <text x="335" y="412" class="ax" text-anchor="middle" font-size="12" font-weight="600">Monthly Cost ($/mo) →  minimize</text>
+        <text x="20" y="195" class="ax" text-anchor="middle" font-size="12" font-weight="600" transform="rotate(-90,20,195)">Latency p95 (ms)  →  minimize</text>
+
+        <!-- Dominated: AV.06(315,271), AV.07(233,238) -->
+        <circle cx="315" cy="271" r="6" fill="#5998C5" opacity=".5"/>
+        <text x="322" y="269" font-size="9" fill="#7aaba6" font-family="Consolas,monospace">AV.06</text>
+        <circle cx="233" cy="238" r="6" fill="#5998C5" opacity=".5"/>
+        <text x="240" y="236" font-size="9" fill="#7aaba6" font-family="Consolas,monospace">AV.07</text>
+
+        <!-- Pareto staircase (Crawley Fig 15.4 style stepped line, running through frontier sorted by latency asc)
+             Frontier sorted by latency asc: AV.04(553,330) AV.08(478,328) AV.03(426,322) AV.01(233,293) AV.02(204,216) AV.05(152,84)
+             Staircase: start at AV.04, step left+down for each frontier point
+        -->
+        <polyline points="553,330 553,328 478,328 478,322 426,322 426,293 233,293 233,216 204,216 204,84 152,84"
+                  fill="none" stroke="#F18F01" stroke-width="2.5" stroke-linejoin="round"/>
+
+        <!-- Fuzzy Pareto halos on frontier points -->
+        <circle cx="553" cy="330" r="11" fill="none" stroke="#F18F01" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+        <circle cx="478" cy="328" r="11" fill="none" stroke="#F18F01" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+        <circle cx="426" cy="322" r="11" fill="none" stroke="#F18F01" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+        <circle cx="233" cy="293" r="11" fill="none" stroke="#F18F01" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+        <circle cx="204" cy="216" r="11" fill="none" stroke="#F18F01" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+        <circle cx="152" cy="84" r="11" fill="none" stroke="#F18F01" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+
+        <!-- Pareto frontier points (orange filled, matching Crawley Fig 15.4 bold Pareto dots) -->
+        <circle cx="553" cy="330" r="6" fill="#F18F01"/>
+        <text x="559" y="322" font-size="9" fill="#F18F01" font-weight="700" font-family="Consolas,monospace">AV.04</text>
+        <circle cx="478" cy="328" r="6" fill="#F18F01"/>
+        <text x="484" y="320" font-size="9" fill="#F18F01" font-weight="700" font-family="Consolas,monospace">AV.08</text>
+        <circle cx="426" cy="322" r="6" fill="#F18F01"/>
+        <text x="432" y="314" font-size="9" fill="#F18F01" font-weight="700" font-family="Consolas,monospace">AV.03</text>
+        <!-- AV.01 is the recommended winner — slightly larger dot + label -->
+        <circle cx="233" cy="293" r="8" fill="#F18F01" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+        <text x="244" y="283" font-size="9" fill="#F18F01" font-weight="700" font-family="Consolas,monospace">AV.01 ★ recommended</text>
+        <circle cx="204" cy="216" r="6" fill="#F18F01"/>
+        <text x="210" y="208" font-size="9" fill="#F18F01" font-weight="700" font-family="Consolas,monospace">AV.02</text>
+        <circle cx="152" cy="84" r="6" fill="#F18F01"/>
+        <text x="158" y="76" font-size="9" fill="#F18F01" font-weight="700" font-family="Consolas,monospace">AV.05</text>
+
+        <!-- Utopia point (matches Crawley Fig 14.2 "U" at lower-right of data range — lower-left for minimize-both) -->
+        <text x="90" y="365" font-size="16" fill="#7aaba6" font-family="Space Grotesk,sans-serif" font-style="italic">U</text>
+        <line x1="97" y1="360" x2="152" y2="84" stroke="rgba(122,171,166,.25)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="100" y="350" font-size="9" fill="#7aaba6" font-family="Space Grotesk,sans-serif">Utopia</text>
+      </svg>
+
+      <div class="callout callout-gold">
+        <strong>Box 15.1 — Principle of Robustness:</strong>
+        <span> "Optimal architectures, in the Pareto sense, are often the least robust." AV.01 (Sonnet + pgvector + LangGraph + Vercel, $320/mo, 850ms p95) is the recommended Pareto-optimal architecture. Before committing: run sensitivity analysis with ±10% weight perturbation. If the winner flips under modest weight shifts (Region II behavior), surface via chat bridge before committing to the recommendation.</span>
+      </div>
+    </div>
+    <div class="bstrip">
+      <strong>Book Fig 14.2:</strong> Apollo tradespace — Y=IMLEO pounds (minimize), X=mission success probability (maximize). Utopia "U" at lower-right. Each point = one feasible mission-mode combination. 4 markers: Direct (♦), EOR (△), LOR (■), EOR+LOR (×). Dashed "best architectures" line connecting 8 highlighted points (LOR cluster at medium mass + high probability). Same staircase-like structure as Pareto frontier.
+      <strong>Book Fig 15.4:</strong> GNC tradespace — Y=mass admensional, X=#9's in reliability (more 9's = better). 20,509 architectures plotted as × marks. Pareto frontier = solid stepped line at bottom-right (minimize mass, maximize reliability). Legend: × = all architectures, ─ = non-dominated architectures. Stratification visible as vertical clusters.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     4  4-QUADRANT DECISION SPACE VIEW
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s4">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-meta">
+      <h2>Decision Space View — 4-Quadrant</h2>
+      <p>Crawley Ch 15 §15.6 · Fig 15.15 (exact layout) + Fig 15.14 (Apollo dots) · "Plot: sensitivity (Y) vs connectivity (X) — Quadrant I decisions first"</p>
+      <span class="source-ref">Crawley Fig 15.15 — 4-quadrant abstract diagram, dashed median lines, labels (I)–(IV) · Fig 15.14 — Apollo IMLEO dots with LOR at top-right · pp. 345–372</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <!-- EXACT REPLICA of Crawley Fig 15.15 with c1v decisions as dots (like Fig 15.14) -->
+      <svg class="quad-svg" viewBox="0 0 620 460" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aw" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(251,252,252,.45)"/>
+          </marker>
+        </defs>
+
+        <!-- Axes (exactly as Crawley Fig 15.15 — simple arrows, no tick marks) -->
+        <line x1="58" y1="385" x2="598" y2="385" stroke="rgba(251,252,252,.45)" stroke-width="1.5" marker-end="url(#aw)"/>
+        <line x1="58" y1="385" x2="58" y2="18" stroke="rgba(251,252,252,.45)" stroke-width="1.5" marker-end="url(#aw)"/>
+
+        <!-- Axis labels (matching Crawley Fig 15.15 exactly) -->
+        <text x="328" y="420" font-family="Space Grotesk,sans-serif" font-size="13" font-weight="600" fill="#FBFCFC" text-anchor="middle">Degree of connectivity</text>
+        <text x="18" y="205" font-family="Space Grotesk,sans-serif" font-size="13" font-weight="600" fill="#FBFCFC" text-anchor="middle" transform="rotate(-90,18,205)">Degree of sensitivity</text>
+
+        <!-- Dashed median lines (exactly as Crawley Fig 15.15 — single dashed cross) -->
+        <line x1="328" y1="18" x2="328" y2="385" stroke="rgba(251,252,252,.38)" stroke-width="1.5" stroke-dasharray="8,4"/>
+        <line x1="58" y1="200" x2="598" y2="200" stroke="rgba(251,252,252,.38)" stroke-width="1.5" stroke-dasharray="8,4"/>
+
+        <!-- Quadrant subtle fills -->
+        <rect x="328" y="18" width="270" height="182" fill="rgba(241,143,1,.05)"/>
+        <rect x="58" y="18" width="270" height="182" fill="rgba(89,152,197,.04)"/>
+        <rect x="328" y="200" width="270" height="185" fill="rgba(107,114,128,.04)"/>
+        <rect x="58" y="200" width="270" height="185" fill="rgba(55,65,81,.05)"/>
+
+        <!-- Quadrant labels — matching Crawley Fig 15.15 EXACTLY:
+             (II) top-left: "Sensitive but weakly connected"
+             (I) top-right: "Sensitive AND strongly connected"
+             (IV) bottom-left: "Insensitive AND weakly connected"
+             (III) bottom-right: "Insensitive but strongly connected"
+        -->
+        <text x="193" y="78" font-family="Space Grotesk,sans-serif" font-size="14" font-weight="600" fill="#5998C5" text-anchor="middle">(II)</text>
+        <text x="193" y="96" font-family="Space Grotesk,sans-serif" font-size="12" fill="#5998C5" text-anchor="middle">Sensitive but</text>
+        <text x="193" y="112" font-family="Space Grotesk,sans-serif" font-size="12" fill="#5998C5" text-anchor="middle">weakly connected</text>
+        <text x="193" y="130" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(89,152,197,.7)" text-anchor="middle">→ Decide 2nd, independent</text>
+
+        <text x="463" y="78" font-family="Space Grotesk,sans-serif" font-size="14" font-weight="700" fill="#F18F01" text-anchor="middle">(I)</text>
+        <text x="463" y="96" font-family="Space Grotesk,sans-serif" font-size="12" font-weight="700" fill="#F18F01" text-anchor="middle">Sensitive AND</text>
+        <text x="463" y="112" font-family="Space Grotesk,sans-serif" font-size="12" font-weight="700" fill="#F18F01" text-anchor="middle">strongly connected</text>
+        <text x="463" y="130" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(241,143,1,.8)" text-anchor="middle">→ DECIDE FIRST</text>
+
+        <text x="193" y="272" font-family="Space Grotesk,sans-serif" font-size="14" fill="#6b7280" text-anchor="middle">(IV)</text>
+        <text x="193" y="290" font-family="Space Grotesk,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">Insensitive AND</text>
+        <text x="193" y="306" font-family="Space Grotesk,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">weakly connected</text>
+        <text x="193" y="324" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(107,114,128,.6)" text-anchor="middle">→ Parallelize or defer</text>
+
+        <text x="463" y="272" font-family="Space Grotesk,sans-serif" font-size="14" fill="#6b7280" text-anchor="middle">(III)</text>
+        <text x="463" y="290" font-family="Space Grotesk,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">Insensitive but</text>
+        <text x="463" y="306" font-family="Space Grotesk,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">strongly connected</text>
+        <text x="463" y="324" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(107,114,128,.6)" text-anchor="middle">→ Detailed design, decide late</text>
+
+        <!-- c1v decision dots (modeled on Crawley Fig 15.14 Apollo dots with labels)
+             Plot: X=connectivity (0-5) → 58+(conn/5)*540
+                   Y=sensitivity (0-1.0) → 385-(sens*367)
+             DN.01: conn=3, sens=0.82 → x=58+3/5*540=382  y=385-0.82*367=85
+             DN.02: conn=2, sens=0.75 → x=58+2/5*540=274  y=385-0.75*367=110
+             DN.03: conn=1, sens=0.68 → x=58+1/5*540=166  y=385-0.68*367=135
+             DN.05: conn=1, sens=0.35 → x=166              y=385-0.35*367=257
+        -->
+        <!-- DN.01 — Q-I (high/high) — DECIDE FIRST — largest dot, matches Apollo LOR position in Fig 15.14 -->
+        <circle cx="382" cy="85" r="13" fill="rgba(241,143,1,.22)" stroke="#F18F01" stroke-width="2"/>
+        <text x="382" y="89" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#F18F01" text-anchor="middle">DN.01</text>
+        <text x="400" y="74" font-family="Space Grotesk,sans-serif" font-size="9" fill="#F18F01">Orchestration</text>
+        <text x="400" y="85" font-family="Consolas,monospace" font-size="9" fill="rgba(241,143,1,.65)">conn=3 · sens=0.82</text>
+
+        <!-- DN.02 — Q-I (high/high) -->
+        <circle cx="274" cy="110" r="11" fill="rgba(241,143,1,.15)" stroke="#F18F01" stroke-width="1.5"/>
+        <text x="274" y="114" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#F18F01" text-anchor="middle">DN.02</text>
+        <text x="254" y="96" font-family="Space Grotesk,sans-serif" font-size="9" fill="#F18F01" text-anchor="end">LLM Provider</text>
+        <text x="254" y="107" font-family="Consolas,monospace" font-size="9" fill="rgba(241,143,1,.65)" text-anchor="end">conn=2 · sens=0.75</text>
+
+        <!-- DN.03 — Q-II (high sens / low conn) -->
+        <circle cx="166" cy="135" r="10" fill="rgba(89,152,197,.15)" stroke="#5998C5" stroke-width="1.5"/>
+        <text x="166" y="139" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#5998C5" text-anchor="middle">DN.03</text>
+        <text x="181" y="122" font-family="Space Grotesk,sans-serif" font-size="9" fill="#5998C5">Vector Store</text>
+        <text x="181" y="133" font-family="Consolas,monospace" font-size="9" fill="rgba(89,152,197,.65)">conn=1 · sens=0.68</text>
+
+        <!-- DN.05 — Q-IV (low sens / low conn) — dashed border -->
+        <circle cx="166" cy="257" r="10" fill="rgba(107,114,128,.12)" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="166" y="261" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#6b7280" text-anchor="middle">DN.05</text>
+        <text x="181" y="245" font-family="Space Grotesk,sans-serif" font-size="9" fill="#6b7280">Deployment</text>
+        <text x="181" y="256" font-family="Consolas,monospace" font-size="9" fill="rgba(107,114,128,.6)">conn=1 · sens=0.35</text>
+
+        <!-- Axis tick numbers -->
+        <text x="52" y="387" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">0</text>
+        <text x="52" y="202" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">0.5</text>
+        <text x="52" y="22" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">1.0</text>
+        <text x="166" y="402" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">1</text>
+        <text x="274" y="402" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">2</text>
+        <text x="382" y="402" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">3</text>
+        <text x="490" y="402" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">4</text>
+      </svg>
+
+      <div class="callout callout-info">
+        <strong>Box 15.2 — Principle of Coupling and Organization of Architectural Decisions:</strong>
+        <span> "Decisions that fall in quadrant I (high sensitivity AND high degrees of connectivity) should be made first. Weakly coupled decisions should be treated in parallel. Highly coupled decisions should be combined in a single trade study." For c1v: DN.01 (Orchestration Runtime, conn=3) + DN.02 (LLM Provider, conn=2) are both Q-I → joint trade study. DN.03 (Vector Store, Q-II) can be analyzed independently. DN.05 (Deployment Target, Q-IV) deferred or parallelized.</span>
+      </div>
+    </div>
+    <div class="bstrip">
+      <strong>Book Fig 15.15 (viewed directly):</strong> Pure 4-quadrant abstract diagram — Y="Degree of sensitivity", X="Degree of connectivity". Single dashed cross divides into quadrants. (I) top-right "Sensitive AND strongly connected", (II) top-left "Sensitive but weakly connected", (III) bottom-right "Insensitive but strongly connected", (IV) bottom-left "Insensitive AND weakly connected". No data points — just labels. Very clean, minimal.
+      <strong>Book Fig 15.14 (viewed directly):</strong> Apollo IMLEO sensitivity decision space view — same axes, labeled dots: LOR at top-right (conn≈4, sensitivity≈43,000 lbs), lmFuel (conn=1, sens≈42,000), lmCrew (conn=2, sens≈38,000), smFuel (conn=0, high sens), moonArrival+moonDeparture (conn=1, sens≈30,000), CmCrew (conn=1, sens≈15,000), EOR+earthLaunch (bottom, sens≈0). Grid lines every 0.5 on X and 10,000 on Y.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     5  DECISION HIERARCHY TREE
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s5">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-meta">
+      <h2>Decision Hierarchy Tree</h2>
+      <p>Crawley Ch 15 §15.6 · Fig 15.16 · root = most connected + most sensitive · 3 parallel clusters in dashed boxes → leaf (least coupling) · "mirrors the organic decision process"</p>
+      <span class="source-ref">Crawley Fig 15.16 (viewed directly) — Apollo: LOR (root) → 3 dashed-box parallel clusters → EOR (leaf) · line 7337</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <!-- EXACT REPLICA of Crawley Fig 15.16 structure:
+           - Root node (solid border box) at top
+           - Arrows down to 3 dashed-box clusters (parallel trade studies)
+           - Each cluster has 2 items stacked
+           - All 3 clusters connect to a single leaf box at bottom
+           Applied to c1v: DN.01(root) → {DN.02+DN.03} | {Auth+Caching} | {Cost+Latency} → DN.05(leaf)
+      -->
+      <svg class="hier-svg" viewBox="0 0 580 310" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(251,252,252,.38)"/>
+          </marker>
+        </defs>
+
+        <!-- ROOT: DN.01 (highest conn+sens = LOR analogue) — solid border -->
+        <rect x="220" y="8" width="140" height="44" rx="3" fill="#163e3a" stroke="#F18F01" stroke-width="2"/>
+        <text x="290" y="25" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#F18F01" text-anchor="middle">DN.01</text>
+        <text x="290" y="38" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">Orchestration Runtime</text>
+        <text x="290" y="48" font-family="Consolas,monospace" font-size="8" fill="#7aaba6" text-anchor="middle">conn=3 · sens=0.82 · DECIDE FIRST</text>
+
+        <!-- Arrows from root to 3 clusters -->
+        <line x1="290" y1="52" x2="100" y2="108" stroke="rgba(251,252,252,.38)" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="290" y1="52" x2="290" y2="108" stroke="rgba(251,252,252,.38)" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="290" y1="52" x2="480" y2="108" stroke="rgba(251,252,252,.38)" stroke-width="1.5" marker-end="url(#ah)"/>
+
+        <!-- CLUSTER 1: LLM Provider + Vector Store (dashed box = joint trade study) -->
+        <rect x="20" y="106" width="160" height="82" rx="3" fill="none" stroke="rgba(89,152,197,.5)" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="100" y="97" font-family="Space Grotesk,sans-serif" font-size="9" fill="#7aaba6" text-anchor="middle">joint trade study</text>
+        <rect x="28" y="114" width="144" height="28" rx="2" fill="#163e3a" stroke="#5998C5" stroke-width="1.2"/>
+        <text x="100" y="132" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">DN.02 · LLM Provider</text>
+        <rect x="28" y="150" width="144" height="28" rx="2" fill="#163e3a" stroke="#5998C5" stroke-width="1.2"/>
+        <text x="100" y="168" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">DN.03 · Vector Store</text>
+
+        <!-- CLUSTER 2: Auth + Caching (dashed box) -->
+        <rect x="210" y="106" width="160" height="82" rx="3" fill="none" stroke="rgba(89,152,197,.5)" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="290" y="97" font-family="Space Grotesk,sans-serif" font-size="9" fill="#7aaba6" text-anchor="middle">joint trade study</text>
+        <rect x="218" y="114" width="144" height="28" rx="2" fill="#163e3a" stroke="#5998C5" stroke-width="1.2"/>
+        <text x="290" y="132" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">Auth &amp; Multi-tenancy</text>
+        <rect x="218" y="150" width="144" height="28" rx="2" fill="#163e3a" stroke="#5998C5" stroke-width="1.2"/>
+        <text x="290" y="168" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">Caching Strategy</text>
+
+        <!-- CLUSTER 3: Cost + Latency SLA (dashed box) -->
+        <rect x="400" y="106" width="160" height="82" rx="3" fill="none" stroke="rgba(89,152,197,.5)" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="480" y="97" font-family="Space Grotesk,sans-serif" font-size="9" fill="#7aaba6" text-anchor="middle">joint trade study</text>
+        <rect x="408" y="114" width="144" height="28" rx="2" fill="#163e3a" stroke="#5998C5" stroke-width="1.2"/>
+        <text x="480" y="132" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">Cost Model</text>
+        <rect x="408" y="150" width="144" height="28" rx="2" fill="#163e3a" stroke="#5998C5" stroke-width="1.2"/>
+        <text x="480" y="168" font-family="Space Grotesk,sans-serif" font-size="10" fill="#FBFCFC" text-anchor="middle">Latency SLA</text>
+
+        <!-- Arrows from all 3 clusters to LEAF -->
+        <line x1="100" y1="188" x2="246" y2="242" stroke="rgba(251,252,252,.38)" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="290" y1="188" x2="290" y2="242" stroke="rgba(251,252,252,.38)" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="480" y1="188" x2="334" y2="242" stroke="rgba(251,252,252,.38)" stroke-width="1.5" marker-end="url(#ah)"/>
+
+        <!-- LEAF: DN.05 (EOR analogue — lowest coupling, decide last) — dashed border -->
+        <rect x="210" y="240" width="160" height="44" rx="3" fill="#163e3a" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="290" y="257" font-family="Space Grotesk,sans-serif" font-size="10" font-weight="700" fill="#6b7280" text-anchor="middle">DN.05</text>
+        <text x="290" y="270" font-family="Space Grotesk,sans-serif" font-size="10" fill="#7aaba6" text-anchor="middle">Deployment Target — DEFER</text>
+        <text x="290" y="280" font-family="Consolas,monospace" font-size="8" fill="rgba(107,114,128,.7)" text-anchor="middle">conn=1 · sens=0.35 · decide last</text>
+
+        <!-- Coupling note (like Crawley Fig 15.16 "coupled through IMLEO metric") -->
+        <text x="290" y="298" font-family="Space Grotesk,sans-serif" font-size="9" fill="rgba(122,171,166,.6)" text-anchor="middle">← clusters coupled through latency + cost metrics →</text>
+      </svg>
+    </div>
+    <div class="bstrip">
+      <strong>Book Fig 15.16 (viewed directly):</strong> Apollo decision hierarchy — LOR (root, solid rect) at top. Three arrows down to 3 dashed-box clusters: {lmCrew, lmFuel} | {cmCrew, smFuel} | {moonDeparture, moonArrival}. Each dashed box contains 2 decision rectangles stacked vertically. Single arrows from all 3 clusters converge to EOR (leaf, solid rect) at bottom. Quote: "The root node of the hierarchy is clearly the LOR decision, since it is the most coupled and the most sensitive decision. The EOR decision can be made last, because it really depends on which launch vehicle is available at the time and is only loosely coupled to the rest of decisions."
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     6  SENSITIVITY 3-REGION CURVE
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s6">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div class="section-meta">
+      <h2>Sensitivity Analysis — 3-Region Curve</h2>
+      <p>Crawley Ch 15 §15.5 · Fig 15.13 · "Three regions: Region I (insensitive, near 0%), Region II (sensitive middle, S-curve), Region III (insensitive, near 100%)" · default operating point in Region II = NOT ROBUST</p>
+      <span class="source-ref">Crawley Fig 15.13 (viewed directly) — % homogeneous architectures on Pareto front vs dissimilar-component penalty · dashed vertical boundaries · line 7208</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <!-- EXACT REPLICA of Crawley Fig 15.13:
+           - X axis: parameter (dissimilar component penalty normalized) -2.0 to +2.0
+           - Y axis: % architectures with feature on Pareto front, 0-100%
+           - S-curve stepping from low to high
+           - Dashed vertical lines dividing into 3 regions
+           - Region labels at top of each region
+           - Default value marker line (in sensitive Region II)
+      -->
+      <svg class="sens-svg" viewBox="0 0 580 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- Plot background -->
+        <rect x="70" y="20" width="470" height="290" fill="rgba(15,53,50,.4)" rx="2"/>
+
+        <!-- Horizontal grid lines (matching Crawley Fig 15.13 style) -->
+        <line x1="70" y1="75" x2="540" y2="75" class="gl"/>
+        <line x1="70" y1="130" x2="540" y2="130" class="gl"/>
+        <line x1="70" y1="185" x2="540" y2="185" class="gl"/>
+        <line x1="70" y1="237" x2="540" y2="237" class="gl"/>
+
+        <!-- Region I: low-sensitivity low end — leftmost band -->
+        <rect x="70" y="20" width="136" height="290" fill="rgba(22,163,74,.06)"/>
+        <text x="138" y="42" font-family="Space Grotesk,sans-serif" font-size="11" font-weight="700" fill="#22c55e" text-anchor="middle">Region I</text>
+        <text x="138" y="55" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(34,197,94,.65)" text-anchor="middle">Low sensitivity</text>
+        <text x="138" y="67" font-family="Space Grotesk,sans-serif" font-size="9" fill="rgba(34,197,94,.5)" text-anchor="middle">(robust — stable near 0%)</text>
+
+        <!-- Region II: sensitive middle — center band -->
+        <rect x="206" y="20" width="188" height="290" fill="rgba(239,68,68,.05)"/>
+        <text x="300" y="42" font-family="Space Grotesk,sans-serif" font-size="11" font-weight="700" fill="#ef4444" text-anchor="middle">Region II</text>
+        <text x="300" y="55" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(239,68,68,.7)" text-anchor="middle">Sensitive middle</text>
+        <text x="300" y="67" font-family="Space Grotesk,sans-serif" font-size="9" fill="rgba(239,68,68,.5)" text-anchor="middle">(NOT robust — result varies)</text>
+
+        <!-- Region III: low-sensitivity high end — rightmost band -->
+        <rect x="394" y="20" width="146" height="290" fill="rgba(22,163,74,.06)"/>
+        <text x="467" y="42" font-family="Space Grotesk,sans-serif" font-size="11" font-weight="700" fill="#22c55e" text-anchor="middle">Region III</text>
+        <text x="467" y="55" font-family="Space Grotesk,sans-serif" font-size="10" fill="rgba(34,197,94,.65)" text-anchor="middle">Low sensitivity</text>
+        <text x="467" y="67" font-family="Space Grotesk,sans-serif" font-size="9" fill="rgba(34,197,94,.5)" text-anchor="middle">(robust — stable near 100%)</text>
+
+        <!-- Dashed region boundary lines (exactly as Crawley Fig 15.13) -->
+        <line x1="206" y1="20" x2="206" y2="310" stroke="rgba(251,252,252,.32)" stroke-width="1.5" stroke-dasharray="8,4"/>
+        <line x1="394" y1="20" x2="394" y2="310" stroke="rgba(251,252,252,.32)" stroke-width="1.5" stroke-dasharray="8,4"/>
+
+        <!-- Axes -->
+        <line x1="70" y1="310" x2="545" y2="310" stroke="rgba(251,252,252,.35)" stroke-width="1.2"/>
+        <line x1="70" y1="20" x2="70" y2="315" stroke="rgba(251,252,252,.35)" stroke-width="1.2"/>
+
+        <!-- S-curve data (Crawley Fig 15.13 shape: flat low → steep S → flat high)
+             X range: -2.0 to +2.0 → 70 to 540px = 235px per unit
+             Y range: 0% to 100% → 310 to 20px = 2.9px per percent
+             Points (approx Crawley Fig 15.13):
+             (-2.0, 3%) → x=70,  y=310-3*2.9=301
+             (-1.5, 4%) → x=188, y=310-4*2.9=298
+             (-0.5, 7%) → x=306, y=310-7*2.9=290 -- boundary at x=206
+             (-0.3,12%) → x=353, y=310-12*2.9=275
+             (0.0, 28%) → x=540+... wait let me redo
+             X map: x = 70 + (param+2)/4 * 470
+             (-2.0): x=70   (-1.5): x=129  (-0.5): x=246  (0.0): x=305  (0.3): x=340  (0.6): x=375  (0.9): x=410  (1.1): x=434  (1.5): x=481  (2.0): x=540
+             Y map: y = 310 - pct/100 * 290
+             (3%):y=301 (4%):y=298 (7%):y=290 (28%):y=229 (45%):y=179 (62%):y=130 (80%):y=78 (90%):y=49 (97%):y=29 (100%):y=20
+        -->
+        <polyline points="
+          70,301
+          129,298
+          246,290
+          305,229
+          340,179
+          375,130
+          410,78
+          434,49
+          481,29
+          540,20
+        " fill="none" stroke="#FBFCFC" stroke-width="2.5" stroke-linejoin="round"/>
+
+        <!-- Default value marker (exactly as Crawley Fig 15.13 — operating point in Region II) -->
+        <line x1="305" y1="20" x2="305" y2="310" stroke="#F18F01" stroke-width="1.2" stroke-dasharray="4,2" opacity=".7"/>
+        <circle cx="305" cy="229" r="5" fill="#F18F01"/>
+        <text x="308" y="210" font-family="Space Grotesk,sans-serif" font-size="9" fill="var(--tangerine)">default = 28%</text>
+        <text x="308" y="220" font-family="Space Grotesk,sans-serif" font-size="9" fill="var(--tangerine)">in Region II!</text>
+        <text x="308" y="232" font-family="Consolas,monospace" font-size="9" fill="rgba(241,143,1,.7)">NOT ROBUST</text>
+
+        <!-- Axes labels -->
+        <text x="305" y="340" font-family="Space Grotesk,sans-serif" font-size="12" font-weight="600" fill="#FBFCFC" text-anchor="middle">Sensitivity parameter (weight perturbation band)</text>
+        <text x="22" y="175" font-family="Space Grotesk,sans-serif" font-size="11" font-weight="600" fill="#FBFCFC" text-anchor="middle" transform="rotate(-90,22,175)">% architectures with feature on Pareto front</text>
+
+        <!-- Y-axis ticks -->
+        <text x="64" y="312" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">0%</text>
+        <text x="64" y="238" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">25%</text>
+        <text x="64" y="165" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">50%</text>
+        <text x="64" y="92" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">75%</text>
+        <text x="64" y="23" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="end">100%</text>
+
+        <!-- X-axis ticks -->
+        <text x="70" y="325" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">-2.0</text>
+        <text x="206" y="325" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">-0.5</text>
+        <text x="305" y="325" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">0</text>
+        <text x="394" y="325" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">+1.1</text>
+        <text x="540" y="325" font-family="Consolas,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">+2.0</text>
+      </svg>
+
+      <div class="callout callout-warn">
+        <strong>Robustness rule (Crawley §15.5):</strong>
+        <span> A result in Region II is NOT robust. "For a connection weight of only 0.02, the percentage is already below 30% — fully cross-strapped result not robust to even modest parameter changes." For c1v: if sensitivity analysis places the recommended architecture in Region II, set <code>robustness_score &lt; 0.8</code> and trigger <code>fuzzy_pareto</code> with euclidean_threshold. Surface an open question via chat bridge before committing. Do not claim a recommendation "proven" until the operating point is in Region I or III.</span>
+      </div>
+    </div>
+    <div class="bstrip">
+      <strong>Book Fig 15.13 (viewed directly):</strong> Y = "% of homogeneous architectures on the PF", X = "Dissimilar component penalty/maximum connection weight" from -2.0 to +2.0. S-curve stepping from ~3% to ~97%. Region I (DCP &lt; -0.5): flat at 0% — no homogeneous archs on PF. Region II (-0.5 to +1.1): steep S-curve, each tick of X changes result by 10–20%. Region III (DCP &gt; +1.1): flat at 100% — all Pareto archs homogeneous. Dashed vertical lines at -0.5 and +1.1 exactly. Default DCP=0 sits in Region II.
+      <strong>Book Fig 15.12:</strong> Same 3-region structure for connection weight — % fully cross-strapped on PF drops from 100% to &lt;30% with connection_weight increase of 0.02.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     7  OPTIMIZATION PATTERNS
+     ═══════════════════════════════════════ -->
+<section class="diagram-section" id="s7">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div class="section-meta">
+      <h2>Optimization Patterns (Ch 16 Table 16.2)</h2>
+      <p>Crawley Ch 16 §16.4 · "Six Patterns appear over and over when system architecture optimization problems are formulated" · NEOSS (NASA Earth Observing Satellite System) as running example</p>
+      <span class="source-ref">Crawley Table 16.2 (6 patterns) + Fig 16.3 (DECISION-OPTION pictorial) + Fig 16.5 (DOWN-SELECTING) + Figs 16.8–16.9 (ASSIGNING styles) · pp. 373–420</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="pgrid">
+
+        <div class="pcard">
+          <div class="pname">DECISION-OPTION</div>
+          <div class="pdesc">A group of decisions, each with its own discrete set of options. Most general Pattern. Best for heterogeneous, independent choices (Apollo 9 decisions). Can represent ANY programmed decision problem.</div>
+          <div class="pformula">Tradespace = Π<sub>i</sub> |O<sub>i</sub>|  (product of options per decision)</div>
+          <div class="pstyle">Representation: <b>morphological matrix</b> · Tasks 3, 4 · Book Fig 16.3: two architectures A=[2,1,3] and A=[1,1,2] shown side-by-side, dashed boxes=unselected, solid boxes=selected</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pname">DOWN-SELECTING</div>
+          <div class="pdesc">Choose a subset from a set of m candidate elements. Binary decisions (include/exclude). Accounts for synergies, interferences, redundancies between elements. NEOSS: instrument selection from 8 candidates.</div>
+          <div class="pformula">Tradespace = 2<sup>m</sup> · Extends the 0/1 knapsack problem</div>
+          <div class="pstyle">Heuristic: <b>single-point crossover</b> in genetic algorithms keeps good element combinations together · Book Fig 16.5: 8 elements, left=5 selected (black solid), right=3 selected</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pname">ASSIGNING</div>
+          <div class="pdesc">Given a left set and right set of entities, assign each left element to any subset of right elements. NEOSS: assign instruments to orbits (each instrument can go on multiple orbits).</div>
+          <div class="pformula">Tradespace = 2<sup>mn</sup> · Binary m×n matrix</div>
+          <div class="pstyle">Styles: <b>channelized</b> (each left→exactly one right, Saturn V stages) vs <b>fully cross-strapped</b> (every left→every right, Space Shuttle avionics). Cost vs reliability tradeoff.</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pname">PARTITIONING</div>
+          <div class="pdesc">Partition a set of N elements into non-empty, mutually exclusive, exhaustive subsets. NEOSS: partition instruments into satellites. NP-hard — grows via Bell numbers.</div>
+          <div class="pformula">Tradespace = Bell(N) · Bell(5)=52 · Bell(10)≈115,975</div>
+          <div class="pstyle">Styles: <b>monolithic</b> (Envisat: 10 instruments on 1 satellite) vs <b>fully distributed</b> (1 instrument per dedicated satellite). Evolvability tradeoff.</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pname">PERMUTING</div>
+          <div class="pdesc">Total ordering/sequencing of N elements (bijection to integers 1..N). NEOSS: satellite launch schedule — order in which satellites/missions are launched.</div>
+          <div class="pformula">Tradespace = N! · 5!=120 · 10!=3,628,800</div>
+          <div class="pstyle">Styles: <b>greedy deployment</b> (highest-value elements first, long lead time, high programmatic risk) vs <b>incremental deployment</b> (deliver value ASAP, build up capability).</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pname">CONNECTING</div>
+          <div class="pdesc">Given a set of nodes, choose which graph edges to include. GNC sensor-computer connectivity. Properties: latency, throughput, reliability, scalability.</div>
+          <div class="pformula">Undirected: 2<sup>m(m-1)/2</sup> · Directed: 2<sup>m²</sup></div>
+          <div class="pstyle">Topologies: <b>bus, star, ring, mesh, tree, hybrid</b>. Figs 16.8–16.9: channelized (one sensor→one computer) vs fully cross-strapped (all sensors→all computers).</div>
+        </div>
+
+      </div>
+
+      <div class="callout callout-gold" style="margin-top:16px">
+        <strong>NEOSS multi-pattern composition (Book §16.4 / Fig 16.15):</strong>
+        <span> NEOSS requires all three patterns together — DOWN-SELECTING (instrument selection) + ASSIGNING (instrument → orbit packaging) + PERMUTING (launch schedule). These sub-problems are coupled: "One cannot make an optimal decision in the instrument selection problem without thinking about the packaging of the selected instruments." c1v's <code>compositionSchema</code> captures this via operator: <code>cartesian_product | sequential | hierarchical | shared_resource</code>. If <code>sub_problems.length &gt; 1</code> without composition, schema rejects with superRefine error.</span>
+      </div>
+    </div>
+    <div class="bstrip">
+      <strong>Book Table 16.2 (lines 7523–7532):</strong> Exact pattern list: DECISION-OPTION | DOWN-SELECTING | ASSIGNING | PARTITIONING | PERMUTING | CONNECTING. Each has a short 1-sentence description.
+      <strong>Book Fig 16.3 (viewed directly):</strong> DECISION-OPTION pictorial — 2 side-by-side versions of same 3-decision morphological matrix (Decision 1/2/3 with options). Left: A=[2,1,3] with Decision 1=Option1.2, Decision2=Option2.1, Decision3=Option3.3 highlighted (solid boxes), others dashed. Right: A=[1,1,2]. Middle: dashed arrow "?" showing these are two different architectures from the same decision space.
+      <strong>Selva 2016:</strong> "Patterns in System Architecture Decisions," Systems Engineering — folded into Ch 16.
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M4 Artifact Chart — c1v Decision Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --firefly:   #0B2C29;
+    --surface:   #0f3532;
+    --surface2:  #163e3a;
+    --porcelain: #FBFCFC;
+    --tangerine: #F18F01;
+    --danube:    #5998C5;
+    --muted:     #7aaba6;
+    --border:    rgba(251,252,252,0.10);
+    --font-head: 'Space Grotesk', sans-serif;
+    --font-mono: Consolas, 'Courier New', monospace;
+  }
+
+  body {
+    background: var(--firefly);
+    color: var(--porcelain);
+    font-family: var(--font-head);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0 0 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--porcelain);
+  }
+  header h1 span { color: var(--tangerine); }
+  header p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .badge-cornell  { background: rgba(89,152,197,0.18); color: var(--danube); border: 1px solid rgba(89,152,197,0.3); }
+  .badge-crawley  { background: rgba(241,143,1,0.15);  color: var(--tangerine); border: 1px solid rgba(241,143,1,0.3); }
+  .badge-t4b      { background: rgba(22,163,74,0.15);  color: #4ade80; border: 1px solid rgba(22,163,74,0.3); }
+  .badge-synth    { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+
+  /* ── Main ── */
+  main { padding: 32px 24px; max-width: 1600px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-left: 2px;
+  }
+
+  /* ── Table wrapper ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--surface2);
+  }
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  thead th:last-child { border-right: none; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+  td {
+    padding: 14px 16px;
+    vertical-align: top;
+    border-right: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  td:last-child { border-right: none; }
+
+  /* ── Col widths ── */
+  .col-artifact { min-width: 190px; max-width: 220px; }
+  .col-creator  { min-width: 240px; max-width: 280px; }
+  .col-consumer { min-width: 220px; max-width: 260px; }
+  .col-purpose  { min-width: 220px; max-width: 280px; }
+  .col-book     { min-width: 200px; max-width: 230px; }
+  .col-image    { min-width: 260px; }
+
+  /* ── Artifact name pill ── */
+  .artifact-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--porcelain);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .artifact-schema {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* ── Origin layer badge ── */
+  .layer {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .layer-cornell  { background: rgba(89,152,197,0.18); color: var(--danube); }
+  .layer-crawley  { background: rgba(241,143,1,0.15);  color: var(--tangerine); }
+  .layer-t4b      { background: rgba(22,163,74,0.15);  color: #4ade80; }
+  .layer-hybrid   { background: rgba(168,85,247,0.15); color: #c084fc; }
+  .layer-synth    { background: rgba(244,63,94,0.15);  color: #fb7185; }
+
+  /* ── Code spans ── */
+  code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: rgba(255,255,255,0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #a5d6ff;
+  }
+
+  /* ── Book column ── */
+  .book-ch {
+    font-weight: 600;
+    color: var(--tangerine);
+    font-size: 13px;
+    display: block;
+  }
+  .book-section {
+    font-size: 12px;
+    color: var(--porcelain);
+    display: block;
+    margin-top: 2px;
+  }
+  .book-pages {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 3px;
+  }
+  .book-ref {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* ── Image inspiration column ── */
+  .img-insp {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .img-label {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--danube);
+  }
+  .img-desc {
+    font-size: 12px;
+    color: var(--porcelain);
+    line-height: 1.5;
+  }
+  .img-fig {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--tangerine);
+    background: rgba(241,143,1,0.08);
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-top: 2px;
+  }
+
+  /* ── Section group headers (row spans) ── */
+  .group-header td {
+    background: var(--surface2);
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Purpose cell ── */
+  .purpose-main {
+    font-size: 13px;
+    color: var(--porcelain);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .purpose-formula {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #a5d6ff;
+    background: rgba(165,214,255,0.06);
+    border-left: 2px solid var(--danube);
+    padding: 4px 8px;
+    margin-top: 4px;
+    display: block;
+    border-radius: 0 3px 3px 0;
+  }
+  .purpose-gate {
+    font-size: 11px;
+    color: #4ade80;
+    margin-top: 4px;
+    display: block;
+  }
+  .purpose-warn {
+    font-size: 11px;
+    color: #fbbf24;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ── Creator / consumer cell ── */
+  .fn-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #a5d6ff;
+  }
+  .fn-file {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+  }
+  .fn-note {
+    font-size: 11px;
+    color: var(--porcelain);
+    display: block;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Footnotes ── */
+  .footnotes {
+    margin-top: 32px;
+    padding: 20px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .footnotes h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--porcelain);
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Module 4 — <span>Decision Network</span> Artifact Chart</h1>
+  <p>Every artifact c1v generates in M4 · what creates it · what uses it · where Crawley describes it · what the diagram looks like</p>
+  <div class="badge-row">
+    <span class="badge badge-cornell">Cornell CESYS525</span>
+    <span class="badge badge-crawley">Crawley Ch 14–16</span>
+    <span class="badge badge-t4b">T4b Wave 3</span>
+    <span class="badge badge-synth">Wave 4 Synthesis</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--danube)"></div> Cornell — CESYS525 Decision Matrix methodology</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--tangerine)"></div> Crawley — MIT System Architecture Chs 14–16</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div> T4b Wave 3 — Decision-net rework (new typed phases 14–19)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div> Hybrid — Cornell + Crawley joint artifact</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb7185"></div> Wave 4 Synthesis — portfolio keystone</div>
+  </div>
+
+  <p class="section-label">All 13 M4 artifacts · sorted by pipeline order</p>
+
+  <div class="table-wrap">
+  <table>
+    <colgroup>
+      <col class="col-artifact">
+      <col class="col-creator">
+      <col class="col-consumer">
+      <col class="col-purpose">
+      <col class="col-book">
+      <col class="col-image">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Created By</th>
+        <th>Consumed By</th>
+        <th>For What</th>
+        <th>Book Chapter &amp; Pages</th>
+        <th>Image Inspiration</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ══ GROUP 1: Cornell Decision Matrix pipeline ══ -->
+      <tr class="group-header">
+        <td colspan="6">① Cornell Pipeline — Weighted Decision Matrix (runs on every synthesis, D-V21.25)</td>
+      </tr>
+
+      <!-- 1. Decision Matrix -->
+      <tr>
+        <td>
+          <span class="layer layer-cornell">Cornell</span>
+          <span class="artifact-name">Decision Matrix</span>
+          <span class="artifact-schema">decisionMatrix (extractedData)</span>
+        </td>
+        <td>
+          <span class="fn-name">extractDecisionMatrix()</span>
+          <span class="fn-file">agents/decision-matrix-agent.ts</span>
+          <span class="fn-note">LLM structured-output call. V2 path: <code>extractDecisionMatrixV2()</code> using <code>DECISION_MATRIX_RULES</code> from <code>prompts.ts:380</code> + atlas priors via <code>renderAtlasPriors()</code>. Gated by <code>intakePromptV2()</code> flag.</span>
+        </td>
+        <td>
+          <span class="fn-name">generateDecisionMatrix()</span>
+          <span class="fn-file">graphs/nodes/generate-decision-matrix.ts</span>
+          <span class="fn-note">Merges result into <code>state.extractedData.decisionMatrix</code>. Also consumed by: system-design viewer at <code>app/(dashboard)/projects/[id]/system-design/decision-matrix/</code></span>
+        </td>
+        <td>
+          <span class="purpose-main">Weighted comparison of design alternatives (ALT-A, B, C…) against measurable performance criteria (PC-01…). Weights sum to 1.0. Each alternative × criterion cell has a normalized score 0–1. Weighted totals determine the recommended alternative.</span>
+          <span class="purpose-formula">weightedTotal(alt) = Σ weight_i × score(alt, PC-i)</span>
+          <span class="purpose-gate">✓ Quality gate: weight sum ≈ 1.0, ≥5 criteria, ≥2 alts, all cells scored, weighted totals correct</span>
+        </td>
+        <td>
+          <span class="book-ch">Cornell CESYS525</span>
+          <span class="book-section">"Creating an Objective Decision Matrix" (KB file 01), "Identifying Performance Criteria" (03), "Assigning Weights" (10), "Normalizing Scores" (09)</span>
+          <span class="book-pages">KB-4 cornell/01–18 docs</span>
+          <span class="book-ref">Crawley Ch 14 §14.2 licenses the math (utility = weighted sum)</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Weighted Scoring Table</span>
+            <span class="img-desc">Classic rows = alternatives, cols = criteria. Each cell: numeric score + bar fill proportional to score. Color ramp red→yellow→green. Bottom row: weighted totals with bolder bar. Winner column highlighted. Min-acceptable threshold dashed line per criterion.</span>
+            <span class="img-fig">Cornell CESYS525 Decision Matrix Template (decision-matrix-template.xlsx in KB)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 2. Decision Matrix QFD Bridge -->
+      <tr>
+        <td>
+          <span class="layer layer-cornell">Cornell</span>
+          <span class="artifact-name">DM → QFD Bridge</span>
+          <span class="artifact-schema">phase17Schema (phase-17)</span>
+        </td>
+        <td>
+          <span class="fn-name">phase17Schema</span>
+          <span class="fn-file">schemas/module-4/submodule-4-3-sensitivity-handoff.ts</span>
+          <span class="fn-note">Emitted during M4 synthesis. Contains: selected option per decision node, criterion-weight snapshot, scoring snapshot for QFD handoff.</span>
+        </td>
+        <td>
+          <span class="fn-name">qfd-agent.ts</span>
+          <span class="fn-file">agents/qfd-agent.ts</span>
+          <span class="fn-note">QFD (House of Quality, Module 6) ingests the selected architecture's criterion weights as engineering characteristics importances.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Translates Decision Matrix results into QFD customer-need weights. The winning alternative's score profile becomes the starting weighting for the House of Quality relationship matrix.</span>
+          <span class="purpose-gate">→ Feeds module-6-hoq/phase-1-customer-requirements.ts</span>
+        </td>
+        <td>
+          <span class="book-ch">Cornell CESYS525</span>
+          <span class="book-section">"From Decision Matrix to QFD" (KB file 17)</span>
+          <span class="book-pages">cornell/17 in KB-4</span>
+          <span class="book-ref">Crawley Ch 15 §15.6 — "the chosen architecture's metric weights feed downstream QFD"</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Bridge Arrow Diagram</span>
+            <span class="img-desc">Decision Matrix winner column → arrow → HoQ customer-needs column. Shows the mapping from PC weights to customer requirements priorities. Simple 2-column visual with weight values transferred.</span>
+            <span class="img-fig">Cornell KB file 17 figure (no Crawley fig number — Cornell extension)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ══ GROUP 2: Crawley Ch 14 — Decision Network Foundations ══ -->
+      <tr class="group-header">
+        <td colspan="6">② Crawley Ch 14 — Decision Network Foundations (TC1 Crawley supplement)</td>
+      </tr>
+
+      <!-- 3. Decision Network Foundations -->
+      <tr>
+        <td>
+          <span class="layer layer-crawley">Crawley</span>
+          <span class="artifact-name">Decision Network Foundations</span>
+          <span class="artifact-schema">module-4.decision-network-foundations.v1</span>
+        </td>
+        <td>
+          <span class="fn-name">decisionNetworkFoundationsSchema</span>
+          <span class="fn-file">schemas/module-4/decision-network-foundations.ts</span>
+          <span class="fn-note">TC1 schema. Agent wiring deferred to v2.2 Wave D. Encodes: decisions[] (categorical default per Box 14.1), constraints[] (3-way discriminated union: logical / reasonableness / metric_coupling), metrics[], decision_dsm, decision_network topology (tree / dag / general_graph), dss_task_coverage (4-task checklist). SuperRefine: &gt;20% continuous advisory; DSS tasks 1-3 covered on complete; tree topology ≠ metric_coupling.</span>
+        </td>
+        <td>
+          <span class="fn-name">tradespaceParetoSensitivitySchema</span>
+          <span class="fn-file">schemas/module-4/tradespace-pareto-sensitivity.ts</span>
+          <span class="fn-note">Consumes <code>decisions[]</code>, <code>metrics[]</code>, <code>constraints[]</code>, <code>decision_dsm</code> as Phase 2 inputs. Also feeds <code>optimizationPatternsSchema</code>.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Encodes all architectural decisions as typed variables. Categorical-default property: most arch decisions are discrete, not continuous (Box 14.1). Captures DSS tasks 1-3: Representing (encode), Structuring (DSM coupling), Simulating (utility eval). "Viewing" DSS task handled by Phase 2.</span>
+          <span class="purpose-formula">Simon's 4 layers: Representing → Structuring → Simulating → Viewing</span>
+          <span class="purpose-gate">✓ SuperRefine: tree topology cannot have metric_coupling constraints</span>
+          <span class="purpose-warn">⚠ Agent emitter wiring deferred to v2.2 Wave D</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 14</span>
+          <span class="book-section">§14.3 "Basic Decision Support Tools (decision trees, decision networks, DSMs)"<br>§14.4 "Four Main Tasks of Decision Support"<br>§14.5 "Decision Support for System Architecture"<br>Box 14.1 "Properties of architectural decisions"</span>
+          <span class="book-pages">pp. 325–344 / book_md lines 6586–6949</span>
+          <span class="book-ref">Apollo mission-mode: 9 decisions retained from longer initial list</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Decision Network DAG</span>
+            <span class="img-desc">Directed acyclic graph. Decision nodes = rectangles. Chance nodes = ellipses/ovals. Leaf/outcome nodes = diamonds. Arrows show dependency direction. Topology can be tree (strict), DAG (general but acyclic), or general graph. Apollo LOR decision network is the canonical Crawley example.</span>
+            <span class="img-fig">Crawley Ch 14 Fig 14.x — "Decision network: arbitrary topologies between decision, chance, leaf nodes" (line 6889)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 4. Decision DSM -->
+      <tr>
+        <td>
+          <span class="layer layer-crawley">Crawley</span>
+          <span class="artifact-name">Decision DSM</span>
+          <span class="artifact-schema">decision_dsm (inside foundations)</span>
+        </td>
+        <td>
+          <span class="fn-name">decisionDsmSchema</span>
+          <span class="fn-file">schemas/module-4/decision-network-foundations.ts:139</span>
+          <span class="fn-note">N×N matrix: rows = decision IDs, cells keyed row→col with <code>connection_kind</code> ∈ {logical, reasonableness, metric_coupling, none}. Partitioned blocks: groups of decisions to make simultaneously.</span>
+        </td>
+        <td>
+          <span class="fn-name">decisionOrganizationEntrySchema</span>
+          <span class="fn-file">schemas/module-4/tradespace-pareto-sensitivity.ts</span>
+          <span class="fn-note">Connectivity count per decision = sum of non-none cells in its row/col. Used to place each decision in the 4-quadrant view (X-axis).</span>
+        </td>
+        <td>
+          <span class="purpose-main">Captures which decisions are coupled and how. Three coupling kinds (Crawley §14.5 Tables 14.3–14.5): logical (forbidden combinations), reasonableness (penalty-based soft constraint), metric_coupling (shared metric equation). Convention: read down-column-to-row (Col entity feeds Row entity).</span>
+          <span class="purpose-formula">Connectivity(d_i) = count of non-none cells in row i or col i</span>
+          <span class="purpose-gate">✓ Used to sequence decisions: high connectivity → decide earlier or in joint trade study</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 14</span>
+          <span class="book-section">§14.5 Tables 14.3–14.5<br>"DSM of decisions: (a) logical constraints, (b) reasonableness constraints, (c) connections through shared metrics"<br>Box 4.6 DSM reading convention: "read down column to row"</span>
+          <span class="book-pages">pp. 325–344 / book_md lines ~6891–6930<br>DSM convention: Ch 4 Box 4.6 (line 1704)</span>
+          <span class="book-ref">Apollo DSM: LOR decision appears in 4 constraints → connectivity = 4</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">N×N Heatmap Matrix</span>
+            <span class="img-desc">Square matrix. Labeled rows and columns (decision short IDs). Diagonal = black (no self-connection). Off-diagonal cells colored by connection kind: blue = logical, orange = reasonableness, red = metric_coupling, transparent = none. Symmetric for structure. Below: partitioned blocks table showing which decisions to trade together.</span>
+            <span class="img-fig">Crawley Ch 14 Tables 14.3–14.5 — DSM of 9 Apollo mission-mode decisions with logical/reasonableness/metric connections annotated</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ══ GROUP 3: T4b Wave 3 — Decision Net Rework ══ -->
+      <tr class="group-header">
+        <td colspan="6">③ T4b Wave 3 — Decision-Net Rework (Phases 14–19, typed schemas)</td>
+      </tr>
+
+      <!-- 5. Phase 14 — Decision Nodes -->
+      <tr>
+        <td>
+          <span class="layer layer-t4b">T4b</span>
+          <span class="artifact-name">Decision Nodes (Phase 14)</span>
+          <span class="artifact-schema">phase14Schema</span>
+        </td>
+        <td>
+          <span class="fn-name">phase14Schema</span>
+          <span class="fn-file">schemas/module-4/phase-14-decision-nodes.ts</span>
+          <span class="fn-note">Each <code>DecisionNode</code>: id (DN.NN), alternatives[] (single-letter IDs A–Z), criteria[] (PC-NN + weight + direction), scores[] (raw_value, normalized_value 0–1, empirical_prior citation, mathDerivationV2), utility_vector (U(a) = Σw·score with vector mathDerivationV2). SuperRefine: every score.criterion_id ∈ criteria[], every score.alternative_id ∈ alternatives[].</span>
+        </td>
+        <td>
+          <span class="fn-name">phase15Schema, phase16Schema, phase17bSchema</span>
+          <span class="fn-file">schemas/module-4/ (phases 15, 16, 17b)</span>
+          <span class="fn-note">Phase 15 validates acyclicity of dependency_edges. Phase 16 computes Pareto over architecture vectors derived from DN utility vectors. Phase 17b uses utility vectors for sensitivity.</span>
+        </td>
+        <td>
+          <span class="purpose-main">The flat Cornell Decision Matrix becomes a directed graph of decision nodes. Each node owns its own alternatives, criteria, and utility vector. Scores MUST cite empirical priors (KB-8 atlas, NFR, FMEA, or inferred+rationale). Provisional flag when sample_size &lt; 10 (v1 R2).</span>
+          <span class="purpose-formula">U(a) = Σ w_c · score(a, c) per node</span>
+          <span class="purpose-gate">✓ Empirical prior required on every score cell (source: kb-8-atlas | kb-shared | nfr | fmea | inferred)</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 14 + Cornell hybrid</span>
+          <span class="book-section">§14.2 "Decisions and Decision Support"<br>§14.5 Decision network node types: decision, chance, leaf<br>Box 14.1 categorical-variable dominance property</span>
+          <span class="book-pages">pp. 325–344 / book_md lines 6612–6891</span>
+          <span class="book-ref">Apollo 9 decisions: LOR, EOR, LMcrew, LMfuel, moonArrival, moonDeparture, SMfuel, CMcrew, SMcrew</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Decision Node Card + Utility Bar</span>
+            <span class="img-desc">One card per DN.NN node. Header: node ID + title question. Body: mini table of alternatives × criteria scores (each cell with score value + thin bar fill). Footer: utility bar chart — one bar per alternative showing U(a) value. Winner bar accented (Tangerine). Empirical prior source icon next to each score.</span>
+            <span class="img-fig">Crawley Ch 14 §14.3 Box 14.1 — "Categorical decision with alternatives A/B/C and utility U(a) = Σwc·score"</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 6. Phase 15 — Decision Dependencies -->
+      <tr>
+        <td>
+          <span class="layer layer-t4b">T4b</span>
+          <span class="artifact-name">Decision Dependencies (Phase 15)</span>
+          <span class="artifact-schema">phase15Schema</span>
+        </td>
+        <td>
+          <span class="fn-name">phase15Schema</span>
+          <span class="fn-file">schemas/module-4/phase-15-decision-dependencies.ts</span>
+          <span class="fn-note">Receives <code>dependency_edges[]</code> from each Phase 14 node and builds the full graph. Enforces acyclicity (DAG invariant). Validates no self-loops and no forward-declared node IDs.</span>
+        </td>
+        <td>
+          <span class="fn-name">phase16Schema (Pareto)</span>
+          <span class="fn-file">schemas/module-4/phase-16-pareto-frontier.ts</span>
+          <span class="fn-note">The full dependency graph defines the architecture vector space: each complete path through the DAG = one architecture vector AV.NN (one alternative per DN node).</span>
+        </td>
+        <td>
+          <span class="purpose-main">Validates and materialises the decision dependency graph. Individual Phase 14 nodes list their outbound edges — Phase 15 assembles the full graph and enforces the DAG property (no cycles). From the graph, enumerates all valid architecture vectors.</span>
+          <span class="purpose-gate">✓ Acyclicity enforced. No self-loops. All edge targets must be valid DN.NN IDs.</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 14</span>
+          <span class="book-section">§14.5 "a more general version of decision trees where the tree-structure condition is relaxed to allow arbitrary topologies"<br>DSM partitioned blocks — which decisions must be made jointly</span>
+          <span class="book-pages">pp. 325–344 / book_md line 6889</span>
+          <span class="book-ref">"Topology: tree | DAG | general_graph" — tree = strict hierarchy, DAG = general but acyclic, general_graph = arbitrary (rare)</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Dependency DAG Visualisation</span>
+            <span class="img-desc">Same DAG as Decision Network in Phase 1 but now annotated with dependency direction arrows and constraint-kind line styles: solid = logical, dashed = reasonableness, dotted = metric_coupling. Nodes labeled DN.01…DN.NN. Roots at top, leaves at bottom. Acyclicity visually obvious from layout.</span>
+            <span class="img-fig">Crawley Ch 14 Fig 14.x — Apollo mission-mode dependency graph with LOR as root (highest connectivity = 4 constraints)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 7. Architecture Vectors + Pareto (Phase 16) -->
+      <tr>
+        <td>
+          <span class="layer layer-t4b">T4b</span>
+          <span class="artifact-name">Architecture Vectors + Pareto (Phase 16)</span>
+          <span class="artifact-schema">phase16Schema</span>
+        </td>
+        <td>
+          <span class="fn-name">computeParetoFrontier()</span>
+          <span class="fn-file">agents/system-design/decision-net-agent.ts:125</span>
+          <span class="fn-note">Pure function. Naive O(n²) dominance check over <code>ArchitectureVector[]</code>. A dominates B iff A ≥ B on every criterion AND A &gt; B on at least one. Returns <code>{frontier: string[], edges: {dominator, dominated}[]}</code>. Used inside <code>validateDecisionNetworkArtifact()</code>.</span>
+        </td>
+        <td>
+          <span class="fn-name">computeSensitivity(), phase17bSchema</span>
+          <span class="fn-file">agents/system-design/decision-net-agent.ts:156</span>
+          <span class="fn-note">Sensitivity uses architecture vectors' criterion_scores for perturbation. Also: synthesis-agent.ts reads frontier_ids to select final recommended architecture (AV.01 in v2 self-application).</span>
+        </td>
+        <td>
+          <span class="purpose-main">Enumerates all feasible combinations of alternatives across decision nodes (one alternative per DN = one architecture vector AV.NN). Computes Pareto dominance: AV.X dominates AV.Y iff X ≥ Y on all criteria AND X &gt; Y on at least one. Frontier = non-dominated set.</span>
+          <span class="purpose-formula">A dom B ⟺ ∀c score_c(A)≥score_c(B) ∧ ∃c score_c(A)&gt;score_c(B)</span>
+          <span class="purpose-gate">✓ frontier_ids must match architecture_vectors where on_frontier=true</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 15</span>
+          <span class="book-section">§15.2–§15.3 "The Pareto Frontier"<br>"Strong dominance: A1 better in ALL metrics"<br>"Weak dominance: A1 ≥ A2 all metrics, &gt; at least one"<br>"Non-dominated: no architecture dominates it → on the frontier"<br>Pareto ranking: rank-1 = frontier, rank-2 = frontier after removing rank-1, recursively</span>
+          <span class="book-pages">pp. 345–372 / book_md lines 7024–7140</span>
+          <span class="book-ref">NSGA-II (Deb et al. 2002) for O(N·M) ranking — cited in Crawley §15.3</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Tradespace Scatter + Staircase Frontier</span>
+            <span class="img-desc">2D scatter plot: X = metric 1 (cost, minimize), Y = metric 2 (latency, minimize). Lower-left corner = Utopia point (best on all). Pareto frontier points: large orange dots connected by a step-function staircase line. Dominated points: smaller blue dots. Fuzzy Pareto ring: orange halo around frontier + rank-2 near-frontier. Star symbol at utopia corner with dashed projection lines.</span>
+            <span class="img-fig">Crawley Ch 15 Fig 15.x — "Tradespace scatter with Pareto frontier staircase and Utopia point" (book_md line 7038–7072)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 8. Sensitivity Analysis (Phase 17b) -->
+      <tr>
+        <td>
+          <span class="layer layer-t4b">T4b</span>
+          <span class="artifact-name">Sensitivity Analysis (Phase 17b)</span>
+          <span class="artifact-schema">phase17bSchema</span>
+        </td>
+        <td>
+          <span class="fn-name">computeSensitivity()</span>
+          <span class="fn-file">agents/system-design/decision-net-agent.ts:156</span>
+          <span class="fn-note">Deterministic weight perturbation: for each DN node, perturbs each criterion weight by ±<code>band_pct</code>% (default 10%) across 16 samples using a hash-seeded PRNG. Returns variance σ² of U(a). Ranked descending by variance (highest = most sensitive). Uses <code>SensitivityEntry</code> type from phase-17b schema.</span>
+        </td>
+        <td>
+          <span class="fn-name">decision_organization (quadrant), synthesis-agent.ts</span>
+          <span class="fn-file">agents/system-design/synthesis-agent.ts</span>
+          <span class="fn-note">Sensitivity feeds the Y-axis of the 4-quadrant decision organization view. Synthesis agent reads it to flag architecturally-fragile decisions (high σ²). Also surfaces as open question via chat bridge if σ² &gt; threshold.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Measures how much U(a) changes under ±10% weight perturbation per decision node. High variance = fragile decision (outcome flips with small weight change). Used to prioritize which decisions to investigate further vs. commit to.</span>
+          <span class="purpose-formula">sensitivity(i, M) = Σ_k |mean(M | d_i=k) − mean(M | d_i≠k)|</span>
+          <span class="purpose-warn">⚠ Box 15.1: "Pareto-optimal architectures are often the LEAST robust." Fuzzy Pareto required when robustness &lt; 0.8</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 15</span>
+          <span class="book-section">§15.5 "Sensitivity Analysis"<br>"Three sensitivity regions: low-end (near 0), sensitive middle (varies smoothly), high-end (near 100)"<br>Box 15.1 "Principle of Robustness"<br>Main-effect formula §15.6 line 7278</span>
+          <span class="book-pages">pp. 345–372 / book_md lines 7178–7247</span>
+          <span class="book-ref">GNC example: "100% cross-strapped on Pareto front" collapsed to &lt;30% at 2% weight change → NOT robust</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Per-Decision Sensitivity Bar Chart</span>
+            <span class="img-desc">Horizontal bar chart: one bar per decision node, sorted descending by variance. Bar color: green (low sensitivity, region 1), yellow (sensitive middle, region 2), red (high sensitivity, region 3). Dashed threshold line at robustness cutoff. Tooltip: variance value, band_pct used, perturbation seed. Small "fragile" flag icon on bars in sensitive-middle region.</span>
+            <span class="img-fig">Crawley Ch 15 Fig 15.12–15.13 — "GNC sensitivity: percentage of cross-strapped architectures on Pareto front across weight parameter sweep" (book_md lines 7200–7220)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 9. Empirical Prior Binding (Phase 19) -->
+      <tr>
+        <td>
+          <span class="layer layer-t4b">T4b</span>
+          <span class="artifact-name">Empirical Prior Binding (Phase 19)</span>
+          <span class="artifact-schema">phase19Schema</span>
+        </td>
+        <td>
+          <span class="fn-name">phase19Schema + computePriorBindingChain()</span>
+          <span class="fn-file">schemas/module-4/phase-19-empirical-prior-binding.ts<br>agents/system-design/decision-net-agent.ts:272</span>
+          <span class="fn-note"><code>computePriorBindingChain()</code> builds a hash chain over all PriorBinding records for audit integrity. <code>isProvisional()</code> flags sample_size &lt; 10. Sources: kb-8-atlas (company benchmarks), kb-shared (cross-KB), nfr (requirements-derived), fmea (risk-derived), inferred (with rationale).</span>
+        </td>
+        <td>
+          <span class="fn-name">validateDecisionNetworkArtifact()</span>
+          <span class="fn-file">agents/system-design/decision-net-agent.ts:207</span>
+          <span class="fn-note">All prior bindings are validated in the round-trip check. Audit trail written to <code>decision_audit[]</code> table via <code>recordAudit()</code> + <code>appendAuditRow()</code> dep injection.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Every score in Phase 14 must cite an empirical prior. Phase 19 aggregates all prior bindings into a hash chain for audit integrity. Provisional flag when n &lt; 10 samples. Sources hierarchy: atlas empirical &gt; NFR-derived &gt; FMEA-derived &gt; inferred.</span>
+          <span class="purpose-gate">✓ Inferred source requires non-empty rationale. hash_chain_prev links all bindings for tamper detection.</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 14</span>
+          <span class="book-section">§14.2 "Subjectivity" and "Coupling and emergence" (Box 14.1 properties 4 &amp; 6)<br>"Every score needs a defensible source"<br>Sensitivity (Ch 15 §15.5) — low sample sizes make scores fragile</span>
+          <span class="book-pages">pp. 325–344 / book_md lines 6891–6930</span>
+          <span class="book-ref">KB-8 atlas (7 companies: anthropic, supabase, langchain, vercel, github, stripe, twilio) are the primary prior sources for c1v</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Prior Citation Badge + Hash Chain</span>
+            <span class="img-desc">Inline badge on each score cell: source icon (atlas leaf, NFR bookmark, FMEA warning, inferred question mark) + n= sample count. Provisional flag (orange ⚠) when n&lt;10. Audit panel: scrollable list of hash chain rows (AUDIT.xxxxxxxx → AUDIT.yyyyyyyy) confirming chain integrity. Green = chain intact, red = broken.</span>
+            <span class="img-fig">c1v internal — no direct Crawley figure. Inspired by Crawley's Box 14.1 "subjectivity" property requiring documented sources for every metric weight.</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ══ GROUP 4: Crawley Ch 15 — Tradespace ══ -->
+      <tr class="group-header">
+        <td colspan="6">④ Crawley Ch 15 — Tradespace, Pareto &amp; Sensitivity (TC1 Crawley supplement)</td>
+      </tr>
+
+      <!-- 10. Tradespace + Pareto + Sensitivity (TC1) -->
+      <tr>
+        <td>
+          <span class="layer layer-crawley">Crawley</span>
+          <span class="artifact-name">Tradespace + Pareto + Sensitivity</span>
+          <span class="artifact-schema">module-4.tradespace-pareto-sensitivity.v1</span>
+        </td>
+        <td>
+          <span class="fn-name">tradespaceParetoSensitivitySchema</span>
+          <span class="fn-file">schemas/module-4/tradespace-pareto-sensitivity.ts</span>
+          <span class="fn-note">TC1 Crawley supplement. Agent wiring deferred to v2.2. Produces: architectures[] (evaluated), pareto_analysis (rank + dominance), fuzzy_pareto (rank_cutoff or euclidean_threshold), frontier_mining[] (Table 15.2 4-class), tradespace_structure (clusters/strata/holes), sensitivity_analysis (≥3 scenarios required), decision_organization[] (4-quadrant), refactor_suggestions[].</span>
+        </td>
+        <td>
+          <span class="fn-name">optimizationPatternsSchema, synthesis-agent.ts</span>
+          <span class="fn-file">schemas/module-4/optimization-patterns.ts</span>
+          <span class="fn-note">Feeds non_dominated_architecture_ids into optimization Phase 3. Synthesis agent reads decision_organization to determine final architecture recommendation order.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Full Crawley Ch 15 analysis. Adds Utopia point, fuzzy Pareto (robustness), frontier mining (feature frequency analysis), tradespace structure (clusters/strata/holes), sensitivity per decision-metric pair, and the 4-quadrant decision-sequencing view. Box 15.1: "Pareto-optimal architectures are often the least robust."</span>
+          <span class="purpose-formula">main_effect(d_i, M) = Σ_k |mean(M|d_i=k) − mean(M|d_i≠k)|</span>
+          <span class="purpose-gate">✓ ≥3 sensitivity scenarios required; robustness_score ≥ 0.8 OR fuzzy_pareto supplied; ≥2 visible metrics; Q-I before Q-IV in decision_organization array order</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 15</span>
+          <span class="book-section">§15.1 Tradespace definition<br>§15.3 Pareto + Fuzzy Pareto + Table 15.2 Frontier Mining<br>§15.4 Structure (clusters/strata/holes)<br>§15.5 Sensitivity + Box 15.1 Robustness<br>§15.6 4-Quadrant + Box 15.2 Coupling Principle<br>Fig 15.15 Sensitivity vs Connectivity<br>Fig 15.16 Apollo hierarchy</span>
+          <span class="book-pages">pp. 345–372 / book_md lines 6966–7359</span>
+          <span class="book-ref">Utopia point: "best possible scores in all metrics — cannot be used to determine dominance"</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">4-Quadrant Decision Space View</span>
+            <span class="img-desc">X = connectivity (constraint count from DSM). Y = sensitivity (main effect, aggregated). Dashed median lines divide into 4 quadrants. Q1 upper-right (orange bubbles): DECIDE FIRST. Q2 upper-left (blue): independent, analyze now. Q3 lower-right (gray): detailed-design, defer. Q4 lower-left (dim): parallelize or skip. Sequence arrows Q1→Q2→Q3→Q4. Apollo LOR always in Q1.</span>
+            <span class="img-fig">Crawley Ch 15 Fig 15.15 — "Sensitivity (Y) vs Connectivity (X) 4-quadrant view — Quadrant I = make first" (book_md line 7290)</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ══ GROUP 5: Crawley Ch 16 — Optimization ══ -->
+      <tr class="group-header">
+        <td colspan="6">⑤ Crawley Ch 16 — Optimization Patterns (TC1 Crawley supplement)</td>
+      </tr>
+
+      <!-- 11. Optimization Patterns -->
+      <tr>
+        <td>
+          <span class="layer layer-crawley">Crawley</span>
+          <span class="artifact-name">Optimization Patterns</span>
+          <span class="artifact-schema">module-4.optimization-patterns.v1</span>
+        </td>
+        <td>
+          <span class="fn-name">optimizationPatternsSchema</span>
+          <span class="fn-file">schemas/module-4/optimization-patterns.ts</span>
+          <span class="fn-note">TC1 Crawley supplement. Six patterns: DOWN_SELECTING (binary subset, 2^m space), ASSIGNING (left→right set mapping, channelized vs cross-strapped), PARTITIONING (disjoint subsets, Bell numbers), PERMUTING (ordering, N!), CONNECTING (graph edges, 2^m(m-1)/2), STANDARDS_DEFINITION. Solver kinds: exhaustive / branch_and_bound / genetic_algorithm / simulated_annealing / mip. SuperRefine: composition required for &gt;1 sub-problem; exhaustive solver infeasible for &gt;64 element_interactions.</span>
+        </td>
+        <td>
+          <span class="fn-name">synthesis-agent.ts, decision-net-agent.ts (validation)</span>
+          <span class="fn-file">agents/system-design/synthesis-agent.ts</span>
+          <span class="fn-note">Optimization phase selects the final recommended architecture from non_dominated_architecture_ids. synthesis-agent reads the chosen architecture's decisions for the portfolio keystone architecture_recommendation.v1.json.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Formulates the design problem as one of 6 combinatorial patterns (Ch 16 Table 16.2). Each pattern has a known tradespace size formula and architecture style. NEOSS-style composition operator combines multi-pattern problems. Solver choice must be consistent with problem size (exhaustive only viable for &lt;64 interactions).</span>
+          <span class="purpose-formula">DOWN_SELECTING: tradespace = 2^m · PARTITIONING: Bell(N) · CONNECTING: 2^(m(m-1)/2)</span>
+          <span class="purpose-gate">✓ composition required when sub_problems.length &gt; 1; 7±2 advisory on sub_problems count</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 16</span>
+          <span class="book-section">§16.2 "Formulating a System Architecture Optimization Problem"<br>§16.4 "Patterns in System Architecting Decisions" (Table 16.2 — 6 patterns)<br>§16.5 "Solving System Architecture Optimization Problems"<br>NEOSS case study (NASA Earth Observing Satellite System) — running large-scale example<br>Box 16.2–16.5 architecture styles per pattern</span>
+          <span class="book-pages">pp. 373–420 / book_md lines 7394–8146</span>
+          <span class="book-ref">Selva 2016, "Patterns in System Architecture Decisions", Systems Engineering — folded into Ch 16</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">6-Pattern Reference Table + Style Diagrams</span>
+            <span class="img-desc">Table: pattern name, description, tradespace-size formula, architecture styles. Per-pattern mini diagram in right column: DOWN_SELECTING = binary instrument checkbox grid; ASSIGNING = bipartite arrow graph (channelized left, cross-strapped right); PARTITIONING = Venn-style monolithic vs. distributed split; PERMUTING = timeline bar (greedy vs. incremental deployment); CONNECTING = network topology icons (star/ring/mesh/bus); STANDARDS_DEFINITION = layer cake.</span>
+            <span class="img-fig">Crawley Ch 16 Table 16.2 — "Six patterns with tradespace size and architecture styles" (book_md lines 7523–7888) + Box 16.2–16.5 for per-pattern architecture extremes</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ══ GROUP 6: Synthesis ══ -->
+      <tr class="group-header">
+        <td colspan="6">⑥ Wave 4 Synthesis — Portfolio Keystone</td>
+      </tr>
+
+      <!-- 12. Decision Network Artifact (runtime envelope) -->
+      <tr>
+        <td>
+          <span class="layer layer-synth">Synthesis</span>
+          <span class="artifact-name">Decision Network Artifact</span>
+          <span class="artifact-schema">decision_network.runtime-envelope.v1</span>
+        </td>
+        <td>
+          <span class="fn-name">generateDecisionNetwork()</span>
+          <span class="fn-file">graphs/nodes/generate-decision-network.ts</span>
+          <span class="fn-note">Calls <code>evaluateEngineStory('m4-decision-network', …)</code> via <code>_engine-substrate.ts</code> against the story tree at <code>.planning/engines/m4-decision-network.json</code>. Writes <code>kind='decision_network_v1'</code> row to project_artifacts table via <code>persistArtifact()</code>. Idempotent: inputs_hash prevents duplicate runs.</span>
+        </td>
+        <td>
+          <span class="fn-name">synthesis-agent.ts, POST /api/projects/[id]/synthesize</span>
+          <span class="fn-file">agents/system-design/synthesis-agent.ts<br>app/api/projects/[id]/synthesize/route.ts</span>
+          <span class="fn-note">Synthesis agent reads the runtime envelope to build the portfolio keystone. Status exposed via <code>GET /api/projects/[id]/synthesize/status</code>. Artifact viewed at system-design/decision-matrix route.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Full runtime envelope wrapping the decision network evaluation output. Contains: all phase 14–19 artifacts in <code>phases{}</code>, <code>decision_audit[]</code> hash chain, <code>selected_architecture_id</code>. The engine story tree (not LLM) produces deterministic decision node assignments via rule evaluation.</span>
+          <span class="purpose-gate">✓ validateDecisionNetworkArtifact() runs Zod round-trip on all 6 sub-phases before persisting</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 14–16 integrated</span>
+          <span class="book-section">Ch 14 Four DSS tasks (representing/structuring/simulating/viewing all completed)<br>Ch 15 Pareto + sensitivity<br>Ch 16 Pattern formulation + solver<br>c1v v2 synthesis: 4 derivation chains D-01–D-04, 3 Pareto alternatives AV.01–AV.03</span>
+          <span class="book-pages">Synthesis artifact: <code>plans/t4b-outputs/</code></span>
+          <span class="book-ref">Tag: t4b-wave-3-complete @ commit 4ecfe3f</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Architecture Recommendation Card</span>
+            <span class="img-desc">Top card: recommended architecture (e.g., AV.01 = Sonnet 4.5 + pgvector + LangGraph + Vercel). Below: 3-row Pareto alternatives table (AV.01/02/03) with cost, latency, availability columns and per-row traffic-light indicators. Right panel: derivation chain (D-01 → D-02 → D-03 → D-04) as a small DAG. Bottom: FMEA residual flags count + atlas empirical priors sourced count.</span>
+            <span class="img-fig">c1v v2 architecture_recommendation.v1.json (Wave 4 keystone, commit 56532d4) — 3 Pareto alternatives, 4 derivation chains, 7 atlas priors</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 13. Frontier Mining Table -->
+      <tr>
+        <td>
+          <span class="layer layer-crawley">Crawley</span>
+          <span class="artifact-name">Frontier Mining Table</span>
+          <span class="artifact-schema">tradespace.frontier_mining[]</span>
+        </td>
+        <td>
+          <span class="fn-name">tradespaceParetoSensitivitySchema.frontier_mining</span>
+          <span class="fn-file">schemas/module-4/tradespace-pareto-sensitivity.ts:127</span>
+          <span class="fn-note">Each row: feature_description, frequency_in_tradespace (0–1), frequency_in_pareto (0–1), classification ∈ {driver, passenger, fellow_traveler, opposed}. Classification rule: freq_pareto≥0.95 &amp;&amp; freq_ts&lt;0.5 → driver (necessary condition); freq_pareto &gt; freq_ts×1.5 → passenger (over-represented); |diff| &lt; 0.05 → fellow_traveler (no effect); freq_pareto &lt; freq_ts×0.5 → opposed (under-represented).</span>
+        </td>
+        <td>
+          <span class="fn-name">synthesis-agent.ts (recommendation rationale)</span>
+          <span class="fn-file">agents/system-design/synthesis-agent.ts</span>
+          <span class="fn-note">"Driver" features (necessary for Pareto membership) appear in the recommendation rationale. "Opposed" features are flagged as anti-patterns to avoid.</span>
+        </td>
+        <td>
+          <span class="purpose-main">Identifies which architectural features are necessary for or correlated with Pareto-optimal performance. A "driver" feature appears in nearly all Pareto-optimal architectures but rarely in the full tradespace — it is a necessary condition for good performance. Guides future decision prioritization.</span>
+          <span class="purpose-formula">ratio = frequency_in_pareto / frequency_in_tradespace</span>
+          <span class="purpose-gate">✓ 4 classes from Crawley Table 15.2: driver (necessary), passenger (over-represented), fellow_traveler (no effect), opposed (anti-pattern)</span>
+        </td>
+        <td>
+          <span class="book-ch">Crawley Ch 15</span>
+          <span class="book-section">§15.3 "Mining the Pareto frontier" (Table 15.2)<br>"Compute relative frequency of architectural feature inside vs. outside Pareto front"<br>Example: "Fully cross-strapped = 2% of tradespace, 100% of Pareto front → necessary condition"</span>
+          <span class="book-pages">pp. 345–372 / book_md lines 7092–7126</span>
+          <span class="book-ref">"Homogeneous = 7% tradespace, 33% Pareto → over-represented but not necessary"</span>
+        </td>
+        <td>
+          <div class="img-insp">
+            <span class="img-label">Relative Frequency Bar Table</span>
+            <span class="img-desc">Table: feature name, two side-by-side bars (tradespace freq in gray, Pareto freq in color), classification badge. Badge colors: driver = orange (Tangerine), passenger = blue (Danube), fellow_traveler = gray, opposed = red. Sort by classification then by ratio descending. Small ratio fraction shown (e.g., "100% / 2% = ×50"). "Necessary condition" rows pinned to top.</span>
+            <span class="img-fig">Crawley Ch 15 Table 15.2 — "Relative frequency: inside Pareto front vs. full tradespace; 4 classification buckets" (book_md line 7092)</span>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+  </div>
+
+  <!-- Footnotes -->
+  <div class="footnotes">
+    <h3>Source References</h3>
+    <p><strong>Crawley, Cameron, Selva (2015).</strong> <em>System Architecture: Strategy and Product Development for Complex Systems.</em> Prentice Hall / Pearson. ISBN-13: 978-0-13-397534-5. Chapter 14 full PDF: http://www.system-architect.org/files/Chapter14.pdf (official free download). Chapters 15–16 summarised in <code>plans/research/crawley-book-findings.md</code> §Ch14–16 and <code>apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/4-decision-net-crawley-on-cornell/05-crawley/</code>.</p>
+    <p style="margin-top:8px"><strong>Cornell CESYS525 Decision Matrix Method.</strong> Knowledge bank: <code>apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/4-decision-net-crawley-on-cornell/01-phase-docs/cornell/01–18</code>. Templates: <code>03-templates/decision-matrix-template.xlsx</code>.</p>
+    <p style="margin-top:8px"><strong>c1v v2 self-application.</strong> Portfolio keystone: <code>architecture_recommendation.v1.json</code> (Wave 4, tag <code>synthesizer-wave-4-complete</code> @ commit 56532d4). T4b Wave 3 artifacts: tag <code>t4b-wave-3-complete</code> @ commit 4ecfe3f. Decision-network schema source: <code>plans/crawley-sys-arch-strat-prod-dev/REQUIREMENTS-crawley.md</code>.</p>
+    <p style="margin-top:8px"><strong>Selva 2016.</strong> "Patterns in System Architecture Decisions." <em>Systems Engineering.</em> — folded into Crawley Ch 16 §16.4.</p>
+    <p style="margin-top:8px"><strong>Deb, Pratap, Agarwal &amp; Meyarivan (2002).</strong> NSGA-II, <em>IEEE Transactions on Evolutionary Computation.</em> — cited in Crawley §15.3 for O(N·M) Pareto ranking.</p>
+    <p style="margin-top:8px"><strong>Agent wiring note:</strong> TC1 Crawley schemas (module-4.decision-network-foundations.v1, module-4.tradespace-pareto-sensitivity.v1, module-4.optimization-patterns.v1) are schema-gate-closed. Agent-emitter wiring deferred to v2.2 Wave D per <code>apps/product-helper/CLAUDE.md §Crawley Typed Schemas</code>. T4b Wave 3 phases (14–19) are wired via the runtime engine substrate (<code>_engine-substrate.ts</code> + <code>m4-decision-network.json</code> story tree).</p>
+  </div>
+
+</main>
+
+</body>
+</html>

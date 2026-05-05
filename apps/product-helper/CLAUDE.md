@@ -144,8 +144,30 @@ Eleven Zod schemas at `lib/langchain/schemas/{module-2,module-3,module-4,module-
 
 ## Invariants
 
-- **Atlas (KB-9) is paid-tier only** — consumed exclusively at M4 Decision Network + SYN Architecture Recommendation. Free-tier paths (intake fan-out, draft agents, arch-preview) emit atlas-shaped stubs (`provisional: true`, `sample_size: 0`) — never call `renderAtlasPriors` against pgvector with `kb_source='atlas'`. Future early-atlas binding tracked in `plans/post-v2.2.3-followups.md`.
-- **Decision Matrix ≠ Decision Network** — Decision Matrix lives in Scope (go/no-go, free, populated by intake-side `decision-matrix-agent.ts`). Decision Network is the paid 19-phase Opus-4.7 keystone (atlas-bound, in System Architecture Recommendation). Easy to conflate; agent reference table at `apps/product-helper/docs/architecture/data-flow-diagram.html` is authoritative.
+- **Atlas (KB-9) fires from the beginning** — atlas is shared infrastructure available across all tiers (free + paid). Reads happen at intake / draft / preview as well as at M4 Decision Network + SYN. **REVISED 2026-05-04 evening:** the prior "atlas is paid-tier only · free-tier paths emit atlas-shaped stubs" framing is REVOKED. Free-tier paths read real atlas priors; the pay-gate is the SYN keystone math + analysis depth (Pareto, sensitivity, optimization patterns, architecture diagram, derivation chain, signed bundle, Opus 4.7), not atlas access.
+- **Decision Matrix ≠ Decision Network** — Decision Matrix lives in Scope (go/no-go, free, populated by intake-side `decision-matrix-agent.ts`). Decision Network is the paid 19-phase Opus-4.7 keystone (in System Architecture Recommendation). Easy to conflate; agent reference table at `apps/product-helper/docs/architecture/data-flow-diagram.html` is authoritative.
+
+## Canonical Reference Sources
+
+When recommending architectures, citing math, or enumerating archetypes, prefer these sources (all on disk):
+
+- **Crawley/Cameron/Selva (2015)** *System Architecture: Strategy and Product Development for Complex Systems* — methodology foundation (form-function bridge, decision network, three-pass canonical order). KB at `.planning/phases/13-Knowledge-banks-deepened/2-system-architecture-strategy-product-development/`.
+- **Huyen (2024)** *AI Engineering: Building Applications with Foundation Models* (O'Reilly) — FM-era patterns (RAG, agents, fine-tuning). On disk at `.planning/phases/13-Knowledge-banks-deepened/ai-architecture/huyen-book/`. Drives L2 archetypes.
+- **Huyen (2022)** *Designing Machine Learning Systems* (O'Reilly) — ML ops, drift detection, deployment topology, feature stores. ✅ on disk at `.planning/phases/13-Knowledge-banks-deepened/ai-architecture/dmls-book/dmls.md` (7,283 lines + 177 artifacts). Per DMLS verdict 2026-05-04: focus on Ch 7 (Deployment + Prediction Service), Ch 8 (Distribution Shifts + Monitoring), Ch 9 (Continual Learning + Test in Production), Ch 10 (MLOps Infrastructure). Backs F22+ math entries (drift-detection statistics: KS-test, MMD, label-shift, EDDM).
+- **Kleppmann (2017)** *Designing Data-Intensive Applications* (O'Reilly) — storage engines, replication, distributed systems theory, PACELC. ScyllaDB excerpt on disk at `.planning/phases/13-Knowledge-banks-deepened/ai-architecture/ScyllaDB-Designing-Data-Intensive-Applications.md` (covers Ch 3 Storage and Retrieval, Ch 5 Replication, Ch 8 Trouble with Distributed Systems). Math citations F16-F21 in `plans/research/math-sources.md`.
+- **`plans/research/math-sources.md`** — F1-F30 formula bibliography with peer-reviewed citations. Every score in M4/M2 NFR Engine should cite an F-entry. Coverage: queue theory (F1-F4), reliability arithmetic (F5-F6), decision math (F7-F10), software-architecture quality (F11-F13), latency + cache (F14-F15), storage engines + replication + distributed-systems (F16-F21), drift + bandits + A/B + tech-debt + calibration (F22-F30).
+
+## Canonical Wave Authority Chain
+
+When working on Pipeline-B / engine-substrate / Crawley-schema concerns, the canonical authority chain is:
+
+- **Master plan v2.2** at `plans/c1v-MIT-Crawley-Cornell.v2.2.md` — defines Wave C (TC1 ✅ shipped), Wave E (TE1 ✅ shipped — P10 closure complete), and EC-V21-E.14 (the 7-node greenfield-generator refactor for live projects). Line 111 names the canonical 7 nodes: `generate_data_flows`, `generate_form_function`, `generate_decision_network`, `generate_n2`, `generate_fmea_early`, `generate_fmea_residual`, `generate_synthesis`. **Wave E shipped 7 of 7** per `te1-greenfield-refactor-complete` tag + `plans/v22-outputs/te1/p10-closure-evidence.md` (verifier marked EC-V21-E.14 = PASS 2026-04-27). Earlier text in this file claimed "3 of 7 shipped, 4 remain" — that framing was stale and was corrected 2026-05-04 evening against actual disk state. Only Crawley matrix-derivation field emissions (10 sites per TC1 EC-V21-C.2 PASS-with-WARN) and dead-file decommission remain (~8-11 hr).
+- **v2.2-fixup handoff** at `plans/HANDOFF-2026-04-27-v2.2-fixup.md` — locks Path B as the architectural answer (R-V22.A + R-V22.B). "Each agent reads FROM the substrate the way M4's decision network reads from M5's morphological matrix. One node, one job, owns its derivation chain end-to-end." Owner: `agent-greenfield-refactor`.
+- **v2.1.1 hotfix** at `plans/c1v-MIT-Crawley-Cornell.v2.1.1.md` — files P10 (7 v2.1 nodes are no-ops on live projects because they consume stubs from build scripts).
+- **kb-runtime-architecture genesis** at `plans/kb-runtime-architecture.md` — engine-substrate genesis doc; 11 of 13 G1-G13 gaps shipped.
+
+**⚠ "Wave D" naming caveat:** there are TWO different "Wave D"s in c1v history. **v2.1 Wave D** = TD1 iter-3 API-spec two-stage refactor (✅ SHIPPED `td1-wave-d-complete @ bb1f443` 2026-04-26). **"v2.2 Wave D" / "Wave D agent rewrite"** = a phantom name — the v2.2 master plan has NO Wave D, only Wave C + Wave E + post-v2.1 backlog. The work that earlier docs (including this CLAUDE.md) referenced as "v2.2 Wave D" is properly **EC-V21-E.14 closure inside Wave E**. Use the canonical name when scoping new work.
+- **`system-design/system-design-math-logic.md`** — 430-line strategy doc (workload/QoS/operating-envelope lenses, PACELC, ISO/IEC 25010 quality attributes).
 
 ## Deployed Features
 
