@@ -84,6 +84,8 @@ Cost:      $/month = RPS × seconds_per_month × $/request
 
 **Five letters:** P-A-C (partition branch) + E-L-C (normal-ops branch). Specifically a **distributed-data-store tradeoff theorem**.
 
+> **Source ground truth (added 2026-05-04):** PACELC's distributed-systems substrate (partial-synchrony assumption, FLP impossibility, Byzantine vs crash-stop fault models, linearizability requirements) is canonically treated in **Kleppmann (2017) *Designing Data-Intensive Applications* Ch 8 "Trouble with Distributed Systems" + Ch 9 "Consistency and Consensus"**. The ScyllaDB DDIA excerpt now on disk at `apps/product-helper/.planning/phases/13-Knowledge-banks-deepened/ai-architecture/ScyllaDB-Designing-Data-Intensive-Applications.md` covers Ch 8. Cite Kleppmann directly when explaining why a PACELC tradeoff is unavoidable — it's more rigorous than Abadi's original CAP/PACELC framing alone. See math-sources.md F18 (quorum consistency W+R>N), F19 (replication lag), F20 (partial synchrony / GST), F21 (Byzantine `3f+1`) for formal foundations.
+
 **Common classifications:**
 | Class | Examples | Tradeoff |
 |-------|----------|----------|
